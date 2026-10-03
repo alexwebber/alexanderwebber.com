@@ -31,6 +31,13 @@ Update this as decisions get made — treat it as the source of truth alongside
   runs) stays on the session's default model. Architecturally consequential steps (e.g.
   `/speckit-specify` or `/speckit-plan` on foundational pieces) get a per-call Opus override,
   flagged each time, rather than switching the whole session.
+- **Don't miss important updates.** Check the components in use for updates and adopt the ones
+  that matter: new releases of core components (Spec Kit, the main framework, key libraries),
+  security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
+  their current release. Routine bumps of supporting tools that work fine can be skipped — the
+  agent recommends rather than blanket-upgrading. Run sdd-playbook's `scripts/check-versions.ps1`
+  at the start of a work session. A deliberate pin of a core component gets a decisions-log
+  entry saying why.
 - **Research before choosing dependencies.** Verify a library/service is current and maintained
   (releases, deprecation notices, open issues) rather than picking from memory, and record the
   comparison in the decisions log.
