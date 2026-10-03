@@ -8,8 +8,8 @@
       "enabled": true,
       "priority": 50,
       "registered_commands": {},
-      "registered_skills": [],
-      "installed_at": "2026-10-03T17:33:54.239889+00:00"
+      "registered_skills": {},
+      "installed_at": "2026-10-03T18:43:27.061386+00:00"
     }
   }
 }

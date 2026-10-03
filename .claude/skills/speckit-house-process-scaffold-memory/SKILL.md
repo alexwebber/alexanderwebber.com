@@ -1,10 +1,9 @@
 ---
 name: speckit-house-process-scaffold-memory
-description: Create PROJECT_MEMORY.md and BACKLOG.md from the house templates if they
-  do not already exist
+description: Create PROJECT_MEMORY.md and BACKLOG.md from the house templates if they do not already exist
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
-  author: github-spec-kit
+  author: Alex Webber
   source: house-process:commands/speckit.house-process.scaffold-memory.md
 ---
 
