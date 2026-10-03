@@ -2,19 +2,20 @@
   "schema_version": "1.0",
   "extensions": {
     "house-process": {
-      "version": "0.5.0",
+      "version": "0.6.0",
       "source": "local",
-      "manifest_hash": "sha256:63a6f5941c560554c35a92926737b81317c967333bf26ceafa006ae5da883b62",
+      "manifest_hash": "sha256:2611daabbfaed7a9026739080b40243116a652e42d1a5f64a5e8275dad19076e",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
         "claude": [
           "speckit.house-process.scaffold-memory",
-          "speckit.house-process.harvest-lessons"
+          "speckit.house-process.harvest-lessons",
+          "speckit.house-process.model-canary"
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-10-03T19:50:14.405919+00:00"
+      "installed_at": "2026-10-03T20:01:10.201778+00:00"
     }
   }
 }
