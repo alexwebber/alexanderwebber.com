@@ -1,0 +1,31 @@
+schema_version: "1.0"
+
+extension:
+  id: house-process
+  name: "House Process Scaffolding"
+  version: "0.1.0"
+  description: "Scaffolds PROJECT_MEMORY.md and BACKLOG.md house-style process files for a new Spec Kit project"
+  author: "Alex Webber"
+  repository: "https://github.com/alexwebber/speckit-standards"
+  license: "Proprietary"
+
+requires:
+  speckit_version: ">=0.14.0"
+
+provides:
+  commands:
+    - name: speckit.house-process.scaffold-memory
+      file: commands/speckit.house-process.scaffold-memory.md
+      description: "Create PROJECT_MEMORY.md and BACKLOG.md from the house templates if they do not already exist"
+
+hooks:
+  after_constitution:
+    command: speckit.house-process.scaffold-memory
+    optional: true
+    prompt: "Scaffold PROJECT_MEMORY.md and BACKLOG.md (house process files)?"
+    description: "Offer to create the house-style project memory and backlog files once the constitution is ratified"
+
+tags:
+  - "process"
+  - "house-style"
+  - "memory"

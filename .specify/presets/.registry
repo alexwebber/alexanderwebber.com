@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "presets": {
+    "house-constitution": {
+      "version": "0.1.0",
+      "source": "local",
+      "manifest_hash": "sha256:91cc430b9ec18aea70e0b9dca9e20a728caf2ca12d4965b0275e1e7987329011",
+      "enabled": true,
+      "priority": 50,
+      "registered_commands": {},
+      "registered_skills": [],
+      "installed_at": "2026-10-03T17:33:54.239889+00:00"
+    }
+  }
+}

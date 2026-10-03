@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "extensions": {
+    "house-process": {
+      "version": "0.1.0",
+      "source": "local",
+      "manifest_hash": "sha256:1b2ce02b24277c5713430cfef9c617ab6b019d9e69eefedd700de88ea23e042d",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {
+        "claude": [
+          "speckit.house-process.scaffold-memory"
+        ]
+      },
+      "registered_skills": [],
+      "installed_at": "2026-10-03T17:33:55.035971+00:00"
+    }
+  }
+}

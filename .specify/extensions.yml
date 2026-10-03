@@ -1,0 +1,15 @@
+installed:
+- house-process
+settings:
+  auto_execute_hooks: true
+hooks:
+  after_constitution:
+  - extension: house-process
+    command: speckit.house-process.scaffold-memory
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Scaffold PROJECT_MEMORY.md and BACKLOG.md (house process files)?
+    description: Offer to create the house-style project memory and backlog files
+      once the constitution is ratified
+    condition: null
