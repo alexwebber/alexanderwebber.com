@@ -1,10 +1,10 @@
 ---
-description: "Create PROJECT_MEMORY.md and BACKLOG.md from the house templates if they do not already exist"
+description: "Create PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md from the house templates if they do not already exist"
 ---
 
 # Scaffold House Process Files
 
-Create the two house-style process files at the repository root, if they don't already exist.
+Create the three house-style process files at the repository root, if they don't already exist.
 
 ## Behavior
 
@@ -21,10 +21,18 @@ Create the two house-style process files at the repository root, if they don't a
    so historical decisions and forward-looking todos don't get mixed together. If it does not
    already exist, copy `.specify/extensions/house-process/templates/BACKLOG.md` there as-is.
 
-3. If either file **already exists**, do not overwrite it — report that it was left untouched
+3. **`CLAUDE.md`** — the file Claude Code loads automatically at the start of every session
+   (`PROJECT_MEMORY.md` is *not* auto-loaded on its own). If it does not already exist, copy
+   `.specify/extensions/house-process/templates/CLAUDE.md` there and replace `[PROJECT_NAME]`.
+   If it already exists but does not import `@PROJECT_MEMORY.md`, do not rewrite it — offer to
+   append the import lines from the template instead, and only append if the user agrees.
+
+4. If any file **already exists**, do not overwrite it (beyond the opt-in `CLAUDE.md` import
+   append above) — report that it was left untouched
    and skip that file. This command must be safe to invoke on an existing project.
 
-4. This command does not require Git and does not touch any other file. After running, tell the
+5. This command does not require Git and does not touch any other file. After running, tell the
    user which file(s) were created (or already existed), and remind them these are plain project
    files, not a Spec Kit artifact — they (or their coding agent) update them by hand as decisions
-   get made, the same way `github.com/alexwebber/agents` does it.
+   get made, the same way `github.com/alexwebber/agents` does it. The Working norms section carries
+   house defaults — prompt the user to keep, adapt or delete each one for this project.

@@ -4,4 +4,4 @@ Personal website for [alexanderwebber.com](https://alexanderwebber.com): running
 (targets, races, charity fundraising, PBs, videos) first, then CV & AI/software blog.
 
 Built spec-first with [Spec Kit](https://github.com/github/spec-kit), using the house standards from
-[speckit-standards](https://github.com/alexwebber/speckit-standards).
+[sdd-playbook](https://github.com/alexwebber/sdd-playbook).

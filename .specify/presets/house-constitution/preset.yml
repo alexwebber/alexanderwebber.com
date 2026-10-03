@@ -3,10 +3,10 @@ schema_version: "1.0"
 preset:
   id: "house-constitution"
   name: "House Constitution Starting Point"
-  version: "0.1.0"
+  version: "0.1.1"
   description: "Constitution template pre-seeded with house engineering-guardrail principles (Move Fast Spike First, Guarded Iteration) as the default starting menu for the constitution command, instead of the generic upstream examples."
   author: "Alex Webber"
-  repository: "https://github.com/alexwebber/speckit-standards"
+  repository: "https://github.com/alexwebber/sdd-playbook"
   license: "Proprietary"
 
 requires:

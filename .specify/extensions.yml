@@ -9,7 +9,25 @@ hooks:
     enabled: true
     optional: true
     priority: 10
-    prompt: Scaffold PROJECT_MEMORY.md and BACKLOG.md (house process files)?
-    description: Offer to create the house-style project memory and backlog files
+    prompt: Scaffold PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md (house process files)?
+    description: Offer to create the house-style project memory, backlog and CLAUDE.md
       once the constitution is ratified
+    condition: null
+  after_plan:
+  - extension: house-process
+    command: speckit.house-process.harvest-lessons
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Anything learned so far worth sending upstream to the sdd-playbook?
+    description: Offer to harvest generalisable lessons once a plan is complete
+    condition: null
+  after_implement:
+  - extension: house-process
+    command: speckit.house-process.harvest-lessons
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Anything learned during implementation worth sending upstream to the sdd-playbook?
+    description: Offer to harvest generalisable lessons once implementation is complete
     condition: null

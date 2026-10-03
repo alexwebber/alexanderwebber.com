@@ -21,12 +21,32 @@ opportunities. Built spec-first with Spec Kit as a modular site that can grow ne
 
 ## Working norms
 
-- Requirements are drawn out by the coding agent asking focused rounds of questions (with
-  recommended options), rather than the owner supplying everything up front.
-- Research before committing to third-party dependencies — verify maintenance status rather than
-  picking from memory (see the Garmin library decision below).
-- Spec Kit commands run via the Claude integration with PowerShell scripts; house standards come
-  from `speckit-standards` (preset `house-constitution`, extension `house-process`, dev-mode).
+House defaults from [sdd-playbook](https://github.com/alexwebber/sdd-playbook), plus
+project-specific notes.
+
+- **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
+  a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
+  PRs unless explicitly asked.
+- **Draw requirements out with questions.** For specs, clarifications and design decisions, the
+  agent asks focused rounds of questions with recommended options rather than expecting the
+  owner to supply everything up front.
+- **Run spec-kit commands as real subagents.** `/speckit-*` commands are dispatched via the
+  Agent tool to a subagent that follows the actual `.claude/skills/speckit-*/SKILL.md`, not
+  simulated inline by the main conversation. Subagents can't converse with the owner, so the
+  main conversation runs the question rounds first and passes the gathered answers in.
+- **Model selection.** Routine work (spikes, implementation, well-scoped specify/tasks/implement
+  runs) stays on the session's default model. Architecturally consequential steps (e.g.
+  `/speckit-specify` or `/speckit-plan` on foundational pieces) get a per-call Opus override,
+  flagged each time, rather than switching the whole session.
+- **Research before choosing dependencies.** Verify a library/service is current and maintained
+  rather than picking from memory, and record the comparison here (see the Garmin library
+  decision below).
+- **Send lessons upstream.** When something learned here would help future projects, propose
+  adding it to sdd-playbook (norms, templates, bootstrap script or `PLAYBOOK.md`).
+- Spec Kit runs via the Claude integration with PowerShell scripts; house standards are
+  installed from sdd-playbook in dev mode (preset `house-constitution`, extension
+  `house-process`). Open `C:\Projects\alexanderwebber-workspace.code-workspace` to work on the
+  site and the playbook side by side.
 
 ## Decisions log
 
@@ -55,6 +75,13 @@ opportunities. Built spec-first with Spec Kit as a modular site that can grow ne
   and performance metrics; GPS maps for races only, never training runs.
 - **2026-10-03** — Build gate from day one (site build + data-schema validation on every push and
   ingest commit); broader CI deferred.
+
+- **2026-10-03** — Adopted a PR-based workflow: changes go via branches + pull requests rather
+  than direct commits to `main` (first three bootstrap commits predate this).
+
+- **2026-10-03** — Caught up with sdd-playbook (house-constitution 0.1.1, house-process 0.3.0):
+  added `CLAUDE.md` (auto-loads this file + the constitution), adopted the house working norms,
+  and gained the optional lesson-harvest hooks after `/speckit-plan` and `/speckit-implement`.
 
 ## Open questions
 
