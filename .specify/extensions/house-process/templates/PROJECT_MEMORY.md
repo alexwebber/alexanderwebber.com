@@ -34,12 +34,25 @@ Update this as decisions get made — treat it as the source of truth alongside
 - **Research before choosing dependencies.** Verify a library/service is current and maintained
   (releases, deprecation notices, open issues) rather than picking from memory, and record the
   comparison in the decisions log.
-- **Send lessons upstream.** When something learned here would help future projects, propose
-  adding it to sdd-playbook (norms, templates, bootstrap script or `PLAYBOOK.md`).
+- **Capture lessons in the moment; send them upstream later.** Add a one-line entry to
+  *Upstream candidates* below **immediately** — don't wait for a milestone — whenever the agent:
+  works around a tool/environment problem; is corrected or told a preference by the owner; finds
+  sdd-playbook wrong or missing something; or hits a procedure that behaved unexpectedly.
+  Capturing is cheap and needs no approval. Sending upstream happens via
+  `/speckit-house-process-harvest-lessons` (offered after `/speckit-plan` and
+  `/speckit-implement`, or run any time), which proposes changes for the owner to approve.
 
 ## Decisions log
 
 - **[DATE]** — [What was decided, and why. Add one entry per decision as they happen.]
+
+## Upstream candidates
+
+<!-- Lessons that might help future projects, captured the moment they happen (see the working
+     norm above). One line each: date, what happened, and the suggested generalisation. The
+     harvest command processes this list and removes entries once sent upstream or rejected. -->
+
+- _None yet._
 
 ## Open questions
 

@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: house-process
   name: "House Process Scaffolding"
-  version: "0.3.0"
+  version: "0.4.0"
   description: "Scaffolds PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md house-style process files, and offers to harvest lessons upstream to the sdd-playbook at milestones"
   author: "Alex Webber"
   repository: "https://github.com/alexwebber/sdd-playbook"
