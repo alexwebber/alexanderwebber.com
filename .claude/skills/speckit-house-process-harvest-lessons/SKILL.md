@@ -26,6 +26,9 @@ looks back over the work just completed and proposes which lessons should be sen
    - gaps in the house templates, hooks or bootstrap script;
    - dependency/research lessons that generalise (e.g. "verify maintenance status").
 
+   Also review `canaries.md` (if present). If a pattern holds across several canaries (not a
+   single result), add a candidate to update the model-selection norm.
+
 2. **Classify each candidate** into exactly one destination:
    - **Global working preference** (applies to any project, SDD or not) → the owner's
      `~/.claude/CLAUDE.md`.

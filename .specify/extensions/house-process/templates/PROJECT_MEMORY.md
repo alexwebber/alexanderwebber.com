@@ -17,6 +17,11 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- House defaults from sdd-playbook, learned across projects. Keep, adapt, or delete each one
      for this project, and add project-specific norms (pace/rigor, model choices, etc.). -->
 
+- **The agent orchestrates.** The coding agent owns, remembers and runs all process (spec-kit
+  steps, version checks, lesson capture, model canaries, follow-ups after PRs merge) and pulls
+  what it needs from the owner. The owner contributes thoughts, experience and judgement, and is
+  never handed a manual workflow to remember. Any owner input is folded into reviews they're
+  already doing. If the agent can check something itself (e.g. whether a PR merged), it does.
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
   PRs unless explicitly asked.
@@ -27,10 +32,14 @@ Update this as decisions get made — treat it as the source of truth alongside
   Agent tool to a subagent that follows the actual `.claude/skills/speckit-*/SKILL.md`, not
   simulated inline by the main conversation. Subagents can't converse with the owner, so the
   main conversation runs the question rounds first and passes the gathered answers in.
-- **Model selection.** Routine work (spikes, implementation, well-scoped specify/tasks/implement
-  runs) stays on the session's default model. Architecturally consequential steps (e.g.
-  `/speckit-specify` or `/speckit-plan` on foundational pieces) get a per-call Opus override,
-  flagged each time, rather than switching the whole session.
+- **Model selection, evolved by canaries.** Starting assumption: routine work (spikes,
+  implementation, well-scoped specify/tasks/implement runs) stays on the session's default
+  model. Architecturally consequential steps (e.g. `/speckit-specify` or `/speckit-plan` on
+  foundational pieces) get a per-call Opus override, flagged each time. The agent tests and
+  evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
+  model when the owner is unhappy with an output, tries new models once per step type, and
+  samples about 1 in 4 high-value steps. Results are logged in `canaries.md`, and norm changes
+  are proposed only once a pattern holds.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
