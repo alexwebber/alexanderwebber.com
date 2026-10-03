@@ -38,6 +38,13 @@ project-specific notes.
   runs) stays on the session's default model. Architecturally consequential steps (e.g.
   `/speckit-specify` or `/speckit-plan` on foundational pieces) get a per-call Opus override,
   flagged each time, rather than switching the whole session.
+- **Don't miss important updates.** Check the components in use for updates and adopt the ones
+  that matter: new releases of core components (Spec Kit, the main framework, key libraries),
+  security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
+  their current release. Routine bumps of supporting tools that work fine can be skipped — the
+  agent recommends rather than blanket-upgrading. Run sdd-playbook's `scripts/check-versions.ps1`
+  at the start of a work session. A deliberate pin of a core component gets a decisions-log
+  entry saying why.
 - **Research before choosing dependencies.** Verify a library/service is current and maintained
   rather than picking from memory, and record the comparison here (see the Garmin library
   decision below).
@@ -91,6 +98,11 @@ project-specific notes.
 - **2026-10-03** — Adopted in-the-moment lesson capture (house-process 0.4.0): lessons go into
   *Upstream candidates* as they happen; the harvest hook sends them to sdd-playbook. Lessons from
   setup day were already sent upstream (sdd-playbook PRs #1–#5).
+
+- **2026-10-03** — Adopted the "don't miss important updates" norm (house-process 0.5.0): run
+  sdd-playbook `scripts/check-versions.ps1` at session start; core components (Spec Kit, the site
+  framework, python-garminconnect) stay current, supporting-tool bumps only when they matter.
+  Checked today: Spec Kit 1.1.0 current; gh/uv behind but nothing important — skipped.
 
 ## Upstream candidates
 

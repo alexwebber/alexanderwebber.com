@@ -2,9 +2,9 @@
   "schema_version": "1.0",
   "extensions": {
     "house-process": {
-      "version": "0.4.0",
+      "version": "0.5.0",
       "source": "local",
-      "manifest_hash": "sha256:f2ce2a8d97e6455173f909bc36da23cf1b45bd623f0485c141f0a7a3f6a996bc",
+      "manifest_hash": "sha256:63a6f5941c560554c35a92926737b81317c967333bf26ceafa006ae5da883b62",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
@@ -14,7 +14,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-10-03T19:39:04.402556+00:00"
+      "installed_at": "2026-10-03T19:50:14.405919+00:00"
     }
   }
 }
