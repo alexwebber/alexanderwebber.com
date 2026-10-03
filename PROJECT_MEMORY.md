@@ -23,6 +23,9 @@ opportunities. Built spec-first with Spec Kit as a modular site that can grow ne
 
 - Requirements are drawn out by the coding agent asking focused rounds of questions (with
   recommended options), rather than the owner supplying everything up front.
+- **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
+  a PR for the owner to review and merge; coding agents don't push to `main` or merge their
+  own PRs unless explicitly asked.
 - Research before committing to third-party dependencies — verify maintenance status rather than
   picking from memory (see the Garmin library decision below).
 - Spec Kit commands run via the Claude integration with PowerShell scripts; house standards come
@@ -55,6 +58,9 @@ opportunities. Built spec-first with Spec Kit as a modular site that can grow ne
   and performance metrics; GPS maps for races only, never training runs.
 - **2026-10-03** — Build gate from day one (site build + data-schema validation on every push and
   ingest commit); broader CI deferred.
+
+- **2026-10-03** — Adopted a PR-based workflow: changes go via branches + pull requests rather
+  than direct commits to `main` (first three bootstrap commits predate this).
 
 ## Open questions
 
