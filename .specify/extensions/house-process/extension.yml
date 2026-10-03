@@ -3,10 +3,10 @@ schema_version: "1.0"
 extension:
   id: house-process
   name: "House Process Scaffolding"
-  version: "0.1.0"
-  description: "Scaffolds PROJECT_MEMORY.md and BACKLOG.md house-style process files for a new Spec Kit project"
+  version: "0.3.0"
+  description: "Scaffolds PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md house-style process files, and offers to harvest lessons upstream to the sdd-playbook at milestones"
   author: "Alex Webber"
-  repository: "https://github.com/alexwebber/speckit-standards"
+  repository: "https://github.com/alexwebber/sdd-playbook"
   license: "Proprietary"
 
 requires:
@@ -16,14 +16,27 @@ provides:
   commands:
     - name: speckit.house-process.scaffold-memory
       file: commands/speckit.house-process.scaffold-memory.md
-      description: "Create PROJECT_MEMORY.md and BACKLOG.md from the house templates if they do not already exist"
+      description: "Create PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md from the house templates if they do not already exist"
+    - name: speckit.house-process.harvest-lessons
+      file: commands/speckit.house-process.harvest-lessons.md
+      description: "Review recent work for lessons worth sending upstream to the sdd-playbook or global norms"
 
 hooks:
   after_constitution:
     command: speckit.house-process.scaffold-memory
     optional: true
-    prompt: "Scaffold PROJECT_MEMORY.md and BACKLOG.md (house process files)?"
-    description: "Offer to create the house-style project memory and backlog files once the constitution is ratified"
+    prompt: "Scaffold PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md (house process files)?"
+    description: "Offer to create the house-style project memory, backlog and CLAUDE.md once the constitution is ratified"
+  after_plan:
+    command: speckit.house-process.harvest-lessons
+    optional: true
+    prompt: "Anything learned so far worth sending upstream to the sdd-playbook?"
+    description: "Offer to harvest generalisable lessons once a plan is complete"
+  after_implement:
+    command: speckit.house-process.harvest-lessons
+    optional: true
+    prompt: "Anything learned during implementation worth sending upstream to the sdd-playbook?"
+    description: "Offer to harvest generalisable lessons once implementation is complete"
 
 tags:
   - "process"
