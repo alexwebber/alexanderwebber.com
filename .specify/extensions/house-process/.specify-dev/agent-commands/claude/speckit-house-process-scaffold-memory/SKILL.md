@@ -19,7 +19,7 @@ Create the three house-style process files at the repository root, if they don't
    `[PROJECT_NAME]`-style placeholders with real content derived from the constitution you just
    ratified (and from the surrounding conversation, if it has more context than the constitution
    alone captures). Keep the file's section structure (Vision, Phasing, Working norms, Decisions
-   log, Open questions) intact — delete a section only if it genuinely doesn't apply, per the
+   log, Upstream candidates, Open questions) intact — delete a section only if it genuinely doesn't apply, per the
    template's own inline guidance.
 
 2. **`BACKLOG.md`** — a flat list of deferred/future work, kept separate from the decisions log

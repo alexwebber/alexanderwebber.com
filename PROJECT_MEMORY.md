@@ -41,8 +41,13 @@ project-specific notes.
 - **Research before choosing dependencies.** Verify a library/service is current and maintained
   rather than picking from memory, and record the comparison here (see the Garmin library
   decision below).
-- **Send lessons upstream.** When something learned here would help future projects, propose
-  adding it to sdd-playbook (norms, templates, bootstrap script or `PLAYBOOK.md`).
+- **Capture lessons in the moment; send them upstream later.** Add a one-line entry to
+  *Upstream candidates* below **immediately** — don't wait for a milestone — whenever the agent:
+  works around a tool/environment problem; is corrected or told a preference by the owner; finds
+  sdd-playbook wrong or missing something; or hits a procedure that behaved unexpectedly.
+  Capturing is cheap and needs no approval. Sending upstream happens via
+  `/speckit-house-process-harvest-lessons` (offered after `/speckit-plan` and
+  `/speckit-implement`, or run any time), which proposes changes for the owner to approve.
 - Spec Kit runs via the Claude integration with PowerShell scripts; house standards are
   installed from sdd-playbook in dev mode (preset `house-constitution`, extension
   `house-process`). Open `C:\Projects\alexanderwebber-workspace.code-workspace` to work on the
@@ -82,6 +87,18 @@ project-specific notes.
 - **2026-10-03** — Caught up with sdd-playbook (house-constitution 0.1.1, house-process 0.3.0):
   added `CLAUDE.md` (auto-loads this file + the constitution), adopted the house working norms,
   and gained the optional lesson-harvest hooks after `/speckit-plan` and `/speckit-implement`.
+
+- **2026-10-03** — Adopted in-the-moment lesson capture (house-process 0.4.0): lessons go into
+  *Upstream candidates* as they happen; the harvest hook sends them to sdd-playbook. Lessons from
+  setup day were already sent upstream (sdd-playbook PRs #1–#5).
+
+## Upstream candidates
+
+<!-- Lessons that might help future projects, captured the moment they happen (see the working
+     norm above). One line each: date, what happened, and the suggested generalisation. The
+     harvest command processes this list and removes entries once sent upstream or rejected. -->
+
+- _None yet._
 
 ## Open questions
 

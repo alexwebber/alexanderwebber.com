@@ -9,9 +9,11 @@ looks back over the work just completed and proposes which lessons should be sen
 
 ## Behavior
 
-1. **Gather candidates.** Review what happened since the last harvest (or since the project
-   started): the current conversation, recent `PROJECT_MEMORY.md` decisions and working norms,
-   and the spec/plan/implementation just produced. Look for things that would help a *future,
+1. **Gather candidates.** Start from the **Upstream candidates** section of `PROJECT_MEMORY.md`
+   — the primary source, captured in the moment, so it survives long sessions and context
+   compaction. Then add anything else from what happened since the last harvest (or since the
+   project started): the current conversation, recent decisions and working norms, and the
+   spec/plan/implementation just produced. Look for things that would help a *future,
    unrelated* project:
    - process or workflow friction, and what resolved it;
    - tooling/environment gotchas (installs, OS quirks, Spec Kit behaviour, CLI flags);
@@ -31,8 +33,8 @@ looks back over the work just completed and proposes which lessons should be sen
    first).
 
 3. **Present the list** to the owner: one line per candidate with its proposed destination and
-   the concrete change (file + gist of the wording). If there are none, say so in one line and
-   stop. Do not change anything until the owner picks which ones to apply.
+   the concrete change (file + gist of the wording). If there are none (and the Upstream
+   candidates list is empty), say so in one line and stop. Do not change anything until the owner picks which ones to apply.
 
 4. **Apply the accepted ones:**
    - sdd-playbook: locate it as a sibling folder (`../sdd-playbook`) or clone
@@ -43,5 +45,8 @@ looks back over the work just completed and proposes which lessons should be sen
      agreement.
    - Add a one-line entry to this project's `PROJECT_MEMORY.md` decisions log noting what was
      sent upstream (with the PR link), so the next harvest knows where to start.
+   - Remove processed entries from *Upstream candidates*: ones sent upstream, and ones the
+     owner rejected or classified as project-specific (move those to the decisions log if worth
+     keeping). Leave deferred ones in place.
 
 5. Report what was applied and link any PRs.
