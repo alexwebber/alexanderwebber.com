@@ -4,6 +4,27 @@ Running context for this repo, kept in-repo so it survives conversation compacti
 Update this as decisions get made — treat it as the source of truth alongside
 `.specify/memory/constitution.md`.
 
+## Next session
+
+<!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
+     A new session reads this first; the owner only needs to type "continue". -->
+
+- **Status (2026-10-04):** Running spec merged (#5). Running plan is open as PR #6, which
+  includes this handoff. sdd-playbook PR #9 (session handoffs, house-process 0.7.0) is open.
+- **Waiting on the owner:**
+  - Review and merge PR #6. At that review, confirm (a) ingest bot commits to `main` only after
+    the gate passes, and (b) the proposed PR test jobs (see *Open questions*).
+  - Review and merge sdd-playbook PR #9.
+- **Next step:** once #6 has merged, run `/speckit-tasks` for `001-running-section` as a
+  subagent on the session default model (no canary). Ask the owner for a usage screenshot
+  before `/speckit-implement`.
+- **Then:**
+  1. Once playbook #9 has merged, reinstall house-process 0.7.0 here in a chore PR.
+  2. Run lesson harvesting in its own session (a playbook concern). 6 upstream candidates are
+     waiting.
+  3. Before Spike 0, the owner needs to do the `quickstart.md` setup: Cloudflare nameservers,
+     the R2 bucket, and tokens.
+
 ## Vision
 
 alexanderwebber.com is Alexander Webber's personal site: a warm, data-rich home for his running
@@ -29,6 +50,12 @@ project-specific notes.
   what it needs from the owner. The owner contributes thoughts, experience and judgement, and is
   never handed a manual workflow to remember. Any owner input is folded into reviews they're
   already doing. If the agent can check something itself (e.g. whether a PR merged), it does.
+- **One session per phase; the agent writes the handoff.** Each Claude Code session covers one
+  phase of work: specify (+ clarify), plan, tasks (+ analyze), one implement slice, or one
+  unrelated concern (e.g. playbook maintenance). When a phase's PR is raised, or the context has
+  been compacted or has drifted across concerns, the agent updates *Next session* above. It then
+  tells the owner it's a good point to start a new session, where the owner types "continue".
+  Quick follow-ups stay in the current session. (Adopted from house-process 0.7.0.)
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
   PRs unless explicitly asked.
