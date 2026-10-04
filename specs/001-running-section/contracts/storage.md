@@ -1,0 +1,57 @@
+# Contract: Storage Abstractions
+
+Principle IV: persistence sits behind abstractions so JSON-in-git / R2 can be replaced without
+changing sections or adapters. Three small interfaces, one per zone (see data-model.md).
+
+## `RawArchive` (Python) — private raw zone
+
+```text
+get(key) -> bytes | None
+put(key, data, *, if_match=None) -> etag        # atomic: readers never see partial objects
+list(prefix) -> Iterable[ObjectInfo]            # key, etag, size
+exists(key) -> bool
+delete(key)                                     # used only by tests/maintenance, never by ingest
+```
+
+Implementations: `R2Archive` (boto3, S3 API, endpoint from env), `LocalArchive` (directory; tests
+and offline dev). Rules: keys are `/`-separated and validated (no `..`); `put` is idempotent for
+identical bytes; `if_match` enables optimistic concurrency for token/cursor/ID-map objects
+(`state/garmin_tokens.enc`, `state/cursor.json`, `state/run-ids.json`); the token object is
+Fernet-encrypted by the caller (`archive/tokens.py`), never stored in clear; errors map to
+`ArchiveUnavailable` / `ArchiveConflict`.
+
+## `PublishedWriter` (Python) — publish stage writes the committed zone
+
+```text
+write_json(path, obj, schema_name)    # validates against schema BEFORE writing; atomic (tmp+rename);
+                                      # stable key order + 1-space-free canonical formatting => minimal diffs
+remove(path)
+commit_plan() -> Diff                 # added/changed/removed files for logging
+```
+
+Rules: refuses to write any path outside `data/running/published/`; refuses objects failing the
+schema (privacy second line of defence); never leaves a half-written tree if a run aborts
+(writes into a staging dir and swaps, or aborts before touching tracked files).
+
+## `RunningStore` (TypeScript, `src/shared/storage`) — site reads
+
+```text
+listRuns(): Run[]                         # sorted newest first
+getRun(runId): Run | undefined             # runId = opaque public run ID
+getRaceTrack(runId): RaceTrack | undefined
+getHealthSeries(metric, range?): Point[]
+getRefreshRecord(): RefreshRecord
+getOwner(): { section, goals, upcomingRaces, races, overrides, exclusions, lab }   # validated
+```
+
+Implementation: `JsonFileStore` (build-time, reads `data/running/`, validates every file with
+ajv; a failure throws `DataValidationError{file, entry, field, message}` which fails the build with
+that message, FR-070). Section code depends only on the interface, so a future DB-backed store is a
+drop-in.
+
+## Contract test suite
+
+A single parameterised suite per interface runs against every implementation: round-trip
+equality, atomicity under injected failure, idempotent re-put, schema rejection (writer),
+validation-error shape (store), ordering guarantees, large listing (5,000 runs) performance
+sanity.
