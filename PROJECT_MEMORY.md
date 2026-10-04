@@ -9,24 +9,20 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-04):** Running plan (#6) and sdd-playbook #9 are merged. Running tasks
-  (`specs/001-running-section/tasks.md`, 149 tasks) are open as a PR on branch
-  `001-running-tasks`, which includes this handoff. The tasks step cost ~187k subagent tokens
-  (~10 min). `/speckit-analyze` was skipped to save usage, because the tasks run already
-  cross-checked the artifacts.
+- **Status (2026-10-04):** Running tasks (#7) are merged. house-process 0.7.0 is reinstalled
+  here in a chore PR (branch `chore/house-process-0.7.0`). The only `PROJECT_MEMORY.md` change
+  it needed was aligning the session norm's wording, because 0.7.0 had already been adopted by
+  hand.
 - **Waiting on the owner:**
-  - Review and merge the tasks PR. Its body lists the agent's assumptions and the 7 artifact
-    inconsistencies, and how each was handled.
+  - Review and merge the house-process 0.7.0 chore PR.
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
-- **Next step:** reinstall house-process 0.7.0 here in a chore PR (playbook #9 has merged). This
-  is its own short session.
-- **Then:**
-  1. Run lesson harvesting in its own session (a playbook concern). 8 upstream candidates are
-     waiting.
-  2. Implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold). **Ask the
-     owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike workflow
-     merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
+- **Next step:** run lesson harvesting (`/speckit-house-process-harvest-lessons`) in its own
+  session. It's a playbook concern, 8 upstream candidates are waiting, and it doesn't depend on
+  the chore PR.
+- **Then:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold). **Ask
+  the owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike workflow
+  merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
 
 ## Vision
 
@@ -55,10 +51,14 @@ project-specific notes.
   already doing. If the agent can check something itself (e.g. whether a PR merged), it does.
 - **One session per phase; the agent writes the handoff.** Each Claude Code session covers one
   phase of work: specify (+ clarify), plan, tasks (+ analyze), one implement slice, or one
-  unrelated concern (e.g. playbook maintenance). When a phase's PR is raised, or the context has
-  been compacted or has drifted across concerns, the agent updates *Next session* above. It then
-  tells the owner it's a good point to start a new session, where the owner types "continue".
-  Quick follow-ups stay in the current session. (Adopted from house-process 0.7.0.)
+  unrelated concern (e.g. playbook maintenance). New sessions are cheap, because `CLAUDE.md`
+  auto-loads this file and the constitution. Long sessions cost more per turn (the whole
+  conversation is re-sent) and lose focus (compaction is lossy). When a phase's PR is raised, or
+  the context has been compacted, or the conversation has drifted across concerns, the agent
+  updates *Next session* above and tells the owner it's a good point to start a new session. The
+  owner then opens one in the project folder and types "continue". Quick follow-ups (PR
+  conflicts, small review fixes, an in-progress question round) stay in the current session.
+  (Adopted from house-process 0.7.0.)
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
   PRs unless explicitly asked.
@@ -196,6 +196,10 @@ project-specific notes.
   - **Path-filtered PR test jobs are adopted.** pytest and Vitest run on PRs that touch their
     code. This partly picks up the BACKLOG "Broader CI" item; full lint on every change stays
     deferred.
+
+- **2026-10-04** — Reinstalled house-process 0.7.0 (session boundaries + agent-written
+  handoffs) from the playbook's `main` after sdd-playbook #9 merged. The norm and the *Next
+  session* block were already in use. The norm's wording now matches the template.
 
 ## Upstream candidates
 
