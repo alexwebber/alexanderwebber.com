@@ -9,17 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-04):** Running tasks (#7) are merged. house-process 0.7.0 is reinstalled
-  here in a chore PR (branch `chore/house-process-0.7.0`). The only `PROJECT_MEMORY.md` change
-  it needed was aligning the session norm's wording, because 0.7.0 had already been adopted by
-  hand.
+- **Status (2026-10-04):** Lessons harvested. All 9 candidates went upstream in
+  [sdd-playbook#10](https://github.com/alexwebber/sdd-playbook/pull/10) (house-process 0.8.0),
+  plus one line in the owner's global `CLAUDE.md`. This repo's chore PR (branch
+  `chore/git-extension`) installs Spec Kit's core `git` extension and records the harvest.
 - **Waiting on the owner:**
-  - Review and merge the house-process 0.7.0 chore PR.
+  - Review and merge sdd-playbook#10 and the `chore/git-extension` PR.
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
-- **Next step:** run lesson harvesting (`/speckit-house-process-harvest-lessons`) in its own
-  session. It's a playbook concern, 9 upstream candidates are waiting, and it doesn't depend on
-  the chore PR.
+- **Next step:** once sdd-playbook#10 has merged, reinstall house-process 0.8.0 here as a quick
+  chore PR. Pull the playbook's `main` first. Copy the changed template norms into *Working
+  norms* by hand: PR checkbox confirmations, the interactive-commands exception, the canary
+  wording. Keep this project's canary override. If #10 hasn't merged, skip straight to the
+  slice.
 - **Then:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold). **Ask
   the owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike workflow
   merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
@@ -201,44 +203,28 @@ project-specific notes.
   handoffs) from the playbook's `main` after sdd-playbook #9 merged. The norm and the *Next
   session* block were already in use. The norm's wording now matches the template.
 
+- **2026-10-04** — Harvested 9 lessons upstream:
+  [sdd-playbook#10](https://github.com/alexwebber/sdd-playbook/pull/10) (house-process 0.8.0).
+  It covers the git extension in bootstrap, the canary usage budget and non-candidate judge,
+  feature.json for worktree subagents, the peer-range check, PR checkbox confirmations, and
+  agent tips (scheduled workflows, the Bash `for` loop, PowerShell `git commit -F -`). "Fetch and
+  branch from `origin/main`" went to the owner's global `CLAUDE.md`. The harvest ran in the main
+  conversation, not a subagent, because it needs the owner's picks partway through.
+- **2026-10-04** — Installed Spec Kit's core `git` extension (1.0.1), so `/speckit-specify`
+  creates its `NNN-name` branch itself. Its auto-commit hooks stay off (default config);
+  `.specify/extensions/.cache/` is gitignored. It branches from the checked-out commit, so still
+  fetch and start from `origin/main`.
+
 ## Upstream candidates
 
 <!-- Lessons that might help future projects, captured the moment they happen (see the working
      norm above). One line each: date, what happened, and the suggested generalisation. The
      harvest command processes this list and removes entries once sent upstream or rejected. -->
 
-- 2026-10-04 — Spec Kit 1.1.0 without the git extension has no `before_specify` branch hook, so
-  `/speckit-specify` creates the spec dir but no branch. Generalisation: the orchestrator creates
-  the feature branch (`NNN-short-name`) before dispatching the specify subagent.
-- 2026-10-04 — Branched the Running spec off a stale local `main` (the owner had merged PR #4
-  remotely), so PR #5 conflicted. Generalisation: `git fetch` and branch from `origin/main` at
-  the start of every piece of work.
-- 2026-10-04 — Owner concern: model canaries (2 candidates + blind judge ≈ 2–3× a step's tokens)
-  can burn plan usage limits before much gets built, and the agent can't see remaining usage.
-  Generalisation: canaries need a usage budget (dissatisfaction-triggered by default; sampling
-  only when headroom is known), and each canary logs its token cost so value can be weighed.
-  Also: the procedure says the judge is "preferably" a non-candidate model. The owner spotted
-  that a candidate's own model judging is self-preference bias, so make it a MUST.
-- 2026-10-04 — `.specify/feature.json` is gitignored, so a `/speckit-*` subagent in a fresh git
-  worktree has no feature pointer. Generalisation: the orchestrator writes `feature.json` (or
-  sets `SPECIFY_FEATURE_DIRECTORY`) for worktree subagents.
-- 2026-10-04 — "Start on the current release" collided with peer ranges: TypeScript 7 is latest
-  but `@astrojs/check` supports only ^5 || ^6. Generalisation: when adopting a core component's
-  latest major, check the peer ranges of the tools that wrap it, and log a deliberate pin.
-- 2026-10-04 — In an isolated worktree, the Bash tool refuses `for` loops whose command is a loop
-  variable. Generalisation (agent tips): write such lookups as plain sequential commands.
-- 2026-10-04 — The owner merged the plan PR without comments, so the two confirmations it asked
-  for ("confirm at review") never came back. Generalisation: put owner confirmations as explicit
-  checkbox questions in the PR body, and have the next session ask any that are still open
-  (AskUserQuestion) before building on them.
-- 2026-10-04 — GitHub only runs scheduled workflows from the default branch, so a spike that
-  needs a schedule (e.g. a 48-hour cron reliability test) has to merge a throwaway workflow to
-  `main` first. Generalisation (plan template / agent tips): plans with scheduled spikes should
-  account for this merge step.
-- 2026-10-04 — In the PowerShell tool, `git commit -F - @'…'@` treats the here-string as a
-  pathspec rather than stdin, so the commit fails (and a chained push/PR runs on nothing).
-  Generalisation (agent tips): use `git commit -m @'…'@` in PowerShell, and gate follow-on
-  steps with `if ($?)`.
+- 2026-10-04 — In Windows PowerShell 5.1, `gh pr create --body @'…'@` fails ("unknown
+  arguments") when the body contains double quotes. 5.1 splits native arguments at embedded
+  `"`. Generalisation (Windows gotchas / agent tips): write PR bodies to a scratch file and pass
+  `--body-file`.
 
 ## Open questions
 
