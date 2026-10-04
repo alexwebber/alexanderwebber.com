@@ -142,6 +142,9 @@ project-specific notes.
 - 2026-10-04 — Spec Kit 1.1.0 without the git extension has no `before_specify` branch hook, so
   `/speckit-specify` creates the spec dir but no branch. Generalisation: the orchestrator creates
   the feature branch (`NNN-short-name`) before dispatching the specify subagent.
+- 2026-10-04 — Branched the Running spec off a stale local `main` (the owner had merged PR #4
+  remotely), so PR #5 conflicted. Generalisation: `git fetch` and branch from `origin/main` at
+  the start of every piece of work.
 
 ## Open questions
 
