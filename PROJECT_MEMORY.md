@@ -235,6 +235,10 @@ project-specific notes.
   needs a schedule (e.g. a 48-hour cron reliability test) has to merge a throwaway workflow to
   `main` first. Generalisation (plan template / agent tips): plans with scheduled spikes should
   account for this merge step.
+- 2026-10-04 — In the PowerShell tool, `git commit -F - @'…'@` treats the here-string as a
+  pathspec rather than stdin, so the commit fails (and a chained push/PR runs on nothing).
+  Generalisation (agent tips): use `git commit -m @'…'@` in PowerShell, and gate follow-on
+  steps with `if ($?)`.
 
 ## Open questions
 
