@@ -10,8 +10,9 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 - **Set up Martlets fundraising page** for Brighton Marathon (2027-04-04) —
   https://www.martlets.org.uk/set-up-fundraiser/. Owner action; needed before the fundraising
   provider can be built.
-- **Broader CI** (full lint/test on every change) — deferred per house default; only the build +
-  schema gate exists from day one. Revisit once shared surface area grows.
+- **Broader CI: full lint on every change.** Path-filtered PR test jobs were adopted on
+  2026-10-04 (see the decisions log). Lint and the remaining full-suite runs are still deferred
+  per the house default. Revisit once the shared surface area grows.
 - **Fundraising spec (Running)** — Martlets via JustGiving for Brighton Marathon: total vs
   target, donate link, cached with last-known fallback. Next spec after Running; the Running
   landing page reserves a slot beside the Brighton hero.

@@ -9,21 +9,24 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-04):** Running spec merged (#5). Running plan is open as PR #6, which
-  includes this handoff. sdd-playbook PR #9 (session handoffs, house-process 0.7.0) is open.
+- **Status (2026-10-04):** Running plan (#6) and sdd-playbook #9 are merged. Running tasks
+  (`specs/001-running-section/tasks.md`, 149 tasks) are open as a PR on branch
+  `001-running-tasks`, which includes this handoff. The tasks step cost ~187k subagent tokens
+  (~10 min). `/speckit-analyze` was skipped to save usage, because the tasks run already
+  cross-checked the artifacts.
 - **Waiting on the owner:**
-  - Review and merge PR #6. At that review, confirm (a) ingest bot commits to `main` only after
-    the gate passes, and (b) the proposed PR test jobs (see *Open questions*).
-  - Review and merge sdd-playbook PR #9.
-- **Next step:** once #6 has merged, run `/speckit-tasks` for `001-running-section` as a
-  subagent on the session default model (no canary). Ask the owner for a usage screenshot
-  before `/speckit-implement`.
+  - Review and merge the tasks PR. Its body lists the agent's assumptions and the 7 artifact
+    inconsistencies, and how each was handled.
+  - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
+    nameservers). The agent walks the owner through each one at the start of implementation.
+- **Next step:** reinstall house-process 0.7.0 here in a chore PR (playbook #9 has merged). This
+  is its own short session.
 - **Then:**
-  1. Once playbook #9 has merged, reinstall house-process 0.7.0 here in a chore PR.
-  2. Run lesson harvesting in its own session (a playbook concern). 6 upstream candidates are
+  1. Run lesson harvesting in its own session (a playbook concern). 8 upstream candidates are
      waiting.
-  3. Before Spike 0, the owner needs to do the `quickstart.md` setup: Cloudflare nameservers,
-     the R2 bucket, and tokens.
+  2. Implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold). **Ask the
+     owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike workflow
+     merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
 
 ## Vision
 
@@ -186,6 +189,13 @@ project-specific notes.
 - **2026-10-04** — **Deliberate pin: TypeScript 6.0.3, not 7.0.x.** `@astrojs/check` 0.9.10
   (latest) peer-requires `typescript ^5 || ^6`. Revisit when it supports TS 7 (session-start
   update check).
+- **2026-10-04** — Owner confirmed the two plan proposals after PR #6:
+  - **Ingest bot commits straight to `main`.** It commits only sanitised data files, only after
+    the build gate passes. This is a narrow, deliberate exception to the PR norm, because
+    unattended 1–3h refreshes can't wait for a human.
+  - **Path-filtered PR test jobs are adopted.** pytest and Vitest run on PRs that touch their
+    code. This partly picks up the BACKLOG "Broader CI" item; full lint on every change stays
+    deferred.
 
 ## Upstream candidates
 
@@ -213,15 +223,20 @@ project-specific notes.
   latest major, check the peer ranges of the tools that wrap it, and log a deliberate pin.
 - 2026-10-04 — In an isolated worktree, the Bash tool refuses `for` loops whose command is a loop
   variable. Generalisation (agent tips): write such lookups as plain sequential commands.
+- 2026-10-04 — The owner merged the plan PR without comments, so the two confirmations it asked
+  for ("confirm at review") never came back. Generalisation: put owner confirmations as explicit
+  checkbox questions in the PR body, and have the next session ask any that are still open
+  (AskUserQuestion) before building on them.
+- 2026-10-04 — GitHub only runs scheduled workflows from the default branch, so a spike that
+  needs a schedule (e.g. a 48-hour cron reliability test) has to merge a throwaway workflow to
+  `main` first. Generalisation (plan template / agent tips): plans with scheduled spikes should
+  account for this merge step.
 
 ## Open questions
 
 - Can python-garminconnect work from GitHub Actions' datacenter IPs? → **Spike 0** of the Running
   plan, with pass criteria. Evidence on 2026-10-04: issue #444 (403s from datacenter networks;
   `curl_cffi` workaround). Fallback: fetch via Task Scheduler on the owner's PC.
-- Owner to confirm at the plan PR review: (1) ingest bot commits sanitised data straight to
-  `main`, only after the gate passes, as a narrow exception to the PR norm; (2) path-filtered PR
-  test jobs proposed as the revisit of the BACKLOG "Broader CI" item.
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
