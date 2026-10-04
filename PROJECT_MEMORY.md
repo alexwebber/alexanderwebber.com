@@ -46,7 +46,10 @@ project-specific notes.
   evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
   model when the owner is unhappy with an output, tries new models once per step type, and
   samples about 1 in 4 high-value steps. Results are logged in `canaries.md`, and norm changes
-  are proposed only once a pattern holds.
+  are proposed only once a pattern holds. **Project override (2026-10-04):** canaries run only
+  when the owner is unhappy with an output, because of plan usage limits. The agent logs each
+  step's token cost anyway, never uses a candidate's model as judge, and asks the owner for a
+  usage screenshot at checkpoints before big spends (e.g. before `/speckit-implement`).
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
@@ -132,6 +135,30 @@ project-specific notes.
   Marathon's event page and Martlets' fundraiser setup both use it). The personal journey/story
   and educational "couch to runner" videos are a separate future spec; the landing page links to
   the story once it exists.
+- **2026-10-04** — Running plan inputs: raw Garmin data goes to a private Cloudflare R2 bucket and
+  never into git; only sanitised, publishable data is committed. Failed-refresh alerts are GitHub
+  issues the ingest job opens and auto-closes. A minimal shared site shell (layout, nav, design
+  tokens, chart conventions, storage layer) is built inside the Running plan. The Garmin account
+  has no MFA, but tokens are still preferred over password logins.
+- **2026-10-04** — Running plan adopted (`specs/001-running-section/plan.md`): the simpler of two
+  canary candidates (owner pick after a blind tie), hardened with the other's best ideas.
+  - **Site**: Astro 7.3.5 static, on Cloudflare Workers Static Assets (Cloudflare's recommended
+    path over Pages).
+  - **Data**: JSON Schema is the single schema source; charts are build-time SVG (no chart JS).
+  - **Maps**: race maps are a static SVG plus MapLibre with OpenFreeMap tiles on click.
+  - **Ingest**: Python ingest with garminconnect 0.3.17; tokens Fernet-encrypted in the private
+    R2 bucket.
+  - **Privacy**: opaque public run IDs, so no Garmin IDs are ever published.
+  - **Config**: `section.yaml` holds the Running config.
+  - **Pipeline**: two stages, fetch (Garmin → R2) then publish (R2 → git → gate → deploy).
+  - **First step**: Spike 0 (Garmin from Actions; ≥23/24 runs over 48h); fallback is fetch via
+    Task Scheduler on the owner's PC.
+  - **Cost**: expected $0/month recurring.
+  - **Build gate**: build + schema/referential validation + privacy, image and boundary scans.
+    Test suites run locally and at graduation (broader CI stays deferred).
+- **2026-10-04** — **Deliberate pin: TypeScript 6.0.3, not 7.0.x.** `@astrojs/check` 0.9.10
+  (latest) peer-requires `typescript ^5 || ^6`. Revisit when it supports TS 7 (session-start
+  update check).
 
 ## Upstream candidates
 
@@ -145,12 +172,29 @@ project-specific notes.
 - 2026-10-04 — Branched the Running spec off a stale local `main` (the owner had merged PR #4
   remotely), so PR #5 conflicted. Generalisation: `git fetch` and branch from `origin/main` at
   the start of every piece of work.
+- 2026-10-04 — Owner concern: model canaries (2 candidates + blind judge ≈ 2–3× a step's tokens)
+  can burn plan usage limits before much gets built, and the agent can't see remaining usage.
+  Generalisation: canaries need a usage budget (dissatisfaction-triggered by default; sampling
+  only when headroom is known), and each canary logs its token cost so value can be weighed.
+  Also: the procedure says the judge is "preferably" a non-candidate model. The owner spotted
+  that a candidate's own model judging is self-preference bias, so make it a MUST.
+- 2026-10-04 — `.specify/feature.json` is gitignored, so a `/speckit-*` subagent in a fresh git
+  worktree has no feature pointer. Generalisation: the orchestrator writes `feature.json` (or
+  sets `SPECIFY_FEATURE_DIRECTORY`) for worktree subagents.
+- 2026-10-04 — "Start on the current release" collided with peer ranges: TypeScript 7 is latest
+  but `@astrojs/check` supports only ^5 || ^6. Generalisation: when adopting a core component's
+  latest major, check the peer ranges of the tools that wrap it, and log a deliberate pin.
+- 2026-10-04 — In an isolated worktree, the Bash tool refuses `for` loops whose command is a loop
+  variable. Generalisation (agent tips): write such lookups as plain sequential commands.
 
 ## Open questions
 
-- Can python-garminconnect log in from GitHub Actions' datacenter IPs (Cloudflare blocking is a
-  known open issue)? → first spike of the Running plan; fallback is a scheduled sync on the
-  owner's PC. Also: how rotated refresh tokens get persisted between unattended runs.
+- Can python-garminconnect work from GitHub Actions' datacenter IPs? → **Spike 0** of the Running
+  plan, with pass criteria. Evidence on 2026-10-04: issue #444 (403s from datacenter networks;
+  `curl_cffi` workaround). Fallback: fetch via Task Scheduler on the owner's PC.
+- Owner to confirm at the plan PR review: (1) ingest bot commits sanitised data straight to
+  `main`, only after the gate passes, as a narrow exception to the PR norm; (2) path-filtered PR
+  test jobs proposed as the revisit of the BACKLOG "Broader CI" item.
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
