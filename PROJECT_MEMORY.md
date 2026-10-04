@@ -9,22 +9,22 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-04):** Lessons harvested. All 9 candidates went upstream in
-  [sdd-playbook#10](https://github.com/alexwebber/sdd-playbook/pull/10) (house-process 0.8.0),
-  plus one line in the owner's global `CLAUDE.md`. This repo's chore PR (branch
-  `chore/git-extension`) installs Spec Kit's core `git` extension and records the harvest.
+- **Status (2026-10-04):** house-process 0.8.0 reinstalled (branch `chore/house-process-0.8.0`).
+  Process work is done; the next session starts implementation.
 - **Waiting on the owner:**
-  - Review and merge sdd-playbook#10 and the `chore/git-extension` PR.
+  - Review and merge the `chore/house-process-0.8.0` PR.
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
-- **Next step:** once sdd-playbook#10 has merged, reinstall house-process 0.8.0 here as a quick
-  chore PR. Pull the playbook's `main` first. Copy the changed template norms into *Working
-  norms* by hand: PR checkbox confirmations, the interactive-commands exception, the canary
-  wording. Keep this project's canary override. If #10 hasn't merged, skip straight to the
-  slice.
-- **Then:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold). **Ask
-  the owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike workflow
-  merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
+- **Next step:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold).
+  **Ask the owner for a usage screenshot first.** PR #7's open confirmations are answered (see
+  the decisions log).
+  - **Update the docs first, in the slice PR.** Spike 0 is expanded (see the 2026-10-04
+    decision). Amend `research.md` (Spike 0 table, S0.3 at 3-hourly with ≥15/16, the
+    intervals.icu coverage check) and `tasks.md`. New owner prerequisites: the Garmin data export
+    and an intervals.icu account connected to Garmin.
+  - **Order:** start the Garmin export early, because Garmin takes time to prepare it. Spike 0's
+    48-hour schedule needs the spike workflow merged to `main` first (T009). Run Phase 2
+    scaffolding during the 48-hour wait.
 
 ## Vision
 
@@ -63,7 +63,9 @@ project-specific notes.
   (Adopted from house-process 0.7.0.)
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
-  PRs unless explicitly asked.
+  PRs unless explicitly asked. Anything the owner needs to confirm goes in the PR body as a
+  checkbox question. If the PR merges with any left unanswered, the next session asks them
+  before building on them.
 - **Draw requirements out with questions.** For specs, clarifications and design decisions, the
   agent asks focused rounds of questions with recommended options rather than expecting the
   owner to supply everything up front.
@@ -71,17 +73,21 @@ project-specific notes.
   Agent tool to a subagent that follows the actual `.claude/skills/speckit-*/SKILL.md`, not
   simulated inline by the main conversation. Subagents can't converse with the owner, so the
   main conversation runs the question rounds first and passes the gathered answers in.
+  Exception: interactive house-process commands that need the owner's picks partway through
+  (e.g. harvest-lessons) run in the main conversation, following their SKILL.md.
 - **Model selection, evolved by canaries.** Starting assumption: routine work (spikes,
   implementation, well-scoped specify/tasks/implement runs) stays on the session's default
   model. Architecturally consequential steps (e.g. `/speckit-specify` or `/speckit-plan` on
   foundational pieces) get a per-call Opus override, flagged each time. The agent tests and
   evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
-  model when the owner is unhappy with an output, tries new models once per step type, and
-  samples about 1 in 4 high-value steps. Results are logged in `canaries.md`, and norm changes
-  are proposed only once a pattern holds. **Project override (2026-10-04):** canaries run only
-  when the owner is unhappy with an output, because of plan usage limits. The agent logs each
-  step's token cost anyway, never uses a candidate's model as judge, and asks the owner for a
-  usage screenshot at checkpoints before big spends (e.g. before `/speckit-implement`).
+  model when the owner is unhappy with an output. A canary costs 2–3.5× the step, and the
+  agent can't see the owner's remaining plan usage. So trying each new model once per step type
+  and sampling about 1 in 4 high-value steps happen only if this project opts in. The agent asks
+  for a usage screenshot before big spends (e.g. a canary or `/speckit-implement`). Results,
+  including token cost, are logged in `canaries.md`. The judge is never one of the candidate
+  models. Norm changes are proposed only once a pattern holds. **Project override
+  (2026-10-04):** this project does not opt in. Canaries run only when the owner is unhappy
+  with an output, because of plan usage limits. The agent logs each step's token cost anyway.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
@@ -214,6 +220,40 @@ project-specific notes.
   creates its `NNN-name` branch itself. Its auto-commit hooks stay off (default config);
   `.specify/extensions/.cache/` is gitignored. It branches from the checked-out commit, so still
   fetch and start from `origin/main`.
+- **2026-10-04** — Reinstalled house-process 0.8.0 from the playbook's `main` after
+  sdd-playbook #10 merged. Working norms now include PR checkbox confirmations, the
+  interactive-commands exception, and the template's canary wording. This project still doesn't
+  opt in to new-model or sampling canaries. The reinstall reordered `.specify/extensions.yml`
+  so the `git` commit hooks list before the house-process hooks; no hooks were added or removed.
+- **2026-10-04** — Owner answered PR #7's unanswered confirmations:
+  - **Brighton target lives in two places.** The hero reads `upcoming-races.yaml`, and
+    validation warns if it differs from the goal's target.
+  - **Schemas stay in top-level `schemas/`.** This accepts the slight bend of Principle VII.
+  - **Spike 0's first Garmin login runs locally on the owner's PC.** It is part of the
+    expanded Spike 0 below.
+- **2026-10-04** — **Spike 0 compares Garmin with intervals.icu** (owner pick, after a risk
+  review). The concern is a Garmin lockout. Research:
+  - **Garmin login rate limit (429):** per account, on the login endpoint only. It lasts about
+    1h (up to 24h reported) and the official app is reportedly unaffected. It comes from
+    repeated password logins, not data reads.
+  - **403s:** staleness only; the account isn't affected.
+  - **Suspension:** the terms reserve the right, but no personal-account bans were found for
+    python-garminconnect.
+  - **Strava plus manual stats: rejected.** Strava's November 2024 API terms let a user's data be
+    shown only to that user, and Strava lacks the health metrics.
+  - **intervals.icu:** an official Garmin sync partner with a personal API key. It provides
+    activities with FIT files, weight, resting HR, HRV, sleep and running VO2 max. It lacks
+    Garmin training status/load and race predictions.
+
+  Spike 0 now has three parts:
+  - **Backup first:** a full Garmin data export, as a new owner prerequisite.
+  - **Garmin with safeguards:** first login local, then token-only, at a **3-hourly** cadence.
+    S0.3 becomes 16 runs over 48h, and passes at ≥15/16.
+  - **intervals.icu coverage check:** connect Garmin to intervals.icu and list which required
+    fields the API returns.
+
+  Decide the provider (Garmin, intervals.icu, or hybrid) on that evidence. A switch means
+  changing the adapter plus a small spec/plan amendment.
 
 ## Upstream candidates
 
@@ -225,12 +265,19 @@ project-specific notes.
   arguments") when the body contains double quotes. 5.1 splits native arguments at embedded
   `"`. Generalisation (Windows gotchas / agent tips): write PR bodies to a scratch file and pass
   `--body-file`.
+- 2026-10-04 — Piping a here-string into `git commit -F -` from the PowerShell tool succeeds,
+  but the subject starts with a UTF-8 BOM (`EF BB BF`), because PowerShell adds one when it
+  writes to a native stdin. Strengthen the existing agent tip: never pipe commit messages; use
+  `git commit -m @'…'@`. Optionally check with `git log -1 --format=%B | od -c | head -1`.
 
 ## Open questions
 
 - Can python-garminconnect work from GitHub Actions' datacenter IPs? → **Spike 0** of the Running
   plan, with pass criteria. Evidence on 2026-10-04: issue #444 (403s from datacenter networks;
   `curl_cffi` workaround). Fallback: fetch via Task Scheduler on the owner's PC.
+- Garmin, intervals.icu, or a hybrid as the running provider? → decided by the expanded
+  **Spike 0** (see the 2026-10-04 decision). Also to check there: whether intervals.icu
+  returns HRV and body fat for the owner's devices, and whether its terms allow publishing.
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are

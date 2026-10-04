@@ -5,6 +5,14 @@ settings:
   auto_execute_hooks: true
 hooks:
   after_constitution:
+  - extension: git
+    command: speckit.git.commit
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Commit constitution changes?
+    description: Auto-commit after constitution update
+    condition: null
   - extension: house-process
     command: speckit.house-process.scaffold-memory
     enabled: true
@@ -14,23 +22,7 @@ hooks:
     description: Offer to create the house-style project memory, backlog and CLAUDE.md
       once the constitution is ratified
     condition: null
-  - extension: git
-    command: speckit.git.commit
-    enabled: true
-    optional: true
-    priority: 10
-    prompt: Commit constitution changes?
-    description: Auto-commit after constitution update
-    condition: null
   after_plan:
-  - extension: house-process
-    command: speckit.house-process.harvest-lessons
-    enabled: true
-    optional: true
-    priority: 10
-    prompt: Anything learned so far worth sending upstream to the sdd-playbook?
-    description: Offer to harvest generalisable lessons once a plan is complete
-    condition: null
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -39,15 +31,15 @@ hooks:
     prompt: Commit plan changes?
     description: Auto-commit after implementation planning
     condition: null
-  after_implement:
   - extension: house-process
     command: speckit.house-process.harvest-lessons
     enabled: true
     optional: true
     priority: 10
-    prompt: Anything learned during implementation worth sending upstream to the sdd-playbook?
-    description: Offer to harvest generalisable lessons once implementation is complete
+    prompt: Anything learned so far worth sending upstream to the sdd-playbook?
+    description: Offer to harvest generalisable lessons once a plan is complete
     condition: null
+  after_implement:
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -55,6 +47,14 @@ hooks:
     priority: 10
     prompt: Commit implementation changes?
     description: Auto-commit after implementation
+    condition: null
+  - extension: house-process
+    command: speckit.house-process.harvest-lessons
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Anything learned during implementation worth sending upstream to the sdd-playbook?
+    description: Offer to harvest generalisable lessons once implementation is complete
     condition: null
   before_constitution:
   - extension: git
