@@ -3,7 +3,7 @@ schema_version: "1.0"
 extension:
   id: house-process
   name: "House Process Scaffolding"
-  version: "0.5.0"
+  version: "0.6.0"
   description: "Scaffolds PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md house-style process files, and offers to harvest lessons upstream to the sdd-playbook at milestones"
   author: "Alex Webber"
   repository: "https://github.com/alexwebber/sdd-playbook"
@@ -20,6 +20,9 @@ provides:
     - name: speckit.house-process.harvest-lessons
       file: commands/speckit.house-process.harvest-lessons.md
       description: "Review recent work for lessons worth sending upstream to the sdd-playbook or global norms"
+    - name: speckit.house-process.model-canary
+      file: commands/speckit.house-process.model-canary.md
+      description: "Agent-run model canary: same step on two models, blind-judged, logged to canaries.md"
 
 hooks:
   after_constitution:

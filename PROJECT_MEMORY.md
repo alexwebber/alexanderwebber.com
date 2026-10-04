@@ -24,6 +24,11 @@ opportunities. Built spec-first with Spec Kit as a modular site that can grow ne
 House defaults from [sdd-playbook](https://github.com/alexwebber/sdd-playbook), plus
 project-specific notes.
 
+- **The agent orchestrates.** The coding agent owns, remembers and runs all process (spec-kit
+  steps, version checks, lesson capture, model canaries, follow-ups after PRs merge) and pulls
+  what it needs from the owner. The owner contributes thoughts, experience and judgement, and is
+  never handed a manual workflow to remember. Any owner input is folded into reviews they're
+  already doing. If the agent can check something itself (e.g. whether a PR merged), it does.
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
   PRs unless explicitly asked.
@@ -34,10 +39,14 @@ project-specific notes.
   Agent tool to a subagent that follows the actual `.claude/skills/speckit-*/SKILL.md`, not
   simulated inline by the main conversation. Subagents can't converse with the owner, so the
   main conversation runs the question rounds first and passes the gathered answers in.
-- **Model selection.** Routine work (spikes, implementation, well-scoped specify/tasks/implement
-  runs) stays on the session's default model. Architecturally consequential steps (e.g.
-  `/speckit-specify` or `/speckit-plan` on foundational pieces) get a per-call Opus override,
-  flagged each time, rather than switching the whole session.
+- **Model selection, evolved by canaries.** Starting assumption: routine work (spikes,
+  implementation, well-scoped specify/tasks/implement runs) stays on the session's default
+  model. Architecturally consequential steps (e.g. `/speckit-specify` or `/speckit-plan` on
+  foundational pieces) get a per-call Opus override, flagged each time. The agent tests and
+  evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
+  model when the owner is unhappy with an output, tries new models once per step type, and
+  samples about 1 in 4 high-value steps. Results are logged in `canaries.md`, and norm changes
+  are proposed only once a pattern holds.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
@@ -103,6 +112,11 @@ project-specific notes.
   sdd-playbook `scripts/check-versions.ps1` at session start; core components (Spec Kit, the site
   framework, python-garminconnect) stay current, supporting-tool bumps only when they matter.
   Checked today: Spec Kit 1.1.0 current; gh/uv behind but nothing important — skipped.
+
+- **2026-10-03** — Adopted "the agent orchestrates" and agent-run model canaries (house-process
+  0.6.0): the agent owns all process and pulls input from the owner; model selection is
+  tested/evolved via `speckit.house-process.model-canary` (on dissatisfaction, new models, ~1 in
+  4 high-value steps), logged in `canaries.md`.
 
 - **2026-10-04** — Running spec (`specs/001-running-section`) scoped via three question rounds.
   In: Brighton-led goals hub landing page (Brighton sub-3:30, may tighten to sub-3:20; plus 10k
