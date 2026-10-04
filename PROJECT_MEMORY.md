@@ -15,12 +15,16 @@ Update this as decisions get made — treat it as the source of truth alongside
   - Review and merge the `chore/house-process-0.8.0` PR.
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
-- **Before building:** PR #7 merged with three checkbox questions unanswered: Spike 0's first
-  login runs locally, the Brighton target lives in two places plus a validation warning, and
-  schemas stay in top-level `schemas/`. If the decisions log has no answers yet, ask the owner.
 - **Next step:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold).
-  **Ask the owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike
-  workflow merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
+  **Ask the owner for a usage screenshot first.** PR #7's open confirmations are answered (see
+  the decisions log).
+  - **Update the docs first, in the slice PR.** Spike 0 is expanded (see the 2026-10-04
+    decision). Amend `research.md` (Spike 0 table, S0.3 at 3-hourly with ≥15/16, the
+    intervals.icu coverage check) and `tasks.md`. New owner prerequisites: the Garmin data export
+    and an intervals.icu account connected to Garmin.
+  - **Order:** start the Garmin export early, because Garmin takes time to prepare it. Spike 0's
+    48-hour schedule needs the spike workflow merged to `main` first (T009). Run Phase 2
+    scaffolding during the 48-hour wait.
 
 ## Vision
 
@@ -221,6 +225,35 @@ project-specific notes.
   interactive-commands exception, and the template's canary wording. This project still doesn't
   opt in to new-model or sampling canaries. The reinstall reordered `.specify/extensions.yml`
   so the `git` commit hooks list before the house-process hooks; no hooks were added or removed.
+- **2026-10-04** — Owner answered PR #7's unanswered confirmations:
+  - **Brighton target lives in two places.** The hero reads `upcoming-races.yaml`, and
+    validation warns if it differs from the goal's target.
+  - **Schemas stay in top-level `schemas/`.** This accepts the slight bend of Principle VII.
+  - **Spike 0's first Garmin login runs locally on the owner's PC.** It is part of the
+    expanded Spike 0 below.
+- **2026-10-04** — **Spike 0 compares Garmin with intervals.icu** (owner pick, after a risk
+  review). The concern is a Garmin lockout. Research:
+  - **Garmin login rate limit (429):** per account, on the login endpoint only. It lasts about
+    1h (up to 24h reported) and the official app is reportedly unaffected. It comes from
+    repeated password logins, not data reads.
+  - **403s:** staleness only; the account isn't affected.
+  - **Suspension:** the terms reserve the right, but no personal-account bans were found for
+    python-garminconnect.
+  - **Strava plus manual stats: rejected.** Strava's November 2024 API terms let a user's data be
+    shown only to that user, and Strava lacks the health metrics.
+  - **intervals.icu:** an official Garmin sync partner with a personal API key. It provides
+    activities with FIT files, weight, resting HR, HRV, sleep and running VO2 max. It lacks
+    Garmin training status/load and race predictions.
+
+  Spike 0 now has three parts:
+  - **Backup first:** a full Garmin data export, as a new owner prerequisite.
+  - **Garmin with safeguards:** first login local, then token-only, at a **3-hourly** cadence.
+    S0.3 becomes 16 runs over 48h, and passes at ≥15/16.
+  - **intervals.icu coverage check:** connect Garmin to intervals.icu and list which required
+    fields the API returns.
+
+  Decide the provider (Garmin, intervals.icu, or hybrid) on that evidence. A switch means
+  changing the adapter plus a small spec/plan amendment.
 
 ## Upstream candidates
 
@@ -242,6 +275,9 @@ project-specific notes.
 - Can python-garminconnect work from GitHub Actions' datacenter IPs? → **Spike 0** of the Running
   plan, with pass criteria. Evidence on 2026-10-04: issue #444 (403s from datacenter networks;
   `curl_cffi` workaround). Fallback: fetch via Task Scheduler on the owner's PC.
+- Garmin, intervals.icu, or a hybrid as the running provider? → decided by the expanded
+  **Spike 0** (see the 2026-10-04 decision). Also to check there: whether intervals.icu
+  returns HRV and body fat for the owner's devices, and whether its terms allow publishing.
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
