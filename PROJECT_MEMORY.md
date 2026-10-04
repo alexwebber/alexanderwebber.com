@@ -9,22 +9,18 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-04):** Lessons harvested. All 9 candidates went upstream in
-  [sdd-playbook#10](https://github.com/alexwebber/sdd-playbook/pull/10) (house-process 0.8.0),
-  plus one line in the owner's global `CLAUDE.md`. This repo's chore PR (branch
-  `chore/git-extension`) installs Spec Kit's core `git` extension and records the harvest.
+- **Status (2026-10-04):** house-process 0.8.0 reinstalled (branch `chore/house-process-0.8.0`).
+  Process work is done; the next session starts implementation.
 - **Waiting on the owner:**
-  - Review and merge sdd-playbook#10 and the `chore/git-extension` PR.
+  - Review and merge the `chore/house-process-0.8.0` PR.
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
-- **Next step:** once sdd-playbook#10 has merged, reinstall house-process 0.8.0 here as a quick
-  chore PR. Pull the playbook's `main` first. Copy the changed template norms into *Working
-  norms* by hand: PR checkbox confirmations, the interactive-commands exception, the canary
-  wording. Keep this project's canary override. If #10 hasn't merged, skip straight to the
-  slice.
-- **Then:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold). **Ask
-  the owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike workflow
-  merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
+- **Before building:** PR #7 merged with three checkbox questions unanswered: Spike 0's first
+  login runs locally, the Brighton target lives in two places plus a validation warning, and
+  schemas stay in top-level `schemas/`. If the decisions log has no answers yet, ask the owner.
+- **Next step:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold).
+  **Ask the owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike
+  workflow merged to `main` first (T009). Run Phase 2 scaffolding during the 48-hour wait.
 
 ## Vision
 
@@ -63,7 +59,9 @@ project-specific notes.
   (Adopted from house-process 0.7.0.)
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
-  PRs unless explicitly asked.
+  PRs unless explicitly asked. Anything the owner needs to confirm goes in the PR body as a
+  checkbox question. If the PR merges with any left unanswered, the next session asks them
+  before building on them.
 - **Draw requirements out with questions.** For specs, clarifications and design decisions, the
   agent asks focused rounds of questions with recommended options rather than expecting the
   owner to supply everything up front.
@@ -71,17 +69,21 @@ project-specific notes.
   Agent tool to a subagent that follows the actual `.claude/skills/speckit-*/SKILL.md`, not
   simulated inline by the main conversation. Subagents can't converse with the owner, so the
   main conversation runs the question rounds first and passes the gathered answers in.
+  Exception: interactive house-process commands that need the owner's picks partway through
+  (e.g. harvest-lessons) run in the main conversation, following their SKILL.md.
 - **Model selection, evolved by canaries.** Starting assumption: routine work (spikes,
   implementation, well-scoped specify/tasks/implement runs) stays on the session's default
   model. Architecturally consequential steps (e.g. `/speckit-specify` or `/speckit-plan` on
   foundational pieces) get a per-call Opus override, flagged each time. The agent tests and
   evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
-  model when the owner is unhappy with an output, tries new models once per step type, and
-  samples about 1 in 4 high-value steps. Results are logged in `canaries.md`, and norm changes
-  are proposed only once a pattern holds. **Project override (2026-10-04):** canaries run only
-  when the owner is unhappy with an output, because of plan usage limits. The agent logs each
-  step's token cost anyway, never uses a candidate's model as judge, and asks the owner for a
-  usage screenshot at checkpoints before big spends (e.g. before `/speckit-implement`).
+  model when the owner is unhappy with an output. A canary costs 2–3.5× the step, and the
+  agent can't see the owner's remaining plan usage. So trying each new model once per step type
+  and sampling about 1 in 4 high-value steps happen only if this project opts in. The agent asks
+  for a usage screenshot before big spends (e.g. a canary or `/speckit-implement`). Results,
+  including token cost, are logged in `canaries.md`. The judge is never one of the candidate
+  models. Norm changes are proposed only once a pattern holds. **Project override
+  (2026-10-04):** this project does not opt in. Canaries run only when the owner is unhappy
+  with an output, because of plan usage limits. The agent logs each step's token cost anyway.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
@@ -214,6 +216,11 @@ project-specific notes.
   creates its `NNN-name` branch itself. Its auto-commit hooks stay off (default config);
   `.specify/extensions/.cache/` is gitignored. It branches from the checked-out commit, so still
   fetch and start from `origin/main`.
+- **2026-10-04** — Reinstalled house-process 0.8.0 from the playbook's `main` after
+  sdd-playbook #10 merged. Working norms now include PR checkbox confirmations, the
+  interactive-commands exception, and the template's canary wording. This project still doesn't
+  opt in to new-model or sampling canaries. The reinstall reordered `.specify/extensions.yml`
+  so the `git` commit hooks list before the house-process hooks; no hooks were added or removed.
 
 ## Upstream candidates
 

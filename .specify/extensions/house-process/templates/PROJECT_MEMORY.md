@@ -43,7 +43,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   conflicts, small review fixes, an in-progress question round) stay in the current session.
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
-  PRs unless explicitly asked.
+  PRs unless explicitly asked. Anything the owner needs to confirm goes in the PR body as a
+  checkbox question. If the PR merges with any left unanswered, the next session asks them
+  before building on them.
 - **Draw requirements out with questions.** For the constitution, specs, clarifications and
   design decisions, the agent asks focused rounds of questions with recommended options rather
   than expecting the owner to supply everything up front.
@@ -51,14 +53,19 @@ Update this as decisions get made — treat it as the source of truth alongside
   Agent tool to a subagent that follows the actual `.claude/skills/speckit-*/SKILL.md`, not
   simulated inline by the main conversation. Subagents can't converse with the owner, so the
   main conversation runs the question rounds first and passes the gathered answers in.
+  Exception: interactive house-process commands that need the owner's picks partway through
+  (e.g. harvest-lessons) run in the main conversation, following their SKILL.md.
 - **Model selection, evolved by canaries.** Starting assumption: routine work (spikes,
   implementation, well-scoped specify/tasks/implement runs) stays on the session's default
   model. Architecturally consequential steps (e.g. `/speckit-specify` or `/speckit-plan` on
   foundational pieces) get a per-call Opus override, flagged each time. The agent tests and
   evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
-  model when the owner is unhappy with an output, tries new models once per step type, and
-  samples about 1 in 4 high-value steps. Results are logged in `canaries.md`, and norm changes
-  are proposed only once a pattern holds.
+  model when the owner is unhappy with an output. A canary costs 2–3.5× the step, and the
+  agent can't see the owner's remaining plan usage. So trying each new model once per step type
+  and sampling about 1 in 4 high-value steps happen only if this project opts in. The agent asks
+  for a usage screenshot before big spends (e.g. a canary or `/speckit-implement`). Results,
+  including token cost, are logged in `canaries.md`. The judge is never one of the candidate
+  models. Norm changes are proposed only once a pattern holds.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
