@@ -18,7 +18,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
 - **Next step:** run lesson harvesting (`/speckit-house-process-harvest-lessons`) in its own
-  session. It's a playbook concern, 8 upstream candidates are waiting, and it doesn't depend on
+  session. It's a playbook concern, 9 upstream candidates are waiting, and it doesn't depend on
   the chore PR.
 - **Then:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold). **Ask
   the owner for a usage screenshot first.** Spike 0's 48-hour schedule needs the spike workflow
