@@ -232,6 +232,10 @@ project-specific notes.
   arguments") when the body contains double quotes. 5.1 splits native arguments at embedded
   `"`. Generalisation (Windows gotchas / agent tips): write PR bodies to a scratch file and pass
   `--body-file`.
+- 2026-10-04 — Piping a here-string into `git commit -F -` from the PowerShell tool succeeds,
+  but the subject starts with a UTF-8 BOM (`EF BB BF`), because PowerShell adds one when it
+  writes to a native stdin. Strengthen the existing agent tip: never pipe commit messages; use
+  `git commit -m @'…'@`. Optionally check with `git log -1 --format=%B | od -c | head -1`.
 
 ## Open questions
 
