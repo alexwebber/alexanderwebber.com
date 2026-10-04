@@ -4,6 +4,16 @@ Running context for this repo, kept in-repo so it survives conversation compacti
 Update this as decisions get made — treat it as the source of truth alongside
 `.specify/memory/constitution.md`.
 
+## Next session
+
+<!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
+     A new session reads this first; the owner only needs to type "continue". -->
+
+- **Status:** [Where things stand, including open PRs.]
+- **Waiting on the owner:** [Reviews, merges or inputs needed, or "nothing".]
+- **Next step:** [What the next session does first.]
+- **Then:** [Queued items, if any.]
+
 ## Vision
 
 [One or two sentences: what this project is and why it exists.]
@@ -22,6 +32,15 @@ Update this as decisions get made — treat it as the source of truth alongside
   what it needs from the owner. The owner contributes thoughts, experience and judgement, and is
   never handed a manual workflow to remember. Any owner input is folded into reviews they're
   already doing. If the agent can check something itself (e.g. whether a PR merged), it does.
+- **One session per phase; the agent writes the handoff.** Each Claude Code session covers one
+  phase of work: specify (+ clarify), plan, tasks (+ analyze), one implement slice, or one
+  unrelated concern (e.g. playbook maintenance). New sessions are cheap, because `CLAUDE.md`
+  auto-loads this file and the constitution. Long sessions cost more per turn (the whole
+  conversation is re-sent) and lose focus (compaction is lossy). When a phase's PR is raised, or
+  the context has been compacted, or the conversation has drifted across concerns, the agent
+  updates *Next session* above and tells the owner it's a good point to start a new session. The
+  owner then opens one in the project folder and types "continue". Quick follow-ups (PR
+  conflicts, small review fixes, an in-progress question round) stay in the current session.
 - **Pull requests, not direct commits to `main`.** All changes go on a branch and are raised as
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
   PRs unless explicitly asked.
