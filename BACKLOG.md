@@ -12,6 +12,11 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   provider can be built.
 - **Broader CI** (full lint/test on every change) — deferred per house default; only the build +
   schema gate exists from day one. Revisit once shared surface area grows.
+- **Fundraising spec (Running)** — Martlets via JustGiving for Brighton Marathon: total vs
+  target, donate link, cached with last-known fallback. Next spec after Running; the Running
+  landing page reserves a slot beside the Brighton hero.
+- **Journey/story spec (Running)** — motivational/educational "couch potato to runner" story and
+  videos, plus training-run photos. Running landing page links to it once it exists.
 - **CV & Blog section** — phase 2, after Running.
 - **Report Spec Kit 1.1.0 Windows issue upstream?** — PowerShell scripts prefer `python3` even
   when it's the Microsoft Store stub, and need PyYAML installed. Worked around locally

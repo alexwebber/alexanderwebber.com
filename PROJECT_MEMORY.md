@@ -118,20 +118,41 @@ project-specific notes.
   tested/evolved via `speckit.house-process.model-canary` (on dissatisfaction, new models, ~1 in
   4 high-value steps), logged in `canaries.md`.
 
+- **2026-10-04** — Running spec (`specs/001-running-section`) scoped via three question rounds.
+  In: Brighton-led goals hub landing page (Brighton sub-3:30, may tighten to sub-3:20; plus 10k
+  sub-45, 5k sub-20, 17.5% body fat, 93 kg, a VO2 max target), goals as a first-class concept,
+  training stats with full Garmin run detail, races & PBs (race-only maps and photos), health &
+  performance metrics. Race-time goals are achieved by **any recorded effort**, not only races.
+  Weight shown as a 7-day moving average; body fat % exact; source is a Garmin Index scale. Lab
+  DEXA + VO2 max tests (planned on reaching 93 kg) are shown as reference points against the
+  Garmin estimates. Public metrics: VO2 max, training status/load, race predictions, resting HR,
+  HRV, body composition. Sleep, stress and Body Battery stay private. History: all Garmin plus
+  manual entries for older races. Training runs: date but no start time, no maps, neutral titles.
+- **2026-10-04** — Fundraising split into its own spec; platform is JustGiving (Brighton
+  Marathon's event page and Martlets' fundraiser setup both use it). The personal journey/story
+  and educational "couch to runner" videos are a separate future spec; the landing page links to
+  the story once it exists.
+
 ## Upstream candidates
 
 <!-- Lessons that might help future projects, captured the moment they happen (see the working
      norm above). One line each: date, what happened, and the suggested generalisation. The
      harvest command processes this list and removes entries once sent upstream or rejected. -->
 
-- _None yet._
+- 2026-10-04 — Spec Kit 1.1.0 without the git extension has no `before_specify` branch hook, so
+  `/speckit-specify` creates the spec dir but no branch. Generalisation: the orchestrator creates
+  the feature branch (`NNN-short-name`) before dispatching the specify subagent.
+- 2026-10-04 — Branched the Running spec off a stale local `main` (the owner had merged PR #4
+  remotely), so PR #5 conflicted. Generalisation: `git fetch` and branch from `origin/main` at
+  the start of every piece of work.
 
 ## Open questions
 
 - Can python-garminconnect log in from GitHub Actions' datacenter IPs (Cloudflare blocking is a
   known open issue)? → first spike of the Running plan; fallback is a scheduled sync on the
   owner's PC. Also: how rotated refresh tokens get persisted between unattended runs.
-- Which fundraising platform Martlets uses for the Brighton Marathon page (JustGiving, Enthuse,
-  own system?) — determines the fundraising provider adapter.
-- Weight display: exact values vs trend only — decide during Running spec.
+- JustGiving integration details (public API access/terms vs page scraping, what's displayable)
+  → research in the fundraising spec.
+- VO2 max target value and Brighton training-build start date → owner supplies when goals are
+  first entered.
 - See `BACKLOG.md` for deferred/future work items.
