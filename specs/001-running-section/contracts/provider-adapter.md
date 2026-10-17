@@ -13,9 +13,10 @@ class ActivityProvider(Protocol):
     name: str
     def list_activities(self, oldest: date, newest: date) -> Iterable[ActivityRef]
         # running activities only (FR-009): Run, TrailRun, VirtualRun; refs carry id +
-        # start_date_local + a hash of the list row (change detection)
+        # start_date_local + a hash of the list row (change detection) + the row itself
     def fetch_activity(self, ref: ActivityRef) -> RawBundle
-        # opaque raw payload parts keyed by name (summary, detail, streams, time-at-hr, fit)
+        # opaque raw payload parts keyed by archive file name (summary.json, detail.json,
+        # streams.json, time-at-hr.json, activity.fit); HR time and FIT are optional (404)
     def normalise_activity(self, bundle: RawBundle) -> NormalisedActivity   # PURE, no I/O
 
 class HealthProvider(Protocol):

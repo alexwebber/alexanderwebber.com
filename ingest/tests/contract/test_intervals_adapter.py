@@ -436,3 +436,15 @@ def test_unchanged_rows_are_not_refetched_and_changed_ones_are(provider, api, tm
     assert third.activities.fetched == 1
     assert "/activity/i90000001" in api.paths()
     assert b"SENTINEL renamed" in archive.get("raw/intervals/activities/i90000001/detail.json")
+
+
+def test_a_malformed_stream_or_zone_list_is_left_out_not_fatal(provider, api):
+    bundle = bundles(provider, api)["run-dynamics"]
+    detail = json.loads(bundle.parts["detail.json"]) | {"icu_hr_zone_times": [300, None, 10]}
+    streams = json.loads(bundle.parts["streams.json"]) + [{"type": "torque", "data": None}]
+    parts = dict(bundle.parts) | {
+        "detail.json": json.dumps(detail).encode(),
+        "streams.json": json.dumps(streams).encode(),
+    }
+    run = provider.normalise_activity(RawBundle(ref=bundle.ref, parts=parts))
+    assert run.hr_zones == () and run.splits

@@ -65,8 +65,9 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     log = Logger(args.command, provider=IntervalsProvider.name)
-    if args.command == "fetch" and args.reimport_to and not args.reimport_from:
-        log.error("bad_arguments", message="--reimport-to needs --reimport-from")
+    window = (args.reimport_from, args.reimport_to) if args.command == "fetch" else (None, None)
+    if window[1] and (not window[0] or window[0] > window[1]):
+        log.error("bad_arguments", message="--reimport-to needs an earlier --reimport-from")
         return 2
     try:
         archive = _archive(args)

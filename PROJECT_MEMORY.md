@@ -423,6 +423,33 @@ project-specific notes.
   - **Privacy in memory:** provider IDs, raw titles and coordinates are kept out of the normalised
     types' `repr`. Logging scrubs secrets, emails and provider IDs from every caller field.
 
+- **2026-10-17** — **Phase 2e built** (intervals.icu adapter, fetch stage, backfill). Choices
+  later tasks build on:
+  - **Raw layout:** activity parts are keyed by archive file name (`summary.json` is the list
+    row, plus `detail.json`, `streams.json`, `time-at-hr.json`, `activity.fit`). A
+    `fetch.json` marker (row hash, part names) is written after all parts, so a marker means a
+    complete set. `ActivityRef` gained a private `row` field to carry the list row.
+  - **Optional parts:** HR time and the FIT file answer 404 for some activities; the bundle
+    then lacks them. HR zones come from `icu_hr_zone_times`; `time-at-hr` is archived, not
+    parsed.
+  - **Start time:** `start_date_local` is read as Europe/London wall time, so a run abroad keeps
+    its own calendar date (only the date is ever published).
+  - **Windows:** with no cursor, `fetch` covers the last 14 days; history comes from `backfill`
+    (default `--from 2000-01-01`, 90-day windows). Backfill sets the cursors only if none exist,
+    and never touches `last_success_at` or `public/freshness.json`.
+  - **Failures:** one failing activity makes the run `partial` (exit 0) and holds the activity
+    cursor, so it is retried. Three network failures in a row end the run. A 429 with a
+    `Retry-After` of 60 s or less is waited out in-run; otherwise `rate_limited_until` is
+    recorded (15 min without the header) and runs exit 11 without calling the provider until
+    it passes.
+  - **Freshness:** only a successful run whose window ends today sets `last_success_at` and
+    rewrites `public/freshness.json` (so an old `--reimport` window doesn't claim freshness).
+  - **Wellness:** a day with no approved values isn't archived, so it can't blank a stored day.
+  - **CLI:** `fetch` and `backfill` are wired now (part of T066), with `--archive r2|local` and
+    `--archive-dir` (default `$AWINGEST_ARCHIVE_DIR` or `.archive`, gitignored).
+  - **New pin:** `tzdata` 2026.5, because Windows has no system time-zone database and the owner
+    runs `backfill` locally.
+
 ## Upstream candidates
 
 - 2026-10-17 — Astro 7 runs `astro preview` in the background when it detects a coding agent
@@ -457,6 +484,10 @@ project-specific notes.
   registered workers.dev subdomain), so the loop never retries. Agent tip: add `|| true` to
   command substitutions inside retry loops, and allow a few minutes for a new workers.dev
   subdomain's certificate.
+- 2026-10-17 — Cloud session: the sandbox's egress policy blocks intervals.icu and
+  `*.workers.dev` (CONNECT 403), not only secrets. So an adapter can't be checked against the
+  real API from the sandbox. Agent tip: check real payload shapes with a throwaway branch
+  workflow that prints aggregates only (key names, counts, rounded medians), never values.
 - 2026-10-17 — Cloud session: the GitHub MCP `get_job_logs` returns 404 while a job is still
   running, and works once it finishes. Agent tip: poll the job's step status, then read the
   logs at the end. This made the planned "commit RESULTS.md back" fallback unnecessary.

@@ -122,9 +122,8 @@ def _streams(raw: Sequence[Any]) -> dict[str, tuple[list[Any], list[Any] | None]
             raise ProviderChanged("a stream is not an object with a type")
         data = stream.get("data")
         data2 = stream.get("data2")
-        if not isinstance(data, list):
-            raise ProviderChanged("a stream's data is not a list")
-        out[stream["type"]] = (data, data2 if isinstance(data2, list) else None)
+        if isinstance(data, list):  # a stream without data is skipped, not fatal
+            out[stream["type"]] = (data, data2 if isinstance(data2, list) else None)
     return out
 
 
@@ -273,13 +272,10 @@ def _hr_zones(record: Mapping[str, Any]) -> tuple[HrZone, ...]:
     times = record.get("icu_hr_zone_times")
     if not isinstance(times, list):
         return ()
-    zones = []
-    for i, seconds in enumerate(times):
-        value = _non_negative(seconds)
-        if value is None:
-            raise ProviderChanged("icu_hr_zone_times holds a value that is not a number")
-        zones.append(HrZone(zone=i + 1, seconds=value))
-    return tuple(zones)
+    values = [_non_negative(seconds) for seconds in times]
+    if any(v is None for v in values):
+        return ()  # a malformed breakdown is left out rather than half-shown
+    return tuple(HrZone(zone=i + 1, seconds=v) for i, v in enumerate(values))
 
 
 def _text(value: Any) -> str | None:
