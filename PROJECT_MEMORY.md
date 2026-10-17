@@ -9,14 +9,16 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Spec Kit upgraded to 1.2.1 (branch `chore/spec-kit-1.2.1`). No
-  implementation has started yet (the empty `001-slice1-spike0` branch was deleted).
-- **Owner progress:** an intervals.icu account is connected to Garmin, and a 1-year "download old
-  data" backfill was requested on 2026-10-17. Its wellness list includes Weight, Body Fat,
-  Resting HR, VO2 Max and HRV (rMSSD). The Garmin full data export is explained to the owner;
-  ask whether it has been requested.
+- **Status (2026-10-17):** Spec Kit upgraded to 1.2.1 (PR #11, merged). No implementation has
+  started yet.
+- **Owner progress (2026-10-17):**
+  - **Garmin full data export: requested.** Garmin emails a download link (up to 30 days). The
+    owner saves the zip privately outside the repo and tells the agent. It is used later as a
+    bulk history import, so ingest only fetches new data.
+  - **intervals.icu:** connected to Garmin, with a 1-year "download old data" backfill in
+    progress (totals rising). Its wellness list includes Weight, Body Fat, Resting HR, VO2 Max
+    and HRV (rMSSD).
 - **Waiting on the owner:**
-  - Review and merge the `chore/spec-kit-1.2.1` PR.
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
 - **Next step:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold).
