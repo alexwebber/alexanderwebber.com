@@ -73,7 +73,7 @@ PC-fetch fallback isn't needed. The throwaway workflow was removed before merge.
 That workflow ran `awingest backfill` into a runner-local archive, then `awingest fetch`, then
 the report. Nothing was written to R2.
 
-- **Full history** (run 39060846318): 109 windows from 2000-01-01, about 20 min. It fetched
+- **Full history** (run 39060846318, since deleted at the owner's request): 109 windows from 2000-01-01, about 20 min. It fetched
   189 runs and 367 wellness days with no failures, and all 189 runs normalised. Every run had
   all five parts (summary, detail, streams, HR time, FIT). The `fetch` straight after found
   nothing new (9 runs and 15 days unchanged).
