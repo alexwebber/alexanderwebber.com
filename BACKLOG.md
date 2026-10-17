@@ -13,6 +13,11 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 - **Broader CI: full lint on every change.** Path-filtered PR test jobs were adopted on
   2026-10-04 (see the decisions log). Lint and the remaining full-suite runs are still deferred
   per the house default. Revisit once the shared surface area grows.
+- **Alert on publish failures, not only fetch staleness.** The `ingest-failing` alert only
+  watches `last_success_at` from fetch, so a gate or processor failure on the bot path that keeps
+  recurring opens no issue, and `/running/api/freshness` still reads as fresh. Plan: record the
+  publish outcome in R2 (e.g. `state/publish-status.json`) and have `alert` include it.
+  Owner agreed on 2026-10-17 (PR #23); deferred because it's a separate slice from Phase 2g.
 - **Fundraising spec (Running)** — Martlets via JustGiving for Brighton Marathon: total vs
   target, donate link, cached with last-known fallback. Next spec after Running; the Running
   landing page reserves a slot beside the Brighton hero.

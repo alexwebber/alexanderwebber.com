@@ -11,7 +11,7 @@ Update this as decisions get made — treat it as the source of truth alongside
 
 - **Status (2026-10-17):** Phase 2g (T067 `refresh.yml`, T068 the freshness Worker, T084's
   `freshness-worker.test.ts`, and the Actions half of T070) is done in a cloud session, on branch
-  `claude/loving-tesla-pw385y`, and raised as PR #23. A fetch-only run from the branch wrote real
+  `claude/loving-tesla-pw385y`, and merged as PR #23. A fetch-only run from the branch wrote real
   data to R2 (2026-10-03..17), so R2 now has cursors, `fetch-status` and `freshness.json`.
   Decisions are in the log below. Phase 2f (PR #21) merged with its confirmations answered.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
@@ -35,14 +35,12 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: answer the Phase 2g PR's confirmations, then Phase 2h** (the shared shell,
-  T072 onwards), ideally as another cloud session from `origin/main`. Once the PR merges:
-  - **The 2-hourly schedule starts publishing on its own.** Its first run on `main` processes
-    what R2 holds (2026-10-03..17) and commits the first published data. That is a real first
-    publish through the gated bot path, ahead of T085's full backfill. If the owner would rather
-    hold it, the PR asks them to disable the workflow before merging.
-  - **The agent checks the first scheduled run** (bot commit, deploy, `/running/api/freshness`
-    on the workers.dev URL) at the next session start.
+- **Next step: Phase 2h** (the shared shell, T072 onwards), ideally as another cloud session
+  from `origin/main`. PR #23 merged with all four confirmations ticked (see the log).
+  - **First, check the first scheduled refresh runs on `main`.** The 2-hourly schedule started
+    publishing on its own after PR #23 merged, processing what R2 holds (2026-10-03..17). Check
+    the bot commit to `data/running/published/`, the deploy, and `/running/api/freshness` on the
+    workers.dev URL. If a run is red, fix that before Phase 2h.
   - T085 (backfill + first full publish) waits on T150 for full history.
 
 ## Vision
@@ -512,6 +510,13 @@ project-specific notes.
     record is a 503 (`no-store`). `HEAD` is answered; other methods get 405.
   - **No rulesets to bypass:** the repo is private on the free plan, where rulesets aren't
     available, and classic branch protection is off.
+
+- **2026-10-17** — Owner ticked all four PR #23 confirmations:
+  - **Merging starts publishing.** The 2-hourly schedule publishes what R2 holds, ahead of
+    T085's full backfill.
+  - **A failed fetch turns the run red**, even before the 24-hour `ingest-failing` issue opens.
+  - **Publish-failure alerts go to the backlog.** The alert only watches fetch staleness for now.
+  - **T070's local half is dropped**, so T070 is done.
 
 ## Upstream candidates
 
