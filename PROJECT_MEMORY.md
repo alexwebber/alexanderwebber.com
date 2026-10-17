@@ -308,6 +308,9 @@ project-specific notes.
   returns HRV and body fat for the owner's devices, and whether its terms allow publishing.
   (2026-10-17: its Garmin wellness sync offers HRV (rMSSD) and Body Fat. Confirm that the API
   actually returns them.)
+  intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
+  imports, plan building and UI features), so the owner stays on the free tier. Revisit if
+  Spike 0 picks intervals.icu, because supporter feature requests get priority.
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
