@@ -24,8 +24,14 @@ Update this as decisions get made — treat it as the source of truth alongside
 - **Waiting on the owner:**
   - **intervals.icu API key:** *Settings → Developer Settings*, then run
     `set-secrets.ps1 INTERVALS_API_KEY`.
-  - T002 (Workers deploy token) and T004 (nameservers). The agent walks them through each.
-    T003 (Garmin secrets) is dropped.
+  - T004 (nameservers); the agent walks them through it. T003 (Garmin secrets) is dropped.
+  - **workers.dev subdomain:** none is registered yet (the API returns 404). Spike 1a needs
+    one. Ask the owner to pick it (suggested: `alexanderwebber`), or let wrangler prompt on the
+    first deploy.
+- **T002 done (2026-10-17):** `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template,
+  a user token, verified active, lists Workers scripts) and `CLOUDFLARE_ACCOUNT_ID` are set as
+  GitHub secrets. The owner keeps the setup values in a temp file and deletes it once setup is
+  finished, so remind them.
 - **Next step:** run `python spikes/intervals/probe.py` once the key is set. Write the
   field-availability results (no values) to `spikes/intervals/RESULTS.md`. Then amend the docs
   in one pass:
