@@ -9,12 +9,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Phase 2c–2d (the gate action and `gate.yml`, `tests.yml`,
-  `lighthouse-budget.mjs` + `quality.yml`, and the ingest core: logging, provider contract,
-  `LocalArchive`/`R2Archive` with the T078 contract suite: T042–T049, T078) is done in a cloud
-  session, on branch `claude/amazing-edison-3ode87`, and raised as one PR. Decisions are in the
-  log below. **Merging it deploys the placeholder home page** to
-  `alexanderwebber.alexanderwebber.workers.dev` (gate.yml deploys every push to `main`).
+- **Status (2026-10-17):** Phase 2e (the intervals.icu adapter, fetch stage and backfill, plus
+  the fixtures and adapter contract suite: T051–T055, T077, T079) is done in a cloud session,
+  on branch `claude/stoic-franklin-vhiumh`, and raised as one PR. It was checked against the
+  owner's real data from a throwaway workflow (`spikes/intervals/RESULTS.md`). Decisions are
+  in the log below. Phase 2c–2d (PR #18) merged, and its first `gate.yml` deploy on `main`
+  succeeded.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -36,11 +36,13 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Phase 2e**: the intervals.icu adapter and fetch stage (T051–T055), with the
-  adapter fixtures and contract suite (T077, T079). Use a new branch from `origin/main`, ideally
-  as another cloud session. Build on `awingest.providers.base`, `awingest.archive` and
-  `awingest.logging`. After the merge, check the first `gate.yml` deploy on `main` succeeded.
-  If the PR has unticked confirmations when it merges, ask about them first.
+- **Next step: Phase 2f**: the processor and publish stage (T056–T065), plus the rest of the
+  CLI (T066: `process`, `publish-check`, `alert`, `reprocess`; `fetch` and `backfill` are
+  already wired). Use a new branch from `origin/main`, ideally as another cloud session. Build
+  on `NormalisedActivity`/`NormalisedHealthReading` and read bundles back from
+  `raw/intervals/activities/<id>/` (the `fetch.json` marker lists the parts). If the Phase 2e
+  PR has unticked confirmations when it merges, ask about them first (one is the power check
+  against Garmin Connect).
 
 ## Vision
 
