@@ -1,0 +1,282 @@
+# Running data refresh (T067; contracts/pipeline.md "Workflows"): intervals.icu -> R2 -> published
+# JSON -> gate -> bot commit to main -> deploy, with the ingest-failing alert after every fetch.
+#
+# Owner decision 1 (2026-10-04): the bot commits sanitised data straight to main, only after the
+# gate passes, and only paths under data/running/published/. The publish job builds and gates the
+# new tree with read-only permissions (it runs npm and ingest code); the commit job, the only one
+# that can write, runs no third-party code: it applies the gated tree, checks the paths and pushes.
+#
+# A run on any ref other than main is fetch-only, like `fetch_only: true`, so a branch run can never
+# publish. Commits made with GITHUB_TOKEN don't trigger other workflows, so gate.yml doesn't re-run
+# for bot commits; this workflow deploys the build it gated instead.
+name: Refresh
+
+on:
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      reimport_from:
+        description: Re-fetch from this date (YYYY-MM-DD); empty for the normal incremental window
+        type: string
+        default: ''
+      reimport_to:
+        description: Re-fetch up to this date (YYYY-MM-DD); needs reimport_from
+        type: string
+        default: ''
+      fetch_only:
+        description: Fetch and alert only (no publish, commit or deploy); the T070 smoke check
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'data/running/owner/**'
+
+permissions:
+  contents: read
+
+# Runs never overlap, so two runs can't race on cursors, the run-ID map or bot commits. GitHub keeps
+# at most one pending run per group: a newer one replaces it, which loses nothing, since each run
+# fetches and publishes everything new.
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ingest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          working-directory: ingest
+          enable-cache: true
+
+      - run: uv sync --locked --no-dev
+
+      - name: Fetch (intervals.icu -> R2)
+        env:
+          INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          REIMPORT_FROM: ${{ inputs.reimport_from }}
+          REIMPORT_TO: ${{ inputs.reimport_to }}
+        run: >-
+          uv run --no-sync awingest fetch --archive r2
+          ${REIMPORT_FROM:+--reimport-from "$REIMPORT_FROM"}
+          ${REIMPORT_TO:+--reimport-to "$REIMPORT_TO"}
+
+  # Runs even when fetch failed: already-archived data and owner-file changes still publish.
+  publish:
+    needs: fetch
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && !inputs.fetch_only }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      base: ${{ steps.base.outputs.sha }}
+      changed: ${{ steps.paths.outputs.changed }}
+    steps:
+      # The newest main, not the commit that triggered the run: a queued run may start later.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - id: base
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          working-directory: ingest
+          enable-cache: true
+
+      - run: uv sync --locked --no-dev
+        working-directory: ingest
+
+      - name: Process (R2 -> data/running/published/)
+        working-directory: ingest
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: uv run --no-sync awingest process --archive r2
+
+      - name: Publish check
+        working-directory: ingest
+        run: uv run --no-sync awingest publish-check
+
+      - uses: ./.github/actions/gate
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: ${{ secrets.R2_BUCKET }}
+
+      # Only reached when the gate passed. Any change outside the published tree (a generated file
+      # that isn't gitignored, a tool rewriting owner data) fails the run before anything is kept.
+      - name: Check changed paths
+        id: paths
+        run: |
+          changed=$(git status --porcelain --untracked-files=all | cut -c4-)
+          outside=$(printf '%s\n' "$changed" | grep -v -e '^$' -e '^data/running/published/' || true)
+          if [ -n "$outside" ]; then
+            printf '%s\n' "$outside"
+            echo "::error::The publish stage changed files outside data/running/published/; nothing is committed."
+            exit 1
+          fi
+          if [ -n "$changed" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No published data changed."
+          fi
+
+      - name: Keep the gated published tree for the commit job
+        if: steps.paths.outputs.changed == 'true'
+        run: tar -cf "$RUNNER_TEMP/published.tar" data/running/published
+
+      - if: steps.paths.outputs.changed == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: published
+          path: ${{ runner.temp }}/published.tar
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Keep the gated build for deploy
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+          if-no-files-found: error
+
+  commit:
+    needs: publish
+    if: ${{ !cancelled() && needs.publish.result == 'success' && needs.publish.outputs.changed == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      # Credentials stay in .git/config for the push; this job runs only git and tar.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.publish.outputs.base }}
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: published
+          path: ${{ runner.temp }}
+
+      # Replace the tree wholesale, so files the processor removed are removed here too.
+      - name: Apply the gated tree
+        run: |
+          rm -rf data/running/published
+          tar -xf "$RUNNER_TEMP/published.tar"
+          git add --all data/running/published
+          outside=$(git status --porcelain --untracked-files=all | cut -c4- | grep -v '^data/running/published/' || true)
+          if [ -n "$outside" ]; then
+            printf '%s\n' "$outside"
+            echo "::error::The gated tree touches files outside data/running/published/; nothing is committed."
+            exit 1
+          fi
+
+      # The push only fast-forwards from the commit that was gated. If main moved meanwhile it is
+      # rejected and nothing is committed; the next run re-publishes from R2 on the new main.
+      - name: Commit and push to main
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit --quiet -m "data: publish running data" -m "Refresh run: $RUN_URL"
+          if ! git push origin HEAD:refs/heads/main; then
+            echo "::error::main moved since the gated commit, so the push was rejected; the next run re-publishes."
+            exit 1
+          fi
+
+  # Deploys the build the gate passed: after a bot commit, or after an owner-file push to main
+  # (whose data the gate just built, even if no published file changed).
+  deploy:
+    needs: [publish, commit]
+    if: >-
+      ${{ !cancelled() && needs.publish.result == 'success' && (needs.commit.result == 'success' ||
+      (github.event_name == 'push' && needs.commit.result == 'skipped')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.publish.outputs.base }}
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Deploy (wrangler deploy)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
+
+  # After every fetch, even a failed one: opens, updates or closes the ingest-failing issue from
+  # R2 state/fetch-status.json (alert contract: no success for 24 h).
+  alert:
+    needs: fetch
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    defaults:
+      run:
+        working-directory: ingest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          working-directory: ingest
+          enable-cache: true
+
+      - run: uv sync --locked --no-dev
+
+      - name: Alert
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: uv run --no-sync awingest alert --archive r2
