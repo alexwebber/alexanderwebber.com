@@ -5,8 +5,17 @@
 node_modules/
 dist/
 .astro/
-.env
-.env.*
+.env*
+
+# Python
+ingest/.venv/
+
+# Tests
+playwright-report/
+test-results/
+
+# Generated from schemas/ (T034)
+src/shared/storage/generated/
 
 # Spike output (raw provider payloads; never committed)
 spikes/**/out/

@@ -1,0 +1,73 @@
+# THROWAWAY (Spike 1a, T014). Removed before the PR is ready.
+name: spike-workers-limit
+on:
+  push:
+    branches: [claude/nice-hamilton-jilme1]
+    paths: [.github/workflows/spike-workers-limit.yml]
+permissions:
+  contents: read
+jobs:
+  spike:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WORKER: spike-workers-limit
+      SUBDOMAIN: alexanderwebber
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - run: npm ci
+      - name: Ensure workers.dev subdomain
+        run: |
+          api="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain"
+          current=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api" | jq -r '.result.subdomain // empty')
+          echo "current subdomain: '${current}'"
+          if [ -z "$current" ]; then
+            curl -sS -X PUT -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' \
+              --data "{\"subdomain\":\"$SUBDOMAIN\"}" "$api" | jq '{success, errors, result}'
+            current=$SUBDOMAIN
+          fi
+          echo "SUB=$current" >> "$GITHUB_ENV"
+          echo "- workers.dev subdomain: \`$current\`" >> "$GITHUB_STEP_SUMMARY"
+      - name: Deploy 12,000 files
+        working-directory: spikes/workers-limit
+        run: |
+          node generate.mjs 12000 assets
+          start=$(date +%s)
+          npx wrangler deploy 2>&1 | tee deploy-12000.log
+          echo "- 12,000-file deploy: OK in $(( $(date +%s) - start ))s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Check it serves
+        run: |
+          base="https://$WORKER.$SUB.workers.dev/f"
+          for i in $(seq 1 30); do
+            first=$(curl -s -o /dev/null -w '%{http_code}' "$base/00000.txt")
+            [ "$first" = 200 ] && break
+            sleep 10
+          done
+          last=$(curl -s "$base/11999.txt")
+          echo "first file: $first; last file body: $last"
+          echo "- first file HTTP $first; last file body: \`$last\`" >> "$GITHUB_STEP_SUMMARY"
+          [ "$first" = 200 ] && [ "$last" = "spike file 11999" ]
+      - name: Try 20,001 files (expected to be rejected by the free plan)
+        if: always()
+        working-directory: spikes/workers-limit
+        run: |
+          node generate.mjs 20001 assets
+          if npx wrangler deploy > deploy-20001.log 2>&1; then
+            echo "- 20,001-file deploy: ACCEPTED (limit is higher than 20,000)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- 20,001-file deploy: rejected" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          tail -25 deploy-20001.log
+          { echo '```'; grep -iE 'error|limit|20,?000|exceed' deploy-20001.log | head -10; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Delete the throwaway Worker
+        if: always()
+        working-directory: spikes/workers-limit
+        run: |
+          npx wrangler delete --name "$WORKER" --force
+          echo "- throwaway Worker deleted" >> "$GITHUB_STEP_SUMMARY"

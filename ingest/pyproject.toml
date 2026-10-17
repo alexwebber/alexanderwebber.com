@@ -1,0 +1,31 @@
+[project]
+name = "awingest"
+version = "0.1.0"
+description = "Running data ingest for alexanderwebber.com: intervals.icu -> R2 -> published JSON."
+requires-python = ">=3.12"
+dependencies = [
+    "boto3==1.43.114",
+    "jsonschema==4.26.0",
+    "pyyaml==6.0.3",
+]
+
+[project.scripts]
+awingest = "awingest.cli:main"
+
+[dependency-groups]
+dev = [
+    "moto==5.2.4",
+    "pytest==9.1.1",
+    "ruff==0.17.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

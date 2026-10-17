@@ -1,0 +1,31 @@
+---
+import { shippedAreas } from '../sections/running/integration.ts';
+
+// Link to Running only once its landing page ships (no dead links, FR-027).
+const runningLanding = shippedAreas().find((area) => area.key === 'landing');
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Alexander Webber</title>
+    <meta name="description" content="Alexander Webber's personal site: running, and soon a CV and blog." />
+    <link rel="canonical" href={Astro.url.href} />
+  </head>
+  <body>
+    <main>
+      <h1>Alexander Webber</h1>
+      {
+        runningLanding ? (
+          <p>
+            <a href={runningLanding.href}>Running</a>: training, races and the road to Brighton Marathon 2027.
+          </p>
+        ) : (
+          <p>Running: training, races and the road to Brighton Marathon 2027. Coming soon.</p>
+        )
+      }
+    </main>
+  </body>
+</html>
