@@ -241,7 +241,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 
 ### 2c. Build gate and CI (gate from day one)
 
-- [ ] T042 Create the composite action `.github/actions/gate/action.yml`. Steps:
+- [X] T042 Create the composite action `.github/actions/gate/action.yml`. Steps:
   - setup-node (version from `engines`) and `npm ci`
   - `gen-types`
   - `validate-data` and `scan-images`
@@ -250,11 +250,13 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `scan-privacy` (with R2 credentials when passed in)
 
   It is a composite action, so it runs in the caller's job and workspace. pytest, Vitest and Playwright are **not** part of it.
-- [ ] T043 Create `.github/workflows/gate.yml`:
+  - **Done 2026-10-17**: Node comes from `.nvmrc` (`22`; `engines` stays the `>=22.22.0` floor, because setup-node would resolve a range to the newest Node). The R2 run-ID map is fetched with the runner's AWS CLI into `$RUNNER_TEMP` and deleted after the scan; a missing map (before the first publish) is a notice, any other R2 failure fails the gate. `scan-privacy` findings now give `file:line:column` and the matched key, never the caught value, so gate logs can't leak what the scan caught.
+- [X] T043 Create `.github/workflows/gate.yml`:
   - Triggers: `pull_request` and `push` to `main`. It runs the gate.
   - On `push` to `main` only, a `deploy` job (`needs: gate`; `wrangler deploy`; `concurrency: { group: deploy, cancel-in-progress: false }`, shared with T067 and T105). No deploy runs on PRs.
   - `permissions: contents: read`.
-- [ ] T044 Create `.github/workflows/tests.yml` (**ADOPTED 2026-10-04**: path-filtered PR test jobs):
+  - **Done 2026-10-17**: the gate job uploads `dist/` and `deploy` deploys that artifact, so production gets exactly the gated build. Actions are pinned by commit SHA. A throwaway branch workflow deployed the gated build under a throwaway Worker name, checked it served, and deleted it.
+- [X] T044 Create `.github/workflows/tests.yml` (**ADOPTED 2026-10-04**: path-filtered PR test jobs):
   - Trigger: `pull_request`.
   - A `changes` job computes the changed paths with `git diff --name-only origin/${{ github.base_ref }}...HEAD` (no third-party action).
   - Jobs and their path filters:
@@ -262,7 +264,8 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
     - `vitest` (`npm test`): `src/**`, `schemas/**`, `scripts/**`, `tests/unit/**` or `tests/contract/**`
     - `playwright` (Playwright + axe against `astro preview`): `src/**`, `data/running/owner/**`, `tests/e2e/**` or `tests/a11y/**`
   - Full lint on every change stays deferred (BACKLOG).
-- [ ] T045 Create `scripts/lighthouse-budget.mjs`, which runs the Lighthouse 13.5.0 CLI (mobile) against `astro preview` for each page type. Checks:
+  - **Done 2026-10-17**: Playwright runs with `--pass-with-no-tests` until the story specs exist. `playwright.config.ts` clears `CLAUDECODE`/`AI_AGENT` for its web server, because Astro 7 backgrounds `astro preview` under a coding agent.
+- [X] T045 Create `scripts/lighthouse-budget.mjs`, which runs the Lighthouse 13.5.0 CLI (mobile) against `astro preview` for each page type. Checks:
   - performance >= 90
   - landing LCP <= 2.5 s
   - JS <= 10 KB gzip (race-map script excepted)
@@ -270,17 +273,19 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - zero third-party requests on load
 
   Also create the **non-blocking** `.github/workflows/quality.yml`: Lighthouse + axe on PRs touching site code, and nightly against production.
+  - **Done 2026-10-17**: sizes are gzip, measured by re-fetching each same-origin document, stylesheet and script, so local preview and production are measured alike. Lighthouse's accessibility (axe) audits count too. Page types not built yet are skipped and listed. The nightly run targets `alexanderwebber.alexanderwebber.workers.dev` until the domain is live (T004).
 
 ### 2d. Ingest core (Python): logging, provider contract, archive
 
-- [ ] T046 [P] Create `ingest/src/awingest/logging.py`: structured JSON-lines logs on stderr (`run_id`, `stage`, `provider`, `event`, `error_class`, `code`). It redacts secrets (including `INTERVALS_API_KEY` and `Authorization` headers) and email addresses, and **never logs provider activity IDs** (data-model §3).
-- [ ] T047 [P] Create `ingest/src/awingest/providers/base.py`:
+- [X] T046 [P] Create `ingest/src/awingest/logging.py`: structured JSON-lines logs on stderr (`run_id`, `stage`, `provider`, `event`, `error_class`, `code`). It redacts secrets (including `INTERVALS_API_KEY` and `Authorization` headers) and email addresses, and **never logs provider activity IDs** (data-model §3).
+- [X] T047 [P] Create `ingest/src/awingest/providers/base.py`:
   - The `ActivityProvider`, `HealthProvider` and `Provider` protocols, with `session()` as a context manager (contracts/provider-adapter.md; date-window `oldest`/`newest` arguments).
   - `ActivityRef`, `RawBundle`, `RawHealthDay`.
   - `NormalisedActivity` and `NormalisedHealthReading` dataclasses (fields per data-model §2, incl. `treadmill`; a missing optional metric is `None`, **never 0**).
   - The error taxonomy `AuthRejected | ProviderForbidden | RateLimited(retry_after?) | ProviderChanged | Transient`, each with a stable `code` plus `likely_cause` and `action` text.
-- [ ] T048 [P] Create `ingest/src/awingest/archive/base.py` (the `RawArchive` protocol: `get`, `put(if_match)`, `list`, `exists`, `delete`; key validation with no `..`; `ArchiveUnavailable` and `ArchiveConflict`) and `ingest/src/awingest/archive/local.py` (`LocalArchive`, a directory with atomic writes).
-- [ ] T049 [P] Create `ingest/src/awingest/archive/r2.py`: `R2Archive` using boto3 1.43.114 against the S3 endpoint `https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`. It supports conditional `put` with `if_match`, an idempotent re-put of identical bytes, and error mapping. Depends on T048.
+- [X] T048 [P] Create `ingest/src/awingest/archive/base.py` (the `RawArchive` protocol: `get`, `put(if_match)`, `list`, `exists`, `delete`; key validation with no `..`; `ArchiveUnavailable` and `ArchiveConflict`) and `ingest/src/awingest/archive/local.py` (`LocalArchive`, a directory with atomic writes).
+- [X] T049 [P] Create `ingest/src/awingest/archive/r2.py`: `R2Archive` using boto3 1.43.114 against the S3 endpoint `https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`. It supports conditional `put` with `if_match`, an idempotent re-put of identical bytes, and error mapping. Depends on T048.
+  - **Done 2026-10-17 (T046–T049)**: failure classes share `awingest.errors.IngestError` (`code`, `exit_code`, `likely_cause`, `action`). ETags are the MD5 hex of the bytes, so `etag_of(data)` after a `get` is the `if_match` value, and `if_match=ABSENT` means create-only. Provider IDs, raw titles and coordinates are kept out of the normalised types' `repr`. Logging scrubs secrets, emails and provider IDs from everything the caller passes; `Logger.error` takes `exc=` by keyword.
 - [X] T050 ~~Create `ingest/src/awingest/archive/tokens.py`, the Fernet token store.~~ **Dropped 2026-10-17**: intervals.icu uses a personal API key from the environment; nothing secret is stored in R2.
 
 ### 2e. intervals.icu adapter and fetch stage (rewritten 2026-10-17; builds on Spike 0, T012)
@@ -425,7 +430,8 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - a `VirtualRun` (treadmill), a race, a `TrailRun` and a non-run activity (e.g. `WeightTraining`)
   - wellness days with every approved metric **plus** `sleepSecs`, `steps` and `spO2` (to prove they are dropped before archiving)
   - error responses: 401, 403 with a JSON body, 403 with an HTML challenge body, 429 with `Retry-After`
-- [ ] T078 [P] Create the parameterised storage contract suite `ingest/tests/contract/test_raw_archive.py`, run against `LocalArchive` and `R2Archive` (moto 5.2.3). It covers round-trip, idempotent re-put, `if_match` conflict, key validation, atomicity under injected failure, and a 5,000-object listing.
+- [X] T078 [P] Create the parameterised storage contract suite `ingest/tests/contract/test_raw_archive.py`, run against `LocalArchive` and `R2Archive` (moto 5.2.3). It covers round-trip, idempotent re-put, `if_match` conflict, key validation, atomicity under injected failure, and a 5,000-object listing.
+  - **Done 2026-10-17** with T048–T049 (moto 5.2.4). With `AWINGEST_TEST_R2_LIVE=1` and the `R2_*` variables it also runs against real R2 under a `test/` prefix (skipping the 5,000-object listing); it passed there from Actions.
 - [ ] T079 [P] **Rewritten.** Create the adapter contract suite `ingest/tests/contract/test_intervals_adapter.py`. It covers:
   - required fields, normalised units and type mapping (`VirtualRun` → `indoor` + `treadmill: true`)
   - non-run activities rejected
