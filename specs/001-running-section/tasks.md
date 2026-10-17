@@ -96,12 +96,13 @@ and from GitHub Actions). The original Garmin-direct tasks keep their IDs below.
   - **Record**: write the results in `PROJECT_MEMORY.md`.
   - **If over budget**: change the downsample cap in plan.md before T062.
   - **Done 2026-10-17**: ~109 MB compact (worst case, all series at 600 points); ~263 MB if indented, so T063 writes compact JSON. 5,000 pages built in ~10.5 s. Cap unchanged.
-- [ ] T014 [P] Spike 1a, Workers file limit:
+- [X] T014 [P] Spike 1a, Workers file limit:
   - **Deploy**: in `spikes/workers-limit/`, deploy a 12,000-file dummy static-asset set with wrangler 4.151.1 to a throwaway `*.workers.dev` Worker.
   - **Confirm**: check the free plan's per-version file limit (believed to be 20,000).
   - **Clean up**: delete the throwaway Worker.
   - **Record**: write the result in `PROJECT_MEMORY.md`.
   - **Depends on**: T002.
+  - **Done 2026-10-17** (throwaway branch workflow, since removed): 12,000 files deployed and served; 20,001 rejected by the API (code 10304, Free limit 20,000 per version). The Worker was deleted.
 
 ### 1d. Scaffold (can start in parallel with Spike 1)
 
