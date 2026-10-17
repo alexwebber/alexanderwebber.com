@@ -9,11 +9,11 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Phase 2f (the processor and publish stage, alerts and the rest of the
-  CLI: T056–T066, plus tests T080–T082) is done in a cloud session, on branch
-  `claude/blissful-darwin-xdt15e`, and raised as one PR. Its output from the fixture archive passes
-  the site gate (`validate-data`, `astro build`, `scan-privacy`). Decisions are in the log below.
-  Phase 2e (PR #19) merged with both confirmations ticked, and its `gate.yml` deploys succeeded.
+- **Status (2026-10-17):** Phase 2g (T067 `refresh.yml`, T068 the freshness Worker, T084's
+  `freshness-worker.test.ts`, and the Actions half of T070) is done in a cloud session, on branch
+  `claude/loving-tesla-pw385y`, and raised as one PR. A fetch-only run from the branch wrote real
+  data to R2 (2026-10-03..17), so R2 now has cursors, `fetch-status` and `freshness.json`.
+  Decisions are in the log below. Phase 2f (PR #21) merged with its confirmations answered.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -35,14 +35,15 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Phase 2g**: `refresh.yml` (T067), the freshness Worker (T068, with
-  `freshness-worker.test.ts`, the rest of T084) and the fetch-only smoke check (T070). Use a new
-  branch from `origin/main`, ideally as another cloud session, now that the Phase 2f PR (#21) has
-  merged with its confirmations answered. `refresh.yml` runs
-  `uv run awingest process` from `ingest/` (it finds the repo root from the working directory),
-  commits only `data/running/published/` after the gate, and runs `alert` with
-  `GITHUB_TOKEN` (`issues: write`). T070 needs the owner's PC for the local half; the dispatch
-  half the agent can do.
+- **Next step: answer the Phase 2g PR's confirmations, then Phase 2h** (the shared shell,
+  T072 onwards), ideally as another cloud session from `origin/main`. Once the PR merges:
+  - **The 2-hourly schedule starts publishing on its own.** Its first run on `main` processes
+    what R2 holds (2026-10-03..17) and commits the first published data. That is a real first
+    publish through the gated bot path, ahead of T085's full backfill. If the owner would rather
+    hold it, the PR asks them to disable the workflow before merging.
+  - **The agent checks the first scheduled run** (bot commit, deploy, `/running/api/freshness`
+    on the workers.dev URL) at the next session start.
+  - T085 (backfill + first full publish) waits on T150 for full history.
 
 ## Vision
 
@@ -496,7 +497,32 @@ project-specific notes.
     weigh-ins (so the first day shows that weigh-in exactly). The owner isn't worried about
     privacy here, so the spec's rule stands: a day is left out only when its window has none.
 
+- **2026-10-17** — **Phase 2g built** (refresh workflow, freshness Worker). Choices later tasks
+  build on:
+  - **Only one job can write.** `publish` (process, `publish-check`, gate, path check) runs with
+    `contents: read`, because it runs npm and ingest code. `commit`, the only job with
+    `contents: write`, runs just git and tar: it unpacks the gated tree, checks the paths again
+    and pushes `HEAD:main` from the gated commit. If `main` moved, the push is rejected and the
+    next run re-publishes.
+  - **Branch runs are fetch-only.** A run on any ref but `main` behaves like `fetch_only: true`, so
+    a branch can't publish. T070's Actions half ran this way, before merge.
+  - **Fetch failures don't block publishing:** `publish` runs unless the run is cancelled, so
+    archived data and owner edits still publish. A failed fetch still turns the run red.
+  - **Worker:** the R2 record is re-shaped to the contract's two fields; a missing or malformed
+    record is a 503 (`no-store`). `HEAD` is answered; other methods get 405.
+  - **No rulesets to bypass:** the repo is private on the free plan, where rulesets aren't
+    available, and classic branch protection is off.
+
 ## Upstream candidates
+
+- 2026-10-17 — A private repo on GitHub Free answers the rulesets endpoints with 403 "Upgrade
+  to GitHub Pro", so the plan's `gh api .../rulesets` check can't succeed there, and a job's
+  `GITHUB_TOKEN` can't read the default workflow permissions either. Agent tip: read
+  `branches/<name>`'s `protected` flag instead, and treat the rulesets 403 as "none apply".
+- 2026-10-17 — A bot-commit workflow that runs `npm ci` and the build in the same job as
+  `contents: write` gives every install script a token that can push to `main`. Generalisation
+  (CI security): build and gate with read-only permissions, then hand the gated output as an
+  artifact to a separate job that has write access and runs only git.
 
 - 2026-10-17 — Astro 7 runs `astro preview` in the background when it detects a coding agent
   (`CLAUDECODE` set), so Playwright's `webServer` reports "exited early" locally while CI works.
