@@ -449,6 +449,15 @@ project-specific notes.
     `--archive-dir` (default `$AWINGEST_ARCHIVE_DIR` or `.archive`, gitignored).
   - **New pin:** `tzdata` 2026.5, because Windows has no system time-zone database and the owner
     runs `backfill` locally.
+  - **Checked against real data** (throwaway workflow, run 39060846318: full backfill into a
+    runner-local archive, nothing written to R2): 189 runs (137 `Run`, 52 `VirtualRun`) and 367
+    wellness days fetched in ~20 min with no failures, and all 189 normalised. Every run had
+    all five parts. `latlng` is lat in `data` and lon in `data2`. An incremental `fetch`
+    straight after found nothing new. History still starts in Oct 2025 (T150 pending).
+  - **Cadence is doubled:** intervals.icu keeps Garmin's running cadence as strides per minute
+    (median 78); the published schema wants steps per minute.
+  - **Calibrated streams are scaled:** when the `distance` stream ends more than 0.5% from the
+    summary distance (one run was 1.2 km off), the stream is scaled to the summary.
 
 ## Upstream candidates
 
@@ -488,6 +497,11 @@ project-specific notes.
   `*.workers.dev` (CONNECT 403), not only secrets. So an adapter can't be checked against the
   real API from the sandbox. Agent tip: check real payload shapes with a throwaway branch
   workflow that prints aggregates only (key names, counts, rounded medians), never values.
+- 2026-10-17 — An "aggregates only" report used `Counter.update(record)` to count a dict's
+  keys, but `Counter.update(mapping)` adds the mapping's *values*. So it printed every wellness
+  date and summed health values into an Actions log. Agent tip: count keys with
+  `update(d.keys())`, and dry-run a report on fixtures and read its output before it touches
+  real data.
 - 2026-10-17 — Cloud session: the GitHub MCP `get_job_logs` returns 404 while a job is still
   running, and works once it finishes. Agent tip: poll the job's step status, then read the
   logs at the end. This made the planned "commit RESULTS.md back" fallback unnecessary.
