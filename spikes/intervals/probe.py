@@ -19,6 +19,7 @@ from pathlib import Path
 
 BASE = "https://intervals.icu/api/v1"
 OUT = Path(__file__).parent / "out"
+USER_AGENT = "alexanderwebber.com-ingest-spike/0.1 (+https://alexanderwebber.com)"
 WELLNESS_FIELDS = ["weight", "bodyFat", "restingHR", "hrv", "hrvSDNN", "vo2max", "ctl", "atl",
                    "rampRate", "steps", "sleepSecs", "stress", "readiness", "spO2", "respiration"]
 ACTIVITY_FIELDS = ["distance", "moving_time", "elapsed_time", "total_elevation_gain",
@@ -30,7 +31,9 @@ ACTIVITY_FIELDS = ["distance", "moving_time", "elapsed_time", "total_elevation_g
 
 
 def get(path: str, auth: str) -> tuple[int, object]:
-    req = urllib.request.Request(BASE + path, headers={"Authorization": auth, "Accept": "*/*"})
+    # Cloudflare in front of intervals.icu 403s urllib's default "Python-urllib/x.y" User-Agent.
+    headers = {"Authorization": auth, "Accept": "*/*", "User-Agent": USER_AGENT}
+    req = urllib.request.Request(BASE + path, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
             body = resp.read()
