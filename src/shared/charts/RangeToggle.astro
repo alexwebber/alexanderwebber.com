@@ -1,0 +1,103 @@
+---
+// Time-range choice for charts (T074, FR-068): 3 months, 1 year or all time, as CSS-only radio
+// inputs. Each range is a named slot ("3m", "1y", "all") holding that range's chart; the checked
+// radio shows its panel through :has(). Radios are native, so keyboard and screen readers work
+// without JS. A browser without :has() shows every panel in turn (still complete and readable).
+import { chartId } from './ids.ts';
+
+export type RangeKey = '3m' | '1y' | 'all';
+
+export const RANGE_LABELS: Record<RangeKey, string> = { '3m': '3 months', '1y': '1 year', all: 'All time' };
+
+export interface Props {
+  /** Names the control for assistive tech, e.g. "Weight chart range". */
+  legend: string;
+  /** Ranges to offer, in this order; leave out ranges the data doesn't reach. */
+  ranges?: readonly RangeKey[];
+  /** Initially selected range; defaults to 1 year when offered, else the last range. */
+  selected?: RangeKey;
+  id?: string;
+}
+
+const { legend, ranges = ['3m', '1y', 'all'] } = Astro.props;
+if (ranges.length === 0) throw new Error('RangeToggle needs at least one range');
+const selected = Astro.props.selected ?? (ranges.includes('1y') ? '1y' : ranges.at(-1)!);
+const name = chartId('range', Astro.props.id);
+
+const panels = await Promise.all(
+  ranges.map(async (range) => {
+    if (!Astro.slots.has(range)) throw new Error(`RangeToggle: no content for the "${range}" slot`);
+    return { range, html: await Astro.slots.render(range) };
+  }),
+);
+---
+
+<div class="ranged">
+  {
+    ranges.length > 1 && (
+      <fieldset class="range-toggle">
+        <legend class="visually-hidden">{legend}</legend>
+        {ranges.map((range) => (
+          <>
+            <input type="radio" class="visually-hidden" id={`${name}-${range}`} name={name} value={range} checked={range === selected} />
+            <label for={`${name}-${range}`}>{RANGE_LABELS[range]}</label>
+          </>
+        ))}
+      </fieldset>
+    )
+  }
+  {
+    panels.map((panel) => (
+      <div class="range-panel" data-range={panel.range}>
+        <Fragment set:html={panel.html} />
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .range-toggle {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    border: 0;
+  }
+
+  .range-toggle label {
+    min-height: 1.5rem;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+    cursor: pointer;
+  }
+
+  .range-toggle input:checked + label {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-surface);
+    font-weight: var(--weight-bold);
+  }
+
+  .range-toggle input:focus-visible + label {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-offset);
+  }
+
+  .ranged:has(> .range-toggle input[value='3m']:checked) > .range-panel:not([data-range='3m']),
+  .ranged:has(> .range-toggle input[value='1y']:checked) > .range-panel:not([data-range='1y']),
+  .ranged:has(> .range-toggle input[value='all']:checked) > .range-panel:not([data-range='all']) {
+    display: none;
+  }
+
+  @media (forced-colors: active) {
+    .range-toggle input:checked + label {
+      border: 2px solid Highlight;
+      background: Canvas;
+      color: CanvasText;
+    }
+  }
+</style>

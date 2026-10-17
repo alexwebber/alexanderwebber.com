@@ -9,11 +9,11 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Phase 2g (T067 `refresh.yml`, T068 the freshness Worker, T084's
-  `freshness-worker.test.ts`, and the Actions half of T070) is done in a cloud session, on branch
-  `claude/loving-tesla-pw385y`, and merged as PR #23. A fetch-only run from the branch wrote real
-  data to R2 (2026-10-03..17), so R2 now has cursors, `fetch-status` and `freshness.json`.
-  Decisions are in the log below. Phase 2f (PR #21) merged with its confirmations answered.
+- **Status (2026-10-17):** Phase 2h is built in a cloud session on branch
+  `claude/busy-hawking-42kpne`, PR #25. It covers the shared shell: tokens, layout, charts, share
+  images, the Running loader, LastUpdated, SectionLayout and Garmin attribution (T072–T076,
+  T152). Decisions are in the log below. Phase 2g (PR #23) merged with all four confirmations
+  ticked.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -35,13 +35,15 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Phase 2h** (the shared shell, T072 onwards), ideally as another cloud session
-  from `origin/main`. PR #23 merged with all four confirmations ticked (see the log).
-  - **First, check the first scheduled refresh runs on `main`.** The 2-hourly schedule started
-    publishing on its own after PR #23 merged, processing what R2 holds (2026-10-03..17). Check
-    the bot commit to `data/running/published/`, the deploy, and `/running/api/freshness` on the
-    workers.dev URL. If a run is red, fix that before Phase 2h.
-  - T085 (backfill + first full publish) waits on T150 for full history.
+- **Next step: T086 (graduation review of the shared plumbing)**, then Phase 3 (US2 Goals,
+  T087 onwards). Ideally run it as another cloud session from `origin/main` once PR #25 merges.
+  - **First, ask about PR #25's confirmations** if any were left unticked.
+  - **Check the scheduled refresh on `main`.** Look for a green run and a bot commit to
+    `data/running/published/`. If a run is red, fix that first.
+  - **Goals need the owner's input.** Phase 3 needs `goals.yaml`, `upcoming-races.yaml` and
+    `section.yaml`, including the VO2 max target value and the Brighton build start (see *Open
+    questions*). Run a question round first.
+  - T085 (full backfill) still waits on T150.
 
 ## Vision
 
@@ -518,7 +520,65 @@ project-specific notes.
   - **Publish-failure alerts go to the backlog.** The alert only watches fetch staleness for now.
   - **T070's local half is dropped**, so T070 is done.
 
+- **2026-10-17** — **Phase 2h built** (the shared shell). Choices later tasks build on:
+  - **Tokens:** the dataviz reference palette, re-validated against our surfaces and the Running
+    warm ones. Light slots 3–5 are below 3:1, so charts that use them carry direct labels or the
+    table. Single-series Running charts use `--running-series` (slot 2, orange). Dark mode
+    follows the OS only (a toggle would need JS). A Vitest suite enforces AA contrast for every
+    token pair in both themes.
+  - **Charts:** a stretched SVG (`preserveAspectRatio="none"`, non-scaling strokes) draws the
+    lines. Labels, dots and columns are HTML placed by percentage, so text is real-size at 320 px
+    with no JS. Native `title` tooltips are the hover layer, and the `<details>` table is the full
+    data view. Minor x labels hide below 40rem. Range switching is CSS `:has()` over native
+    radios.
+  - **Share images:** satori (WOFF Inter 5.3.0; it can't read WOFF2) then sharp PNG.
+    `ogEndpoint()` makes a static endpoint, and `ogPath('/running/goals/')` gives
+    `/og/running-goals.png`.
+  - **Freshness:** without JS, `LastUpdated` shows `last_success_at_build` from `refresh.json`,
+    with the stale notice decided at build time (the daily rebuild keeps it honest). The script
+    (~680 B, inlined) takes the later of the live and build values. On failure it leaves the
+    page as built. The instant is epoch milliseconds, because run pages can't hold ISO
+    datetimes (scan-privacy).
+  - **Garmin attribution placement** (T152): title level. It goes under each page's `<h1>`
+    (`SectionLayout garmin`) and also at each chart, tile or card heading (`ChartFigure` source
+    slot), plus in share images showing Garmin data. Text only: "Source: Garmin [device]", or
+    "Derived in part from Garmin device-sourced data" for fitness/fatigue/form. Why: the
+    guidelines (V 6.30.2025) want "Garmin [device model]" next to the primary heading of every
+    data view, cards and charts included, and accept text instead of the logo. They were read
+    through excerpts, because the sandbox and WebFetch can't reach developer.garmin.com, so
+    re-check the PDF at T112.
+  - **Testing:** `vitest.config.ts` uses Astro's `getViteConfig`, so Vitest renders `.astro`
+    components with the container API. `/shell-preview/` (synthetic data) is injected only
+    when `SHELL_PREVIEW=1`, and the `tests.yml` Playwright job builds that way. The deploy build
+    never does.
+  - **No site-wide nav yet.** The header carries the site name, and each section passes its own
+    nav (one section can't list others, by Principle VII). A site nav comes with CV/Blog.
+  - **Versions:** every npm pin is still current, and TypeScript stays on 6.0.3
+    (`@astrojs/check` still peer-requires `^5 || ^6`). The `fflate` advisory via satori is
+    unchanged and still accepted: satori now runs, but only reads our own fonts and card text,
+    never ZIP archives.
+
 ## Upstream candidates
+
+- 2026-10-17 — satori sizes boxes content-box. A root with `width: 100%` plus padding and a border
+  rendered at 1360 x 790 on a 1200 x 630 canvas, and the footer line fell off the image. Agent
+  tip: give the sized root no padding or border, and put the padding on a `flexGrow: 1` child.
+  Look at a rendered PNG before trusting a share-image layout.
+- 2026-10-17 — The `pkill -f` self-kill recurred with a *specific* pattern
+  (`pkill -f 'astro preview --port 4321'`), because the pattern was in the same Bash command's
+  own text, so it matched the agent's shell (exit 144). Strengthen the tip: never `pkill -f` at
+  all from an agent shell. Find the PID by port (`ss -ltnp`) or keep the PID from when it was
+  started.
+- 2026-10-17 — Cloud session: `@playwright/test` 1.64.1 wants `chromium_headless_shell-1248`,
+  but the image ships chromium 1194 under `/opt/pw-browsers`, so `playwright test` can't launch.
+  Agent tip: run locally with a throwaway config that spreads the repo config and sets
+  `launchOptions.executablePath: '/opt/pw-browsers/chromium'`. Don't edit the committed config;
+  CI installs its own browser.
+- 2026-10-17 — Cloud session: developer.garmin.com is blocked for both the sandbox and WebFetch,
+  so the brand guidelines T152 says to re-read could only be read through search excerpts.
+  Generalisation (research before choosing): when a required primary source can't be fetched,
+  say so in the code comment and the decisions log, and name the checkpoint where it gets
+  re-checked (here T112), rather than presenting excerpts as a full read.
 
 - 2026-10-17 — A private repo on GitHub Free answers the rulesets endpoints with 403 "Upgrade
   to GitHub Pro", so the plan's `gh api .../rulesets` check can't succeed there, and a job's

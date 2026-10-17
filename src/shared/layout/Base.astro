@@ -1,0 +1,87 @@
+---
+// The page shell every page uses (T073): lang="en-GB", <head> metadata (Meta.astro), a skip link,
+// banner / main / contentinfo landmarks, and a 320px-first content column. No client JS.
+//
+// Slots: default = the page content inside <main>; "nav" = navigation in the header (beside the
+// site name); "footer" = extra footer lines; "head" = extra <head> elements.
+import Meta, { type Props as MetaProps } from './Meta.astro';
+import Footer from './Footer.astro';
+import '../design/tokens.css';
+import '../design/base.css';
+
+export interface Props extends MetaProps {
+  /** A theme class for <body>, e.g. "theme-running" (a section's identity, Principle VII). */
+  theme?: string;
+}
+
+const { theme, ...meta } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <Meta {...meta} />
+    <slot name="head" />
+  </head>
+  <body class={theme}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="site-name" href="/">Alexander Webber</a>
+        <slot name="nav" />
+      </div>
+    </header>
+    <main id="main" tabindex="-1">
+      <div class="wrap">
+        <slot />
+      </div>
+    </main>
+    <Footer><slot name="footer" /></Footer>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: var(--gutter);
+    top: var(--space-2);
+    z-index: 10;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-accent);
+    font-weight: var(--weight-bold);
+    transform: translateY(-200%);
+  }
+
+  .skip-link:focus {
+    transform: none;
+  }
+
+  .site-header {
+    padding-block: var(--space-4);
+    margin-bottom: var(--space-5);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-header .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-5);
+  }
+
+  .site-name {
+    color: var(--color-text);
+    font-weight: var(--weight-bold);
+    font-size: var(--step-1);
+    text-decoration: none;
+  }
+
+  main:focus {
+    outline: none;
+  }
+</style>

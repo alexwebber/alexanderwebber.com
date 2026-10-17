@@ -33,6 +33,12 @@ export function formatDate(date: string): string {
   return `${d} ${MONTHS[m - 1]} ${y}`;
 }
 
+/** "4 Apr" */
+export function formatDayMonth(date: string): string {
+  const [, m, d] = parts(date);
+  return `${d} ${MONTHS[m - 1]}`;
+}
+
 /** "Apr 2027" */
 export function formatMonth(date: string): string {
   const [y, m] = parts(date);
@@ -43,6 +49,18 @@ export function formatMonth(date: string): string {
 export function londonDate(instant: Date): string {
   const p = Object.fromEntries(londonParts.formatToParts(instant).map((x) => [x.type, x.value]));
   return `${p.year}-${p.month}-${p.day}`;
+}
+
+const londonTime = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/London',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+/** An instant as UK date and 24-hour time in Europe/London: "17 Oct 2026, 21:19". */
+export function formatDateTime(instant: Date): string {
+  return `${formatDate(londonDate(instant))}, ${londonTime.format(instant)}`;
 }
 
 /** Today in Europe/London. */

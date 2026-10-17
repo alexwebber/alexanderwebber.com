@@ -1,0 +1,58 @@
+---
+// The layout every Running page uses (T076): the shared Base shell in Running's warm theme, the
+// section nav built from the route registry (integration.ts; only shipped areas, so no dead
+// links), the page heading with Garmin attribution right under it when the page shows Garmin
+// data (T152, title-level placement), and "Last updated" with the stale notice.
+//
+// Slots: default = page content; "last-updated" replaces the freshness line (rarely needed).
+import Base from '../../../shared/layout/Base.astro';
+import Nav from '../../../shared/layout/Nav.astro';
+import { shippedAreas } from '../integration.ts';
+import { buildFreshness } from '../data/load.ts';
+import GarminAttribution from '../components/GarminAttribution.astro';
+import LastUpdated from '../components/LastUpdated.astro';
+import '../styles/theme.css';
+
+export interface Props {
+  /** The page's <h1>. */
+  heading: string;
+  /** The <title>; defaults to "<heading> · Running · Alexander Webber". */
+  title?: string;
+  description: string;
+  /** Share image path, e.g. /og/running-goals.png. */
+  image: string;
+  imageAlt: string;
+  /** Show Garmin attribution under the heading (any page showing Garmin-sourced data, FR-077). */
+  garmin?: boolean | { device?: string; derived?: boolean };
+  /** href of the nav item this page sits under (e.g. a run page under Training). */
+  current?: string;
+}
+
+const { heading, description, image, imageAlt, garmin = false, current } = Astro.props;
+const title = Astro.props.title ?? `${heading} · Running · Alexander Webber`;
+const nav = shippedAreas().map((area) => ({ label: area.label, href: area.href }));
+const freshness = await buildFreshness();
+const attribution = garmin === true ? {} : garmin || undefined;
+---
+
+<Base title={title} description={description} image={image} imageAlt={imageAlt} theme="theme-running">
+  <Nav slot="nav" label="Running" items={nav} current={current} />
+  <header class="page-header">
+    <h1>{heading}</h1>
+    {attribution && <GarminAttribution {...attribution} />}
+  </header>
+  <slot name="last-updated">
+    <LastUpdated lastSuccessAt={freshness.lastSuccessAt} staleAfterHours={freshness.staleAfterHours} />
+  </slot>
+  <slot />
+</Base>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-2);
+  }
+
+  .page-header h1 {
+    margin-bottom: var(--space-1);
+  }
+</style>

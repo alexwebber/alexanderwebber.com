@@ -1,0 +1,49 @@
+---
+// The shared shell over synthetic data (never real figures), built only with SHELL_PREVIEW=1
+// (astro.config.mjs) for tests/a11y/shell.spec.ts: layout at 320px, keyboard, axe, and the
+// CSS-only range toggle in a real browser.
+import BarChart from '../../src/shared/charts/BarChart.astro';
+import ChartFigure from '../../src/shared/charts/ChartFigure.astro';
+import LineChart from '../../src/shared/charts/LineChart.astro';
+import ProgressBar from '../../src/shared/charts/ProgressBar.astro';
+import RangeToggle from '../../src/shared/charts/RangeToggle.astro';
+import { addDays, formatDate } from '../../src/shared/format/dates.ts';
+import GarminAttribution from '../../src/sections/running/components/GarminAttribution.astro';
+import SectionLayout from '../../src/sections/running/components/SectionLayout.astro';
+
+const end = '2026-10-17';
+const weight = Array.from({ length: 400 }, (_, i) => {
+  const date = addDays(end, i - 399);
+  return { date, value: i % 37 === 5 ? null : Math.round((101 - i * 0.008 + Math.sin(i / 9) * 0.6) * 10) / 10 };
+});
+const kg = (v: number) => `${v} kg`;
+const series = (from?: string) => [{ label: 'Weight (7-day average)', points: weight, color: 'var(--running-series)' }].map((s) => ({ ...s, from }));
+const weeks = Array.from({ length: 12 }, (_, i) => ({ label: formatDate(addDays('2026-07-27', i * 7)).replace(/ 2026$/, ''), value: 20 + ((i * 7) % 23), showValue: i === 11, highlight: i === 11 }));
+const latest = weight.findLast((p) => p.value !== null)!;
+---
+
+<SectionLayout heading="Shell preview" title="Shell preview" description="The shared shell's components over synthetic data." image="/og/site.png" imageAlt="Preview card" garmin>
+  <h2>Progress</h2>
+  <p id="progress-label">Weight goal: 7.2 of 8 kg lost</p>
+  <ProgressBar label="Progress to 93 kg" fraction={0.9} valueText="7.2 of 8 kg lost (90%)" />
+
+  <h2>Charts</h2>
+  <ChartFigure
+    title="Weight"
+    heading={3}
+    summary={`${kg(latest.value!)} on ${formatDate(latest.date)}, 4.8 kg above the 93 kg target.`}
+    table={{ columns: ['Date', 'Weight (7-day average)'], rows: weight.filter((p) => p.value !== null).slice(-30).map((p) => [formatDate(p.date), kg(p.value!)]) }}
+  >
+    <GarminAttribution slot="source" device="Index S2" />
+    <RangeToggle legend="Weight chart range" id="weight-range">
+      <LineChart slot="3m" title="Weight, last 3 months" desc="Weight fell slightly over the last 3 months." series={series()} from={addDays(end, -91)} to={end} format={kg} target={{ value: 93, label: 'Target 93 kg' }} />
+      <LineChart slot="1y" title="Weight, last year" desc="Weight fell about 3 kg over the last year." series={series()} from={addDays(end, -365)} to={end} format={kg} target={{ value: 93, label: 'Target 93 kg' }} markers={[{ date: '2026-06-01', value: 98.6, label: 'DEXA' }]} />
+      <LineChart slot="all" title="Weight, all time" desc="Weight fell about 3 kg since records began." series={series()} format={kg} target={{ value: 93, label: 'Target 93 kg' }} markers={[{ date: '2026-06-01', value: 98.6, label: 'DEXA' }]} />
+    </RangeToggle>
+  </ChartFigure>
+
+  <ChartFigure title="Weekly distance" heading={3} summary="28 km this week." table={{ columns: ['Week', 'Distance'], rows: weeks.map((w) => [w.label, `${w.value} km`]) }}>
+    <GarminAttribution slot="source" />
+    <BarChart title="Weekly distance" desc="Weekly distance over 12 weeks, 28 km this week." bars={weeks} format={(v: number) => `${v} km`} target={{ value: 35, label: 'Target 35 km' }} color="var(--series-1)" />
+  </ChartFigure>
+</SectionLayout>

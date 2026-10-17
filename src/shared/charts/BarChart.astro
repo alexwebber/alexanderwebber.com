@@ -1,0 +1,140 @@
+---
+// A build-time column chart (T074), e.g. weekly distance: columns grow from a zero baseline, at
+// most 24px wide with a 4px rounded top, with an optional dashed target level. No client JS. The
+// SVG carries the text alternative (FR-071); ChartFigure adds the data table. Each column shows
+// its label and value on hover via the native tooltip; values are labelled only where the caller
+// asks (selective direct labels), and x labels are thinned to `maxLabels`, then halved again on
+// narrow screens.
+import { chartId } from './ids.ts';
+import { PLOT, linearScale, niceTicks, percent } from './scales.ts';
+import './chart.css';
+
+export interface Bar {
+  /** Category label under the column, e.g. "6 Oct". */
+  label: string;
+  value: number;
+  /** Show the value above this column (use sparingly: the latest or the largest). */
+  showValue?: boolean;
+  /** Draw this column in the accent hue (e.g. the current week); the rest use `color`. */
+  highlight?: boolean;
+}
+
+export interface Props {
+  title: string;
+  desc: string;
+  bars: readonly Bar[];
+  format?: (value: number) => string;
+  target?: { value: number; label: string };
+  /** Column colour; defaults to categorical slot 1. */
+  color?: string;
+  /** Colour for highlighted columns; defaults to the page accent. */
+  highlightColor?: string;
+  /** Most x labels to show; the rest are thinned evenly. */
+  maxLabels?: number;
+  id?: string;
+}
+
+const { title, desc, bars, format = String, target, color = 'var(--series-1)', highlightColor = 'var(--color-accent)', maxLabels = 6 } = Astro.props;
+const id = chartId('bar', Astro.props.id);
+
+const values = bars.map((b) => b.value).concat(target ? [target.value] : []);
+const ticks = niceTicks(0, values.length ? Math.max(...values) : 1, { zero: true });
+const y = linearScale(ticks.domain, [PLOT, 0]);
+const every = Math.max(1, Math.ceil(bars.length / maxLabels));
+const height = (value: number) => percent(PLOT - y(Math.max(0, value)));
+---
+
+<div class="chart bar-chart">
+  <div class="chart-y" aria-hidden="true">
+    {ticks.values.map((v) => <span style={`top: ${percent(y(v))}`}>{format(v)}</span>)}
+  </div>
+  <div class="chart-plot">
+    <svg viewBox={`0 0 ${PLOT} ${PLOT}`} preserveAspectRatio="none" role="img" aria-labelledby={`${id}-title ${id}-desc`}>
+      <title id={`${id}-title`}>{title}</title>
+      <desc id={`${id}-desc`}>{desc}</desc>
+      <g class="chart-grid">
+        {ticks.values.slice(1).map((v) => <line x1="0" x2={PLOT} y1={y(v)} y2={y(v)} vector-effect="non-scaling-stroke" />)}
+      </g>
+      <line class="chart-baseline" x1="0" x2={PLOT} y1={PLOT} y2={PLOT} vector-effect="non-scaling-stroke" />
+    </svg>
+    <ol class="bars" aria-hidden="true">
+      {
+        bars.map((b) => (
+          <li title={`${b.label}: ${format(b.value)}`}>
+            <span class="bar" style={`height: ${height(b.value)}; background: ${b.highlight ? highlightColor : color}`}>
+              {b.showValue && <span class="bar-value">{format(b.value)}</span>}
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+    {
+      target && (
+        <div class="chart-target" style={`top: ${percent(y(target.value))}`} aria-hidden="true">
+          <span>{target.label}</span>
+        </div>
+      )
+    }
+  </div>
+  <ol class="chart-x bar-labels" aria-hidden="true">
+    {bars.map((b, i) => (i % every === 0 ? <li class:list={{ minor: (i / every) % 2 === 1 }}>{b.label}</li> : <li />))}
+  </ol>
+</div>
+
+<style>
+  .bars,
+  .bar-labels {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .bars {
+    position: absolute;
+    inset: 0;
+    align-items: flex-end;
+  }
+
+  .bars li,
+  .bar-labels li {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .bars li {
+    height: 100%;
+    align-items: flex-end;
+  }
+
+  .bar {
+    position: relative;
+    /* <= 24px, and a 2px gap even when columns are packed tight */
+    width: min(24px, calc(100% - 2px));
+    border-radius: var(--radius-mark) var(--radius-mark) 0 0;
+  }
+
+  .bar-value {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-bottom: 2px;
+    white-space: nowrap;
+    color: var(--color-text-secondary);
+  }
+
+  .bar-labels li {
+    padding-top: var(--space-1);
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  @media (forced-colors: active) {
+    .bar {
+      background: CanvasText !important;
+    }
+  }
+</style>

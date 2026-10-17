@@ -1,0 +1,140 @@
+---
+// A build-time line chart over dates (T074): one to four series, an optional target line and
+// labelled reference markers (e.g. lab results against Garmin estimates). No client JS. The SVG
+// carries the text alternative (<title> and <desc>, FR-071); ChartFigure adds the data table.
+// Each series ends in a dot with its value as a direct label; dots and markers show their value
+// and date on hover via the native tooltip.
+import { formatDate } from '../format/dates.ts';
+import { chartId } from './ids.ts';
+import { PLOT, dayNumber, linePath, linearScale, monthTicks, niceTicks, percent } from './scales.ts';
+import './chart.css';
+
+export interface LinePoint {
+  /** YYYY-MM-DD */
+  date: string;
+  /** null leaves a gap */
+  value: number | null;
+}
+
+export interface LineSeries {
+  label: string;
+  points: readonly LinePoint[];
+  /** CSS colour; defaults to the categorical slot for the series' position. */
+  color?: string;
+}
+
+export interface Props {
+  /** Short name of the chart (SVG <title>). */
+  title: string;
+  /** The key message, e.g. "Down 3.2 kg in the last year, 1.8 kg above target" (SVG <desc>). */
+  desc: string;
+  series: readonly LineSeries[];
+  /** Formats a value for axis labels, direct labels and tooltips, e.g. (v) => `${v} kg`. */
+  format?: (value: number) => string;
+  /** A target level, drawn dashed and labelled. */
+  target?: { value: number; label: string };
+  /** Labelled reference points. */
+  markers?: readonly { date: string; value: number; label: string }[];
+  /** Date range shown; defaults to the data's first and last dates. */
+  from?: string;
+  to?: string;
+  /** Keep zero on the y axis (default: fit the data). */
+  zero?: boolean;
+  id?: string;
+}
+
+const { title, desc, series, format = String, target, markers = [], zero = false } = Astro.props;
+const id = chartId('line', Astro.props.id);
+
+const dates = series.flatMap((s) => s.points.map((p) => p.date)).concat(markers.map((m) => m.date)).sort();
+const from = Astro.props.from ?? dates[0] ?? '1970-01-01';
+const to = Astro.props.to ?? dates.at(-1) ?? from;
+const inRange = (date: string) => date >= from && date <= to;
+
+const shown = series.map((s, i) => ({
+  ...s,
+  color: s.color ?? `var(--series-${(i % 8) + 1})`,
+  points: s.points.filter((p) => inRange(p.date)),
+}));
+const shownMarkers = markers.filter((m) => inRange(m.date));
+
+const values = shown
+  .flatMap((s) => s.points.map((p) => p.value))
+  .filter((v): v is number => v !== null && Number.isFinite(v))
+  .concat(shownMarkers.map((m) => m.value), target ? [target.value] : []);
+const ticks = niceTicks(values.length ? Math.min(...values) : 0, values.length ? Math.max(...values) : 1, { zero });
+
+const x = linearScale([dayNumber(from), dayNumber(to)], [0, PLOT]);
+const y = linearScale(ticks.domain, [PLOT, 0]);
+const xPos = (date: string) => percent(x(dayNumber(date)));
+const yPos = (value: number) => percent(y(value));
+
+const ends = shown.flatMap((s) => {
+  const last = s.points.findLast((p) => p.value !== null && Number.isFinite(p.value));
+  return last ? [{ series: s, date: last.date, value: last.value as number }] : [];
+});
+---
+
+<div class="chart line-chart">
+  <div class="chart-y" aria-hidden="true">
+    {ticks.values.map((v) => <span style={`top: ${yPos(v)}`}>{format(v)}</span>)}
+  </div>
+  <div class="chart-plot">
+    <svg viewBox={`0 0 ${PLOT} ${PLOT}`} preserveAspectRatio="none" role="img" aria-labelledby={`${id}-title ${id}-desc`}>
+      <title id={`${id}-title`}>{title}</title>
+      <desc id={`${id}-desc`}>{desc}</desc>
+      <g class="chart-grid">
+        {ticks.values.map((v) => <line x1="0" x2={PLOT} y1={y(v)} y2={y(v)} vector-effect="non-scaling-stroke" />)}
+      </g>
+      {
+        shown.map((s) => (
+          <path class="chart-line" d={linePath(s.points.map((p) => ({ x: dayNumber(p.date), y: p.value })), x, y)} stroke={s.color} vector-effect="non-scaling-stroke" />
+        ))
+      }
+    </svg>
+    <div aria-hidden="true">
+      {
+        target && (
+          <div class="chart-target" style={`top: ${yPos(target.value)}`}>
+            <span>{target.label}</span>
+          </div>
+        )
+      }
+      {
+        shownMarkers.map((m) => {
+          const left = x(dayNumber(m.date)) > PLOT * 0.7;
+          return (
+            <>
+              <span class="chart-dot" style={`left: ${xPos(m.date)}; top: ${yPos(m.value)}`} title={`${m.label}: ${format(m.value)}, ${formatDate(m.date)}`} />
+              <span class:list={['chart-dot-label', { 'is-left': left }]} style={`left: ${xPos(m.date)}; top: ${yPos(m.value)}`}>
+                {m.label}
+              </span>
+            </>
+          );
+        })
+      }
+      {
+        ends.map((e) => (
+          <>
+            <span class="chart-dot" style={`left: ${xPos(e.date)}; top: ${yPos(e.value)}; --dot-color: ${e.series.color}`} title={`${e.series.label}: ${format(e.value)}, ${formatDate(e.date)}`} />
+            <span class="chart-dot-label" style={`left: ${xPos(e.date)}; top: ${yPos(e.value)}`}>
+              {format(e.value)}
+            </span>
+          </>
+        ))
+      }
+    </div>
+  </div>
+  <div class="chart-x" aria-hidden="true">
+    {monthTicks(from, to).map((t, i, all) => <span class:list={{ minor: i > 0 && i < all.length - 1 }} style={`left: ${xPos(t.date)}`}>{t.label}</span>)}
+  </div>
+  {
+    shown.length > 1 && (
+      <ul class="chart-legend" aria-hidden="true">
+        {shown.map((s) => (
+          <li style={`--key-color: ${s.color}`}>{s.label}</li>
+        ))}
+      </ul>
+    )
+  }
+</div>

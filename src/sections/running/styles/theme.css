@@ -1,0 +1,29 @@
+/*
+ * Running's warm identity (T072, Principle VII): friends, family, sponsors and fellow runners.
+ * Overrides shared tokens under .theme-running (set by SectionLayout.astro), so nothing outside
+ * the section changes. Warm cream surfaces and a terracotta accent; chart slots stay the shared,
+ * validated palette (re-validated against these surfaces, 2026-10-17), and single-series Running
+ * charts lead with slot 2 (orange), which suits the warm surfaces.
+ *
+ * Contrast is enforced with the shared tokens by tests/unit/design-tokens.test.ts.
+ */
+.theme-running {
+  --color-page: #fbf6ef;
+  --color-surface: #fffdfa;
+  --color-border: #eadfd0;
+  --color-accent: #a8431a;
+  --color-accent-strong: #7d3010;
+  --color-focus: #a8431a;
+  --running-series: var(--series-2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-running {
+    --color-page: #14110e;
+    --color-surface: #1c1916;
+    --color-border: #3a3129;
+    --color-accent: #f0956b;
+    --color-accent-strong: #f6b896;
+    --color-focus: #f0956b;
+  }
+}

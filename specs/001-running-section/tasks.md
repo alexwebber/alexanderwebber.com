@@ -407,11 +407,12 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 
 ### 2h. Shared shell (shared plumbing)
 
-- [ ] T072 [P] Create `src/shared/design/tokens.css`:
+- [X] T072 [P] Create `src/shared/design/tokens.css`:
   - Colour (light and dark via `prefers-color-scheme`), type scale, spacing and focus ring.
   - A chart palette validated for WCAG 2.2 AA contrast, applying the `dataviz` skill conventions.
   - Separately, create the Running warm-identity overrides in `src/sections/running/styles/theme.css` (Principle VII).
-- [ ] T073 [P] Create `src/shared/layout/Base.astro`, `Meta.astro`, `Nav.astro` and `Footer.astro`. Every page gets:
+  - **Done 2026-10-17.** Chart slots are the dataviz reference palette, re-validated against these surfaces and the Running ones. Light slots 3–5 are below 3:1, so charts using them need direct labels or the table. Contrast is enforced by `tests/unit/design-tokens.test.ts`, element defaults are in `base.css`, and dark mode follows the OS setting (no toggle, no JS).
+- [X] T073 [P] Create `src/shared/layout/Base.astro`, `Meta.astro`, `Nav.astro` and `Footer.astro`. Every page gets:
   - a required unique `title` and `description`
   - a canonical URL
   - OG and Twitter tags with an image prop
@@ -420,25 +421,31 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - a 320 px-first layout
 
   Also wire `@astrojs/sitemap`.
-- [ ] T074 [P] Create the SVG chart primitives in `src/shared/charts/`:
+
+  **Done 2026-10-17.** The sitemap was already wired at scaffold time; this adds `<link rel="sitemap">` and `public/robots.txt`. There is no cross-section site nav yet: the header has the site name, and each section passes its own nav. A site-wide nav comes when CV/Blog exist.
+- [X] T074 [P] Create the SVG chart primitives in `src/shared/charts/`:
   - `scales.ts` and axes.
   - `LineChart.astro`, `BarChart.astro` and `ProgressBar.astro`.
   - `ChartFigure.astro`: a `<figure>` whose SVG has `<title>`/`<desc>` text alternatives, plus the data table in `<details>`, keyboard reachable (FR-071).
   - `RangeToggle.astro`: CSS-only radio inputs for 3 months / 1 year / all (FR-068).
   - Target-line and labelled reference-marker support.
   - **No client JS.**
-- [ ] T075 [P] Create the OG image renderer `src/shared/og/render.ts`: satori 0.62.0 → SVG → sharp 0.35.5 PNG at build time. It uses the bundled Inter font (OFL) in `src/shared/og/fonts/` and provides an `/og/<path>.png` endpoint helper. Also add the site-home OG card for `src/pages/index.astro`.
-- [ ] T076 Create the section data and freshness UI:
+  - **Done 2026-10-17.** A stretched SVG (non-scaling strokes) draws the lines, and HTML labels and dots are placed by percentage, so text stays readable from 320 px up. Native `title` tooltips are the no-JS hover layer. `RangeToggle` uses `:has()`; without it, every panel shows. Also added: `chart.css`, `ids.ts`. Tests: `tests/unit/chart-scales.test.ts`, `shell-components.test.ts`, `tests/a11y/shell.spec.ts` (against `/shell-preview/`, built only with `SHELL_PREVIEW=1`).
+- [X] T075 [P] Create the OG image renderer `src/shared/og/render.ts`: satori 0.62.0 → SVG → sharp 0.35.5 PNG at build time. It uses the bundled Inter font (OFL) in `src/shared/og/fonts/` and provides an `/og/<path>.png` endpoint helper. Also add the site-home OG card for `src/pages/index.astro`.
+  - **Done 2026-10-17.** Inter 5.3.0 (fontsource, Latin, WOFF; satori can't read WOFF2), with `ogEndpoint()` and `ogPath()`. The first endpoint is `/og/site.png` (`src/pages/og/site.png.ts`). Tests: `tests/unit/og.test.ts`.
+- [X] T076 Create the section data and freshness UI:
   - **Loader**: `src/sections/running/data/load.ts`, a typed, validated and memoised loader over `RunningStore`.
   - **`LastUpdated.astro`** (`src/sections/running/components/`):
     - Without JS, it shows the build-time "as of last site update" value from `refresh.json`.
     - An inline script under 1 KB polls `/running/api/freshness`, renders "Last updated <relative>", and un-hides the stale notice once the data is older than `stale_after_hours` (baked in at build). On a 503 it keeps the build-time text (FR-005/006/074).
   - **`SectionLayout.astro`**: the section nav built from the route registry (T018), with a `LastUpdated` slot.
-- [ ] T152 Create `src/sections/running/components/GarminAttribution.astro` (FR-077; a condition of the intervals.icu API terms, effective 2025-10-23):
+  - **Done 2026-10-17.** `SectionLayout` is in `components/`, with `data/load.ts` (`runningStore`, `sectionSettings`, `buildFreshness`). The freshness instant is carried as epoch milliseconds, because run pages must not contain ISO times of day (scan-privacy). The script is about 680 bytes, inlined.
+- [X] T152 Create `src/sections/running/components/GarminAttribution.astro` (FR-077; a condition of the intervals.icu API terms, effective 2025-10-23):
   - Re-read Garmin's current brand guidelines first and follow them exactly for wording, logo/mark use and placement; record the source URL and date in a comment and in `src/sections/running/README.md`.
   - **Placement follows the guidelines** (FR-077 "view" = a page, chart, tile or card showing Garmin-sourced data): page-level (e.g. rendered once from `SectionLayout.astro`, T076) or next to each chart/tile/card, whichever the guidelines require. Record the placement decision in the `PROJECT_MEMORY.md` decisions log. `SectionLayout` is the starting assumption, not the final answer.
   - Every Running page or component that shows Garmin-sourced data (runs, health readings, manual Garmin figures) carries it as placed; it stays visible without JS and meets contrast/a11y rules (text alternative for any mark).
   - Add an e2e assertion (in each story's e2e spec: T095, T109, T123, T137, T144) that the attribution is present, matching the chosen placement, on landing, goals, training, run, race and health pages.
+  - **Done 2026-10-17** (the e2e assertions come with each story spec). Placement is title-level: under each page's `<h1>` via `SectionLayout`, and at every chart, tile or card heading (`ChartFigure`'s `source` slot), plus in share images showing Garmin data. Text only, "Source: Garmin [device]". The guidelines (V 6.30.2025) were read through excerpts, because the sandbox can't reach developer.garmin.com, so re-check the PDF at T112. Details are in `src/sections/running/README.md`.
 
 ### 2i. Foundational graduation coverage, backfill and first publish
 
