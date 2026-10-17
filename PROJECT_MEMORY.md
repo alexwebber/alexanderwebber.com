@@ -9,9 +9,10 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Spike 1 (T013–T014) and the scaffold (T016–T022) are done in a
-  cloud session, on branch `claude/nice-hamilton-jilme1`, and raised as one PR. Results are in
-  the decisions log. The throwaway Spike 1a workflow is removed.
+- **Status (2026-10-17):** Phase 2a–2b (schemas, `gen-types`, shared format and storage,
+  `validate-data` and the three scans: T023–T041, T151, T083, most of T084 and the schema part
+  of T082) is done in a cloud session, on branch `claude/keen-albattani-uqi4el`, and raised as
+  one PR. Decisions are in the log below.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -33,9 +34,11 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Phase 2a–2b** (JSON Schemas T023–T032 + T151, `gen-types` T034, shared format
-  and storage), on a new branch from `origin/main`, ideally as another cloud session. If the
-  PR for this slice has unticked confirmations when it merges, ask about them first.
+- **Next step: Phase 2c–2d**: the gate composite action and workflows (T042–T045), then the
+  ingest core (logging, provider contract, archive: T046–T049). Use a new branch from
+  `origin/main`, ideally as another cloud session. The gate fetches R2 `state/run-ids.json` and
+  passes it to `scan-privacy --provider-ids=<file>` when it has R2 credentials (T041 note). If
+  the PR for this slice has unticked confirmations when it merges, ask about them first.
 
 ## Vision
 
@@ -376,7 +379,45 @@ project-specific notes.
     workers.dev subdomain is now registered.
   - The plan's ~6,000 deployed files at 5,000 runs is ~30% of the limit, so no plan change.
 
+- **2026-10-17** — **Phase 2a–2b built** (schemas, storage, validation, scans). Design choices
+  the later tasks build on:
+  - **Schemas:** shared building blocks live in `schemas/defs.schema.json`. An `x-error`
+    annotation holds each node's owner-facing message, and goals use a `type` discriminator.
+    List-shaped owner files (goals, upcoming races, overrides, exclusions) can't carry
+    `schema_version`, so they are always the current version. Manifest `input_hash` is sha256
+    hex. Run series values may be `null` (gaps), and each health metric has a fixed unit.
+    `status_override` takes only `active` (keep a goal active despite an automatic achievement).
+  - **Store:** `RunningStore` methods are async, so a database-backed store stays a drop-in.
+    Absent files mean no data yet. A missing `section.yaml` is a warning, so the gate stays
+    green before owner data exists. Any unexpected file under `data/running/` is an error.
+  - **YAML:** owner YAML is read with YAML 1.2 core rules in both languages, so `3:30:00` and
+    dates stay strings. Python uses `awingest.yaml12`, because PyYAML is YAML 1.1.
+  - **Scans:** `scan-privacy` takes the provider-ID map as `--provider-ids=<file>`. Its key-based
+    rules skip bundled library code in `dist/_astro/`.
+  - **Doc fix:** the contract's example run IDs `k3f9` and `p0rt` didn't match the run-ID
+    pattern (base32 has no 0, 1, 8 or 9); they are now `k3f7` and `p2rt`.
+  - **Versions:** every npm and PyPI pin is still current (TypeScript stays on its deliberate
+    6.0.3 pin). The accepted `fflate` advisory is unchanged (the only fix is still a satori
+    downgrade).
+
 ## Upstream candidates
+
+- 2026-10-17 — In a cloud session, a Bash call with a stray `cat > file` and no input waited on
+  stdin until it timed out. The `pkill -f cat` used to clean up then killed the agent's own
+  shell, because the pattern matched its command line. Agent tips: always give `cat >` a
+  heredoc or a source file. Kill background tasks by task ID or exact PID, never with
+  `pkill -f <common word>`.
+- 2026-10-17 — Contract docs carried example IDs (`k3f9`, `p0rt`) that broke the schema's own
+  pattern, and nobody noticed until the schemas were written. Generalisation (spec quality):
+  when schemas land, validate the contract's examples against them, or make the examples
+  fixtures.
+- 2026-10-17 — Python's PyYAML is YAML 1.1, so unquoted `3:30:00` becomes 12600 and `2027-04-04`
+  becomes a date. JS `yaml` 2.x defaults to YAML 1.2, where both stay strings. Generalisation
+  (agent tips): when two languages read the same YAML, pin both to one YAML version and test it
+  with shared fixtures.
+- 2026-10-17 — ajv's `schemaPath` restarts at every `$ref`, so you can't group branch errors
+  under a failed `anyOf`/`oneOf` by path prefix. ajv emits them directly before the composite
+  error, so group by that order instead. Agent tip for owner-friendly schema errors.
 
 - 2026-10-17 — In a GitHub Actions `run:` step (`bash -e`), `x=$(curl ...)` inside a retry loop
   exits the step on the first curl failure (here exit 35, TLS not yet ready on a newly

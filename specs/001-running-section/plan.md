@@ -17,7 +17,7 @@ performance) as a **static Astro 7 site on Cloudflare Workers static assets**, f
 2. **publish** — a deterministic processor normalises the raw payloads (intervals.icu adapter),
    applies an **allow-list sanitiser** (drops start times, training-run GPS (`latlng`) and
    free-text names/descriptions, unapproved metrics; reduces weight to a 7-day average; replaces
-   provider activity IDs with **opaque public run IDs** such as `2027-03-14-k3f9`), computes best efforts, and writes **versioned JSON into git** behind a
+   provider activity IDs with **opaque public run IDs** such as `2027-03-14-k3f7`), computes best efforts, and writes **versioned JSON into git** behind a
    storage abstraction. A build gate (schema validation of published + owner data, privacy scan,
    section-boundary check, site build) must pass before the bot commit and deploy.
 
