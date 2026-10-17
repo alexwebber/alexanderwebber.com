@@ -20,3 +20,6 @@ src/shared/storage/generated/
 # Spike output (raw provider payloads; never committed)
 spikes/**/out/
 __pycache__/
+
+# LocalArchive default for offline ingest runs (raw provider data; never committed)
+ingest/.archive/

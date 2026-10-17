@@ -1,0 +1,37 @@
+# Throwaway (removed before merge): checks the Phase 2e adapter against real intervals.icu data.
+# Backfills into a runner-local archive (nothing is written to R2) and prints aggregates only.
+name: Spike adapter check
+
+on:
+  push:
+    branches: [claude/stoic-franklin-vhiumh]
+    paths:
+      - .github/workflows/spike-adapter-check.yml
+      - spikes/intervals/adapter_check.py
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          working-directory: ingest
+      - run: uv sync --locked
+        working-directory: ingest
+      - name: Backfill the whole history into a local archive
+        env:
+          INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
+        run: uv run --project ingest awingest backfill --archive local --archive-dir "$RUNNER_TEMP/archive"
+      - name: Incremental fetch on top (should find nothing new)
+        env:
+          INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
+        run: uv run --project ingest awingest fetch --archive local --archive-dir "$RUNNER_TEMP/archive"
+      - name: Report
+        run: uv run --project ingest python spikes/intervals/adapter_check.py "$RUNNER_TEMP/archive"

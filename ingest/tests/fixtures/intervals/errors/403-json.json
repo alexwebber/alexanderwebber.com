@@ -1,0 +1,7 @@
+{
+  "status": 403,
+  "headers": {
+    "content-type": "application/json;charset=UTF-8"
+  },
+  "body": "{\"status\":403,\"error\":\"Access denied\"}"
+}

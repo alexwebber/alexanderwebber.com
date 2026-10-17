@@ -1,0 +1,9 @@
+{
+  "id": "i90000007",
+  "start_date_local": "2026-10-12T17:30:00",
+  "type": "WeightTraining",
+  "name": "SENTINEL gym",
+  "distance": null,
+  "moving_time": 2400,
+  "elapsed_time": 2500
+}

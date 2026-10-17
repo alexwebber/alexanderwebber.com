@@ -84,6 +84,11 @@ class Transient(ProviderError):
     action = "None: retried on the next run. Alerted only if it persists over 24 hours."
 
 
+class UnsupportedActivity(ValueError):
+    """Not a provider failure: the activity is out of scope (not a run, FR-009), for example
+    after the owner changed its type in the provider. The processor skips it."""
+
+
 # --- Raw (archived verbatim) ---
 
 
@@ -95,11 +100,14 @@ class ActivityRef:
     start_local: datetime
     # A hash of the list row, so the fetch stage re-fetches only new or changed activities.
     row_hash: str
+    # The list row itself (provider-specific bytes), archived with the activity's other parts.
+    row: bytes = field(default=b"", repr=False, compare=False)
 
 
 @dataclass(frozen=True)
 class RawBundle:
-    """An activity's raw parts as received (e.g. summary, detail, streams, time-at-hr, fit)."""
+    """An activity's raw parts as received, keyed by archive file name (e.g. ``detail.json``,
+    ``streams.json``, ``activity.fit``). The fetch stage writes each under the activity's prefix."""
 
     ref: ActivityRef
     parts: Mapping[str, bytes] = field(repr=False)
