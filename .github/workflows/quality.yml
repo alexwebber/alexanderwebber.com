@@ -1,0 +1,54 @@
+# Non-blocking quality checks (T045; plan.md Constraints, SC-006): Lighthouse 13.5.0 (mobile)
+# performance budgets plus its axe-based accessibility audits, on PRs that touch site code and
+# nightly against production. It is not part of the build gate and is not a required check.
+name: Quality
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'data/running/owner/**'
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/lighthouse-budget.mjs'
+  schedule:
+    - cron: '41 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The deployed site. Switch to https://alexanderwebber.com/ once the domain is live (T004).
+  PRODUCTION_URL: https://alexanderwebber.alexanderwebber.workers.dev/
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Also on the nightly run: the built tree tells the script which run, race and year pages
+      # exist, so it can pick one of each.
+      - run: npm run build
+
+      - name: Lighthouse against the PR build
+        if: github.event_name == 'pull_request'
+        run: node scripts/lighthouse-budget.mjs
+
+      - name: Lighthouse against production
+        if: github.event_name != 'pull_request'
+        run: node scripts/lighthouse-budget.mjs --base-url="$PRODUCTION_URL"

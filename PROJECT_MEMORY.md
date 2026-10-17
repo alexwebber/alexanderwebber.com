@@ -9,10 +9,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Phase 2a–2b (schemas, `gen-types`, shared format and storage,
-  `validate-data` and the three scans: T023–T041, T151, T083, most of T084 and the schema part
-  of T082) is done in a cloud session, on branch `claude/keen-albattani-uqi4el`, and raised as
-  one PR. Decisions are in the log below.
+- **Status (2026-10-17):** Phase 2c–2d (the gate action and `gate.yml`, `tests.yml`,
+  `lighthouse-budget.mjs` + `quality.yml`, and the ingest core: logging, provider contract,
+  `LocalArchive`/`R2Archive` with the T078 contract suite: T042–T049, T078) is done in a cloud
+  session, on branch `claude/amazing-edison-3ode87`, and raised as one PR. Decisions are in the
+  log below. **Merging it deploys the placeholder home page** to
+  `alexanderwebber.alexanderwebber.workers.dev` (gate.yml deploys every push to `main`).
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -34,11 +36,11 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Phase 2c–2d**: the gate composite action and workflows (T042–T045), then the
-  ingest core (logging, provider contract, archive: T046–T049). Use a new branch from
-  `origin/main`, ideally as another cloud session. The gate fetches R2 `state/run-ids.json` and
-  passes it to `scan-privacy --provider-ids=<file>` when it has R2 credentials (T041 note). If
-  the PR for this slice has unticked confirmations when it merges, ask about them first.
+- **Next step: Phase 2e**: the intervals.icu adapter and fetch stage (T051–T055), with the
+  adapter fixtures and contract suite (T077, T079). Use a new branch from `origin/main`, ideally
+  as another cloud session. Build on `awingest.providers.base`, `awingest.archive` and
+  `awingest.logging`. After the merge, check the first `gate.yml` deploy on `main` succeeded.
+  If the PR has unticked confirmations when it merges, ask about them first.
 
 ## Vision
 
@@ -400,7 +402,38 @@ project-specific notes.
     6.0.3 pin). The accepted `fflate` advisory is unchanged (the only fix is still a satori
     downgrade).
 
+- **2026-10-17** — **Phase 2c–2d built** (gate, CI workflows, ingest core). Choices later tasks
+  build on:
+  - **Node version:** CI reads `.nvmrc` (`22`). `engines` stays the `>=22.22.0` floor, because
+    setup-node resolves a range to the newest Node available.
+  - **Actions pinned by commit SHA** (checkout 7.0.1, setup-node 7.1.0, setup-uv 10.3.0,
+    upload-artifact 7.0.2, download-artifact 8.0.2). setup-uv publishes no major tag.
+  - **Gate:** the R2 run-ID map is fetched with the runner's AWS CLI into `$RUNNER_TEMP` and
+    deleted after the scan. A missing map is a notice; any other R2 failure fails the gate.
+    `gate.yml` deploys the `dist/` artifact the gate job built, so production gets exactly the
+    gated build.
+  - **Gate logs don't leak:** `scan-privacy` findings give `file:line:column` and the matched key,
+    never the caught value. The bot path runs the gate on unpublished data, so its log must not
+    carry it.
+  - **Errors:** every failure class subclasses `awingest.errors.IngestError` (`code`,
+    `exit_code`, `likely_cause`, `action`), shared by provider and archive errors.
+  - **Archive ETags** are the MD5 hex of the bytes, so `etag_of(data)` after a `get` is the
+    `if_match` value; `if_match=ABSENT` means create-only. S3/R2 answer a failed `If-Match` on a
+    missing object with 404, which `R2Archive` maps to `ArchiveConflict`.
+  - **Privacy in memory:** provider IDs, raw titles and coordinates are kept out of the normalised
+    types' `repr`. Logging scrubs secrets, emails and provider IDs from every caller field.
+
 ## Upstream candidates
+
+- 2026-10-17 — Astro 7 runs `astro preview` in the background when it detects a coding agent
+  (`CLAUDECODE` set), so Playwright's `webServer` reports "exited early" locally while CI works.
+  Agent tip: clear `CLAUDECODE`/`AI_AGENT` in the web server's env (done in
+  `playwright.config.ts`), and stop strays with `astro preview stop`.
+- 2026-10-17 — A privacy scan that prints ±30 characters around each match puts the caught
+  values (coordinates, provider IDs) into CI logs, which become public with the repo.
+  Generalisation (privacy checks): scanners report position and rule, never the matched value.
+- 2026-10-17 — ruff's PLE1205 flags any `<name>.error("event", exc)` as a stdlib logging
+  format-string call. Agent tip: give custom structured loggers keyword-only extras (`exc=`).
 
 - 2026-10-17 — In a cloud session, a Bash call with a stray `cat > file` and no input waited on
   stdin until it timed out. The `pkill -f cat` used to clean up then killed the agent's own

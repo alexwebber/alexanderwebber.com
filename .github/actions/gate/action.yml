@@ -1,0 +1,95 @@
+# The build gate (T042; contracts/pipeline.md "Gate"): site build + data-schema validation, with
+# the image, boundary and privacy scans. It is a composite action, so it runs in the caller's job
+# and workspace: callers check out the repo first, and dist/ is left behind for a deploy step.
+# Test suites (pytest, Vitest, Playwright) are not part of it; they run in tests.yml.
+name: Build gate
+description: validate-data, scan-images, check-boundaries, astro check + build, scan-privacy
+
+inputs:
+  r2-account-id:
+    description: R2 account ID. With the other R2 inputs, the privacy scan also checks the R2 run-ID map.
+    required: false
+    default: ''
+  r2-access-key-id:
+    description: R2 access key ID
+    required: false
+    default: ''
+  r2-secret-access-key:
+    description: R2 secret access key
+    required: false
+    default: ''
+  r2-bucket:
+    description: R2 bucket holding state/run-ids.json
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        # .nvmrc holds the major line; package.json engines holds the floor (>=22.22.0).
+        node-version-file: .nvmrc
+        cache: npm
+
+    - name: Install
+      shell: bash
+      run: npm ci
+
+    - name: Generate types from schemas
+      shell: bash
+      run: npm run gen-types
+
+    - name: Validate data
+      shell: bash
+      run: npm run validate-data
+
+    - name: Scan images
+      shell: bash
+      run: npm run scan-images
+
+    - name: Check section boundaries
+      shell: bash
+      run: npm run check-boundaries
+
+    - name: Build (astro check + astro build)
+      shell: bash
+      # prebuild would only regenerate the types generated above.
+      run: npm run build --ignore-scripts
+
+    - name: Fetch the R2 run-ID map
+      id: run-ids
+      if: inputs.r2-account-id != '' && inputs.r2-access-key-id != '' && inputs.r2-secret-access-key != '' && inputs.r2-bucket != ''
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.r2-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.r2-secret-access-key }}
+        AWS_DEFAULT_REGION: auto
+        R2_ACCOUNT_ID: ${{ inputs.r2-account-id }}
+        R2_BUCKET: ${{ inputs.r2-bucket }}
+      # The map pairs provider IDs with public run IDs, so it goes to the runner's temp dir (never
+      # the workspace) and its contents are never printed. A missing map (before the first
+      # publish) is fine; any other failure fails the gate rather than skipping the check.
+      run: |
+        file="$RUNNER_TEMP/run-ids.json"
+        if aws s3api get-object --bucket "$R2_BUCKET" --key state/run-ids.json \
+            --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" \
+            "$file" > /dev/null 2> "$RUNNER_TEMP/run-ids.err"; then
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+        elif grep -q NoSuchKey "$RUNNER_TEMP/run-ids.err"; then
+          echo "::notice::R2 state/run-ids.json does not exist yet; the known-ID check has nothing to check."
+        else
+          cat "$RUNNER_TEMP/run-ids.err" >&2
+          echo "::error::Could not read state/run-ids.json from R2."
+          exit 1
+        fi
+
+    - name: Scan for privacy leaks (data/ and dist/)
+      shell: bash
+      env:
+        RUN_IDS: ${{ steps.run-ids.outputs.file }}
+      run: |
+        status=0
+        npm run scan-privacy -- ${RUN_IDS:+"--provider-ids=$RUN_IDS"} || status=$?
+        rm -f "$RUNNER_TEMP/run-ids.json"
+        exit "$status"
