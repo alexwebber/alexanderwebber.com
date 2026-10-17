@@ -29,10 +29,9 @@ on:
         type: boolean
         default: false
   push:
-    branches: [main, claude/loving-tesla-pw385y] # TEMPORARY: T070 fetch-only check from the branch
+    branches: [main]
     paths:
       - 'data/running/owner/**'
-      - '.github/workflows/refresh.yml' # TEMPORARY
 
 permissions:
   contents: read
