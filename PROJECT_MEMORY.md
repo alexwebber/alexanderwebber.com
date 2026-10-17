@@ -311,6 +311,17 @@ project-specific notes.
     are in.
   - Upstream #444 also closed on 2026-10-16 as a local `.netrc` misconfiguration, not a Garmin
     block.
+- **2026-10-17** — **Spike 0 (intervals.icu coverage) passed**, locally and from GitHub
+  Actions. Details are in `spikes/intervals/RESULTS.md`.
+  - **Covered:** all required fields for Garmin-synced data. Activities have HR zones, running
+    dynamics (incl. GCT), power, load, streams and FIT files. Wellness has weight, body fat,
+    resting HR, HRV (rMSSD), VO2 max and ctl/atl.
+  - **Missing:** only Garmin training status and race predictions.
+  - **Ingest needs a User-Agent.** It must send its own User-Agent, because Cloudflare blocks
+    Python's default one.
+  - **Fetch stays on Actions.** Actions can fetch directly, so there's no `FETCH_MODE` and no
+    PC fallback.
+  - **History:** it currently goes back to 2025-10-18 until the Garmin export is imported.
 
 ## Upstream candidates
 
@@ -326,6 +337,20 @@ project-specific notes.
   `[IO.File]::WriteAllText` garbled every em dash and arrow in a UTF-8 file without a BOM. 5.1
   reads BOM-less files as ANSI. Agent tip: edit repo files with the Edit tool. If PowerShell
   must do it, use `Get-Content -Encoding utf8`.
+- 2026-10-17 — Cloudflare-fronted APIs (here intervals.icu) return a 403 HTML challenge for
+  Python `urllib`'s default `Python-urllib/x.y` User-Agent, while PowerShell's request with the
+  same key succeeds. Agent tip: always send a descriptive User-Agent from scripts and ingest
+  clients. Read a 403 with an HTML body as a bot block, not an auth failure.
+- 2026-10-17 — The owner pointed out that an official sync partner (intervals.icu) removes most
+  of the risk of an unofficial client (python-garminconnect), and the agent had kept planning
+  around the riskier source. Generalisation (research before choosing dependencies): when a
+  provider is reachable through an official partner or aggregator, evaluate that route
+  first, and make manual entry the fallback for the few fields it lacks before adopting
+  an unofficial client.
+- 2026-10-17 — The owner offered secrets in a temp file rather than using the
+  hidden-prompt helper. The agent read it while printing only key names and value lengths,
+  then set the secrets directly. Generalisation: a secrets helper should also accept a file
+  path (shape-checked, never echoed), and the agent reminds the owner to delete the file.
 - 2026-10-04 — Piping a here-string into `git commit -F -` from the PowerShell tool succeeds,
   but the subject starts with a UTF-8 BOM (`EF BB BF`), because PowerShell adds one when it
   writes to a native stdin. Strengthen the existing agent tip: never pipe commit messages; use
@@ -342,14 +367,10 @@ project-specific notes.
 
 ## Open questions
 
-- Does the intervals.icu API return everything the spec needs for Garmin-synced data
-  (activities with splits/HR zones/dynamics, HRV, body fat, weight, VO2 max)? → the
-  **Spike 0 coverage check** (`spikes/intervals/probe.py`). Provider itself is decided
-  (2026-10-17: intervals.icu). Anything missing becomes a manual entry, or a blocker that
-  reopens Garmin direct.
-  intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
-  imports, plan building and UI features), so the owner stays on the free tier. Revisit if
-  Spike 0 picks intervals.icu, because supporter feature requests get priority.
+- intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
+  imports, plan building and UI features), so the owner stays on the free tier. Now that
+  intervals.icu is the provider, the trigger to revisit this has been hit: supporter feature
+  requests get priority, and the fee funds a one-developer service we depend on.
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
