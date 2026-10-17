@@ -25,10 +25,10 @@ jobs:
           working-directory: ingest
       - run: uv sync --locked
         working-directory: ingest
-      - name: Backfill the whole history into a local archive
+      - name: Backfill a recent window into a local archive
         env:
           INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
-        run: uv run --project ingest awingest backfill --archive local --archive-dir "$RUNNER_TEMP/archive"
+        run: uv run --project ingest awingest backfill --from 2026-08-01 --archive local --archive-dir "$RUNNER_TEMP/archive"
       - name: Incremental fetch on top (should find nothing new)
         env:
           INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}

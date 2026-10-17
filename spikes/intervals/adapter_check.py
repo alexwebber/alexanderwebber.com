@@ -150,12 +150,45 @@ def main() -> int:
         "max_stream_vs_summary_m": round(max(stream_vs_summary, default=0), 1),
     }
 
+    # Power: which summary keys exist, and how the watts stream behaves (rounded medians only).
+    power_keys: Counter = Counter()
+    power_medians: dict[str, list] = {}
+    stream_stats: dict[str, list] = {k: [] for k in ("mean_incl_zero", "mean_excl_zero", "p50", "p95", "zero_frac", "w_per_mps")}
+    mismatch: Counter = Counter()
+    for parts in groups.values():
+        detail = json.loads(parts["detail.json"])
+        for k, v in detail.items():
+            if any(w in k.lower() for w in ("watt", "power")) and isinstance(v, (int, float)) and not isinstance(v, bool):
+                power_keys[k] += 1
+                power_medians.setdefault(k, []).append(float(v))
+        streams = {st.get("type"): st.get("data") for st in json.loads(parts["streams.json"])}
+        dist = [x for x in (streams.get("distance") or []) if isinstance(x, (int, float))]
+        if dist and detail.get("distance"):
+            off = abs(detail["distance"] / max(dist) - 1) > 0.005 if max(dist) else True
+            if off:
+                mismatch["treadmill" if detail.get("type") == "VirtualRun" else "outdoor"] += 1
+        watts = [x for x in (streams.get("watts") or []) if isinstance(x, (int, float))]
+        speed = [x for x in (streams.get("velocity_smooth") or []) if isinstance(x, (int, float))]
+        if detail.get("device_watts") and watts:
+            nz = [w for w in watts if w > 0]
+            srt = sorted(watts)
+            stream_stats["mean_incl_zero"].append(sum(watts) / len(watts))
+            stream_stats["mean_excl_zero"].append(sum(nz) / len(nz) if nz else None)
+            stream_stats["p50"].append(srt[len(srt) // 2])
+            stream_stats["p95"].append(srt[int(len(srt) * 0.95)])
+            stream_stats["zero_frac"].append(1 - len(nz) / len(watts))
+            if speed and sum(speed):
+                stream_stats["w_per_mps"].append((sum(watts) / len(watts)) / (sum(speed) / len(speed)))
+    report["power_summary_keys"] = {k: {"n": n, "median": median(power_medians[k], 0)} for k, n in power_keys.items()}
+    report["power_stream"] = {k: median(v, 2 if k == "zero_frac" else 0) for k, v in stream_stats.items()}
+    report["distance_stream_mismatch_over_0.5pct"] = dict(mismatch)
+
     days = [o.key for o in archive.list("raw/intervals/wellness/")]
     keys: Counter = Counter()
     metric_counts: Counter = Counter()
     for key in days:
         payload = archive.get(key)
-        keys.update(json.loads(payload))
+        keys.update(json.loads(payload).keys())  # key names only, never values
         day = date.fromisoformat(key.rsplit("/", 1)[1].removesuffix(".json"))
         metric_counts.update(r.metric for r in provider.normalise_health(RawHealthDay(day=day, payload=payload)))
     report["wellness"] = {

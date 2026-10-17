@@ -6,6 +6,12 @@ reprocessing the archive (Rule 1). Units come out as metres, seconds, kg and bpm
 - ``start_date_local`` is the wall-clock start where the run happened; it is read as
   Europe/London. Only the date is ever published, so a run abroad keeps its own calendar date.
 - A metric the provider didn't record is ``None``, never 0. Treadmill runs have no elevation.
+- Cadence comes out in **steps** per minute. intervals.icu keeps Garmin's running cadence as
+  strides (one foot) per minute, so it is doubled (checked against real data: a median of 78
+  matches ~155 steps/min at the recorded speed and step length).
+- The summary ``distance`` is the run's distance. When the ``distance`` stream ends more than
+  0.5% away from it (a treadmill run calibrated afterwards), the stream is scaled to match, so
+  splits and series agree with the headline figure.
 - Free text (``name``, ``description``) is kept only as the private ``title_raw`` and
   ``description_raw``; the provider ID only as ``provider_id``.
 - ``training_effect`` is always ``None``: intervals.icu doesn't expose Garmin's.
@@ -154,8 +160,26 @@ def _latlon(
     return lat, lon
 
 
+STEPS_PER_STRIDE = 2
+DISTANCE_TOLERANCE = 0.005
+
+
+def _steps(strides_per_min: float | None) -> float | None:
+    return None if strides_per_min is None else strides_per_min * STEPS_PER_STRIDE
+
+
+def _distance_scale(dist: list[Any] | None, distance_m: float) -> float:
+    """The factor that makes the distance stream end at the summary distance (1.0 if close)."""
+    end = max((v for v in (_number(x) for x in dist or []) if v is not None), default=None)
+    if not end or not distance_m or abs(distance_m / end - 1) <= DISTANCE_TOLERANCE:
+        return 1.0
+    return distance_m / end
+
+
 def samples(
-    streams: dict[str, tuple[list[Any], list[Any] | None]], treadmill: bool
+    streams: dict[str, tuple[list[Any], list[Any] | None]],
+    treadmill: bool,
+    distance_m: float = 0.0,
 ) -> tuple[Sample, ...]:
     time = streams.get("time")
     if time is None:
@@ -165,19 +189,21 @@ def samples(
         for name in ("distance", "velocity_smooth", "heartrate", "cadence", "watts", "altitude")
     )
     latlng = None if treadmill else streams.get("latlng")
+    scale = _distance_scale(dist, distance_m)
     out = []
     for i, t in enumerate(time[0]):
         t_s = _number(t)
         if t_s is None:
             continue
         lat, lon = _latlon(latlng, i)
+        d = _non_negative(_at(dist, i))
         out.append(
             Sample(
                 t_s=t_s,
-                dist_m=_non_negative(_at(dist, i)),
+                dist_m=None if d is None else d * scale,
                 speed_mps=_non_negative(_at(speed, i)),
                 hr=_positive(_at(hr, i)),
-                cadence=_non_negative(_at(cad, i)),
+                cadence=_steps(_non_negative(_at(cad, i))),
                 power=_non_negative(_at(watts, i)),
                 elev_m=None if treadmill else _at(alt, i),
                 lat=lat,
@@ -292,7 +318,8 @@ def normalise_activity(bundle: RawBundle) -> NormalisedActivity:
     record = {**summary, **{k: v for k, v in detail.items() if v is not None}}
     kind, treadmill = activity_type(record)
     streams = _streams(_json(parts, "streams.json", list) or [])
-    points = samples(streams, treadmill)
+    distance = _required(record, "distance")
+    points = samples(streams, treadmill, distance)
     moving = _non_negative(record.get("moving_time"))
     elapsed = _required(record, "elapsed_time")
     provider_id = record.get("id")
@@ -306,14 +333,14 @@ def normalise_activity(bundle: RawBundle) -> NormalisedActivity:
         type=kind,
         treadmill=treadmill,
         is_race_flag=record.get("race") is True,
-        distance_m=_required(record, "distance"),
+        distance_m=distance,
         moving_s=elapsed if moving is None else moving,
         elapsed_s=elapsed,
         elevation_gain_m=None if treadmill else _non_negative(record.get("total_elevation_gain")),
         elevation_loss_m=None if treadmill else _non_negative(record.get("total_elevation_loss")),
         avg_hr=_positive(record.get("average_heartrate")),
         max_hr=_positive(record.get("max_heartrate")),
-        avg_cadence=_positive(record.get("average_cadence")),
+        avg_cadence=_steps(_positive(record.get("average_cadence"))),
         avg_stride_m=_positive(record.get("average_stride")),
         avg_power_w=_power(record, streams),
         training_load=load,

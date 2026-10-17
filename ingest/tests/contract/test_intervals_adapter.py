@@ -108,7 +108,7 @@ def test_required_fields_and_units(runs):
     assert run.distance_m == 10200.0
     assert run.moving_s == 3060.0 and run.elapsed_s == 3102.0
     assert run.avg_hr == 148.0 and run.max_hr == 171.0
-    assert run.avg_cadence == 87.2 and run.avg_stride_m == 1.18
+    assert run.avg_cadence == 163.0 and run.avg_stride_m == 1.18  # steps/min
     assert run.elevation_gain_m == 41.0 and run.elevation_loss_m == 39.5
     assert run.training_load == 64.0
     assert run.training_effect is None
@@ -448,3 +448,17 @@ def test_a_malformed_stream_or_zone_list_is_left_out_not_fatal(provider, api):
     }
     run = provider.normalise_activity(RawBundle(ref=bundle.ref, parts=parts))
     assert run.hr_zones == () and run.splits
+
+
+def test_cadence_is_steps_per_minute(runs):
+    # intervals.icu stores strides (one foot) per minute; samples are doubled like the average.
+    assert {s.cadence for s in runs["run-dynamics"].samples} <= {160.0, 162.0, 164.0}
+
+
+def test_a_calibrated_stream_is_scaled_to_the_summary_distance(runs):
+    treadmill = runs["treadmill"]
+    assert treadmill.distance_m == 5000.0
+    assert treadmill.samples[-1].dist_m == pytest.approx(5000.0, abs=0.01)
+    assert len(treadmill.splits) == 5 and treadmill.splits[-1].distance_m == pytest.approx(1000.0)
+    # A stream that already agrees (within 0.5%) is left exactly as recorded.
+    assert runs["run-dynamics"].samples[-1].dist_m == 10200.0

@@ -21,7 +21,15 @@ SENTINEL_LON = -0.7654321
 ACTIVITIES = [
     ("run-dynamics", "i90000001", "Run", "2026-10-11T07:15:00", 10.2, 300, {"dynamics": True}),
     ("run-basic", "i90000002", "Run", "2026-01-15T18:00:00", 6.4, 330, {}),
-    ("treadmill", "i90000003", "VirtualRun", "2026-03-02T06:30:00", 5.0, 320, {"indoor": True}),
+    (
+        "treadmill",
+        "i90000003",
+        "VirtualRun",
+        "2026-03-02T06:30:00",
+        5.0,
+        320,
+        {"indoor": True, "calibrated": 0.96},
+    ),
     ("race", "i90000004", "Run", "2026-04-05T09:00:00", 21.0975, 285, {"race": True}),
     ("trail", "i90000005", "TrailRun", "2026-06-20T08:45:00", 12.3, 390, {"hilly": True}),
     ("trainer-run", "i90000006", "Run", "2026-02-10T12:00:00", 4.0, 340, {"trainer": True}),
@@ -30,6 +38,7 @@ NON_RUN = ("weights", "i90000007", "WeightTraining", "2026-10-12T17:30:00")
 
 
 def streams(distance_km: float, pace: float, extras: dict) -> list[dict]:
+    """Synthetic streams. Cadence is strides per minute, as intervals.icu stores it."""
     total_s = int(distance_km * pace)
     times = list(range(0, total_s + 1, STEP_S))
     if times[-1] != total_s:
@@ -41,7 +50,8 @@ def streams(distance_km: float, pace: float, extras: dict) -> list[dict]:
             dt = t - times[i - 1]
             d += dt * speed * (1 + 0.06 * math.sin(t / 97))
         dist.append(round(d, 1))
-    scale = distance_km * 1000 / dist[-1]
+    # A calibrated treadmill run: the stream ends short of the corrected summary distance.
+    scale = distance_km * 1000 * extras.get("calibrated", 1.0) / dist[-1]
     dist = [round(x * scale, 1) for x in dist]
     out = [
         {"type": "time", "data": times},
@@ -54,7 +64,7 @@ def streams(distance_km: float, pace: float, extras: dict) -> list[dict]:
             "type": "heartrate",
             "data": [None if i == 3 else 120 + min(40, t // 30) for i, t in enumerate(times)],
         },
-        {"type": "cadence", "data": [86 + (t // 60) % 3 for t in times]},
+        {"type": "cadence", "data": [80 + (t // 60) % 3 for t in times]},
         {"type": "respiration", "data": [30 for _ in times]},  # private; never normalised
     ]
     if not extras.get("indoor"):
@@ -107,7 +117,7 @@ def detail(
         else (305.0 if extras.get("hilly") else 39.5),
         "average_heartrate": 148,
         "max_heartrate": 171,
-        "average_cadence": 87.2,
+        "average_cadence": 81.5,  # strides/min (163 steps/min)
         "average_stride": 1.18,
         "icu_training_load": 64,
         "icu_hr_zone_times": [300, 900, 1200, 400, 60, 0, 0],
