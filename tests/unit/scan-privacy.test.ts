@@ -70,6 +70,17 @@ describe('scan-privacy', () => {
     expect(rules('dist/running/index.html', '<p>172345678901</p>', ids)).toEqual([]);
   });
 
+  it('reports a position and the key, never the values it caught', () => {
+    const [coord] = scanText(RUN_FILE, '{"date":"2026-10-11",\n"lat":50.8231,"lon":-0.1372}');
+    expect(coord).toMatchObject({ line: 2, column: 1, excerpt: '"lat":' });
+    const [time] = scanText(RUN_FILE, '{"date":"2026-10-11T07:15:00"}');
+    expect(time).toMatchObject({ line: 1, column: 10, excerpt: '[16 chars redacted]' });
+    const [id] = scanText('dist/running/index.html', '<p>17234567890</p>', new Set(['17234567890']));
+    expect(id.excerpt).toBe('[11 chars redacted]');
+    const printed = JSON.stringify([coord, time, id]);
+    for (const value of ['50.8231', '07:15', '17234567890']) expect(printed).not.toContain(value);
+  });
+
   it('finds image metadata in dist/ and owner photos that break the rules', async () => {
     repo = tempRepo();
     const pixel = { create: { width: 10, height: 10, channels: 3 as const, background: '#c33' } };

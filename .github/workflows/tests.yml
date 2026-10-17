@@ -1,0 +1,97 @@
+# Path-filtered test jobs on PRs (T044; adopted by the owner on 2026-10-04). They are not part of
+# the build gate: each suite runs only when the PR touches the code it covers. Full lint on every
+# change stays deferred (BACKLOG).
+name: Tests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      pytest: ${{ steps.filter.outputs.pytest }}
+      vitest: ${{ steps.filter.outputs.vitest }}
+      playwright: ${{ steps.filter.outputs.playwright }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Match changed paths
+        id: filter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          changed=$(git diff --name-only "origin/$BASE_REF...HEAD")
+          printf '%s\n' "$changed"
+          match() { printf '%s\n' "$changed" | grep -qE "$1" && echo true || echo false; }
+          {
+            echo "pytest=$(match '^(ingest|schemas)/')"
+            echo "vitest=$(match '^(src|schemas|scripts|tests/unit|tests/contract)/')"
+            echo "playwright=$(match '^(src|data/running/owner|tests/e2e|tests/a11y)/')"
+          } >> "$GITHUB_OUTPUT"
+
+  pytest:
+    needs: changes
+    if: needs.changes.outputs.pytest == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ingest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          working-directory: ingest
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run pytest
+
+  vitest:
+    needs: changes
+    if: needs.changes.outputs.vitest == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  playwright:
+    needs: changes
+    if: needs.changes.outputs.playwright == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      # Playwright + axe against astro preview (playwright.config.ts starts it). The e2e and a11y
+      # specs arrive with the user stories, so an empty suite passes for now.
+      - run: npm run e2e -- --pass-with-no-tests

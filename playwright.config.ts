@@ -17,5 +17,8 @@ export default defineConfig({
     command: `npm run preview -- --port ${port}`,
     port,
     reuseExistingServer: !process.env.CI,
+    // Astro 7 starts `astro preview` in the background when it detects a coding agent, and the
+    // detached server makes Playwright report "exited early". Keep it in the foreground.
+    env: { CLAUDECODE: '', AI_AGENT: '' },
   },
 });

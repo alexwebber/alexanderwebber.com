@@ -8,6 +8,10 @@
 //   credentials): any known provider activity ID anywhere.
 //
 //   node scripts/scan-privacy.ts [--provider-ids=state-run-ids.json]
+//
+// Findings give a line and column, never the surrounding text: the gate runs on unpublished bot
+// output, so its log must not carry the values it caught. Rules whose match is itself a value
+// (a time, an ID) redact the match too.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { IMAGE, metadataKinds } from './scan-images.ts';
@@ -16,6 +20,9 @@ import { isMain, walk } from './lib/walk.ts';
 export interface PrivacyFinding {
   file: string;
   rule: string;
+  line: number;
+  column: number;
+  /** The matched key, or a redaction note when the match is itself a value. */
   excerpt: string;
 }
 
@@ -24,6 +31,8 @@ interface Rule {
   pattern: RegExp;
   /** Which files the rule applies to (repo-relative paths). */
   applies: (file: string) => boolean;
+  /** The match is a value (a time, an ID), not a key name, so it is not echoed. */
+  redact?: boolean;
 }
 
 const TEXT = /\.(json|ya?ml|html?|js|mjs|css|xml|txt|svg|webmanifest|map)$/i;
@@ -45,6 +54,7 @@ export const RULES: Rule[] = [
     name: 'time of day (ISO datetime) in a run file or run page',
     pattern: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/,
     applies: (f) => RUN_FILE.test(f) || RUN_PAGE.test(f),
+    redact: true,
   },
   {
     name: 'start time key in a run file or run page',
@@ -81,6 +91,7 @@ export const RULES: Rule[] = [
     name: 'intervals.icu-style activity ID',
     pattern: /(?<![\w-])i\d{6,}\b/,
     applies: inData,
+    redact: true,
   },
   {
     name: 'name or description key in a published run (titles use "title")',
@@ -89,9 +100,12 @@ export const RULES: Rule[] = [
   },
 ];
 
-function excerpt(text: string, index: number, length: number): string {
-  const start = Math.max(0, index - 30);
-  return text.slice(start, index + length + 30).replace(/\s+/g, ' ').trim();
+function finding(file: string, rule: string, text: string, match: RegExpExecArray | RegExpMatchArray, redact: boolean): PrivacyFinding {
+  const before = text.slice(0, match.index);
+  const line = before.split('\n').length;
+  const column = match.index! - before.lastIndexOf('\n');
+  const excerpt = redact ? `[${match[0].length} chars redacted]` : match[0].replace(/\s+/g, ' ').trim();
+  return { file, rule, line, column, excerpt };
 }
 
 export function scanText(file: string, text: string, providerIds?: Set<string>): PrivacyFinding[] {
@@ -99,12 +113,12 @@ export function scanText(file: string, text: string, providerIds?: Set<string>):
   for (const rule of RULES) {
     if (!rule.applies(file)) continue;
     const match = rule.pattern.exec(text);
-    if (match) findings.push({ file, rule: rule.name, excerpt: excerpt(text, match.index, match[0].length) });
+    if (match) findings.push(finding(file, rule.name, text, match, rule.redact ?? false));
   }
   if (providerIds && providerIds.size > 0) {
     for (const match of text.matchAll(/[A-Za-z]?\d{5,}/g)) {
       if (providerIds.has(match[0])) {
-        findings.push({ file, rule: 'known provider activity ID', excerpt: excerpt(text, match.index, match[0].length) });
+        findings.push(finding(file, 'known provider activity ID', text, match, true));
         break;
       }
     }
@@ -125,7 +139,7 @@ export async function scanPrivacy(root: string, providerIds?: Set<string>): Prom
       findings.push(...scanText(file, readFileSync(resolve(root, file), 'utf8'), providerIds));
     } else if (inDist(file) && IMAGE.test(file)) {
       const kinds = await metadataKinds(resolve(root, file)).catch(() => ['unreadable']);
-      if (kinds.length > 0) findings.push({ file, rule: 'image metadata in the built site', excerpt: kinds.join(', ') });
+      if (kinds.length > 0) findings.push({ file, rule: 'image metadata in the built site', line: 0, column: 0, excerpt: kinds.join(', ') });
     }
   }
   return findings;
@@ -136,7 +150,10 @@ if (isMain(import.meta.url)) {
   const idsArg = process.argv.find((a) => a.startsWith('--provider-ids='))?.slice('--provider-ids='.length);
   const providerIds = idsArg ? loadProviderIds(resolve(idsArg)) : undefined;
   const findings = await scanPrivacy(root, providerIds);
-  for (const f of findings) console.error(`error: ${f.file}: ${f.rule}: …${f.excerpt}…`);
+  for (const f of findings) {
+    const at = f.line > 0 ? `${f.file}:${f.line}:${f.column}` : f.file;
+    console.error(`error: ${at}: ${f.rule}: ${f.excerpt}`);
+  }
   const scope = providerIds ? `, checked against ${providerIds.size} known provider ID(s)` : '';
   console.log(`scan-privacy: data/ and dist/: ${findings.length} finding(s)${scope}`);
   if (findings.length > 0) process.exit(1);
