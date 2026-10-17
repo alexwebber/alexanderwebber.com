@@ -41,8 +41,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   already wired). Use a new branch from `origin/main`, ideally as another cloud session. Build
   on `NormalisedActivity`/`NormalisedHealthReading` and read bundles back from
   `raw/intervals/activities/<id>/` (the `fetch.json` marker lists the parts). If the Phase 2e
-  PR has unticked confirmations when it merges, ask about them first (one is the power check
-  against Garmin Connect).
+  PR (#19) merged with every confirmation ticked, and its `gate.yml` deploy succeeded.
 
 ## Vision
 
@@ -460,6 +459,11 @@ project-specific notes.
     (median 78); the published schema wants steps per minute.
   - **Calibrated streams are scaled:** when the `distance` stream ends more than 0.5% from the
     summary distance (one run was 1.2 km off), the stream is scaled to the summary.
+- **2026-10-17** — Owner confirmed PR #19: **computed average power matches Garmin Connect**
+  (six recent runs, 518–591 W, from the `watts` stream mean). Reference run for the publish
+  stage: the 2026-10-17 5k (5,010 m, harder effort) shows **677 W average and 1,036 W max** in
+  Garmin Connect. Use it as a check value once power is published (the normaliser keeps the
+  per-sample `power`, so a max can be derived if wanted).
 
 ## Upstream candidates
 
