@@ -43,25 +43,31 @@ class Provider(ActivityProvider, HealthProvider):
     dynamics `average_stance_time`/`_balance`, `average_vertical_oscillation`/`_ratio`,
     `average_stride`, `device_watts`, `icu_training_load`, `race`, `type`, `trainer`).
   - `GET /activity/{id}/streams.json` — `time`, `distance`, `velocity_smooth`, `heartrate`,
-    `cadence`, `altitude`, `watts`, dynamics streams, `latlng`.
+    `cadence`, `altitude`, `watts`, dynamics streams (incl. `stance_time_balance`), `latlng`.
+    Ground-contact balance comes from the summary field when present, else is derived from the
+    `stance_time_balance` stream.
   - `GET /activity/{id}/time-at-hr` — HR zone breakdown.
   - `GET /activity/{id}/fit-file` — FIT file, archived verbatim (not parsed).
   - `GET /athlete/0/wellness?oldest=&newest=` — per-day `weight`, `bodyFat`, `restingHR`, `hrv`
     (rMSSD), `vo2max`, `ctl`, `atl`.
-- **Type mapping**: `Run` -> `road`, `TrailRun` -> `trail`, `VirtualRun` (or `trainer: true`) ->
-  `indoor` with `treadmill: true`; every other type is rejected (FR-009).
+- **Type mapping**: `Run` -> `road`, `TrailRun` -> `trail`, `VirtualRun` -> `indoor` with
+  `treadmill: true`; `trainer: true` on a non-`VirtualRun` run -> `indoor` without `treadmill`;
+  every other type is rejected (FR-009).
 - **Not supplied** (so not in the adapter): Garmin training status and race predictions (owner
   entries, `owner/manual-metrics.yaml`), Garmin training effect, HRV baseline, stress, Body Battery.
 
 ## Rules
 
 1. **Raw is archived verbatim** before normalisation (exception: Rule 2); `normalise_*` is pure and
-   re-runnable, so an adapter fix is applied by reprocessing R2 (no provider calls).
-2. **Approved metrics only**: `HealthProvider.metrics` is the allow-list from FR-060
+   re-runnable, so an adapter fix is applied by reprocessing R2 (no provider calls). Activity
+   streams and FIT files archived privately may contain in-activity respiration/SpO2 readings;
+   they are never normalised into published fields, and the privacy scan covers published data
+   (FR-015).
+2. **Approved metrics only**: `HealthProvider.metrics` is the allow-list from FR-060–FR-062
    (`weight_kg`, `body_fat_pct`, `resting_hr`, `hrv`, `vo2max`, `fitness_ctl`, `fatigue_atl`).
    intervals.icu returns whole-day wellness records, so the adapter keeps only the approved keys
-   **in memory before archiving**; `sleepSecs`, `steps`, `spO2`, sleep scores and every other key
-   are never archived or processed (FR-015).
+   **in memory before archiving**; the wellness keys `sleepSecs`, `steps`, `spO2`, sleep scores and
+   every other key are never archived or processed (FR-015).
 3. **Errors** are mapped to the taxonomy `AuthRejected | ProviderForbidden | RateLimited(retry_after?) |
    ProviderChanged | Transient`. HTTP 401, or 403 with a JSON body -> `AuthRejected`; **403 with an
    HTML body -> `ProviderForbidden`** (Cloudflare bot block, not an auth failure); 429 ->

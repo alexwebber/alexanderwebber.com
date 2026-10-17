@@ -79,7 +79,7 @@ live integration works (raised at go-live, T112).
   `description` (races keep GPS for race maps); raw R2 keeps them so a later race designation can
   still build a race map.
 - **Backfill** of the full history (after the export import) is chunked, paced and resumable; the
-  agent runs it locally or from a dispatched workflow.
+  agent runs it locally with the owner's `INTERVALS_API_KEY`/`R2_*` env vars.
 
 ---
 
@@ -110,8 +110,8 @@ across all training runs (R8). Estimate: 5,000 run pages + ~15 year pages + ~110
 **TypeScript (deliberate pin of a core component)**: **6.0.3**, not 7.0.x (7.0.2 is current,
 2026-07-08). `@astrojs/check` 0.9.10 (latest) peer-requires `typescript ^5 || ^6`; TS 7 is the
 native port and would break `astro check` in the build gate. Revisit when `@astrojs/check`
-supports TS 7. A decisions-log entry in `PROJECT_MEMORY.md` is required (house norm for pinning a
-core component) - flagged to the owner/orchestrator in the plan hand-off.
+supports TS 7. Logged in the `PROJECT_MEMORY.md` decisions log on 2026-10-04 (house norm for
+pinning a core component).
 
 **DNS**: domain stays registered at Namecheap; nameservers move to Cloudflare so the Worker can
 serve the custom domain (owner action; in quickstart). Alternative (CNAME-only) is not supported
@@ -281,7 +281,7 @@ preview image on every page, not a unique one):
   workflow (commits pushed with `GITHUB_TOKEN` do not trigger other workflows, so deploy must be
   a job here, not a separate workflow). This is a deliberate, narrow exception to the "PRs not
   direct commits" norm (machine-generated data, gated by the build gate per constitution);
-  **flagged for owner confirmation**. Humans/agents editing code or owner files still use PRs.
+  **confirmed by the owner on 2026-10-04**. Humans/agents editing code or owner files still use PRs.
 
 ---
 
@@ -338,9 +338,10 @@ only from `astro.config.mjs`.
   shown as the headline value). Performance-metric goals use the recorded value.
 - **Timezone**: Europe/London for all period boundaries; weeks start Monday (FR-075). Run date =
   local date of start; start time is dropped in the processor.
-- **Treadmill** (owner decision 2026-10-17): intervals.icu type `VirtualRun` (or `trainer: true`)
-  -> `type: indoor`, `treadmill: true`. Counts toward totals, the training build and the run
-  list, labelled "Treadmill", never gets a race track; not PB- or race-time-goal-eligible unless
+- **Treadmill** (owner decision 2026-10-17): intervals.icu type `VirtualRun` -> `type: indoor`,
+  `treadmill: true`; `trainer: true` on a non-`VirtualRun` run -> `type: indoor` without
+  `treadmill`. Treadmill runs count toward totals, the training build, the this-week snapshot and
+  the run list, labelled "Treadmill", never get a race track; not PB- or race-time-goal-eligible unless
   the owner sets `include_in_records: true` in `run-overrides.yaml`.
 - **Fitness/fatigue (training load)**: published from intervals.icu wellness `ctl` (fitness) and
   `atl` (fatigue); form = ctl - atl is derived at build time. Labelled as intervals.icu's model,

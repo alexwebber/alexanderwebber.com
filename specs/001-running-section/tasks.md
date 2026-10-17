@@ -35,7 +35,7 @@ fallback, no tokens). Garmin training status and race predictions are dated owne
 (`VirtualRun`) are labelled and not PB-eligible unless marked; Garmin-sourced views carry Garmin
 attribution; full history comes from the Garmin export imported into intervals.icu. Tasks
 replaced or dropped by this keep their IDs and are marked **Done**/**Dropped**/**Rewritten**; new
-tasks are T150–T156.
+tasks are T150–T157.
 
 **Organization**: Tasks are grouped by user story so each story is an independently shippable
 slice. Owner-only tasks are written as **OWNER:** and are never hidden inside agent tasks. The
@@ -71,7 +71,7 @@ scaffold come next.
 - [X] T002 OWNER: Create a Cloudflare **Workers deploy API token**. Store it and the account ID as GitHub Actions secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. **Blocks Spike 1a (T014) and every deploy job.** **Done 2026-10-17**: token verified.
 - [X] T003 ~~OWNER: Store the Garmin credentials as GitHub Actions secrets `GARMIN_EMAIL` and `GARMIN_PASSWORD`.~~ **Dropped 2026-10-17** (no Garmin login with intervals.icu). Replaced by the intervals.icu personal API key, stored as GitHub secret `INTERVALS_API_KEY` and as a user env var on the owner's PC (**done 2026-10-17**).
 - [ ] T004 OWNER: Move the `alexanderwebber.com` nameservers from Namecheap to Cloudflare (start early, because propagation takes time). **Blocks go-live (T112) only.**
-- [ ] T150 OWNER: Request the full Garmin data export (Garmin account → data management → export). When it arrives, the agent walks the owner through *intervals.icu → Settings → Import all Garmin data*. Until then intervals.icu history starts at 2025-10-18. The Garmin → intervals.icu sync connection itself is already done. **Blocks the full backfill (T085) only**, not the pipeline build.
+- [ ] T150 OWNER: Request the full Garmin data export (Garmin account → data management → export). When it arrives, the agent walks the owner through *intervals.icu → Settings → Import all Garmin data*. Until then intervals.icu history starts at 2025-10-18. The Garmin → intervals.icu sync connection itself is already done. **Blocks the full backfill (T085) only**, not the pipeline build. After the import, the agent re-runs `spikes/intervals/probe.py` and records the earliest date per wellness field (weight, body fat, HRV, VO2 max, resting HR) in `PROJECT_MEMORY.md`; if wellness history did not import, it raises this with the owner at the next review (accept the gap, or add a manual history path).
 
 ### 1b. Spike 0: intervals.icu coverage check (DONE 2026-10-17; replaces the Garmin-direct spike)
 
@@ -87,7 +87,7 @@ and from GitHub Actions). The original Garmin-direct tasks keep their IDs below.
 - [X] T011 ~~S0.3: 48 h (24-run) scheduled token-rotation test.~~ **Dropped 2026-10-17**: no tokens, no login lockout risk.
 - [X] T012 **Rewritten and done**: outcome recorded in `PROJECT_MEMORY.md` (2026-10-17 decisions) and in research.md R0 via this docs amendment. No `FETCH_MODE` variable (fetch runs on Actions only); no #444 flag; no blocker.
 
-### 1c. Spike 1 (parallel with Spike 0)
+### 1c. Spike 1 (next)
 
 - [ ] T013 [P] Spike 1b, size and build time:
   - **Data**: in `spikes/scale/`, generate 5,000 synthetic runs shaped like `published/runs` (each series `<= 600 points`).
@@ -102,7 +102,7 @@ and from GitHub Actions). The original Garmin-direct tasks keep their IDs below.
   - **Record**: write the result in `PROJECT_MEMORY.md`.
   - **Depends on**: T002.
 
-### 1d. Scaffold (can start in parallel with Spike 0; nothing here depends on its outcome)
+### 1d. Scaffold (can start in parallel with Spike 1)
 
 - [X] T015 *(Done 2026-10-17, in the intervals.icu docs amendment.)* Update the spec docs to match the owner's 2026-10-04 decisions:
   - **Text to remove**: "proposal, not adopted" (tests.yml) and "needs owner confirmation" (bot commits to `main`).
@@ -159,7 +159,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `dynamics?` (gct, balance, vertical oscillation, vertical ratio) and `training_effect {aerobic,anaerobic}?`.
   - `splits [{km, time_s, pace_s_per_km, hr?, elev_delta_m?}]` and `hr_zones [{zone, seconds}]?`.
   - `series {x_dist_m[], x_elapsed_s[], pace[], hr?[], elev?[], cadence?[], power?[]}`, every array `maxItems: 600`, no lat/lon; no `name`/`description` field anywhere (titles use `title`).
-  - `best_efforts [{distance_m, label, time_s, plausible}]`, `flags {excluded_from_records?, include_indoor_in_records?}` and `track_ref?`.
+  - `best_efforts [{distance_m, label, time_s, plausible}]`, `flags {excluded_from_records?, include_indoor_in_records?}` and `track_ref?`. The `include_indoor_in_records` `description` states that it mirrors the owner's `run-overrides.yaml` `include_in_records` (T031, T062).
 - [ ] T024 [P] Create `schemas/published/race-track.schema.json`: `{id, points: [[lat,lon,dist_m,elev_m]] (maxItems ~1000), trim_ends_m, bbox, source}`. This is the **only** schema allowed to contain coordinates.
 - [ ] T025 [P] Create `schemas/published/health-series.schema.json`:
   - `{metric, unit, points: [{date, value, ...}]}`, with points sorted by date.
@@ -176,7 +176,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `target` depends on the type:
     - race_time: `{distance_m|distance, time}`
     - body_composition: `{metric: weight_kg|body_fat_pct, value, direction: at_most|at_least}`
-    - metric: `{metric: vo2max|resting_hr|hrv|..., value, direction}`
+    - metric: `{metric: vo2max|resting_hr|hrv, value, direction: at_most|at_least}` (closed enum; `fitness_ctl`/`fatigue_atl` and the manual Garmin figures are not goal metrics)
     - milestone: none
   - `created?` (YYYY-MM-DD) is added to support the "first reading on or after goal creation" baseline rule. If it is absent, the first reading in the series is used.
 - [ ] T029 [P] Create `schemas/owner/upcoming-races.schema.json`: a list of `{id, name, date, distance_m|distance, target_time?, url?, result_ref?}`.
@@ -186,7 +186,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `trim_ends_m` defaults to 0.
   - `designate` is `race|not_race`.
   - Photo `description` has `minLength 1`.
-- [ ] T031 [P] Create `schemas/owner/run-overrides.schema.json` (a list of `{id, title?, note?, hide?, exclude_from_records?, include_in_records?, is_race?}`; `include_in_records` is the owner's PB/race-time-goal eligibility override for treadmill/indoor runs) and `schemas/owner/health-exclusions.schema.json` (a list of `{metric, date, reason?}`, using the goal metric names, e.g. `weight_kg`).
+- [ ] T031 [P] Create `schemas/owner/run-overrides.schema.json` (a list of `{id, title?, note?, hide?, exclude_from_records?, include_in_records?, is_race?}`; `include_in_records` is the owner's PB/race-time-goal eligibility override for treadmill/indoor runs, published as `flags.include_indoor_in_records`, which its schema `description` states) and `schemas/owner/health-exclusions.schema.json` (a list of `{metric, date, reason?}`, using the goal metric names, e.g. `weight_kg`).
 - [ ] T032 [P] Create `schemas/owner/lab.schema.json`: `{date, type: dexa|lab_vo2max, provider, values: {body_fat_pct?, weight_kg?, vo2max?}}`. **Only those three value keys are allowed; any other key fails validation (FR-066).**
 - [ ] T151 [P] Create `schemas/owner/manual-metrics.schema.json` for the Garmin figures intervals.icu lacks (FR-069; data-model §4): `{training_status?: [{as_of, status, note?}], race_predictions?: [{as_of, 5k?, 10k?, half?, marathon?}]}`. `as_of` is a required `YYYY-MM-DD`; `status` enum `peaking|productive|maintaining|recovery|unproductive|detraining|overreaching|strained|no_status`; prediction times are `h:mm:ss`/`mm:ss` strings with at least one distance per entry. Add to `scripts/validate-data.ts` (T038): `as_of` not in the future and unique within its list, times parsed and range-checked, errors in the file/entry/field format. Add valid/invalid fixtures to T033 (e.g. missing `as_of`, unknown status, `marathon: "3:2x"`). An absent file is valid ("not recorded yet").
 - [ ] T033 Create shared schema fixtures `schemas/fixtures/<schema>/{valid,invalid}/*` used by both languages. They include cases showing that **no `lat|lon|latlng|latitude|longitude|start_time|startTime` key validates in any published schema outside race-track, and no `name|description` key validates in a published run**, plus invalid owner cases (`time: "3:7x"`, unknown key, missing photo description, lab `bone_density`, the manual-metrics cases from T151).
@@ -223,8 +223,8 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 - [ ] T041 [P] Create `scripts/scan-privacy.ts`, which scans `data/` and `dist/` (SC-004) and fails on:
   - ISO datetimes with a time component (`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}`) or `start_time`/`startTime`-style keys in run files and run pages (durations such as `06:42` must not be false positives)
   - coordinates outside `data/running/published/race-tracks/` and race pages
-  - sleep, stress, Body Battery, steps or SpO2 keys/terms (`sleepSecs`, `spO2`, …)
-  - any `connect.garmin.com` or `intervals.icu/activities` string
+  - sleep, stress, Body Battery, steps or SpO2 data: **key-based** in `data/` (JSON/YAML keys such as `steps`, `sleepSecs`, `sleepScore`, `spO2`, `stress`, `bodyBattery`), and targeted patterns in `dist/` (e.g. those keys in inline data, labelled values such as `SpO2 <n>%` or `<n> steps`), so prose and "step length" are not false positives
+  - provider activity-URL patterns (`connect.garmin.com/modern/activity/`, `intervals.icu/activities/`); a plain Garmin link or mark for the attribution (T152) is allowed
   - `activityId`/`garminId`/`external_id`-style keys, and `name`/`description` keys in published run files
   - EXIF in `dist/` images
 
@@ -286,19 +286,22 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `list_activities(oldest, newest)` via `/athlete/0/activities`, keeping running types only (`Run`, `TrailRun`, `VirtualRun`; FR-009), each ref carrying id, `start_date_local` and a list-row hash.
   - `fetch_activity`: `/activity/{id}?intervals=true`, `/activity/{id}/streams.json`, `/activity/{id}/time-at-hr` and `/activity/{id}/fit-file` (archived verbatim, not parsed).
   - `fetch_health(oldest, newest)` via `/athlete/0/wellness`, reducing each day **in memory** to the approved keys (`weight`, `bodyFat`, `restingHR`, `hrv`, `vo2max`, `ctl`, `atl`, plus the date) **before anything is archived**. `sleepSecs`, `steps`, `spO2`, sleep scores and every other key are dropped (FR-015). There is no code path for training status or race predictions (owner data, T151).
+  - Depends on T051.
 - [ ] T053 **Rewritten.** Create `ingest/src/awingest/providers/intervals/normalise.py`, a pure (no I/O), deterministic mapping to `NormalisedActivity` and `NormalisedHealthReading` (data-model §2):
   - Units: metres, seconds, kg, bpm; `start_date_local` → Europe/London.
-  - Types: `Run` → `road`, `TrailRun` → `trail`, `VirtualRun` (or `trainer: true`) → `indoor` with **`treadmill: true`**; non-run activities rejected.
-  - HR zone times, running dynamics (`average_stance_time` = GCT, stance-time balance, vertical oscillation/ratio), stride, power (from `watts` when `device_watts`), per-km splits computed from the `distance`/`time` streams, samples incl. lat/lon from `latlng` (still private).
+  - Types: `Run` → `road`, `TrailRun` → `trail`, `VirtualRun` → `indoor` with **`treadmill: true`**; `trainer: true` on a non-`VirtualRun` run → `indoor` without `treadmill`; non-run activities rejected.
+  - HR zone times, running dynamics (`average_stance_time` = GCT; ground-contact balance from the summary field if present, else derived from the `stance_time_balance` stream; vertical oscillation/ratio), stride, power (from `watts` when `device_watts`), per-km splits computed from the `distance`/`time` streams, samples incl. lat/lon from `latlng` (still private).
   - Wellness: `weight` → `weight_kg`, `bodyFat` → `body_fat_pct`, `restingHR` → `resting_hr`, `hrv` → `hrv` (rMSSD), `vo2max`, `ctl` → `fitness_ctl`, `atl` → `fatigue_atl`.
   - `training_effect` is always `None` (not exposed by the API). Free-text `name`/`description` are kept only as private `title_raw`/`description_raw`. The provider ID is exposed only as `provider_id`.
+  - Depends on T047.
 - [ ] T054 **Rewritten.** Create `ingest/src/awingest/fetch.py`, the fetch stage:
   - **Incremental by date window**: `oldest` = `state/cursor.json` date **minus 14 days** (FR-008 re-list), `newest` = today; fetches parts only for new activities or ones whose list-row hash changed; wellness over the same window. Honours `--reimport-from`/`--reimport-to`; supports `--health-only`.
   - **Archiving**: raw parts are archived to `raw/intervals/activities/<id>/…` and `raw/intervals/wellness/<date>.json` before normalisation (wellness already reduced to approved keys). It never deletes, and a partial failure is recorded and fetching continues.
   - **Cursors**: they advance only after successful writes.
   - **On success**: updates `state/fetch-status.json` and `public/freshness.json` (only `last_success_at` per source (`intervals`) + `generated_at`).
   - **Exit codes**: 0, 10, 11, 12, 13, 14, 1.
-- [ ] T055 **Rewritten.** Create `ingest/src/awingest/backfill.py`, a whole-history backfill over date windows. It is chunked, paced and resumable via `state/backfill.json` (`--from`, `--resume`). The agent runs it (locally with the owner's `INTERVALS_API_KEY`/`R2_*` user env vars, or from a dispatched workflow) once the Garmin export import (T150) is done; runs before that are fine and simply stop at 2025-10-18.
+  - **Depends on**: T049, T052, T053.
+- [ ] T055 **Rewritten.** Create `ingest/src/awingest/backfill.py`, a whole-history backfill over date windows. It is chunked, paced and resumable via `state/backfill.json` (`--from`, `--resume`). The agent runs it locally with the owner's `INTERVALS_API_KEY`/`R2_*` user env vars once the Garmin export import (T150) is done; runs before that are fine and simply stop at 2025-10-18. Depends on T054.
 
 ### 2f. Processor and publish stage (never touches the provider)
 
@@ -348,7 +351,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 ### 2g. Pipeline workflows, freshness Worker, production check
 
 - [ ] T067 **Rewritten.** Create `.github/workflows/refresh.yml`. It implements **owner decision 1 exactly**:
-  - **Triggers**: `schedule: '17 */2 * * *'`, `workflow_dispatch` (inputs `reimport_from`, `reimport_to`), and `push` to `main` with `paths: data/running/owner/**`.
+  - **Triggers**: `schedule: '17 */2 * * *'`, `workflow_dispatch` (inputs `reimport_from`, `reimport_to`, and boolean `fetch_only`, default false: when true only the `fetch` and `alert` jobs run, with no publish, commit or deploy; used by T070), and `push` to `main` with `paths: data/running/owner/**`.
   - **Concurrency**: `concurrency: { group: refresh, cancel-in-progress: false }`.
   - **`fetch` job**: always runs on Actions (no `FETCH_MODE`). It runs `uv run awingest fetch` with the `INTERVALS_API_KEY` and `R2_*` secrets.
   - **`publish` job**, in this order:
@@ -367,7 +370,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - It returns `503` if the object is absent or the read fails.
   - Every other path falls through to the static assets.
 - [X] T069 ~~(Only if `FETCH_MODE=pc`.) PC fallback via Windows Task Scheduler.~~ **Dropped 2026-10-17**: Spike 0 showed Actions can fetch directly; there is no PC fallback.
-- [ ] T070 **Rewritten.** Production smoke check: run `uv run awingest fetch --health-only --archive r2` locally (owner's `INTERVALS_API_KEY` and `R2_*` user env vars), then dispatch `refresh.yml` once. Confirm 200s with the descriptive User-Agent, wellness objects in R2 hold approved keys only, and `state/fetch-status.json` + `public/freshness.json` are written. If the key is rejected (`AuthRejected`), go to T071.
+- [ ] T070 **Rewritten.** Fetch-only production smoke check (nothing is published or deployed): run `uv run awingest fetch --health-only --archive r2` locally (owner's `INTERVALS_API_KEY` and `R2_*` user env vars), then dispatch `refresh.yml` once with `fetch_only: true` (T067). Confirm 200s with the descriptive User-Agent, wellness objects in R2 hold approved keys only, `state/fetch-status.json` + `public/freshness.json` are written, and no commit or deploy happened. If the key is rejected (`AuthRejected`), go to T071. The first real publish is T085, through the gated bot path, after T077–T084. Depends on T054, T066, T067.
 - [ ] T071 OWNER: **Rewritten.** (Only if T070 shows the key is rejected.) Generate a new API key in intervals.icu (*Settings → Developer Settings*) and paste it into the `gh secret set INTERVALS_API_KEY` command and the user env var the agent supplies.
 
 ### 2h. Shared shell (shared plumbing)
@@ -401,8 +404,9 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - **`SectionLayout.astro`**: the section nav built from the route registry (T018), with a `LastUpdated` slot.
 - [ ] T152 Create `src/sections/running/components/GarminAttribution.astro` (FR-077; a condition of the intervals.icu API terms, effective 2025-10-23):
   - Re-read Garmin's current brand guidelines first and follow them exactly for wording, logo/mark use and placement; record the source URL and date in a comment and in `src/sections/running/README.md`.
-  - Render it from `SectionLayout.astro` (T076) so every Running page that shows Garmin-sourced data (runs, health readings, manual Garmin figures) carries it; it stays visible without JS and meets contrast/a11y rules (text alternative for any mark).
-  - Add an e2e assertion (in each story's e2e spec) that the attribution is present on landing, goals, training, run, race and health pages.
+  - **Placement follows the guidelines** (FR-077 "view" = a page, chart, tile or card showing Garmin-sourced data): page-level (e.g. rendered once from `SectionLayout.astro`, T076) or next to each chart/tile/card, whichever the guidelines require. Record the placement decision in the `PROJECT_MEMORY.md` decisions log. `SectionLayout` is the starting assumption, not the final answer.
+  - Every Running page or component that shows Garmin-sourced data (runs, health readings, manual Garmin figures) carries it as placed; it stays visible without JS and meets contrast/a11y rules (text alternative for any mark).
+  - Add an e2e assertion (in each story's e2e spec: T095, T109, T123, T137, T144) that the attribution is present, matching the chosen placement, on landing, goals, training, run, race and health pages.
 
 ### 2i. Foundational graduation coverage, backfill and first publish
 
@@ -448,11 +452,12 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - seeded privacy violations are detected, while durations do not produce false positives
   - the Worker's 200 and 503 paths
 - [ ] T085 Run the backfill and first publish:
-  1. Run `uv run awingest backfill` (resumable; locally with the owner's user env vars, or from a dispatched workflow).
-  2. Dispatch `refresh.yml` so the **first publish goes through the real gated bot path**.
+  1. Run `uv run awingest backfill` (resumable; agent-run locally with the owner's `INTERVALS_API_KEY`/`R2_*` user env vars).
+  2. Dispatch `refresh.yml` (without `fetch_only`) so the **first publish goes through the real gated bot path**.
   3. For SC-009, compare 20 random published runs with their raw intervals.icu summaries in R2 (distance, time, HR), and record the result in the PR description.
+  4. After a post-import backfill, check the wellness history: the earliest date per wellness field (weight, body fat, HRV, VO2 max, resting HR), from the T150 probe re-run, is recorded in `PROJECT_MEMORY.md`; if wellness history did not import, raise it with the owner (accept the gap, or add a manual history path).
 
-  Depends on T001, T070, T067. **The full-history backfill needs T150** (Garmin export imported into intervals.icu); if T150 is still pending, publish what intervals.icu has (from 2025-10-18) and re-run `backfill --from <earliest>` after the import.
+  Depends on T001, T055, T067, T070 and T077–T084. **The full-history backfill needs T150** (Garmin export imported into intervals.icu); if T150 is still pending, publish what intervals.icu has (from 2025-10-18) and re-run `backfill --from <earliest>` after the import.
 - [ ] T086 Run the graduation review of the shared plumbing (storage layer, intervals.icu adapter, sanitiser + run IDs + privacy scan, shared shell, Garmin attribution):
   - Write short design notes in `src/shared/README.md` and `ingest/README.md`, linking to contracts/.
   - Run `uv run pytest` and `npm test` locally.
@@ -522,7 +527,7 @@ matching goal becomes achieved with the right date.
 - [ ] T094 [P] [US2] Create `tests/unit/goals.test.ts`, covering:
   - acceptance scenarios US2.1 (44:41 inside a longer run gives achieved on 12 Mar 2027), US2.2 (prediction 20:47 as of 1 Mar 2027), US2.3 (26.0 → 22.0 toward 17.5 ≈ 47%), US2.4 (target revised), US2.5 (deadline passed, then retired), US2.6 (regression stays achieved)
   - edge cases: no data yet; indoor/treadmill and implausible efforts excluded; a treadmill run with `include_in_records` counts; a hand-entered race counts; an override; no prediction entry
-- [ ] T095 [P] [US2] Create `tests/e2e/goals.spec.ts` and `tests/a11y/goals.spec.ts`. They cover the 360 px layout, priority ordering, the achieved list, and US2.7 (a malformed `"3:7x"` stops the build with a message naming the file, goal and field, and leaves `dist/` untouched), with zero axe violations and a working keyboard path.
+- [ ] T095 [P] [US2] Create `tests/e2e/goals.spec.ts` and `tests/a11y/goals.spec.ts`. They cover the 360 px layout, priority ordering, the achieved list, and US2.7 (a malformed `"3:7x"` stops the build with a message naming the file, goal and field, and leaves `dist/` untouched), Garmin attribution present as placed (T152), with zero axe violations and a working keyboard path.
 
 **Checkpoint**: The Goals page works on its own and can be shipped.
 
@@ -548,6 +553,7 @@ featured goal and this week's distance within the first two screens.
 - [ ] T097 [P] [US1] Create `src/sections/running/domain/weeks.ts`:
   - **This-week snapshot** (Monday–Sunday): run count, distance and moving time against the previous week, shown cleanly when there are zero runs.
   - **Training build**: weekly km since `build_start`, plus the longest run in the build.
+  - **Treadmill/indoor runs are included** in both the snapshot and the training build (FR-058). T087's PB-eligibility filter is not reused here.
   - **Latest run**.
 - [ ] T098 [P] [US1] Create `src/sections/running/components/Hero.astro`:
   - "Brighton Marathon · 4 April 2027".
@@ -557,7 +563,7 @@ featured goal and this week's distance within the first two screens.
   - "For Martlets hospice" as plain text.
   - A **reserved fundraising slot that renders nothing** (FR-025).
   - A `TrainingBuild` BarChart of weekly km and the longest run (FR-021).
-- [ ] T099 [P] [US1] Create `src/sections/running/components/ThisWeek.astro` and `RunCard.astro`. The run card shows the date only (no time), title, distance, time and pace, the "Treadmill" label for treadmill runs (`TreadmillBadge`, T155), and links to `/running/runs/<id>/`.
+- [ ] T099 [US1] Create `src/sections/running/components/ThisWeek.astro` and `RunCard.astro`. The run card shows the date only (no time), title, distance, time and pace, the "Treadmill" label for treadmill runs (`TreadmillBadge`, T155), and links to `/running/runs/<id>/`. Depends on T155.
 - [ ] T155 [P] [US1] Create `src/sections/running/components/TreadmillBadge.astro` (FR-058): a text "Treadmill" label (not colour-only, accessible name) shown wherever a run with `treadmill: true` appears — `RunCard` (T099), the minimal and full run page (T102/T121), `RunList` (T115) and race history if a treadmill run is designated a race. Treadmill runs never render `RaceMap` (no `track_ref`, T125). PB/race-time-goal eligibility stays off unless the owner sets `include_in_records: true` in `run-overrides.yaml` (enforced in T087/T129). Tests: a unit case in `tests/unit/goals.test.ts`/`pbs.test.ts` for the override, and an e2e check (T109/T123) that the label shows and no map renders.
 - [ ] T100 [P] [US1] Create `src/sections/running/components/StoryLink.astro` and `SectionLinks.astro`:
   - `StoryLink` renders only when `section.yaml` has `story_link`; otherwise there is no link and no placeholder (FR-024).
@@ -570,7 +576,7 @@ featured goal and this week's distance within the first two screens.
   5. the section links
 
   It includes `LastUpdated` with the stale notice, and the first two phone screens must answer SC-001. Register the route. Depends on T091 and T096–T100.
-- [ ] T102 [US1] Create a minimal `src/sections/running/pages/runs/[id].astro` with summary figures only (date, title, distance, moving time, pace, avg HR, `TreadmillBadge` where relevant), so the latest-run card links somewhere before US3 lands. It shows **no start time, map or location** and uses the shared OG card. US3 extends this file.
+- [ ] T102 [US1] Create a minimal `src/sections/running/pages/runs/[id].astro` with summary figures only (date, title, distance, moving time, pace, avg HR, `TreadmillBadge` where relevant), so the latest-run card links somewhere before US3 lands. It shows **no start time, map or location** and uses the shared OG card. US3 extends this file. Depends on T155.
 - [ ] T103 [US1] Create `src/sections/running/components/Countdown.astro`, an inline script under 1 KB that corrects days remaining client-side in Europe/London. Without JS, the build-time value stays.
 - [ ] T104 [US1] Create the landing OG card `src/sections/running/og/landing.ts` → `/og/running.png`, embedding "N days to Brighton" (FR-072).
 - [ ] T105 [US1] Create `.github/workflows/rebuild-daily.yml`: crons `5 23 * * *` and `5 0 * * *` (UTC) that run gate → deploy (`concurrency: deploy`), so the countdown and OG image follow the UK date.
@@ -581,8 +587,11 @@ featured goal and this week's distance within the first two screens.
   - the state machine for yesterday, today, tomorrow and `result_ref` (quickstart 7d)
   - week boundaries across BST/GMT
   - a zero-run week
+  - a treadmill run counted in the this-week snapshot and the training build (FR-058)
 - [ ] T109 [P] [US1] Create `tests/e2e/landing.spec.ts` and `tests/a11y/landing.spec.ts`. At 360 px they cover:
   - acceptance scenarios US1.1–US1.7, including a stale fixture over 12 h showing the notice, and the story link absent or present
+  - the "Treadmill" label on a treadmill latest-run card (T155), with no map
+  - Garmin attribution present as placed (T152)
   - no-JS rendering (FR-074)
   - zero axe violations and a working keyboard path
 
@@ -695,8 +704,9 @@ race page shows its map and photos.
   - a per-race OG card from `src/sections/running/og/race.ts`
 
   Register the routes, and link race runs in the run list and run pages to their race pages.
-- [ ] T134 [US4] OWNER: Supply pre-Garmin race results (date, name, distance, official time), official chip times and positions for Garmin-recorded races, and race photos with descriptions. The agent asks at the US4 PR review.
-- [ ] T135 [US4] From the owner's input (T134), write `data/running/owner/races/<slug>/race.yaml` entries and run `scripts/add-race-photo.ts` for each photo. Raise a PR. `validate-data` must pass, including the duplicate-race check.
+- [ ] T134 [US4] OWNER: Supply pre-Garmin race results (date, name, distance, official time), official chip times and positions for Garmin-recorded races, and race photos with descriptions, and confirm the agent's candidate race list (T157). The agent asks at the US4 PR review.
+- [ ] T157 [US4] Draft the candidate race list (Garmin sync never sets intervals.icu's `race` flag, FR-050; RESULTS.md). The agent scans the private raw R2 data (raw activity names, distance/pace patterns such as near-standard distances run near PB pace, and race-day dates the owner recalls) and drafts candidates keyed by opaque public run ID with date, distance and time. Raw names are shown to the owner only in the conversation, never in git or a PR body. The owner confirms or rejects each at the US4 PR review (with T134); confirmed races feed T135.
+- [ ] T135 [US4] From the owner's input (T134) and the confirmed candidate list (T157), write `data/running/owner/races/<slug>/race.yaml` entries, record each confirmed race's designation (`designate: race` in its `race.yaml` when it has race details, else `run-overrides.yaml` `is_race: true`), and run `scripts/add-race-photo.ts` for each photo. Raise a PR. `validate-data` must pass, including the duplicate-race check.
 - [ ] T136 [P] [US4] Create `tests/unit/pbs.test.ts` and `tests/unit/race-history.test.ts`. They cover:
   - US4.2 (PB table)
   - US4.3 (official 1:41:07 beats the device's 1:41:15)
@@ -707,6 +717,7 @@ race page shows its map and photos.
   - no EXIF in `dist/` images
   - the static map without JS
   - MapLibre and tiles not requested until the button is clicked
+  - Garmin attribution present as placed (T152)
   - zero axe violations
 
 **Checkpoint**: Races and PBs work on their own, on top of US3's run detail.
@@ -783,8 +794,9 @@ stress or Body Battery data appears anywhere.
   - Spike 1 (T013–T014) and the scaffold (T015–T022) are the next agent work and run in parallel.
 - **Phase 2 (Foundational)**:
   - Depends on the scaffold. Schemas, storage, gate, processor and shell can start straight after Phase 1c.
-  - T051–T055 (intervals.icu adapter + fetch) can start straight away (Spike 0 is done).
-  - T085 (backfill + first publish) needs the whole pipeline; its full history needs T150.
+  - T051–T055 (intervals.icu adapter + fetch) start once T021 (`pyproject.toml`) and T047 (provider contract) exist; T054 also needs T049 (Spike 0 is done).
+  - T070 is a fetch-only smoke check (no publish, commit or deploy).
+  - T085 (backfill + first publish) needs the whole pipeline and the graduation tests T077–T084; its full history needs T150.
   - BLOCKS all stories.
 - **Phase 3 (US2)** → **Phase 4 (US1)**: both P1. US1's featured goals reuse US2's `goals.ts` and `GoalCard`.
 - **Phase 5 (go-live)**: after US2 + US1. It also needs T004.
@@ -797,11 +809,12 @@ stress or Body Battery data appears anywhere.
 
 ```text
 Owner T001-T003 (done) ─┐
-Spike 0 T005-T012 (done)┴─> fetch stage (T051-T055) ─┐
-Scaffold T015-T022 ─> schemas/storage/gate/processor/shell (Phase 2) ─┴─> T085 backfill + first publish
-Owner T150 (Garmin export -> intervals.icu) ────────────────────────────────┘ (full history only)
-                                                                            │
-                     ┌──────────────────────────────────────────────────────┘
+Spike 0 T005-T012 (done)┤
+T021 pyproject + T047 ──┴─> fetch stage (T051-T055) ─> T070 fetch-only smoke ────────┐
+Scaffold T015-T022 ─> Phase 2 (schemas/storage/gate/processor/shell) ─> T077-T084 ───┴─> T085 backfill + first publish
+Owner T150 (Garmin export -> intervals.icu) ─────────────────────────────────────────┘ (full history only)
+                                                                                     │
+                     ┌───────────────────────────────────────────────────────────────┘
                      v
            US2 Goals (P1) ──> US1 Landing (P1) ──> MVP go-live (Phase 5)
                      │
@@ -857,9 +870,10 @@ Task: "T095 [US2] tests/e2e/goals.spec.ts + tests/a11y/goals.spec.ts"
 Task: "T096 [US1] domain/races.ts state machine"
 Task: "T097 [US1] domain/weeks.ts"
 Task: "T098 [US1] Hero.astro"
-Task: "T099 [US1] ThisWeek.astro + RunCard.astro"
 Task: "T100 [US1] StoryLink.astro + SectionLinks.astro"
 Task: "T155 [US1] TreadmillBadge.astro"
+# after T155:
+Task: "T099 [US1] ThisWeek.astro + RunCard.astro"
 ```
 
 ## Parallel Example: User Story 3

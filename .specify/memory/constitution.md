@@ -50,8 +50,8 @@ independent of any one platform.
 ### IV. Pluggable Providers & Storage
 
 - Every external source (intervals.icu for Garmin-synced running data, fundraising platforms,
-  future sources) MUST sit behind a provider adapter that maps provider-specific data into the site's own normalised schemas.
-  Nothing outside an adapter may depend on a provider's raw format.
+  future sources) MUST sit behind a provider adapter that maps provider-specific data into the
+  site's own normalised schemas. Nothing outside an adapter may depend on a provider's raw format.
 - Persistence MUST sit behind a storage abstraction so JSON-in-git can be replaced (e.g. by a
   database) without changing sections or adapters.
 - Provider failure (auth breakage, API change, rate limiting) MUST only cause staleness, never

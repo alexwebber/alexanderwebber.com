@@ -46,7 +46,7 @@ starts at 2025-10-18).
 
 ```text
 cd ingest && uv sync
-uv run awingest backfill            # agent-run (locally or dispatched), resumable; logs progress
+uv run awingest backfill            # agent-run locally (owner's R2_*/INTERVALS_API_KEY env vars), resumable
 uv run awingest process --all       # R2 raw -> data/running/published/
 uv run awingest publish-check
 ```

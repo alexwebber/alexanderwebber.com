@@ -49,14 +49,16 @@ works only on these. Full-fidelity (still private).
 
 - **NormalisedActivity**: `provider_id` (intervals.icu activity ID; private, never leaves the
   processor), `source`, `start_local` (datetime, Europe/London, from `start_date_local`), `type`
-  (`road|track|trail|indoor`: `Run` -> `road`, `TrailRun` -> `trail`, `VirtualRun` or
-  `trainer: true` -> `indoor`; `track` is not distinguishable in intervals.icu data, so it is
-  currently unused), `treadmill` (true for `VirtualRun`/`trainer`), `is_race_flag` (intervals.icu
+  (`road|track|trail|indoor`: `Run` -> `road`, `TrailRun` -> `trail`, `VirtualRun` -> `indoor`,
+  and `trainer: true` on a non-`VirtualRun` run -> `indoor`; `track` is not distinguishable in
+  intervals.icu data, so it is currently unused), `treadmill` (true only for `VirtualRun`; a
+  `trainer: true` non-`VirtualRun` run is `indoor` without `treadmill`), `is_race_flag` (intervals.icu
   `race`; Garmin sync does not set it), `distance_m`, `moving_s`, `elapsed_s`,
   `elevation_gain_m`, `elevation_loss_m`, `avg_hr`, `max_hr`, `avg_cadence`, `avg_stride_m`,
   `avg_power_w` (from the `watts` stream when `device_watts`), `training_load` (`icu_training_load`;
   private, not published: per-run load is not in FR-047), `dynamics{gct_ms (average_stance_time), gct_balance_pct
-  (average_stance_time_balance), vert_osc_mm, vert_ratio_pct}`, `training_effect` (always `None`:
+  (summary `average_stance_time_balance` when present, else derived from the `stance_time_balance`
+  stream), vert_osc_mm, vert_ratio_pct}`, `training_effect` (always `None`:
   not exposed by the API), `title_raw` / `description_raw` (free text; private), `splits[]`
   (per-km, computed from the `distance`/`time` streams), `hr_zones[]` (`icu_hr_zone_times` /
   `time-at-hr`), `samples[]` (t_s, dist_m, speed_mps, hr, cadence, power, elev_m, lat, lon — lat/lon
@@ -105,7 +107,7 @@ recorded in R2 `state/run-ids.json`. **Provider activity IDs (intervals.icu IDs,
 | `hr_zones` | `[{zone, seconds}]`? | |
 | `series` | `{x_dist_m[], x_elapsed_s[], pace[], hr?[], elev?[], cadence?[], power?[]}` | **Downsampled to <= 600 points**; x-axis is distance/elapsed, never clock time (FR-013). No lat/lon. |
 | `best_efforts` | `[{distance_m, label, time_s, plausible}]` | Computed in processor; `plausible:false` efforts kept for audit but ignored downstream (FR-057) |
-| `flags` | `{excluded_from_records?, include_indoor_in_records?}` | Mirrors owner override (`include_indoor_in_records` = the owner marked this treadmill/indoor run PB- and goal-eligible) so published JSON is self-explanatory; evaluation also re-applies owner file at build |
+| `flags` | `{excluded_from_records?, include_indoor_in_records?}` | Mirrors owner override (`include_indoor_in_records` = the owner marked this treadmill/indoor run PB- and goal-eligible) so published JSON is self-explanatory; evaluation also re-applies owner file at build. Name mapping: owner `run-overrides.yaml` `include_in_records` -> published `include_indoor_in_records` (T062); both schemas' `description`s state it |
 | `track_ref` | string? | Present only if `is_race`, not `treadmill`, and map not hidden -> `race-tracks/<run-id>` |
 
 Hidden runs (owner `hide: true`) are **not written at all** (FR-017). The manifest records only
@@ -161,9 +163,10 @@ All validated at build; errors report `file`, entry (index/id) and `field` (FR-0
 | `owner/health-exclusions.yaml` | **Health Reading** excluded flag | list `{metric, date, reason?}` (FR-067) |
 | `owner/lab/<date>-<type>.yaml` | **Lab Reference Measurement** | `{date, type: dexa\|lab_vo2max, provider, values:{body_fat_pct?, weight_kg?, vo2max?}}`. Only those three value keys are allowed; any other key fails validation (FR-066). Published as-is (owner-entered, owner-approved) |
 
-Goal `target.metric` values: `weight_kg`, `body_fat_pct` (type `body_composition`; both judged on
-the 7-day average), and `vo2max`, `resting_hr`, `hrv` etc. (type `metric`; judged on the recorded
-value). Health-exclusion `metric` uses the same names.
+Goal `target.metric` values (closed enums): `weight_kg | body_fat_pct` (type `body_composition`;
+both judged on the 7-day average), and `vo2max | resting_hr | hrv` (type `metric`; judged on the
+recorded value). `fitness_ctl`/`fatigue_atl` (intervals.icu's model) and the manual Garmin figures
+are not goal metrics. Health-exclusion `metric` uses the same names.
 
 Distance names accepted: `5k, 10k, 10mi, half, marathon, 1k, 1mi, 3k, 15k, 20k, 30k` or metres.
 Times: `h:mm:ss` or `mm:ss`.
@@ -246,6 +249,8 @@ Times: `h:mm:ss` or `mm:ss`.
    `scan-privacy` re-asserts on `dist/`.
 7. Provider activity IDs/URLs (intervals.icu IDs, Garmin `external_id`) are never copied; public
    run IDs come only from `run_ids.py`; the published run schema pins `id` to the opaque pattern,
-   and `scan-privacy` fails on any `connect.garmin.com` or `intervals.icu/activities` string,
+   and `scan-privacy` fails on any provider activity-URL pattern (e.g.
+   `connect.garmin.com/modern/activity/`, `intervals.icu/activities/`; a plain Garmin link or mark
+   for the FR-077 attribution is allowed),
    `activityId`/`garminId`/`external_id`-style key, or (when R2 credentials are available in the
    gate) any known provider ID from the map found in `data/` or `dist/`.

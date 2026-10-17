@@ -121,8 +121,8 @@ file-count limit (Spike 1). The TypeScript pin is settled (6.0.3).
 | II(b) Eval suite for AI/non-deterministic decisions | N/A | No AI/LLM decision in this feature (no drafted text). Plausibility/best-effort logic is deterministic and covered by unit/contract tests |
 | II(c) Error handling + structured logging | PASS | JSON-lines structured logs from every CLI stage (run id, stage, provider, error class); typed failure classes map to alert text; partial failure never corrupts stored data (atomic writes, manifest) |
 | III. Own your data | PASS | Ingest -> store -> render; incremental via cursors; full history retained in R2; pages render only from committed data; only the freshness Worker reads R2 and it has a static fallback |
-| IV. Pluggable providers & storage | PASS | `ActivityProvider`/`HealthProvider` adapter interface (intervals.icu first; Garmin direct only if intervals.icu hits a blocker); nothing outside the adapter sees intervals.icu's raw format; manual Garmin figures are owner YAML, not a provider; `RawArchive`, `PublishedWriter`, `RunningStore` abstractions; provider failure = staleness only |
-| V. Serverless, gracefully degrading | PASS | No servers; 2-hourly ingest + manual `workflow_dispatch`; every view shows last-updated; stale notice; renders from last-good data; only added serverless piece is the freshness Worker |
+| IV. Pluggable providers & storage | PASS | `ActivityProvider`/`HealthProvider` adapter interface (intervals.icu first; Garmin direct only if intervals.icu hits a blocker); nothing outside the adapter sees intervals.icu's raw format; manual Garmin figures are owner YAML, not a provider; `RawArchive`, `PublishedWriter`, `RunningStore` abstractions; provider failure = staleness only; Principle IV wording per constitution v1.0.1 (2026-10-17) |
+| V. Serverless, gracefully degrading | PASS | No servers; 2-hourly ingest + manual `workflow_dispatch`; every view shows last-updated; stale notice; renders from last-good data; only added serverless piece is the freshness Worker. Owner-entered manual Garmin figures sit outside scheduled ingest; their "as of" date satisfies "show when last updated" |
 | VI. Privacy by default | PASS | Raw in private R2 (no credentials stored there; sleep/steps/SpO2 dropped before archiving); allow-list sanitiser strips training-run `latlng` and free-text names/descriptions; provider (intervals.icu/Garmin) activity IDs never published (opaque run IDs); schemas `additionalProperties:false`; weight = 7-day average only; GPS races only; photo EXIF stripped before commit + gate scans; privacy scan of `dist/` (SC-004); secrets only in GitHub/Cloudflare secrets. Repo stays publishable |
 | VII. Modular sections | PASS | Running is an Astro integration (`src/sections/running/integration.ts`) injecting its routes; shared code limited to `src/shared/` (layout, design tokens, chart primitives, storage interfaces); the gate's **boundary check** fails if `src/shared/` imports a section or one section imports another. Removing Running = delete the section dir + one config line |
 | VIII. Authentic voice | PASS | No AI-written public content; run titles are generated from data (neutral), race text is owner-supplied |
@@ -131,7 +131,7 @@ file-count limit (Spike 1). The TypeScript pin is settled (6.0.3).
 | SEO & social previews | PASS | Per-page title/description, OG images via satori+sharp (unique for landing, hub pages and each race; one shared card for training runs/year lists), sitemap (`@astrojs/sitemap` 3.7.4) |
 | Graceful degradation | PASS | See V; interactive map/charts are enhancements |
 | Visualisations first | PASS | Hero countdown, progress bars, SVG charts lead pages |
-| Tech constraints | PASS | Astro on Cloudflare; Python ingest via the intervals.icu API (constitution technology constraints, as amended); GitHub Actions scheduling; costs noted ($0; intervals.icu supporter tier optional, revisited at go-live) |
+| Tech constraints | PASS | Astro on Cloudflare; Python ingest via the intervals.icu API (technology constraints per constitution v1.0.1 (2026-10-17)); GitHub Actions scheduling; costs noted ($0; intervals.icu supporter tier optional, revisited at go-live) |
 | Build gate from day one | PASS | `gate` job = **site build** (`astro check` + `astro build`) + **data-schema validation** (published + owner, incl. referential checks), with the privacy scan, image scan and section-boundary check as validation steps; must pass before bot commit and before deploy; deploy is a gated job, not Cloudflare's auto-build. Test suites are **not** in the gate |
 | Broader CI deferred | PASS | pytest/Vitest/Playwright suites run locally and at graduation, plus path-filtered PR test jobs (`tests.yml`, owner-adopted 2026-10-04 as a partial BACKLOG "Broader CI" revisit); full lint on every change stays deferred |
 
@@ -147,8 +147,8 @@ render time; (2) freshness uses an R2-fed Worker route so a no-change poll does 
 A third: (3) run IDs are opaque (`YYYY-MM-DD-xxxx`), so provider activity URLs/IDs (intervals.icu
 IDs and Garmin `external_id`s) - which could expose a training run's GPS if the provider's privacy
 settings allow - never appear in git or `dist/`. The 2026-10-17 provider switch (intervals.icu)
-needs only the constitution's PATCH wording amendment of the ingest technology constraint, made
-separately; all rows still PASS.
+needed only the constitution's PATCH wording amendment of the ingest technology constraint, now
+made as constitution v1.0.1 (2026-10-17); all rows still PASS.
 
 ## Project Structure
 
@@ -279,5 +279,5 @@ were adopted by the owner on 2026-10-04 as a partial BACKLOG "Broader CI" revisi
 | Freshness Worker route | Static site + "last updated within a few hours" + no-commit-on-no-change would otherwise show a stale timestamp and force a commit every 2 h | Committing `refresh.json` 12x/day pollutes history; build-time-only stamp misreports freshness |
 | Bot commits to `main` after the gate | Unattended ingest must publish without a human; gated by build gate per constitution | PR-per-refresh (auto-merge) adds noise and latency; owner-confirmed 2026-10-04 as a narrow exception to the PR norm (sanitised data files only, after the gate) |
 | Owner-editable `section.yaml` and `manual-metrics.yaml` | `section.yaml` keeps thresholds/limits out of code; `manual-metrics.yaml` holds the Garmin figures intervals.icu lacks (training status, race predictions) as dated entries | Constants in code (owner edits need a code change); falling back to Garmin direct for two figures (reintroduces the unofficial-client risk the provider switch removed) |
-| TypeScript pinned to 6.0.3 (core-component pin) | `@astrojs/check` 0.9.10 peer range is `^5 \|\| ^6`; TS 7 would break `astro check` in the gate. Needs a `PROJECT_MEMORY.md` decisions-log entry (made by the caller, not this plan) | Using TS 7: gate breaks. Revisit when `@astrojs/check` supports TS 7 |
+| TypeScript pinned to 6.0.3 (core-component pin) | `@astrojs/check` 0.9.10 peer range is `^5 \|\| ^6`; TS 7 would break `astro check` in the gate. Logged in the `PROJECT_MEMORY.md` decisions log on 2026-10-04 | Using TS 7: gate breaks. Revisit when `@astrojs/check` supports TS 7 |
 | Build-time SVG charts instead of a charting library | Zero JS, accessible by construction, no library churn | uPlot/Chart.js add JS and manual a11y; kept as optional later enhancement |

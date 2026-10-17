@@ -5,7 +5,7 @@
 | Command | Stage | Does | Exit codes |
 |---|---|---|---|
 | `fetch [--reimport-from D --reimport-to D] [--health-only] [--archive r2\|local]` | fetch | Call intervals.icu (`INTERVALS_API_KEY`, descriptive User-Agent): list activities in the date window (cursor - 14 days .. today), archive raw parts of new/changed ones, fetch wellness for the same window (approved keys only), update cursors + `state/fetch-status.json` + `public/freshness.json` on success | 0 ok/partial-ok, 10 auth, 11 rate-limited/429 (sets `rate_limited_until`), 12 forbidden (403 HTML bot block), 13 provider-changed, 14 archive, 1 other |
-| `backfill [--from D] [--resume]` | fetch | Whole-history, paced, resumable; run once after the owner's Garmin export is imported into intervals.icu (agent runs it locally or from a dispatched workflow) | same |
+| `backfill [--from D] [--resume]` | fetch | Whole-history, paced, resumable; run once after the owner's Garmin export is imported into intervals.icu (agent runs it locally with the owner's `INTERVALS_API_KEY`/`R2_*` env vars) | same |
 | `process [--all]` | publish | Normalise + sanitise raw -> published JSON, assigning opaque run IDs from the R2 ID map (incremental by manifest hash; `--all` = reprocess everything, e.g. after an adapter fix) | 0, 20 validation error |
 | `publish-check` | publish | Schema-validate published tree + manifest consistency | 0, 20 |
 | `alert` | alert | Evaluate `fetch-status`; open/update/close the `ingest-failing` GitHub issue | 0 |
@@ -20,7 +20,8 @@ fully successful point; `process` writes nothing if any validation fails.
 ## Workflows
 
 - **`refresh.yml`** — triggers: `schedule: 17 */2 * * *`, `workflow_dispatch` (inputs
-  `reimport_from`, `reimport_to`), `push` to `main` touching `data/running/owner/**`.
+  `reimport_from`, `reimport_to`, `fetch_only` (runs `fetch` and skips publish/deploy; used by the
+  T070 smoke check)), `push` to `main` touching `data/running/owner/**`.
   `concurrency: refresh` with `cancel-in-progress: false` (runs never overlap, so two runs cannot
   race on cursors, the run-ID map or bot commits; later runs queue).
   Jobs: `fetch` (always on Actions; Spike 0 confirmed GitHub-hosted runners reach intervals.icu)

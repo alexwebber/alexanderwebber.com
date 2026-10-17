@@ -11,7 +11,7 @@ not Garmin Connect directly; Garmin training status and race predictions become 
 entries; training load is intervals.icu's fitness/fatigue model; treadmill runs are labelled; views
 of Garmin-sourced data carry Garmin attribution (owner decisions, see `PROJECT_MEMORY.md`).
 
-**Input**: User description: "The Running section of alexanderwebber.com: a warm, personal, data-rich home for Alexander's running, aimed at friends, family, sponsors and fellow runners. Data comes from Garmin Connect (activities, health and performance metrics, Garmin Index smart scale for weight and body fat) and is refreshed on a schedule into the site's own store. In scope: a Brighton-led goals hub landing page; goals as a first-class concept (race-time, body-composition and performance-metric targets, achieved by any recorded effort, shown with Garmin race predictions); training stats with full run detail (no start times, no training GPS); races & PBs with race-only GPS maps, race photos and full history plus manual entries; health & performance metrics (VO2 max, training status/load, race predictions, resting HR, HRV, 7-day-average weight, body fat %) with lab reference measurements (DEXA, lab VO2 max). Out of scope: fundraising, journey/story and educational videos, training-run photos." (Full owner answers gathered in question rounds on 2026-10-04.)
+**Input**: User description: "The Running section of alexanderwebber.com: a warm, personal, data-rich home for Alexander's running, aimed at friends, family, sponsors and fellow runners. Data comes from Garmin Connect (activities, health and performance metrics, Garmin Index smart scale for weight and body fat) and is refreshed on a schedule into the site's own store. In scope: a Brighton-led goals hub landing page; goals as a first-class concept (race-time, body-composition and performance-metric targets, achieved by any recorded effort, shown with Garmin race predictions); training stats with full run detail (no start times, no training GPS); races & PBs with race-only GPS maps, race photos and full history plus manual entries; health & performance metrics (VO2 max, training status/load, race predictions, resting HR, HRV, 7-day-average weight, body fat %) with lab reference measurements (DEXA, lab VO2 max). Out of scope: fundraising, journey/story and educational videos, training-run photos." (Full owner answers gathered in question rounds on 2026-10-04.) (superseded; see Amended)
 
 ## Overview
 
@@ -171,8 +171,8 @@ no start time, map, or location name appears anywhere on the page.
 A visitor looks at Alexander's racing: a history of race results, a personal-best table for each
 standard distance, a list of upcoming races (with the Brighton countdown), and a page for each race
 showing the result, the route map, the full run detail, and any photos Alexander has added. Race
-history includes every race recorded on his Garmin watch (via intervals.icu) plus older races
-Alexander enters by hand.
+history includes every recorded run Alexander has designated a race (Garmin sync does not set
+intervals.icu's race marker, so designation is his, FR-050) plus older races he enters by hand.
 
 **Why this priority**: Races and PBs are the milestones friends and sponsors most want to see, and
 the PB table is the natural companion to race-time goals. It builds on the run data from Story 3.
@@ -183,9 +183,10 @@ entries), upcoming races show countdowns, and a race detail page shows its map a
 
 **Acceptance Scenarios**:
 
-1. **Given** races recorded in Garmin and two older races entered by hand, **When** a visitor opens
-   the races page, **Then** all races appear newest first with date, name, distance and finish time,
-   and hand-entered races are included alongside Garmin-recorded ones.
+1. **Given** Garmin-recorded runs the owner has designated as races and two older races entered by
+   hand, **When** a visitor opens the races page, **Then** all races appear newest first with date,
+   name, distance and finish time, and hand-entered races are included alongside Garmin-recorded
+   ones.
 2. **Given** race results at 5k, 10k and half marathon, **When** a visitor views the PB table,
    **Then** each standard distance shows the fastest race time with its date and race name, plus
    the fastest effort at that distance from any run where that is faster.
@@ -332,8 +333,10 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
 - **FR-014**: GPS route maps MUST appear only on race pages, and the owner MUST be able to hide the
   map for any individual race.
 - **FR-015**: Sleep, stress, Body Battery, and any other Garmin data category not explicitly listed
-  in this specification MUST NOT be stored for publication or displayed. Sleep, steps and SpO2,
-  which intervals.icu supplies alongside approved metrics, MUST NOT be ingested at all.
+  in this specification MUST NOT be stored for publication or displayed. Sleep, steps and SpO2
+  wellness records, which intervals.icu supplies alongside approved metrics, MUST NOT be ingested
+  at all. Activity streams and FIT files archived privately may contain in-activity respiration or
+  SpO2 readings; these MUST never be published (the privacy scan covers published data).
 - **FR-016**: Published photos MUST have embedded location and device metadata removed.
 - **FR-017**: Data excluded for privacy MUST be excluded before it reaches anything that is
   published, so that it cannot be recovered from the site or its public files.
@@ -491,7 +494,9 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
   other sections.
 - **FR-077**: Every view showing Garmin-sourced data (runs, health readings, and the owner's manual
   Garmin figures) MUST show Garmin attribution following Garmin's brand guidelines — a condition of
-  the intervals.icu API terms (effective 2025-10-23).
+  the intervals.icu API terms (effective 2025-10-23). A "view" is a page, chart, tile or card that
+  shows Garmin-sourced data; whether attribution sits once per page or next to each chart, tile or
+  card follows Garmin's brand guidelines, which are re-read before it is built.
 
 ### Key Entities
 
