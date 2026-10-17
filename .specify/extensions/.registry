@@ -1,6 +1,22 @@
 {
   "schema_version": "1.0",
   "extensions": {
+    "house-process": {
+      "version": "0.8.0",
+      "source": "local",
+      "manifest_hash": "sha256:25a6545606be8db0361fc63af6f4f39c82d52189492edfb29e0bf1aecff26899",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {
+        "claude": [
+          "speckit.house-process.scaffold-memory",
+          "speckit.house-process.harvest-lessons",
+          "speckit.house-process.model-canary"
+        ]
+      },
+      "registered_skills": [],
+      "installed_at": "2026-10-17T15:26:56.961575+00:00"
+    },
     "git": {
       "version": "1.0.1",
       "source": "local",
@@ -17,23 +33,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-10-04T12:01:17.719358+00:00"
-    },
-    "house-process": {
-      "version": "0.8.0",
-      "source": "local",
-      "manifest_hash": "sha256:25a6545606be8db0361fc63af6f4f39c82d52189492edfb29e0bf1aecff26899",
-      "enabled": true,
-      "priority": 10,
-      "registered_commands": {
-        "claude": [
-          "speckit.house-process.scaffold-memory",
-          "speckit.house-process.harvest-lessons",
-          "speckit.house-process.model-canary"
-        ]
-      },
-      "registered_skills": [],
-      "installed_at": "2026-10-04T12:10:10.141036+00:00"
+      "installed_at": "2026-10-17T15:26:57.824605+00:00"
     }
   }
 }

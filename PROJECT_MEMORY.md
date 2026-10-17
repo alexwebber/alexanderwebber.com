@@ -9,15 +9,20 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-04):** house-process 0.8.0 reinstalled (branch `chore/house-process-0.8.0`).
-  Process work is done; the next session starts implementation.
+- **Status (2026-10-17):** Spec Kit upgraded to 1.2.1 (branch `chore/spec-kit-1.2.1`). No
+  implementation has started yet; the empty local branch `001-slice1-spike0` can be deleted.
+- **Owner progress:** an intervals.icu account is connected to Garmin, and a 1-year "download old
+  data" backfill was requested on 2026-10-17. Its wellness list includes Weight, Body Fat,
+  Resting HR, VO2 Max and HRV (rMSSD). The Garmin full data export is explained to the owner;
+  ask whether it has been requested.
 - **Waiting on the owner:**
-  - Review and merge the `chore/house-process-0.8.0` PR.
+  - Review and merge the `chore/spec-kit-1.2.1` PR.
   - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
     nameservers). The agent walks the owner through each one at the start of implementation.
 - **Next step:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold).
-  **Ask the owner for a usage screenshot first.** PR #7's open confirmations are answered (see
-  the decisions log).
+  No usage screenshot is needed (see the 2026-10-17 decision). PR #7's open confirmations are
+  answered (see the decisions log). Newer releases exist than the plan's pins: garminconnect
+  0.3.19 (2026-10-16) and Astro 7.4.0. T005 and the scaffold tasks re-verify them anyway.
   - **Update the docs first, in the slice PR.** Spike 0 is expanded (see the 2026-10-04
     decision). Amend `research.md` (Spike 0 table, S0.3 at 3-hourly with ≥15/16, the
     intervals.icu coverage check) and `tasks.md`. New owner prerequisites: the Garmin data export
@@ -88,6 +93,8 @@ project-specific notes.
   models. Norm changes are proposed only once a pattern holds. **Project override
   (2026-10-04):** this project does not opt in. Canaries run only when the owner is unhappy
   with an output, because of plan usage limits. The agent logs each step's token cost anyway.
+  **Project override (2026-10-17):** the agent doesn't ask for usage screenshots. The owner says
+  when usage is running low.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
@@ -255,6 +262,16 @@ project-specific notes.
   Decide the provider (Garmin, intervals.icu, or hybrid) on that evidence. A switch means
   changing the adapter plus a small spec/plan amendment.
 
+- **2026-10-17** — Upgraded Spec Kit 1.1.0 → 1.2.1, following PLAYBOOK > Upgrading Spec Kit.
+  The process: re-init, reinstall `house-constitution` 0.1.1, `house-process` 0.8.0 and `git`
+  1.0.1, then restore the constitution, `git-config.yml` and `extensions.yml`. Upstream changes
+  that reach us are hardened PowerShell plan scripts (literal paths, empty-plan checks) and a
+  deprecated `/speckit-taskstoissues`, which we don't use. The release notes had nothing
+  touching presets, extensions or hooks.
+- **2026-10-17** — **No usage screenshots** (owner preference). Usage reads near zero at the
+  start of a session, so a screenshot there says nothing. The owner says when usage is running
+  low, and the agent doesn't ask.
+
 ## Upstream candidates
 
 <!-- Lessons that might help future projects, captured the moment they happen (see the working
@@ -269,6 +286,15 @@ project-specific notes.
   but the subject starts with a UTF-8 BOM (`EF BB BF`), because PowerShell adds one when it
   writes to a native stdin. Strengthen the existing agent tip: never pipe commit messages; use
   `git commit -m @'…'@`. Optionally check with `git log -1 --format=%B | od -c | head -1`.
+- 2026-10-17 — The owner overrode "ask for a usage screenshot before big spends". Usage reads
+  near zero at the start of a session, so screenshots there are useless, and the owner would
+  rather flag low usage themselves. Generalisation: make the canary/usage norm "the owner flags
+  low usage", with screenshots optional.
+- 2026-10-17 — PLAYBOOK > Upgrading Spec Kit is missing steps. It should say: reinstall the
+  `git` extension too, before `house-process`, because install order sets the hook order in
+  `extensions.yml`. It should also say to back up and restore `.specify/feature.json` and
+  `extensions/git/git-config.yml` alongside the constitution, and to diff `extensions.yml`,
+  restoring it if only the order changed.
 
 ## Open questions
 
@@ -278,6 +304,8 @@ project-specific notes.
 - Garmin, intervals.icu, or a hybrid as the running provider? → decided by the expanded
   **Spike 0** (see the 2026-10-04 decision). Also to check there: whether intervals.icu
   returns HRV and body fat for the owner's devices, and whether its terms allow publishing.
+  (2026-10-17: its Garmin wellness sync offers HRV (rMSSD) and Body Fat. Confirm that the API
+  actually returns them.)
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
