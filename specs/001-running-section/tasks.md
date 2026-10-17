@@ -262,7 +262,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - Jobs and their path filters:
     - `pytest` (`uv run pytest`): `ingest/**` or `schemas/**`
     - `vitest` (`npm test`): `src/**`, `schemas/**`, `scripts/**`, `tests/unit/**` or `tests/contract/**`
-    - `playwright` (Playwright + axe against `astro preview`): `src/**`, `data/running/owner/**`, `tests/e2e/**` or `tests/a11y/**`
+    - `playwright` (Playwright + axe against `astro preview`): `src/**`, `data/running/owner/**`, `tests/e2e/**`, `tests/a11y/**` or `playwright.config.ts` (added 2026-10-17; `vitest` likewise also runs on `vitest.config.ts`)
   - Full lint on every change stays deferred (BACKLOG).
   - **Done 2026-10-17**: Playwright runs with `--pass-with-no-tests` until the story specs exist. `playwright.config.ts` clears `CLAUDECODE`/`AI_AGENT` for its web server, because Astro 7 backgrounds `astro preview` under a coding agent.
 - [X] T045 Create `scripts/lighthouse-budget.mjs`, which runs the Lighthouse 13.5.0 CLI (mobile) against `astro preview` for each page type. Checks:
