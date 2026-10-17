@@ -1,0 +1,7 @@
+{
+  "status": 403,
+  "headers": {
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "body": "<!DOCTYPE html><html><head><title>Just a moment...</title></head><body>Cloudflare challenge</body></html>"
+}

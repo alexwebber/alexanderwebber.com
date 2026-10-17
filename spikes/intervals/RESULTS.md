@@ -66,3 +66,26 @@ must not publish them for training runs.
 **PASS** (2026-10-17, run 39048175253, `ubuntu-latest`): all nine calls returned 200 from a
 GitHub-hosted runner with the descriptive User-Agent. So Actions can fetch directly, and the
 PC-fetch fallback isn't needed. The throwaway workflow was removed before merge.
+
+## Phase 2e adapter check (2026-10-17)
+
+`adapter_check.py` (throwaway, aggregates only) ran from a branch workflow, since removed.
+That workflow ran `awingest backfill` into a runner-local archive, then `awingest fetch`, then
+the report. Nothing was written to R2.
+
+- **Full history** (run 39060846318, since deleted at the owner's request): 109 windows from 2000-01-01, about 20 min. It fetched
+  189 runs and 367 wellness days with no failures, and all 189 runs normalised. Every run had
+  all five parts (summary, detail, streams, HR time, FIT). The `fetch` straight after found
+  nothing new (9 runs and 15 days unchanged).
+- **`latlng`** holds latitudes in `data` and longitudes in `data2`. `start_date_local` is
+  always a naive local time.
+- **Cadence** is stored as strides per minute (median 78), so the normaliser doubles it to
+  steps per minute. A recent-window re-check (run 39063285473, 43 runs) gave a median of 158.
+- **Distance:** one run's stream ended 1.2 km away from its summary distance. A stream more
+  than 0.5% off is now scaled to the summary.
+- **Power:** there is no summary power field (`icu_average_watts` is never set). So the
+  average comes from the `watts` stream: median 481 W, no zero samples, about 149 W per m/s of
+  speed. That is in line with Garmin's native running power, which reads well above Stryd's.
+  It still needs one run checked by hand against Garmin Connect (a PR confirmation).
+- **Dynamics:** ground-contact balance is in the summary for only 11 runs, and the
+  `stance_time_balance` stream exists for the same 11. Other runs get `None`.

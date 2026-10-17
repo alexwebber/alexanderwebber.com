@@ -290,32 +290,33 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 
 ### 2e. intervals.icu adapter and fetch stage (rewritten 2026-10-17; builds on Spike 0, T012)
 
-- [ ] T051 **Rewritten.** Create `ingest/src/awingest/providers/intervals/client.py`:
+- [X] T051 **Rewritten.** Create `ingest/src/awingest/providers/intervals/client.py`:
   - Standard-library `urllib.request` client for `https://intervals.icu/api/v1`, HTTP Basic auth user `API_KEY` + `INTERVALS_API_KEY` (from the environment), athlete `0`.
   - **Always sends a descriptive User-Agent** (`alexanderwebber.com-ingest/<version> (+https://alexanderwebber.com)`); a request without one is a bug.
   - Error mapping (none escapes): 401, or 403 with a JSON body → `AuthRejected`; **403 with an HTML body → `ProviderForbidden`** (Cloudflare bot block, not an auth failure); 429 → `RateLimited(retry_after)`, recording `rate_limited_until` in `state/fetch-status.json`; parse/shape errors → `ProviderChanged`; network/5xx → `Transient`.
   - Pacing of >= 1 s with jitter between calls. The key never appears in logs or errors.
   - Depends on T047.
-- [ ] T052 **Rewritten.** Create `ingest/src/awingest/providers/intervals/endpoints.py` (contracts/provider-adapter.md):
+- [X] T052 **Rewritten.** Create `ingest/src/awingest/providers/intervals/endpoints.py` (contracts/provider-adapter.md):
   - `list_activities(oldest, newest)` via `/athlete/0/activities`, keeping running types only (`Run`, `TrailRun`, `VirtualRun`; FR-009), each ref carrying id, `start_date_local` and a list-row hash.
   - `fetch_activity`: `/activity/{id}?intervals=true`, `/activity/{id}/streams.json`, `/activity/{id}/time-at-hr` and `/activity/{id}/fit-file` (archived verbatim, not parsed).
   - `fetch_health(oldest, newest)` via `/athlete/0/wellness`, reducing each day **in memory** to the approved keys (`weight`, `bodyFat`, `restingHR`, `hrv`, `vo2max`, `ctl`, `atl`, plus the date) **before anything is archived**. `sleepSecs`, `steps`, `spO2`, sleep scores and every other key are dropped (FR-015). There is no code path for training status or race predictions (owner data, T151).
   - Depends on T051.
-- [ ] T053 **Rewritten.** Create `ingest/src/awingest/providers/intervals/normalise.py`, a pure (no I/O), deterministic mapping to `NormalisedActivity` and `NormalisedHealthReading` (data-model §2):
+- [X] T053 **Rewritten.** Create `ingest/src/awingest/providers/intervals/normalise.py`, a pure (no I/O), deterministic mapping to `NormalisedActivity` and `NormalisedHealthReading` (data-model §2):
   - Units: metres, seconds, kg, bpm; `start_date_local` → Europe/London.
   - Types: `Run` → `road`, `TrailRun` → `trail`, `VirtualRun` → `indoor` with **`treadmill: true`**; `trainer: true` on a non-`VirtualRun` run → `indoor` without `treadmill`; non-run activities rejected.
   - HR zone times, running dynamics (`average_stance_time` = GCT; ground-contact balance from the summary field if present, else derived from the `stance_time_balance` stream; vertical oscillation/ratio), stride, power (from `watts` when `device_watts`), per-km splits computed from the `distance`/`time` streams, samples incl. lat/lon from `latlng` (still private).
   - Wellness: `weight` → `weight_kg`, `bodyFat` → `body_fat_pct`, `restingHR` → `resting_hr`, `hrv` → `hrv` (rMSSD), `vo2max`, `ctl` → `fitness_ctl`, `atl` → `fatigue_atl`.
   - `training_effect` is always `None` (not exposed by the API). Free-text `name`/`description` are kept only as private `title_raw`/`description_raw`. The provider ID is exposed only as `provider_id`.
   - Depends on T047.
-- [ ] T054 **Rewritten.** Create `ingest/src/awingest/fetch.py`, the fetch stage:
+- [X] T054 **Rewritten.** Create `ingest/src/awingest/fetch.py`, the fetch stage:
   - **Incremental by date window**: `oldest` = `state/cursor.json` date **minus 14 days** (FR-008 re-list), `newest` = today; fetches parts only for new activities or ones whose list-row hash changed; wellness over the same window. Honours `--reimport-from`/`--reimport-to`; supports `--health-only`.
   - **Archiving**: raw parts are archived to `raw/intervals/activities/<id>/…` and `raw/intervals/wellness/<date>.json` before normalisation (wellness already reduced to approved keys). It never deletes, and a partial failure is recorded and fetching continues.
   - **Cursors**: they advance only after successful writes.
   - **On success**: updates `state/fetch-status.json` and `public/freshness.json` (only `last_success_at` per source (`intervals`) + `generated_at`).
   - **Exit codes**: 0, 10, 11, 12, 13, 14, 1.
   - **Depends on**: T049, T052, T053.
-- [ ] T055 **Rewritten.** Create `ingest/src/awingest/backfill.py`, a whole-history backfill over date windows. It is chunked, paced and resumable via `state/backfill.json` (`--from`, `--resume`). The agent runs it locally with the owner's `INTERVALS_API_KEY`/`R2_*` user env vars once the Garmin export import (T150) is done; runs before that are fine and simply stop at 2025-10-18. Depends on T054.
+- [X] T055 **Rewritten.** Create `ingest/src/awingest/backfill.py`, a whole-history backfill over date windows. It is chunked, paced and resumable via `state/backfill.json` (`--from`, `--resume`). The agent runs it locally with the owner's `INTERVALS_API_KEY`/`R2_*` user env vars once the Garmin export import (T150) is done; runs before that are fine and simply stop at 2025-10-18. Depends on T054.
+  - **Done 2026-10-17 (T051–T055)**: `providers/intervals/{client,endpoints,normalise}.py`, `IntervalsProvider`, `state.py`, `fetch.py`, `backfill.py`, and `fetch`/`backfill` wired into `cli.py` (the rest of T066 is still to do). Activity parts are keyed by archive file name and a `fetch.json` marker (row hash, part names) is written last; HR time and FIT are optional (404). With no cursor, `fetch` covers the last 14 days. Backfill defaults to `--from 2000-01-01` in 90-day windows and sets cursors only if none exist. Checked against the owner's real data from a throwaway branch workflow (aggregates only; `spikes/intervals/RESULTS.md`). That check led to two normaliser rules: cadence is doubled to steps/min, and a distance stream more than 0.5% off the summary is scaled to it.
 
 ### 2f. Processor and publish stage (never touches the provider)
 
@@ -424,15 +425,16 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 
 ### 2i. Foundational graduation coverage, backfill and first publish
 
-- [ ] T077 [P] Create synthetic, anonymised intervals.icu fixtures in `ingest/tests/fixtures/intervals/`, shaped from the Spike 0 payloads (`spikes/intervals/out/raw/`, gitignored). **No real values are copied into git.** They include:
+- [X] T077 [P] Create synthetic, anonymised intervals.icu fixtures in `ingest/tests/fixtures/intervals/`, shaped from the Spike 0 payloads (`spikes/intervals/out/raw/`, gitignored). **No real values are copied into git.** They include:
   - injected sentinel `latlng`, start times, free-text `name`/`description`, location strings, intervals.icu IDs and Garmin `external_id`s for the privacy tests
   - a run with dynamics + power, and a run without them
   - a `VirtualRun` (treadmill), a race, a `TrailRun` and a non-run activity (e.g. `WeightTraining`)
   - wellness days with every approved metric **plus** `sleepSecs`, `steps` and `spO2` (to prove they are dropped before archiving)
   - error responses: 401, 403 with a JSON body, 403 with an HTML challenge body, 429 with `Retry-After`
+  - **Done 2026-10-17**: written by `make_fixtures.py` in that folder (re-run to regenerate; output is reproducible). The Spike 0 payloads weren't available in the cloud session, so the shapes follow `RESULTS.md` and the OpenAPI field names; every value is invented. A 503 response and a `trainer: true` outdoor run were added.
 - [X] T078 [P] Create the parameterised storage contract suite `ingest/tests/contract/test_raw_archive.py`, run against `LocalArchive` and `R2Archive` (moto 5.2.3). It covers round-trip, idempotent re-put, `if_match` conflict, key validation, atomicity under injected failure, and a 5,000-object listing.
   - **Done 2026-10-17** with T048–T049 (moto 5.2.4). With `AWINGEST_TEST_R2_LIVE=1` and the `R2_*` variables it also runs against real R2 under a `test/` prefix (skipping the 5,000-object listing); it passed there from Actions.
-- [ ] T079 [P] **Rewritten.** Create the adapter contract suite `ingest/tests/contract/test_intervals_adapter.py`. It covers:
+- [X] T079 [P] **Rewritten.** Create the adapter contract suite `ingest/tests/contract/test_intervals_adapter.py`. It covers:
   - required fields, normalised units and type mapping (`VirtualRun` → `indoor` + `treadmill: true`)
   - non-run activities rejected
   - missing optional metrics are `None`, never 0; per-km splits computed from streams
@@ -442,6 +444,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - every request carries the descriptive User-Agent and Basic auth; the key never appears in logs
   - non-approved wellness keys (`sleepSecs`, `steps`, `spO2`) are absent from archived and normalised output
   - incremental windows: cursor minus 14 days, unchanged list rows not re-fetched
+  - **Done 2026-10-17**, with `tests/unit/test_fetch.py` (status, cursors, freshness, partial failure, back-off), `test_backfill.py` (windows, resume, cursors) and `test_cli.py`.
 - [ ] T080 [P] Create `ingest/tests/unit/test_sanitise.py` and `ingest/tests/unit/test_run_ids.py`:
   - exhaustive allow-list tests
   - a **property test** that feeds random raw payloads with sentinels (incl. `latlng` and free-text names/descriptions) and asserts none appear in the serialised output of training runs

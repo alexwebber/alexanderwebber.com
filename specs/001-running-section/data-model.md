@@ -20,6 +20,8 @@ from Published + Owner and are never stored.
 ```text
 raw/intervals/activities/<activityId>/{summary,detail,streams,time-at-hr}.json   # as received
 raw/intervals/activities/<activityId>/activity.fit  # FIT file, verbatim backup (not parsed)
+raw/intervals/activities/<activityId>/fetch.json    # fetch-stage marker, written after all parts:
+                                                    #   list-row hash + part names (change detection)
 raw/intervals/wellness/<yyyy-mm-dd>.json            # one day; APPROVED keys only: weight, bodyFat,
                                                     #   restingHR, hrv, vo2max, ctl, atl (+ id/date)
 state/run-ids.json                                  # {<intervalsActivityId>: "<YYYY-MM-DD-xxxx>"} APPEND-ONLY;

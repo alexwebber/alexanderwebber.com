@@ -9,12 +9,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Phase 2c–2d (the gate action and `gate.yml`, `tests.yml`,
-  `lighthouse-budget.mjs` + `quality.yml`, and the ingest core: logging, provider contract,
-  `LocalArchive`/`R2Archive` with the T078 contract suite: T042–T049, T078) is done in a cloud
-  session, on branch `claude/amazing-edison-3ode87`, and raised as one PR. Decisions are in the
-  log below. **Merging it deploys the placeholder home page** to
-  `alexanderwebber.alexanderwebber.workers.dev` (gate.yml deploys every push to `main`).
+- **Status (2026-10-17):** Phase 2e (the intervals.icu adapter, fetch stage and backfill, plus
+  the fixtures and adapter contract suite: T051–T055, T077, T079) is done in a cloud session,
+  on branch `claude/stoic-franklin-vhiumh`, and raised as one PR. It was checked against the
+  owner's real data from a throwaway workflow (`spikes/intervals/RESULTS.md`). Decisions are
+  in the log below. Phase 2c–2d (PR #18) merged, and its first `gate.yml` deploy on `main`
+  succeeded.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -36,11 +36,13 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Phase 2e**: the intervals.icu adapter and fetch stage (T051–T055), with the
-  adapter fixtures and contract suite (T077, T079). Use a new branch from `origin/main`, ideally
-  as another cloud session. Build on `awingest.providers.base`, `awingest.archive` and
-  `awingest.logging`. After the merge, check the first `gate.yml` deploy on `main` succeeded.
-  If the PR has unticked confirmations when it merges, ask about them first.
+- **Next step: Phase 2f**: the processor and publish stage (T056–T065), plus the rest of the
+  CLI (T066: `process`, `publish-check`, `alert`, `reprocess`; `fetch` and `backfill` are
+  already wired). Use a new branch from `origin/main`, ideally as another cloud session. Build
+  on `NormalisedActivity`/`NormalisedHealthReading` and read bundles back from
+  `raw/intervals/activities/<id>/` (the `fetch.json` marker lists the parts). If the Phase 2e
+  PR has unticked confirmations when it merges, ask about them first (one is the power check
+  against Garmin Connect).
 
 ## Vision
 
@@ -423,6 +425,42 @@ project-specific notes.
   - **Privacy in memory:** provider IDs, raw titles and coordinates are kept out of the normalised
     types' `repr`. Logging scrubs secrets, emails and provider IDs from every caller field.
 
+- **2026-10-17** — **Phase 2e built** (intervals.icu adapter, fetch stage, backfill). Choices
+  later tasks build on:
+  - **Raw layout:** activity parts are keyed by archive file name (`summary.json` is the list
+    row, plus `detail.json`, `streams.json`, `time-at-hr.json`, `activity.fit`). A
+    `fetch.json` marker (row hash, part names) is written after all parts, so a marker means a
+    complete set. `ActivityRef` gained a private `row` field to carry the list row.
+  - **Optional parts:** HR time and the FIT file answer 404 for some activities; the bundle
+    then lacks them. HR zones come from `icu_hr_zone_times`; `time-at-hr` is archived, not
+    parsed.
+  - **Start time:** `start_date_local` is read as Europe/London wall time, so a run abroad keeps
+    its own calendar date (only the date is ever published).
+  - **Windows:** with no cursor, `fetch` covers the last 14 days; history comes from `backfill`
+    (default `--from 2000-01-01`, 90-day windows). Backfill sets the cursors only if none exist,
+    and never touches `last_success_at` or `public/freshness.json`.
+  - **Failures:** one failing activity makes the run `partial` (exit 0) and holds the activity
+    cursor, so it is retried. Three network failures in a row end the run. A 429 with a
+    `Retry-After` of 60 s or less is waited out in-run; otherwise `rate_limited_until` is
+    recorded (15 min without the header) and runs exit 11 without calling the provider until
+    it passes.
+  - **Freshness:** only a successful run whose window ends today sets `last_success_at` and
+    rewrites `public/freshness.json` (so an old `--reimport` window doesn't claim freshness).
+  - **Wellness:** a day with no approved values isn't archived, so it can't blank a stored day.
+  - **CLI:** `fetch` and `backfill` are wired now (part of T066), with `--archive r2|local` and
+    `--archive-dir` (default `$AWINGEST_ARCHIVE_DIR` or `.archive`, gitignored).
+  - **New pin:** `tzdata` 2026.5, because Windows has no system time-zone database and the owner
+    runs `backfill` locally.
+  - **Checked against real data** (throwaway workflow, run 39060846318: full backfill into a
+    runner-local archive, nothing written to R2): 189 runs (137 `Run`, 52 `VirtualRun`) and 367
+    wellness days fetched in ~20 min with no failures, and all 189 normalised. Every run had
+    all five parts. `latlng` is lat in `data` and lon in `data2`. An incremental `fetch`
+    straight after found nothing new. History still starts in Oct 2025 (T150 pending).
+  - **Cadence is doubled:** intervals.icu keeps Garmin's running cadence as strides per minute
+    (median 78); the published schema wants steps per minute.
+  - **Calibrated streams are scaled:** when the `distance` stream ends more than 0.5% from the
+    summary distance (one run was 1.2 km off), the stream is scaled to the summary.
+
 ## Upstream candidates
 
 - 2026-10-17 — Astro 7 runs `astro preview` in the background when it detects a coding agent
@@ -457,6 +495,15 @@ project-specific notes.
   registered workers.dev subdomain), so the loop never retries. Agent tip: add `|| true` to
   command substitutions inside retry loops, and allow a few minutes for a new workers.dev
   subdomain's certificate.
+- 2026-10-17 — Cloud session: the sandbox's egress policy blocks intervals.icu and
+  `*.workers.dev` (CONNECT 403), not only secrets. So an adapter can't be checked against the
+  real API from the sandbox. Agent tip: check real payload shapes with a throwaway branch
+  workflow that prints aggregates only (key names, counts, rounded medians), never values.
+- 2026-10-17 — An "aggregates only" report used `Counter.update(record)` to count a dict's
+  keys, but `Counter.update(mapping)` adds the mapping's *values*. So it printed every wellness
+  date and summed health values into an Actions log. Agent tip: count keys with
+  `update(d.keys())`, and dry-run a report on fixtures and read its output before it touches
+  real data.
 - 2026-10-17 — Cloud session: the GitHub MCP `get_job_logs` returns 404 while a job is still
   running, and works once it finishes. Agent tip: poll the job's step status, then read the
   logs at the end. This made the planned "commit RESULTS.md back" fallback unnecessary.
