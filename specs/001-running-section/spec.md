@@ -370,8 +370,9 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
 - **FR-031**: The system MUST support these goal types:
   - **Race-time**: a distance and a target time (e.g. 10 km under 45:00).
   - **Body composition**: a target weight or body fat %.
-  - **Performance metric**: a target for any metric the section displays (e.g. VO2 max, resting
-    heart rate), including direction (at least / at most).
+  - **Performance metric**: a target for VO2 max, resting heart rate or HRV, including direction
+    (at least / at most). This is a closed list: intervals.icu's fitness/fatigue and the manual
+    Garmin figures (training status, race predictions) are not goal targets.
   - **Milestone**: a free-text goal the owner marks as achieved by hand (e.g. "Finish a trail
     ultra").
 - **FR-032**: Each goal MUST support a title, an optional description, an optional deadline, an

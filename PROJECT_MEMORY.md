@@ -9,15 +9,29 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** the intervals.icu docs amendment is raised as a PR from branch
-  `001-intervals-docs`. It covers constitution v1.0.1, spec/plan/tasks/contracts, T015, and
-  fixes for the `/speckit-analyze` findings.
-  - **Check it has merged** (`gh pr list --state all --head 001-intervals-docs`) before
-    branching.
-  - **Ask about any unticked checkboxes** before building on them: ratifying v1.0.1, treadmill
-    vs race-time goals, training effect omitted, HRV wording, per-run load private,
-    attribution on manual figures, 2-hour cadence, FR-031's metric-goal scope vs the closed
-    enum, and the workers.dev subdomain.
+- **Status (2026-10-17):** PR #14 (intervals.icu docs amendment) merged with all eight
+  confirmations ticked (see the decisions log). The handoff PR from branch `001-cloud-handoff`
+  narrows FR-031 and writes this block.
+- **This slice runs as a cloud session (claude.ai/code)** to spend the cloud credits (owner
+  pick, 2026-10-17). In a cloud session:
+  - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded, but the
+    norms it holds are here too: branch from `origin/main`, raise a PR, never merge it. The
+    Windows/PowerShell tips under *Upstream candidates* don't apply. Keep capturing new lessons
+    there, including anything cloud-specific.
+  - **Version check:** `check-versions.ps1` lives on the owner's PC. It ran on 2026-10-17 and
+    found nothing important, so T016 only re-verifies the npm/PyPI pins (`npm view <pkg>
+    version`, PyPI's JSON API) and Astro's latest with its `@astrojs/check` peer range.
+  - **No secrets in the sandbox.** They exist only as GitHub Actions secrets. T014 therefore
+    runs as a throwaway workflow on the branch. Use a `push` trigger scoped to that branch and
+    workflow file, because `workflow_dispatch` only works once the file is on `main`.
+    - The workflow uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+    - It registers the `alexanderwebber` workers.dev subdomain (owner-approved in PR #14) via
+      the API if it isn't set yet. It then deploys the 12,000-file set to a throwaway Worker,
+      checks it serves, and deletes the Worker in an `always()` step.
+    - If the session can't read Actions logs, the workflow writes its result to the job
+      summary and commits `spikes/workers-limit/RESULTS.md` back to the branch.
+    - Remove the workflow before the PR is ready, as T009 did.
+  - **PR:** one PR for Spike 1 + scaffold, with both spikes' results recorded in this file.
 - **Owner setup done:**
   - **T001:** the R2 bucket `alexanderwebber-private`, with `R2_*` as GitHub secrets and user
     env vars, round-trip tested.
@@ -29,18 +43,14 @@ Update this as decisions get made — treat it as the source of truth alongside
   - T004 (nameservers): the agent walks them through it.
   - The **Garmin export**: when it arrives, the agent walks them through
     *intervals.icu → Settings → Import all Garmin data*.
-  - The **workers.dev subdomain** for Spike 1a: suggested `alexanderwebber`, asked as a
-    checkbox in the PR.
   - **T150:** the Garmin export import (see above). Afterwards the agent re-runs the probe to
     check wellness history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
 - **Next step: Spike 1 (T013–T014) and the scaffold (T016–T022)**, on a new branch from
-  `origin/main`. T016 re-verifies the pins first, because Astro 7.4.0 is newer than the plan's
-  7.3.5.
-  - **To spend the cloud credits:** the Agent tool's `remote` isolation fell back to a local
-    worktree here. Suggest the owner runs this slice as a cloud session (claude.ai/code)
-    instead.
+  `origin/main` (e.g. `001-slice1-spike1-scaffold`). T016 re-verifies the pins first, because
+  Astro 7.4.0 is newer than the plan's 7.3.5. After T016, the rest can run in parallel,
+  except that T019 waits for T017 and T018.
 
 ## Vision
 
@@ -336,6 +346,19 @@ project-specific notes.
   - **Technology constraints:** ingest gets running data via the intervals.icu API.
 
   No principle's meaning changed.
+- **2026-10-17** — Owner ticked all eight PR #14 confirmations:
+  - **Constitution v1.0.1 is ratified.**
+  - **Treadmill runs** count toward distance and training goals. They count toward race-time
+    goals only if the owner marks the run.
+  - **Training effect** is left out. FIT extraction is possible later.
+  - **HRV** is shown as "HRV" (rMSSD), with a baseline band only where baseline data exists.
+  - **Per-run training load** stays private.
+  - **Garmin attribution** also goes on the manual Garmin figures.
+  - **Refresh cadence** stays every 2 hours.
+  - **FR-031 is narrowed** to the closed list of goal metrics.
+  - **Spike 1a's workers.dev subdomain** is `alexanderwebber`.
+- **2026-10-17** — Spike 1 and the scaffold run as a **cloud session** (owner pick), to use
+  the cloud credits before they expire on 2026-11-05.
 
 ## Upstream candidates
 
