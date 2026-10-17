@@ -106,7 +106,7 @@ recent_highlight_days: { pb: 14, goal: 14 }
 ```yaml
 # races/hastings-half-2026/race.yaml  (links to a recorded race by run_id)
 slug: hastings-half-2026
-run_id: 2026-05-17-k3f9          # opaque ID from the run page URL; official details below win
+run_id: 2026-05-17-k3f7          # opaque ID from the run page URL; official details below win
 name: Hastings Half Marathon
 date: 2026-05-17
 distance: half
@@ -132,7 +132,7 @@ official_time: "52:30"
 - { id: 2026-09-28-q2mb, title: Long run with Sam, note: "Felt strong after 25 km" }
 - { id: 2026-08-02-a7cd, exclude_from_records: true }   # GPS glitch
 - { id: 2026-07-19-zz4k, hide: true }
-- { id: 2026-06-01-p0rt, is_race: true }                # parkrun designated as a race
+- { id: 2026-06-01-p2rt, is_race: true }                # parkrun designated as a race
 - { id: 2026-05-04-t6nb, include_in_records: true }     # treadmill run the owner marks PB-eligible
 ```
 

@@ -6,14 +6,17 @@
     "node": ">=22.22.0"
   },
   "scripts": {
+    "predev": "npm run gen-types",
     "dev": "astro dev",
     "gen-types": "node scripts/gen-types.ts",
+    "prebuild": "npm run gen-types",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "validate-data": "node scripts/validate-data.ts",
     "scan-images": "node scripts/scan-images.ts",
     "check-boundaries": "node scripts/check-boundaries.ts",
     "scan-privacy": "node scripts/scan-privacy.ts",
+    "pretest": "npm run gen-types",
     "test": "vitest run",
     "e2e": "playwright test"
   },

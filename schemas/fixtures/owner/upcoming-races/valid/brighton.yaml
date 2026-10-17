@@ -1,0 +1,7 @@
+- id: brighton-2027
+  name: Brighton Marathon
+  date: 2027-04-04
+  distance: marathon
+  target_time: "3:30:00"
+  url: https://www.brightonmarathonweekend.co.uk/
+- { id: hove-10k-2026, name: Hove 10k, date: 2026-12-06, distance_m: 10000 }

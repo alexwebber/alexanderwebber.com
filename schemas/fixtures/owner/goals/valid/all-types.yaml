@@ -1,0 +1,40 @@
+- id: brighton-sub-330
+  type: race_time
+  title: Brighton Marathon sub-3:30
+  priority: 1
+  featured: true
+  deadline: 2027-04-04
+  linked_race: brighton-2027
+  target: { distance: marathon, time: "3:30:00" }
+- id: 10k-sub-45
+  type: race_time
+  title: 10k under 45 minutes
+  priority: 2
+  featured: true
+  created: 2026-10-04
+  target: { distance_m: 10000, time: 44:59 }
+- id: weight-93
+  type: body_composition
+  title: Reach 93 kg
+  priority: 5
+  featured: true
+  start_value: 102.4
+  target: { metric: weight_kg, value: 93, direction: at_most }
+- id: body-fat-17-5
+  type: body_composition
+  title: Body fat 17.5%
+  priority: 6
+  featured: false
+  target: { metric: body_fat_pct, value: 17.5, direction: at_most }
+- id: vo2max-55
+  type: metric
+  title: VO2 max 55
+  priority: 7
+  featured: false
+  target: { metric: vo2max, value: 55, direction: at_least }
+- id: trail-ultra
+  type: milestone
+  title: Finish a trail ultra
+  priority: 8
+  featured: false
+  achieved_override: { date: 2026-09-01, note: South Downs Way 50 }

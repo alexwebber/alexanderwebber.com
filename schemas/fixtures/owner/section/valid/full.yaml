@@ -1,0 +1,10 @@
+schema_version: 1
+focus_race:
+  race_id: brighton-2027
+  build_start: 2026-11-16
+  charity:
+    name: Martlets hospice
+story_link: { href: /story/, label: My story }
+stale_after_hours: 12
+featured_goal_limit: 6
+recent_highlight_days: { pb: 14, goal: 14 }

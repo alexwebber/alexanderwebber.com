@@ -153,7 +153,7 @@ Every schema uses draft 2020-12 and **`additionalProperties: false` everywhere**
 are strict as well (a typo such as `offical_time` is an error, not ignored). Every file carries a
 `schema_version` (required in published files; optional in owner files, defaulting to current).
 
-- [ ] T023 [P] Create `schemas/published/run.schema.json`:
+- [X] T023 [P] Create `schemas/published/run.schema.json`:
   - `id` matches `^\d{4}-\d{2}-\d{2}-[a-z2-7]{4}$`.
   - `date` is `YYYY-MM-DD` with **no time of day**.
   - `type` enum is `road|track|trail|indoor`, plus `treadmill` (bool; true for intervals.icu `VirtualRun`).
@@ -163,18 +163,18 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `splits [{km, time_s, pace_s_per_km, hr?, elev_delta_m?}]` and `hr_zones [{zone, seconds}]?`.
   - `series {x_dist_m[], x_elapsed_s[], pace[], hr?[], elev?[], cadence?[], power?[]}`, every array `maxItems: 600`, no lat/lon; no `name`/`description` field anywhere (titles use `title`).
   - `best_efforts [{distance_m, label, time_s, plausible}]`, `flags {excluded_from_records?, include_indoor_in_records?}` and `track_ref?`. The `include_indoor_in_records` `description` states that it mirrors the owner's `run-overrides.yaml` `include_in_records` (T031, T062).
-- [ ] T024 [P] Create `schemas/published/race-track.schema.json`: `{id, points: [[lat,lon,dist_m,elev_m]] (maxItems ~1000), trim_ends_m, bbox, source}`. This is the **only** schema allowed to contain coordinates.
-- [ ] T025 [P] Create `schemas/published/health-series.schema.json`:
+- [X] T024 [P] Create `schemas/published/race-track.schema.json`: `{id, points: [[lat,lon,dist_m,elev_m]] (maxItems ~1000), trim_ends_m, bbox, source}`. This is the **only** schema allowed to contain coordinates.
+- [X] T025 [P] Create `schemas/published/health-series.schema.json`:
   - `{metric, unit, points: [{date, value, ...}]}`, with points sorted by date.
   - `metric` enum is exactly the approved list: `vo2max`, `fitness_ctl`, `fatigue_atl`, `resting_hr`, `hrv`, `weight_avg7`, `body_fat_pct` (rewritten 2026-10-17: training status and race predictions are owner data, T151; training load is intervals.icu's ctl/atl).
   - `hrv` points may carry an optional baseline low/high (intervals.icu supplies none).
   - Individual weights cannot be expressed in this schema.
-- [ ] T026 [P] Create `schemas/published/refresh.schema.json` (`{sources: {intervals: {last_data_change_at, last_success_at_build}}, generated_at}`) and `schemas/published/manifest.schema.json` (`{runs: {<run-id>: {input_hash, path, hidden?}}, health: {...}, schema_version, processed_at}`).
-- [ ] T027 [P] Create `schemas/owner/section.schema.json`:
+- [X] T026 [P] Create `schemas/published/refresh.schema.json` (`{sources: {intervals: {last_data_change_at, last_success_at_build}}, generated_at}`) and `schemas/published/manifest.schema.json` (`{runs: {<run-id>: {input_hash, path, hidden?}}, health: {...}, schema_version, processed_at}`).
+- [X] T027 [P] Create `schemas/owner/section.schema.json`:
   - `focus_race: {race_id, build_start, charity: {name}}` is required.
   - Optional fields with defaults: `story_link?: {href, label}`, `stale_after_hours` (default 12), `featured_goal_limit` (default 6), `recent_highlight_days: {pb: 14, goal: 14}`.
   - An absent file or field is valid apart from `focus_race`.
-- [ ] T028 [P] Create `schemas/owner/goals.schema.json`. Each item is `{id, type, title, description?, priority, featured, deadline?, start_value?, created?, linked_race?, status_override?, retired?, achieved_override?{date, note?}, target}`:
+- [X] T028 [P] Create `schemas/owner/goals.schema.json`. Each item is `{id, type, title, description?, priority, featured, deadline?, start_value?, created?, linked_race?, status_override?, retired?, achieved_override?{date, note?}, target}`:
   - `type` is `race_time|body_composition|metric|milestone`.
   - `target` depends on the type:
     - race_time: `{distance_m|distance, time}`
@@ -182,31 +182,34 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
     - metric: `{metric: vo2max|resting_hr|hrv, value, direction: at_most|at_least}` (closed enum; `fitness_ctl`/`fatigue_atl` and the manual Garmin figures are not goal metrics)
     - milestone: none
   - `created?` (YYYY-MM-DD) is added to support the "first reading on or after goal creation" baseline rule. If it is absent, the first reading in the series is used.
-- [ ] T029 [P] Create `schemas/owner/upcoming-races.schema.json`: a list of `{id, name, date, distance_m|distance, target_time?, url?, result_ref?}`.
-- [ ] T030 [P] Create `schemas/owner/race.schema.json`:
+- [X] T029 [P] Create `schemas/owner/upcoming-races.schema.json`: a list of `{id, name, date, distance_m|distance, target_time?, url?, result_ref?}`.
+- [X] T030 [P] Create `schemas/owner/race.schema.json`:
   - `{slug, run_id?, name?, date, distance, official_time?, official_distance_m?, position?, results_url?, note?, hide_map?, trim_ends_m?, designate?, photos: [{file, description, caption?}]}`.
   - `run_id` uses the opaque pattern.
   - `trim_ends_m` defaults to 0.
   - `designate` is `race|not_race`.
   - Photo `description` has `minLength 1`.
-- [ ] T031 [P] Create `schemas/owner/run-overrides.schema.json` (a list of `{id, title?, note?, hide?, exclude_from_records?, include_in_records?, is_race?}`; `include_in_records` is the owner's PB/race-time-goal eligibility override for treadmill/indoor runs, published as `flags.include_indoor_in_records`, which its schema `description` states) and `schemas/owner/health-exclusions.schema.json` (a list of `{metric, date, reason?}`, using the goal metric names, e.g. `weight_kg`).
-- [ ] T032 [P] Create `schemas/owner/lab.schema.json`: `{date, type: dexa|lab_vo2max, provider, values: {body_fat_pct?, weight_kg?, vo2max?}}`. **Only those three value keys are allowed; any other key fails validation (FR-066).**
-- [ ] T151 [P] Create `schemas/owner/manual-metrics.schema.json` for the Garmin figures intervals.icu lacks (FR-069; data-model §4): `{training_status?: [{as_of, status, note?}], race_predictions?: [{as_of, 5k?, 10k?, half?, marathon?}]}`. `as_of` is a required `YYYY-MM-DD`; `status` enum `peaking|productive|maintaining|recovery|unproductive|detraining|overreaching|strained|no_status`; prediction times are `h:mm:ss`/`mm:ss` strings with at least one distance per entry. Add to `scripts/validate-data.ts` (T038): `as_of` not in the future and unique within its list, times parsed and range-checked, errors in the file/entry/field format. Add valid/invalid fixtures to T033 (e.g. missing `as_of`, unknown status, `marathon: "3:2x"`). An absent file is valid ("not recorded yet").
-- [ ] T033 Create shared schema fixtures `schemas/fixtures/<schema>/{valid,invalid}/*` used by both languages. They include cases showing that **no `lat|lon|latlng|latitude|longitude|start_time|startTime` key validates in any published schema outside race-track, and no `name|description` key validates in a published run**, plus invalid owner cases (`time: "3:7x"`, unknown key, missing photo description, lab `bone_density`, the manual-metrics cases from T151).
-- [ ] T034 Create `scripts/gen-types.ts`, which generates TypeScript types from `schemas/**` into `src/shared/storage/generated/` with json-schema-to-typescript 16.0.0. Wire it as the `prebuild` and `pretest` npm hooks. Depends on T023–T032 and T151.
+- [X] T031 [P] Create `schemas/owner/run-overrides.schema.json` (a list of `{id, title?, note?, hide?, exclude_from_records?, include_in_records?, is_race?}`; `include_in_records` is the owner's PB/race-time-goal eligibility override for treadmill/indoor runs, published as `flags.include_indoor_in_records`, which its schema `description` states) and `schemas/owner/health-exclusions.schema.json` (a list of `{metric, date, reason?}`, using the goal metric names, e.g. `weight_kg`).
+- [X] T032 [P] Create `schemas/owner/lab.schema.json`: `{date, type: dexa|lab_vo2max, provider, values: {body_fat_pct?, weight_kg?, vo2max?}}`. **Only those three value keys are allowed; any other key fails validation (FR-066).**
+- [X] T151 [P] Create `schemas/owner/manual-metrics.schema.json` for the Garmin figures intervals.icu lacks (FR-069; data-model §4): `{training_status?: [{as_of, status, note?}], race_predictions?: [{as_of, 5k?, 10k?, half?, marathon?}]}`. `as_of` is a required `YYYY-MM-DD`; `status` enum `peaking|productive|maintaining|recovery|unproductive|detraining|overreaching|strained|no_status`; prediction times are `h:mm:ss`/`mm:ss` strings with at least one distance per entry. Add to `scripts/validate-data.ts` (T038): `as_of` not in the future and unique within its list, times parsed and range-checked, errors in the file/entry/field format. Add valid/invalid fixtures to T033 (e.g. missing `as_of`, unknown status, `marathon: "3:2x"`). An absent file is valid ("not recorded yet").
+- [X] T033 Create shared schema fixtures `schemas/fixtures/<schema>/{valid,invalid}/*` used by both languages. They include cases showing that **no `lat|lon|latlng|latitude|longitude|start_time|startTime` key validates in any published schema outside race-track, and no `name|description` key validates in a published run**, plus invalid owner cases (`time: "3:7x"`, unknown key, missing photo description, lab `bone_density`, the manual-metrics cases from T151).
+  - **Done 2026-10-17**: JSON fixtures for published schemas, YAML for owner schemas. The no-coordinate/start-time/name keys rule is also checked by injecting each key into every object of every valid published fixture (TS and Python). Shared parts live in `schemas/defs.schema.json`; conventions in `schemas/README.md`.
+- [X] T034 Create `scripts/gen-types.ts`, which generates TypeScript types from `schemas/**` into `src/shared/storage/generated/` with json-schema-to-typescript 16.0.0. Wire it as the `prebuild` and `pretest` npm hooks. Depends on T023–T032 and T151.
+  - **Done 2026-10-17**: also wired as `predev`. `tsconfig.json` sets `erasableSyntaxOnly`, because the gate scripts run under Node's type stripping.
 
 ### 2b. Shared formatting and storage (TypeScript)
 
-- [ ] T035 [P] Create `src/shared/format/`:
+- [X] T035 [P] Create `src/shared/format/`:
   - `parse.ts`: owner time strings `h:mm:ss` or `mm:ss`, parsed and range-checked; distance names `5k, 10k, 10mi, half, marathon, 1k, 1mi, 3k, 15k, 20k, 30k` or metres.
   - `dates.ts`: UK format (e.g. "4 Apr 2027"); Europe/London local dates; weeks start on Monday; days-between that is correct across BST/GMT changes.
   - `units.ts`: km, min/km pace, `h:mm:ss` durations, kg (FR-075).
-- [ ] T036 Create the `RunningStore` interface in `src/shared/storage/running-store.ts`: `listRuns()` (newest first), `getRun(runId)`, `getRaceTrack(runId)`, `getHealthSeries(metric, range?)`, `getRefreshRecord()`, `getOwner()`.
-- [ ] T037 Create `JsonFileStore` in `src/shared/storage/json-file-store.ts`:
+- [X] T036 Create the `RunningStore` interface in `src/shared/storage/running-store.ts`: `listRuns()` (newest first), `getRun(runId)`, `getRaceTrack(runId)`, `getHealthSeries(metric, range?)`, `getRefreshRecord()`, `getOwner()`.
+- [X] T037 Create `JsonFileStore` in `src/shared/storage/json-file-store.ts`:
   - It reads `data/running/`, parses YAML with yaml 2.9.1 and validates every file with ajv 8.20.0 (draft 2020, `useDefaults` for owner schemas).
   - It throws `DataValidationError {file, entry, field, message}` and memoises per build.
   - Depends on T034 and T036.
-- [ ] T038 Create `scripts/validate-data.ts`, which validates every published and owner file. It also runs these referential checks (contracts/data-files.md):
+  - **Done 2026-10-17**: the loader (`src/shared/storage/load.ts`) is shared with `validate-data`. It reads YAML 1.2 core schema with unique keys, reports unexpected files under `data/running/` (e.g. a mistyped `goal.yaml`), and treats absent files as no data yet. The store methods are async, so a future database-backed store is a drop-in.
+- [X] T038 Create `scripts/validate-data.ts`, which validates every published and owner file. It also runs these referential checks (contracts/data-files.md):
   - a goal's `linked_race` exists
   - `section.yaml` `focus_race.race_id` exists in the upcoming races
   - an upcoming race's `result_ref` names an existing race entry
@@ -221,9 +224,11 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - the `manual-metrics.yaml` checks from T151
 
   Errors use the format `data/running/owner/goals.yaml  goal "10k-sub-45"  field target.time: "44:7x" is not a valid time (expected mm:ss or h:mm:ss)`, and the script exits non-zero (FR-070).
-- [ ] T039 [P] Create `scripts/check-boundaries.ts`. It scans the import specifiers in `src/**` and fails if `src/shared/**` imports from `src/sections/**`, or if `src/sections/<a>/**` imports from `src/sections/<b>/**` (Principle VII).
-- [ ] T040 [P] Create `scripts/scan-images.ts`. It fails on any EXIF, XMP, IPTC or GPS metadata in images under `data/` and `src/` (via sharp `metadata()`). It also enforces owner photos as `.jpg|.webp|.avif` with a long edge of at most 2400 px.
-- [ ] T041 [P] Create `scripts/scan-privacy.ts`, which scans `data/` and `dist/` (SC-004) and fails on:
+  - **Done 2026-10-17**: also checks published-file placement (year folder, filename = id), race tracks only for published races, hidden runs not published, health points sorted within their year, race date = linked run date, race slug = folder, lab file name = date-type, and warns when a goal's target differs from its linked race's `target_time`. Provider-ID heuristics ignore links, so results URLs with long numeric IDs are fine.
+- [X] T039 [P] Create `scripts/check-boundaries.ts`. It scans the import specifiers in `src/**` and fails if `src/shared/**` imports from `src/sections/**`, or if `src/sections/<a>/**` imports from `src/sections/<b>/**` (Principle VII).
+- [X] T040 [P] Create `scripts/scan-images.ts`. It fails on any EXIF, XMP, IPTC or GPS metadata in images under `data/` and `src/` (via sharp `metadata()`). It also enforces owner photos as `.jpg|.webp|.avif` with a long edge of at most 2400 px.
+  - **Done 2026-10-17**: also scans `public/`.
+- [X] T041 [P] Create `scripts/scan-privacy.ts`, which scans `data/` and `dist/` (SC-004) and fails on:
   - ISO datetimes with a time component (`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}`) or `start_time`/`startTime`-style keys in run files and run pages (durations such as `06:42` must not be false positives)
   - coordinates outside `data/running/published/race-tracks/` and race pages
   - sleep, stress, Body Battery, steps or SpO2 data: **key-based** in `data/` (JSON/YAML keys such as `steps`, `sleepSecs`, `sleepScore`, `spO2`, `stress`, `bodyBattery`), and targeted patterns in `dist/` (e.g. those keys in inline data, labelled values such as `SpO2 <n>%` or `<n> steps`), so prose and "step length" are not false positives
@@ -232,6 +237,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - EXIF in `dist/` images
 
   When R2 credentials are present, it also loads `state/run-ids.json` and fails on any known provider activity ID found in `data/` or `dist/`.
+  - **Done 2026-10-17**: the known-ID check takes `--provider-ids=<file>` (R2 `state/run-ids.json`), so the gate (T042) fetches the map when it has R2 credentials and passes the file in. Key-based coordinate/category rules skip bundled library code in `dist/_astro/` (MapLibre is full of lat/lng identifiers); links and known IDs are still checked there.
 
 ### 2c. Build gate and CI (gate from day one)
 
@@ -448,12 +454,15 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - the CLI exit codes
   - alert open, update and close per failure class (against a fake GitHub API)
   - the shared schema fixtures (T033)
-- [ ] T083 [P] Create TS contract tests `tests/contract/schemas.test.ts` (same shared fixtures as T082) and `tests/contract/store.test.ts`. They check the `DataValidationError` shape, newest-first ordering and the speed of listing 5,000 runs.
+  - **Schema part done 2026-10-17**: `ingest/tests/contract/test_schemas.py` runs the shared fixtures and the injected-key checks; `ingest/tests/unit/test_yaml12.py` covers `awingest.yaml12`, the YAML 1.2 loader that T061 must use for owner files (PyYAML's YAML 1.1 rules turn `3:30:00` into 12600 and dates into `datetime.date`). The writer, CLI and alert tests remain.
+- [X] T083 [P] Create TS contract tests `tests/contract/schemas.test.ts` (same shared fixtures as T082) and `tests/contract/store.test.ts`. They check the `DataValidationError` shape, newest-first ordering and the speed of listing 5,000 runs.
+  - **Done 2026-10-17** with Phase 2a–2b.
 - [ ] T084 [P] Create TS unit tests `tests/unit/format.test.ts`, `validate-data.test.ts`, `check-boundaries.test.ts`, `scan-privacy.test.ts` and `freshness-worker.test.ts`. They cover:
   - the referential and duplicate-race errors
   - a malformed `"3:7x"` time naming the file, entry and field
   - seeded privacy violations are detected, while durations do not produce false positives
   - the Worker's 200 and 503 paths
+  - **Done 2026-10-17 except `freshness-worker.test.ts`**, which comes with the Worker (T068).
 - [ ] T085 Run the backfill and first publish:
   1. Run `uv run awingest backfill` (resumable; agent-run locally with the owner's `INTERVALS_API_KEY`/`R2_*` user env vars).
   2. Dispatch `refresh.yml` (without `fetch_only`) so the **first publish goes through the real gated bot path**.

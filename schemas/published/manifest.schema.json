@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/published/manifest.schema.json",
+  "title": "Manifest",
+  "description": "data/running/published/state/manifest.json: drives idempotent, incremental reprocessing. Paths are relative to data/running/published/.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "runs", "health", "processed_at"],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/publishedSchemaVersion" },
+    "runs": {
+      "description": "Keyed by public run ID. A hidden run records only that it is hidden: no path, no content.",
+      "type": "object",
+      "propertyNames": { "$ref": "../defs.schema.json#/$defs/runId" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["input_hash"],
+        "properties": {
+          "input_hash": { "$ref": "#/$defs/hash" },
+          "path": { "type": "string", "pattern": "^runs/\\d{4}/\\d{4}-\\d{2}-\\d{2}-[a-z2-7]{4}\\.json$" },
+          "hidden": { "const": true }
+        },
+        "oneOf": [
+          { "required": ["path"], "properties": { "hidden": false } },
+          { "required": ["hidden"], "properties": { "path": false } }
+        ],
+        "x-error": "needs either path or hidden: true (not both)"
+      }
+    },
+    "health": {
+      "description": "Keyed by <metric>/<yyyy>, matching health/<metric>/<yyyy>.json.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^(vo2max|fitness_ctl|fatigue_atl|resting_hr|hrv|weight_avg7|body_fat_pct)/\\d{4}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["input_hash", "path"],
+        "properties": {
+          "input_hash": { "$ref": "#/$defs/hash" },
+          "path": {
+            "type": "string",
+            "pattern": "^health/(vo2max|fitness_ctl|fatigue_atl|resting_hr|hrv|weight_avg7|body_fat_pct)/\\d{4}\\.json$"
+          }
+        }
+      }
+    },
+    "processed_at": { "$ref": "../defs.schema.json#/$defs/utcTimestamp" }
+  },
+  "$defs": {
+    "hash": {
+      "description": "sha256 (hex) over the raw inputs (ETags) and the owner overrides relevant to the entry.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

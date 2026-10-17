@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/race.schema.json",
+  "title": "Race",
+  "description": "data/running/owner/races/<slug>/race.yaml. With run_id: details for a recorded race (official details win over device values). Without: a hand-entered race (FR-051). Photos are files beside it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "date", "distance"],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/ownerSchemaVersion" },
+    "slug": {
+      "description": "Must match the folder name.",
+      "$ref": "../defs.schema.json#/$defs/slug"
+    },
+    "run_id": {
+      "description": "The recorded run (copy it from the run page URL). Absent for a hand-entered race.",
+      "$ref": "../defs.schema.json#/$defs/runId"
+    },
+    "name": { "$ref": "../defs.schema.json#/$defs/text" },
+    "date": { "$ref": "../defs.schema.json#/$defs/date" },
+    "distance": { "$ref": "../defs.schema.json#/$defs/distance" },
+    "official_time": { "$ref": "../defs.schema.json#/$defs/timeString" },
+    "official_distance_m": { "$ref": "../defs.schema.json#/$defs/metres" },
+    "position": { "type": "integer", "minimum": 1 },
+    "results_url": { "$ref": "../defs.schema.json#/$defs/url" },
+    "note": { "$ref": "../defs.schema.json#/$defs/text" },
+    "hide_map": { "type": "boolean", "default": false },
+    "trim_ends_m": {
+      "description": "Metres trimmed from each end of the published track.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5000,
+      "default": 0
+    },
+    "designate": {
+      "description": "Overrides the intervals.icu race flag for the linked run.",
+      "enum": ["race", "not_race"]
+    },
+    "photos": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "description"],
+        "properties": {
+          "file": {
+            "description": "A file in this race's folder.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*\\.(jpg|webp|avif)$",
+            "x-error": "is not a valid photo file name (expected e.g. finish.jpg; .jpg, .webp or .avif)"
+          },
+          "description": {
+            "description": "Alternative text: what the photo shows.",
+            "$ref": "../defs.schema.json#/$defs/text"
+          },
+          "caption": { "$ref": "../defs.schema.json#/$defs/text" }
+        }
+      }
+    }
+  }
+}

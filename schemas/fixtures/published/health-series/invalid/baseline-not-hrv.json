@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "metric": "weight_avg7",
+  "unit": "kg",
+  "points": [
+    {
+      "date": "2026-10-10",
+      "value": 100.7,
+      "baseline_low": 99
+    },
+    {
+      "date": "2026-10-11",
+      "value": 100.6
+    }
+  ]
+}

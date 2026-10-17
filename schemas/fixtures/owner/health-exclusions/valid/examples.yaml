@@ -1,0 +1,2 @@
+- { metric: weight_kg, date: 2026-09-14, reason: "partner stepped on the scale" }
+- { metric: hrv, date: 2026-09-20 }

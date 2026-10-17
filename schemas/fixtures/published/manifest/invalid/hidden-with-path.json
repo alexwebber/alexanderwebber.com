@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "processed_at": "2026-10-17T10:02:00Z",
+  "runs": {
+    "2026-10-11-k3f7": {
+      "input_hash": "3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f",
+      "path": "runs/2026/2026-10-11-k3f7.json"
+    },
+    "2026-07-19-zz4k": {
+      "input_hash": "3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f",
+      "hidden": true,
+      "path": "runs/2026/2026-07-19-zz4k.json"
+    }
+  },
+  "health": {
+    "weight_avg7/2026": {
+      "input_hash": "3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f",
+      "path": "health/weight_avg7/2026.json"
+    }
+  }
+}

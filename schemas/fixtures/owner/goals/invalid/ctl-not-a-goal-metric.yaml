@@ -1,0 +1,1 @@
+- { id: fitness, type: metric, title: Fitness 60, priority: 1, featured: true, target: { metric: fitness_ctl, value: 60, direction: at_least } }

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/published/race-track.schema.json",
+  "title": "RaceTrack",
+  "description": "A race's simplified GPS track: data/running/published/race-tracks/<run-id>.json. The ONLY published schema allowed to contain coordinates. Exists only for races that are not treadmill runs and whose map is not hidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "points", "trim_ends_m", "bbox", "source"],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/publishedSchemaVersion" },
+    "id": { "$ref": "../defs.schema.json#/$defs/runId" },
+    "points": {
+      "description": "[lat, lon, dist_m, elev_m] after trimming the ends and simplifying. elev_m is null where not recorded.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 1000,
+      "tsType": "Array<[lat: number, lon: number, dist_m: number, elev_m: number | null]>",
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          { "$ref": "#/$defs/lat" },
+          { "$ref": "#/$defs/lon" },
+          { "type": "number", "minimum": 0 },
+          { "type": ["number", "null"] }
+        ],
+        "minItems": 4,
+        "items": false
+      }
+    },
+    "trim_ends_m": {
+      "description": "Metres removed from each end of the track (owner race.yaml trim_ends_m).",
+      "type": "number",
+      "minimum": 0
+    },
+    "bbox": {
+      "description": "[min_lat, min_lon, max_lat, max_lon]",
+      "type": "array",
+      "prefixItems": [
+        { "$ref": "#/$defs/lat" },
+        { "$ref": "#/$defs/lon" },
+        { "$ref": "#/$defs/lat" },
+        { "$ref": "#/$defs/lon" }
+      ],
+      "minItems": 4,
+      "items": false,
+      "tsType": "[min_lat: number, min_lon: number, max_lat: number, max_lon: number]"
+    },
+    "source": { "enum": ["intervals"] }
+  },
+  "$defs": {
+    "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+    "lon": { "type": "number", "minimum": -180, "maximum": 180 }
+  }
+}

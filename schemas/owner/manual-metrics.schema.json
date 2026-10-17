@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/manual-metrics.schema.json",
+  "title": "ManualMetrics",
+  "description": "data/running/owner/manual-metrics.yaml: Garmin figures intervals.icu lacks, read in Garmin Connect and dated (FR-069). The latest as_of is current; earlier entries are the trend. An absent file means 'not recorded yet'.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/ownerSchemaVersion" },
+    "training_status": {
+      "type": "array",
+      "items": {
+        "title": "TrainingStatusEntry",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["as_of", "status"],
+        "properties": {
+          "as_of": { "$ref": "#/$defs/asOf" },
+          "status": {
+            "enum": [
+              "peaking", "productive", "maintaining", "recovery", "unproductive",
+              "detraining", "overreaching", "strained", "no_status"
+            ]
+          },
+          "note": { "$ref": "../defs.schema.json#/$defs/text" }
+        }
+      }
+    },
+    "race_predictions": {
+      "type": "array",
+      "items": {
+        "title": "RacePredictionEntry",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["as_of"],
+        "minProperties": 2,
+        "properties": {
+          "as_of": { "$ref": "#/$defs/asOf" },
+          "5k": { "$ref": "../defs.schema.json#/$defs/timeString" },
+          "10k": { "$ref": "../defs.schema.json#/$defs/timeString" },
+          "half": { "$ref": "../defs.schema.json#/$defs/timeString" },
+          "marathon": { "$ref": "../defs.schema.json#/$defs/timeString" }
+        },
+        "x-error": "needs as_of and at least one of 5k, 10k, half, marathon"
+      }
+    }
+  },
+  "$defs": {
+    "asOf": {
+      "description": "The day the figure was read in Garmin Connect. Not in the future; unique within its list.",
+      "$ref": "../defs.schema.json#/$defs/date"
+    }
+  }
+}

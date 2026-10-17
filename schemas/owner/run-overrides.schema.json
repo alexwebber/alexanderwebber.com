@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/run-overrides.schema.json",
+  "title": "RunOverrides",
+  "description": "data/running/owner/run-overrides.yaml: per-run owner changes (FR-049/050). List files carry no schema_version; they are always the current version.",
+  "type": "array",
+  "items": {
+    "title": "RunOverride",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id"],
+    "minProperties": 2,
+    "x-error": "needs at least one change besides id",
+    "properties": {
+      "id": { "$ref": "../defs.schema.json#/$defs/runId" },
+      "title": { "$ref": "../defs.schema.json#/$defs/text" },
+      "note": { "$ref": "../defs.schema.json#/$defs/text" },
+      "hide": { "description": "Hidden runs are not published at all.", "type": "boolean" },
+      "exclude_from_records": { "description": "Ignore this run for PBs and goals (e.g. a GPS glitch).", "type": "boolean" },
+      "include_in_records": {
+        "description": "Make a treadmill/indoor run eligible for PBs and race-time goals (FR-057). Published as the run's flags.include_indoor_in_records.",
+        "type": "boolean"
+      },
+      "is_race": { "description": "Designate the run as a race (or not).", "type": "boolean" }
+    }
+  }
+}

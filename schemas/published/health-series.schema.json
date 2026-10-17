@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/published/health-series.schema.json",
+  "title": "HealthSeries",
+  "description": "One year of one approved health metric: data/running/published/health/<metric>/<yyyy>.json. Points are sorted by date, one per day. Individual weight readings cannot be expressed here: weight is published only as its trailing 7-day mean (weight_avg7).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "metric",
+    "unit",
+    "points"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "../defs.schema.json#/$defs/publishedSchemaVersion"
+    },
+    "metric": {
+      "description": "The approved list (FR-015/FR-060). Training status and race predictions are owner data, not series. Form is derived at build (fitness_ctl - fatigue_atl), never stored.",
+      "enum": [
+        "vo2max",
+        "fitness_ctl",
+        "fatigue_atl",
+        "resting_hr",
+        "hrv",
+        "weight_avg7",
+        "body_fat_pct"
+      ]
+    },
+    "unit": {
+      "description": "Fixed per metric.",
+      "enum": [
+        "%",
+        "bpm",
+        "kg",
+        "load",
+        "ml/kg/min",
+        "ms"
+      ]
+    },
+    "points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "date",
+          "value"
+        ],
+        "properties": {
+          "date": {
+            "$ref": "../defs.schema.json#/$defs/date"
+          },
+          "value": {
+            "type": "number"
+          },
+          "baseline_low": {
+            "description": "HRV only: lower edge of the baseline band, where the source supplies one (intervals.icu does not).",
+            "type": "number"
+          },
+          "baseline_high": {
+            "description": "HRV only: upper edge of the baseline band.",
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "metric": {
+            "const": "vo2max"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unit": {
+            "const": "ml/kg/min"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "baseline_low": false,
+                "baseline_high": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "metric": {
+            "const": "fitness_ctl"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unit": {
+            "const": "load"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "baseline_low": false,
+                "baseline_high": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "metric": {
+            "const": "fatigue_atl"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unit": {
+            "const": "load"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "baseline_low": false,
+                "baseline_high": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "metric": {
+            "const": "resting_hr"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unit": {
+            "const": "bpm"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "baseline_low": false,
+                "baseline_high": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "metric": {
+            "const": "hrv"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unit": {
+            "const": "ms"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "metric": {
+            "const": "weight_avg7"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unit": {
+            "const": "kg"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "baseline_low": false,
+                "baseline_high": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "metric": {
+            "const": "body_fat_pct"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unit": {
+            "const": "%"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "baseline_low": false,
+                "baseline_high": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

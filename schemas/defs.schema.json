@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/defs.schema.json",
+  "title": "Shared definitions",
+  "description": "Building blocks shared by the published and owner schemas. Not a file schema itself.",
+  "$defs": {
+    "date": {
+      "description": "A calendar date, YYYY-MM-DD (Europe/London local date). Never a time of day.",
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+      "format": "date",
+      "x-error": "is not a valid date (expected YYYY-MM-DD)"
+    },
+    "utcTimestamp": {
+      "description": "A UTC timestamp, YYYY-MM-DDTHH:MM:SSZ. Only pipeline bookkeeping uses these, never run data.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$",
+      "x-error": "is not a valid UTC timestamp (expected YYYY-MM-DDTHH:MM:SSZ)"
+    },
+    "runId": {
+      "description": "Opaque public run ID: the run's local date plus 4 random base32 characters. Never a provider activity ID.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}-[a-z2-7]{4}$",
+      "x-error": "is not a run ID (expected YYYY-MM-DD-xxxx, copied from the run page URL)"
+    },
+    "slug": {
+      "description": "Lowercase letters, digits and single hyphens, e.g. brighton-2027.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 80,
+      "x-error": "is not a valid id (use lowercase letters, digits and hyphens, e.g. brighton-2027)"
+    },
+    "text": {
+      "description": "Free text: non-empty, with no leading or trailing whitespace.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S(?:[\\s\\S]*\\S)?$",
+      "x-error": "must not be empty or start/end with spaces"
+    },
+    "timeString": {
+      "description": "An owner-entered duration, h:mm:ss or mm:ss (e.g. 3:30:00, 44:59).",
+      "type": "string",
+      "pattern": "^(?:\\d{1,2}:[0-5]\\d:[0-5]\\d|\\d{1,3}:[0-5]\\d)$",
+      "x-error": "is not a valid time (expected mm:ss or h:mm:ss)"
+    },
+    "distanceName": {
+      "description": "A named race distance.",
+      "enum": ["1k", "1mi", "3k", "5k", "10k", "15k", "10mi", "20k", "half", "30k", "marathon"],
+      "x-error": "is not a known distance (expected 1k, 1mi, 3k, 5k, 10k, 15k, 10mi, 20k, half, 30k, marathon, or metres)"
+    },
+    "distance": {
+      "description": "A named distance or a distance in metres.",
+      "anyOf": [
+        { "$ref": "#/$defs/distanceName" },
+        { "$ref": "#/$defs/metres" }
+      ],
+      "x-error": "is not a known distance (expected 1k, 1mi, 3k, 5k, 10k, 15k, 10mi, 20k, half, 30k, marathon, or metres)"
+    },
+    "metres": {
+      "description": "A distance in metres.",
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1000000
+    },
+    "seconds": {
+      "description": "A duration in seconds.",
+      "type": "number",
+      "minimum": 0
+    },
+    "paceSecondsPerKm": {
+      "description": "Pace in seconds per kilometre.",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "url": {
+      "description": "An absolute https URL.",
+      "type": "string",
+      "pattern": "^https://[^\\s]+$",
+      "x-error": "is not a valid link (expected https://...)"
+    },
+    "goalMetric": {
+      "description": "Health metrics a goal or a health exclusion can name. Weight and body fat are judged on the 7-day average.",
+      "enum": ["weight_kg", "body_fat_pct", "vo2max", "resting_hr", "hrv"]
+    },
+    "ownerSchemaVersion": {
+      "description": "Optional in owner files; defaults to the current version.",
+      "const": 1,
+      "default": 1
+    },
+    "publishedSchemaVersion": {
+      "description": "Required in published files. A breaking change bumps it and ships a migration.",
+      "const": 1
+    }
+  }
+}

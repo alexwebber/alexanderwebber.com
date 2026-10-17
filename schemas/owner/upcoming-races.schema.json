@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/upcoming-races.schema.json",
+  "title": "UpcomingRaces",
+  "description": "data/running/owner/upcoming-races.yaml: races the owner has entered. Setting result_ref after the race moves it out of the upcoming list. List files carry no schema_version; they are always the current version.",
+  "type": "array",
+  "items": {
+    "title": "UpcomingRace",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "name", "date"],
+    "properties": {
+      "id": { "$ref": "../defs.schema.json#/$defs/slug" },
+      "name": { "$ref": "../defs.schema.json#/$defs/text" },
+      "date": { "$ref": "../defs.schema.json#/$defs/date" },
+      "distance": { "$ref": "../defs.schema.json#/$defs/distance" },
+      "distance_m": { "$ref": "../defs.schema.json#/$defs/metres" },
+      "target_time": { "$ref": "../defs.schema.json#/$defs/timeString" },
+      "url": { "$ref": "../defs.schema.json#/$defs/url" },
+      "result_ref": {
+        "description": "Slug of the race entry (races/<slug>/race.yaml) holding the result.",
+        "$ref": "../defs.schema.json#/$defs/slug"
+      }
+    },
+    "oneOf": [
+      { "required": ["distance"], "properties": { "distance_m": false } },
+      { "required": ["distance_m"], "properties": { "distance": false } }
+    ],
+    "x-error": "needs exactly one of distance or distance_m"
+  }
+}

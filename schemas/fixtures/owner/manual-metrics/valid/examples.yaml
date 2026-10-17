@@ -1,0 +1,5 @@
+training_status:
+  - { as_of: 2026-10-12, status: productive }
+  - { as_of: 2026-10-17, status: maintaining, note: "Taper week" }
+race_predictions:
+  - { as_of: 2026-10-17, 5k: "21:05", 10k: "44:10", half: "1:38:30", marathon: "3:28:40" }
