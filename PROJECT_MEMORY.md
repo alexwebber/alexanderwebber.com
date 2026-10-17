@@ -15,15 +15,13 @@ Update this as decisions get made — treat it as the source of truth alongside
   user env vars), the coverage probe `spikes/intervals/probe.py`, and `spikes/**/out/`
   gitignored.
 - **Owner progress (2026-10-17):**
-  - **T001 in progress:** the owner is creating the Cloudflare account, the private R2 bucket
-    `alexanderwebber-private` and an Object Read & Write token. They then run
-    `set-secrets.ps1 R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET`. The agent
-    verifies with `gh secret list` (names only).
+  - **T001 done:** the Cloudflare account and the private R2 bucket `alexanderwebber-private`
+    exist. The `R2_*` values are set as GitHub secrets and user env vars. A put/get/delete
+    round-trip with the scoped token passed.
   - **Garmin full data export: requested.** When it arrives, the owner loads it into
     intervals.icu via *Settings → Import all Garmin data* (the agent walks them through it).
   - **intervals.icu:** connected to Garmin, with a 1-year backfill in progress.
 - **Waiting on the owner:**
-  - T001 (above).
   - **intervals.icu API key:** *Settings → Developer Settings*, then run
     `set-secrets.ps1 INTERVALS_API_KEY`.
   - T002 (Workers deploy token) and T004 (nameservers). The agent walks them through each.
@@ -318,6 +316,10 @@ project-specific notes.
   arguments") when the body contains double quotes. 5.1 splits native arguments at embedded
   `"`. Generalisation (Windows gotchas / agent tips): write PR bodies to a scratch file and pass
   `--body-file`.
+- 2026-10-17 — In Windows PowerShell 5.1, `Get-Content -Raw` followed by
+  `[IO.File]::WriteAllText` garbled every em dash and arrow in a UTF-8 file without a BOM. 5.1
+  reads BOM-less files as ANSI. Agent tip: edit repo files with the Edit tool. If PowerShell
+  must do it, use `Get-Content -Encoding utf8`.
 - 2026-10-04 — Piping a here-string into `git commit -F -` from the PowerShell tool succeeds,
   but the subject starts with a UTF-8 BOM (`EF BB BF`), because PowerShell adds one when it
   writes to a native stdin. Strengthen the existing agent tip: never pipe commit messages; use
