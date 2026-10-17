@@ -11,81 +11,75 @@ skipped), gh 2.90.0.
 
 ---
 
-## R0. The open risk: Garmin access from GitHub Actions (first spike)
+## R0. Running data provider: intervals.icu (decided 2026-10-17; Spike 0 passed)
 
-**State of the art (2026-10-04)**
+**Decision (owner, 2026-10-17; supersedes the 2026-10-04 Garmin-direct plan)**: ingest reads
+**intervals.icu**, an official Garmin sync partner, through its documented REST API (OpenAPI 3 at
+`https://intervals.icu/api/v1/docs`) with the owner's **personal API key** (HTTP Basic, user
+`API_KEY`, password = key; athlete `0` = the key's own athlete). There is no login, no token
+rotation, no lockout risk and no datacenter-IP question. **Garmin direct is reconsidered only if
+intervals.icu cannot supply something required.**
 
-- `garminconnect` **0.3.17**, released 2026-09-29 (PyPI), requires **Python >= 3.12**. Actively
-  maintained (commits the same day). No longer built on `garth`; uses the mobile SSO flow
-  (service ticket exchanged at `diauth.garmin.com` for access + refresh tokens), a multi-strategy
-  login that uses `curl_cffi` TLS impersonation, auto-refreshing tokens, tokens stored in
-  `~/.garminconnect/garmin_tokens.json` (0600, atomic writes, file locking), and a `GARMINTOKENS`
-  env var for CI.
-- Garmin added Cloudflare TLS fingerprinting in March 2026 that blocks plain non-browser HTTP
-  clients (`requests`, curl, Node fetch). Accounts that retry logins repeatedly get **HTTP 429 for
-  48+ hours** (Garmin developer forum report). Pacing and never hammering logins are essential.
-- Open upstream issue **#444** (2026-09-28): login uses `curl_cffi`, but the *data* calls use a
-  plain `requests.Session`, so a valid token still gets **403** from Cloudflare on every
-  `connectapi` call. Reporter's workaround:
-  `client.client._api_session = curl_cffi.requests.Session(impersonate="chrome")`. No maintainer
-  reply yet. The report frames it as fingerprint-based, not IP-based; whether datacenter IPs are
-  additionally blocked is **not confirmed by anyone**.
-- Only 2 open issues upstream in total; the project is healthy but the exact failure mode we care
-  about is live.
+**Rejected, and why**
 
-**Conclusion**: cannot be settled by reading. It is the explicit **Spike 0** of the plan (see
-plan.md), with concrete pass criteria below. Likely outcomes: (a) works from Actions with the #444 workaround applied inside our
-adapter; (b) login works but IP blocked -> fallback; (c) neither works -> fallback.
+| Option | Why rejected |
+|---|---|
+| Garmin Connect via `python-garminconnect` (0.3.17; the original plan) | Unofficial client: Garmin's March 2026 Cloudflare TLS fingerprinting, 429 login lockouts (1–48 h reported) from repeated password logins, token rotation to persist across runs (Fernet-encrypted token file in R2), and a possible need for a PC fetch fallback (`FETCH_MODE`, Task Scheduler). All of that disappears with an official sync partner. (Upstream #444, the 403-on-data-calls report, closed 2026-10-16 as a local `.netrc` misconfiguration.) |
+| Strava API + manual stats | November 2024 API terms let a user's data be shown only to that user; no health metrics |
+| Garmin official API | Business-only |
 
-**Design consequence (decided now so the outcome does not change the architecture)**: the
-pipeline is split in two stages with a private R2 bucket between them:
+**Terms**: the intervals.icu API terms (effective 2025-10-23) grant a royalty-free licence for any
+lawful use; the one condition is that views showing Garmin-sourced data carry **Garmin
+attribution** per Garmin's brand guidelines (spec FR-077). Free tier is sufficient; the $4/month
+supporter tier adds nothing the site needs, and the owner intends to become a supporter once the
+live integration works (raised at go-live, T112).
 
-1. **fetch** (needs Garmin) — Garmin -> raw JSON in private R2. Runs either on GitHub Actions
-   (primary, if Spike 0 passes) or on the owner's Windows PC via Task Scheduler (fallback).
-2. **publish** (never touches Garmin) — R2 raw -> normalise -> sanitise -> committed JSON ->
-   validate -> build -> deploy. Always runs on GitHub Actions.
+**Spike 0 = coverage check — PASSED** (2026-10-17, locally and from GitHub Actions run
+39048175253 on `ubuntu-latest`; full table in
+[spikes/intervals/RESULTS.md](../../spikes/intervals/RESULTS.md)):
 
-Switching between them is a repo variable (`FETCH_MODE=actions|pc`) plus a scheduled task; nothing
-downstream changes. Backfill of the full history is run locally on the PC regardless (long,
-rate-limited, resumable), then incremental fetches are cheap.
+- **Activities** (`GET /athlete/0/activities?oldest=&newest=`, `/activity/{id}?intervals=true`,
+  `/activity/{id}/streams.json`, `/activity/{id}/time-at-hr`, `/activity/{id}/fit-file`): date,
+  distance, moving/elapsed time, pace, elevation, HR avg/max + zone times
+  (`icu_hr_zone_times`), cadence, stride, running dynamics (vertical oscillation/ratio, stance time
+  = GCT, stance-time balance, step length; from 2025-12-01, the current watch), running power
+  (`device_watts` + `watts` stream), training load (`icu_training_load`), streams (incl. `latlng`)
+  and FIT/original files. Types seen: `Run` and `VirtualRun` (treadmill). The `race` flag exists
+  but Garmin sync never sets it, so races come from owner designation.
+- **Wellness** (`GET /athlete/0/wellness?oldest=&newest=`, one record per day): `weight`,
+  `bodyFat`, `restingHR`, `hrv` (rMSSD; no HRV baseline/status), `vo2max`, `ctl`/`atl`
+  (intervals.icu's fitness/fatigue model, not Garmin's). The same records also carry `sleepSecs`,
+  `steps`, `spO2` etc., which **ingest drops before archiving** (FR-015).
+- **Not available → manual owner entries** (`owner/manual-metrics.yaml`, dated `as_of`): Garmin
+  **training status** and Garmin **race predictions**. Garmin **training effect** is not exposed
+  by the API either (FR-047 panel omitted unless a later change extracts it from the archived FIT
+  file).
+- **History**: the API currently reaches back to 2025-10-18 (the 1-year sync backfill). Full
+  history arrives when the owner imports his Garmin data export into intervals.icu (*Settings →
+  Import all Garmin data*); ingest still reads only intervals.icu.
+- **Gotcha — User-Agent**: intervals.icu is behind Cloudflare, which returns **403 with an HTML
+  challenge page** for Python `urllib`'s default `Python-urllib/x.y` User-Agent. The client MUST
+  send a descriptive User-Agent (e.g. `alexanderwebber.com-ingest/<version>
+  (+https://alexanderwebber.com)`), and the adapter classifies a 403 with an HTML body as a bot
+  block (`ProviderForbidden`), not an auth failure (`AuthRejected` = 401, or 403 with a JSON body).
 
-**Token persistence**: the token file lives in R2 as **`state/garmin_tokens.enc`**, encrypted with
-**Fernet** (`cryptography` 50.0.2; key = GitHub secret `GARMIN_TOKEN_KEY`, generated once by
-`awingest keygen`). Each fetch downloads and decrypts it into a run-scoped temp directory, calls
-`login(tokenstore)`, does its work, and **re-encrypts and re-uploads if the file's hash changed**
-(rotated refresh token), using `put(if_match=etag)` so a stale writer cannot overwrite a newer
-token. GitHub secrets cannot be rewritten by a workflow without a PAT, so R2 is the simplest
-durable store, shared by Actions and PC modes. A workflow `concurrency` group (`refresh`, never
-cancelling) serialises runs so two never refresh the token at once. Garmin email/password are
-secrets used only if the tokens are rejected, at most once per 6 h; a failed login records
-`login_blocked_until` (>= 6 h back-off) in R2 state so we never retry-storm into a 429 lockout.
-Owner has no MFA, so re-auth is non-interactive; the first token is created by `awingest login`
-on the owner's PC (password via `getpass`).
+**Design consequences**
 
-### Spike 0 pass criteria (supersedes the earlier 3-runs-in-24 h sketch)
-
-Throwaway code under `spikes/garmin/`; the harness mimics the real fetch (decrypt -> login -> a few
-calls -> re-encrypt/upload if rotated).
-
-| Step | What | Pass criterion |
-|---|---|---|
-| S0.1 | `workflow_dispatch` on `ubuntu-latest`: password login once, encrypted tokens to R2 | login succeeds, no 403/429 |
-| S0.2 | Token-only login, both API sessions (plain `requests` vs `curl_cffi` per #444) against the endpoint checklist below | every required endpoint returns 200 with at least one session |
-| S0.3 | **Scheduled every 2 h for 48 h** (`17 */2 * * *`), token-only, re-uploading rotated tokens | **>= 23 of 24 runs succeed**; the rotated token persisted by run *n* is the one used by run *n+1* (no re-login needed); no 429 |
-| S0.4 | Payload samples written to **R2 only** (never git) to design adapter fixtures | samples present in R2 |
-
-Endpoint availability checklist (each recorded as available / absent / needs-other-session):
-activities list; activity details + splits + HR zones; **running dynamics** (GCT, vertical
-oscillation/ratio); **running power**; **Garmin Index body composition** (weight, body fat);
-**HRV**; **training status** + load; **VO2 max**; **race predictions**; resting HR. Missing
-*optional* items (dynamics, power) only mean those panels are omitted (FR-048); missing
-*required* items (activities, splits, weight, body fat, VO2 max, race predictions) feed the plan
-back for a decision.
-
-**Outcome rule**: pass -> `FETCH_MODE=actions`. Fail (any persistent 403/429 from Actions that does
-not occur locally, or < 23/24, or tokens not surviving rotation) -> `FETCH_MODE=pc`: a Windows Task
-Scheduler job on the owner's PC runs `uv run awingest fetch && gh workflow run refresh.yml` every
-2 h; nothing downstream changes. Record the outcome in `PROJECT_MEMORY.md`.
+- The pipeline keeps its two stages with the private R2 bucket between them (Principle VI, and
+  reprocessing without provider calls): **fetch** (intervals.icu → raw JSON/FIT in R2) then
+  **publish** (R2 → normalise → sanitise → committed JSON → gate → deploy). **Both run on GitHub
+  Actions**; there is no `FETCH_MODE` and no PC fallback.
+- **Incremental by date window**: list calls take `oldest`/`newest`; each fetch re-lists from the
+  cursor minus 14 days (FR-008) to today, and fetches detail/streams/FIT only for new activities or
+  ones whose list row changed. Wellness is re-fetched over the same window (late-arriving values).
+- **Secrets**: `INTERVALS_API_KEY` (GitHub secret; also a user env var on the owner's PC for local
+  runs) plus `R2_*` for the bucket `alexanderwebber-private`. No Garmin credentials or tokens exist
+  anywhere.
+- **Privacy at publish**: training runs lose their `latlng` stream and free-text `name`/
+  `description` (races keep GPS for race maps); raw R2 keeps them so a later race designation can
+  still build a race map.
+- **Backfill** of the full history (after the export import) is chunked, paced and resumable; the
+  agent runs it locally or from a dispatched workflow.
 
 ---
 
@@ -127,7 +121,8 @@ for an apex domain on Workers without Cloudflare DNS.
 
 ## R2. Raw archive and "safe to publish" storage
 
-Owner decision: raw Garmin data (training GPS, start times, unapproved metrics) never goes in git.
+Owner decision: raw provider data (training GPS, start times, free-text names, unapproved
+metrics) never goes in git.
 
 | Option | Cost | Fit |
 |---|---|---|
@@ -136,7 +131,8 @@ Owner decision: raw Garmin data (training GPS, start times, unapproved metrics) 
 | Private git repo / LFS | Free-ish | Splits the "own your data" store across two repos; LFS quotas |
 | Encrypted blobs in the public repo | Free | Violates "nothing committed that is not meant to be public" in spirit; key management burden |
 
-**Decision: R2**, accessed with `boto3` 1.43.108 through the S3 API from Python (Actions/PC) and
+**Decision: R2** (bucket `alexanderwebber-private`, created 2026-10-17), accessed with `boto3`
+1.43.108 through the S3 API from Python (Actions, or the agent locally) and
 with an R2 binding from the Worker. A `RawArchive` abstraction (Principle IV) with `R2Archive` and
 `LocalArchive` implementations (tests, offline development).
 Recurring cost expectation: **$0/month** (inside free tier); would be cents if it ever left it.
@@ -151,21 +147,21 @@ leak by accident. See data-model.md "Sanitisation rules".
 
 | Choice | Version | Why |
 |---|---|---|
-| Python | >= 3.12 (3.12.10 local) | Required by garminconnect |
-| `garminconnect` | **0.3.17** (2026-09-29) | Spec decision. Pinned exactly; bumps reviewed because it is an unofficial client |
-| `curl_cffi` | **0.16.3** (2026-09-02) | Required for login strategies and the #444 workaround |
+| Python | >= 3.12 (3.12.10 local) | Modern typing; matches Spike 0 |
+| HTTP client | standard library `urllib.request` | intervals.icu is a plain REST API with Basic auth; Spike 0's stdlib client worked locally and from Actions once it sent a descriptive User-Agent, so no third-party HTTP or provider library is needed (the dropped `garminconnect`, `curl_cffi` and `cryptography` pins existed only for Garmin login, Cloudflare impersonation and token encryption) |
 | `boto3` | **1.43.108** (2026-10-02) | R2 via S3 API; `moto` 5.2.3 for tests |
-| `cryptography` | **50.0.2** | Fernet encryption of the Garmin token file stored in R2 |
 | `jsonschema` | 4.26.0 | Validate published output against the shared JSON Schemas (contract tests) |
 | `pyyaml` | 6.0.3 | Read owner YAML overrides in the processor |
 | `pytest` | 9.1.1 | Tests |
 | `ruff` | 0.16.10 | Lint/format |
 | `uv` | 0.12.23 current (0.11.7 local) | Env + lockfile; local bump is routine, skipped unless it bites |
 
-FIT parsing is **not** needed (and `garmin-fit-sdk` is not adopted): Garmin's activity "details" endpoint returns per-sample metrics
-(distance, speed, HR, cadence, elevation, power, GPS) as JSON. `fitparse` is unmaintained (last
-release 2020) and `fitdecode` is only a fallback if the details payload lacks something
-(Spike 0 inventories this). No pydantic: schemas live as JSON Schema (below) and Python uses typed
+FIT parsing is **not** needed (and `garmin-fit-sdk` is not adopted): intervals.icu's
+`/activity/{id}/streams.json` returns per-sample metrics (time, distance, velocity, HR, cadence,
+altitude, power, running dynamics, `latlng`) as JSON, confirmed by Spike 0. The FIT file is
+archived to R2 verbatim as a raw backup only. `fitparse` is unmaintained (last release 2020);
+`fitdecode` remains the fallback if something needed later exists only in the FIT file (e.g.
+Garmin training effect). No pydantic: schemas live as JSON Schema (below) and Python uses typed
 dataclasses.
 
 ---
@@ -276,9 +272,9 @@ preview image on every page, not a unique one):
 - **Owner alerts (FR-010, owner decision 2)**: the workflow's last step opens a GitHub issue
   (`ingest-failing` label, likely-cause + action text) when `last_success` is > 24 h old, updates
   it while failing, and comments + closes it on recovery. Uses `GITHUB_TOKEN`
-  (`issues: write`); no extra service. Failure classes map to actions: auth rejected ->
-  re-authorise; 403/Cloudflare -> check library issue #444 / bump; 429 -> wait (back-off
-  active); R2 error -> check credentials. The full failure-class -> owner-action table is in
+  (`issues: write`); no extra service. Failure classes map to actions: auth rejected (401) ->
+  owner replaces the intervals.icu API key; 403 with an HTML body (Cloudflare bot block) -> check
+  the User-Agent; 429 -> wait (back-off active); R2 error -> check credentials. The full failure-class -> owner-action table is in
   [contracts/pipeline.md](contracts/pipeline.md).
 - **Commits by the ingest job**: the publish job commits sanitised data straight to `main` as
   `github-actions[bot]` **only after** validation + build pass, then deploys in the same
@@ -305,9 +301,9 @@ referential checks, FR-070), `scan-images`, section-boundary check, `astro check
 validation of the data/site, not as test suites.
 
 **Not in the gate**: pytest, Vitest and Playwright suites run **locally and at graduation**
-(constitution: broader CI deferred). **Proposal for the owner**: path-filtered test jobs on PRs
-(`ingest/**` -> pytest; shared/section code -> Vitest; templates -> Playwright + axe) as the
-BACKLOG "Broader CI" revisit now that shared surface exists; not adopted unless confirmed.
+(constitution: broader CI deferred), plus path-filtered test jobs on PRs (`tests.yml`:
+`ingest/**` -> pytest; shared/section code -> Vitest), adopted by the owner on 2026-10-04 as a
+partial BACKLOG "Broader CI" revisit.
 Lighthouse 13 CLI and axe run in a separate **non-blocking** workflow on PRs touching site code
 and nightly against production (cheap signals toward SC-006/007, promoted to blocking only when
 the owner decides).
@@ -342,22 +338,32 @@ only from `astro.config.mjs`.
   shown as the headline value). Performance-metric goals use the recorded value.
 - **Timezone**: Europe/London for all period boundaries; weeks start Monday (FR-075). Run date =
   local date of start; start time is dropped in the processor.
-- **Treadmill**: `treadmill_running` / indoor flag counts toward totals, not PBs/goals unless the
-  owner sets `include_in_records: true`.
+- **Treadmill** (owner decision 2026-10-17): intervals.icu type `VirtualRun` (or `trainer: true`)
+  -> `type: indoor`, `treadmill: true`. Counts toward totals, the training build and the run
+  list, labelled "Treadmill", never gets a race track; not PB- or race-time-goal-eligible unless
+  the owner sets `include_in_records: true` in `run-overrides.yaml`.
+- **Fitness/fatigue (training load)**: published from intervals.icu wellness `ctl` (fitness) and
+  `atl` (fatigue); form = ctl - atl is derived at build time. Labelled as intervals.icu's model,
+  never as Garmin's training load.
+- **Manual Garmin figures**: `owner/manual-metrics.yaml` holds dated (`as_of`) training-status and
+  race-prediction entries; the latest entry is "current", earlier ones are the trend. Read at build
+  only (owner data, not ingested).
 - **Run IDs (opaque)**: public IDs are `YYYY-MM-DD-xxxx` (local run date + 4 random base32
   characters `[a-z2-7]`, drawn with `secrets`, collision-checked per date) assigned at first sight
-  by `process/run_ids.py`. The Garmin-ID -> public-ID map is **append-only** in private R2
+  by `process/run_ids.py`. The provider-ID -> public-ID map is **append-only** in private R2
   (`state/run-ids.json`, written with `if_match`); an ID is never reassigned, and `process` aborts
-  if the map is unreadable rather than regenerating it. Garmin activity IDs and URLs are **never**
-  published (data files, URLs, HTML, manifest, logs): an activity link can expose a training run's
-  GPS if the owner's Garmin privacy settings allow it. Owner files reference runs by public ID
-  (copy it from the run page URL). Titles are generated neutral: "Easy run - 8.2 km" (run type from training effect /
-  workout type, else "Run").
+  if the map is unreadable rather than regenerating it. Provider activity IDs and URLs
+  (intervals.icu IDs, Garmin `external_id`s) are **never** published (data files, URLs, HTML,
+  manifest, logs): an activity link can expose a training run's GPS if the provider's privacy
+  settings allow it. Owner files reference runs by public ID (copy it from the run page URL).
+  Titles are generated neutral: "Run · 8.2 km" (a run-type word such as "Easy run" only where the
+  provider supplies a workout type; intervals.icu does not supply Garmin training effect).
+  Free-text provider `name`/`description` are never published for training runs.
 - **Reprocessing**: processor is deterministic and idempotent with a manifest of input hashes
   (raw object ETag + relevant override hash), so owner edits (hide run, race designation,
   exclusions) reprocess only affected runs and re-publish.
 - **Duplicate races (spec edge case: each race appears once)**: a hand-entered race (`race.yaml`
-  without `run_id`) whose date matches a Garmin-recorded race run (same date, distance within 2%)
+  without `run_id`) whose date matches a recorded race run (same date, distance within 2%)
   **fails validation** with a message telling the owner to add `run_id: <id>` instead; there is no
   fuzzy auto-merge. A `race.yaml` that references `run_id` is the single entry for that race and
   its official details (name, time, distance, position) take precedence over device values.
@@ -379,5 +385,5 @@ only from `astro.config.mjs`.
 - Principle V "Every data-driven view MUST show when its data was last updated" combined with
   static hosting required the freshness Worker (R9); this is within "serverless functions
   allowed" and needs no amendment.
-- Bot commits to `main` (R9) contradict the PR norm literally; scoped exception proposed, owner to
-  confirm. Logged as an upstream candidate.
+- Bot commits to `main` (R9) contradict the PR norm literally; the scoped exception was confirmed
+  by the owner on 2026-10-04. Logged as an upstream candidate.

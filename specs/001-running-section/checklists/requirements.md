@@ -43,3 +43,6 @@
   training runs; weight/body-fat goal achievement judged on the 7-day average; 12-hour staleness
   threshold; only the current goal target displayed.
 - Ready for `/speckit-clarify` (optional) or `/speckit-plan`.
+- Amendment (2026-10-17): the data source is now intervals.icu (fed by Garmin's official sync), so
+  "intervals.icu" is named as a domain fact alongside "Garmin" (device and data origin). Items
+  above still pass.

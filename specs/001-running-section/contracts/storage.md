@@ -15,10 +15,10 @@ delete(key)                                     # used only by tests/maintenance
 
 Implementations: `R2Archive` (boto3, S3 API, endpoint from env), `LocalArchive` (directory; tests
 and offline dev). Rules: keys are `/`-separated and validated (no `..`); `put` is idempotent for
-identical bytes; `if_match` enables optimistic concurrency for token/cursor/ID-map objects
-(`state/garmin_tokens.enc`, `state/cursor.json`, `state/run-ids.json`); the token object is
-Fernet-encrypted by the caller (`archive/tokens.py`), never stored in clear; errors map to
-`ArchiveUnavailable` / `ArchiveConflict`.
+identical bytes; `if_match` enables optimistic concurrency for cursor/ID-map objects
+(`state/cursor.json`, `state/run-ids.json`); no credentials or tokens are ever stored in the
+archive; errors map to `ArchiveUnavailable` / `ArchiveConflict`. Bucket:
+`alexanderwebber-private` (`R2_*` secrets).
 
 ## `PublishedWriter` (Python) — publish stage writes the committed zone
 
@@ -41,7 +41,7 @@ getRun(runId): Run | undefined             # runId = opaque public run ID
 getRaceTrack(runId): RaceTrack | undefined
 getHealthSeries(metric, range?): Point[]
 getRefreshRecord(): RefreshRecord
-getOwner(): { section, goals, upcomingRaces, races, overrides, exclusions, lab }   # validated
+getOwner(): { section, goals, upcomingRaces, races, overrides, exclusions, lab, manualMetrics }   # validated
 ```
 
 Implementation: `JsonFileStore` (build-time, reads `data/running/`, validates every file with

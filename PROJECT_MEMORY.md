@@ -342,8 +342,24 @@ project-specific notes.
     "treadmill" label. They never get maps and are not PB-eligible unless the owner marks them.
   - **Supporter tier:** revisit at go-live. The owner will definitely become a supporter once
     the live integration works, and the agent raises it at T112.
+- **2026-10-17** — **Constitution v1.0.1** (PATCH, via `/speckit-constitution`). The Garmin
+  wording now says intervals.icu:
+  - **Principle IV:** the example source list names intervals.icu, and the rationale no longer
+    claims an unofficial client.
+  - **Technology constraints:** ingest gets running data via the intervals.icu API.
+
+  No principle's meaning changed.
 
 ## Upstream candidates
+
+- 2026-10-17 — The mandatory `/speckit-git-initialize` pre-hook of `/speckit-constitution` was
+  blocked by the auto-mode permission classifier inside a subagent. It is a no-op when a repo
+  already exists, so nothing was lost, but the run reported a failed mandatory hook. Agent
+  tip: when dispatching speckit commands to subagents in an existing repo, say this hook can
+  be skipped. Alternatively, the git extension could make it conditional.
+- 2026-10-17 — `/speckit-constitution` writes its Sync Impact Report as an HTML comment at the
+  top of the constitution, to be removed before commit. Agent tip: copy it into the PR body
+  first, so the owner still reviews it (the governance section says the owner reviews it).
 
 <!-- Lessons that might help future projects, captured the moment they happen (see the working
      norm above). One line each: date, what happened, and the suggested generalisation. The
@@ -387,6 +403,9 @@ project-specific notes.
 
 ## Open questions
 
+- The owner has **$100 of cloud session credits that expire 2026-11-05** (noted 2026-10-17).
+  Prefer remote (cloud) subagents for self-contained work, such as spikes, scaffold slices and
+  review passes, until they're used or expire.
 - intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
   imports, plan building and UI features), so the owner stays on the free tier for now. At
   go-live (T112) the agent raises it again. The owner intends to become a supporter once the
