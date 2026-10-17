@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "2026-05-17-q2mb",
+  "date": "2026-05-17",
+  "type": "road",
+  "treadmill": false,
+  "is_race": true,
+  "title": "Hastings Half Marathon",
+  "distance_m": 21180,
+  "moving_s": 6060,
+  "elapsed_s": 6070,
+  "avg_pace_s_per_km": 286.1,
+  "best_pace_s_per_km": 262.0,
+  "splits": [
+    {
+      "km": 1,
+      "time_s": 281,
+      "pace_s_per_km": 281,
+      "hr": 150,
+      "elev_delta_m": 2.5
+    }
+  ],
+  "series": {
+    "x_dist_m": [
+      0,
+      1000
+    ],
+    "x_elapsed_s": [
+      0,
+      281
+    ],
+    "pace": [
+      290,
+      281
+    ],
+    "hr": [
+      140,
+      null
+    ],
+    "elev": [
+      5,
+      7.5
+    ],
+    "cadence": [
+      170,
+      172
+    ],
+    "power": [
+      300,
+      302
+    ]
+  },
+  "best_efforts": [
+    {
+      "distance_m": 21097.5,
+      "label": "Half marathon",
+      "time_s": 6044,
+      "plausible": true
+    }
+  ],
+  "flags": {
+    "excluded_from_records": false
+  },
+  "note": "Windy on the seafront",
+  "elevation_gain_m": 112,
+  "elevation_loss_m": 110,
+  "hr": {
+    "avg": 162,
+    "max": 181
+  },
+  "cadence_avg": 172,
+  "stride_m_avg": 1.21,
+  "power_w_avg": 301,
+  "dynamics": {
+    "gct_ms": 251,
+    "gct_balance_pct": 49.6,
+    "vert_osc_mm": 88,
+    "vert_ratio_pct": 7.4
+  },
+  "training_effect": {
+    "aerobic": 4.2,
+    "anaerobic": 1.1
+  },
+  "hr_zones": [
+    {
+      "zone": 1,
+      "seconds": 60
+    },
+    {
+      "zone": 4,
+      "seconds": 4000
+    }
+  ],
+  "track_ref": "race-tracks/2026-05-17-q2mb"
+}

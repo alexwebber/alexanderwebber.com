@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "id": "2026-05-04-t6nb",
+  "date": "2026-05-04",
+  "type": "indoor",
+  "treadmill": true,
+  "is_race": false,
+  "title": "Treadmill run · 5.0 km",
+  "distance_m": 8234.5,
+  "moving_s": 2580,
+  "elapsed_s": 2650,
+  "avg_pace_s_per_km": 313.3,
+  "best_pace_s_per_km": 271.0,
+  "splits": [
+    {
+      "km": 1,
+      "time_s": 318,
+      "pace_s_per_km": 318
+    }
+  ],
+  "series": {
+    "x_dist_m": [
+      0,
+      500,
+      1000
+    ],
+    "x_elapsed_s": [
+      0,
+      160,
+      318
+    ],
+    "pace": [
+      null,
+      320.1,
+      316.4
+    ]
+  },
+  "best_efforts": [
+    {
+      "distance_m": 1000,
+      "label": "1k",
+      "time_s": 290,
+      "plausible": true
+    }
+  ],
+  "flags": {
+    "include_indoor_in_records": true
+  }
+}

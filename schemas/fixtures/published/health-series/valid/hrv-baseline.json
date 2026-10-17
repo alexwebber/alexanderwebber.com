@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "metric": "hrv",
+  "unit": "ms",
+  "points": [
+    {
+      "date": "2026-10-10",
+      "value": 48
+    },
+    {
+      "date": "2026-10-11",
+      "value": 51,
+      "baseline_low": 42,
+      "baseline_high": 55
+    }
+  ]
+}

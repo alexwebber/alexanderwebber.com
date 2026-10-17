@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/lab.schema.json",
+  "title": "LabMeasurement",
+  "description": "data/running/owner/lab/<date>-<type>.yaml: a lab reference measurement (FR-064). Only metrics the section already shows are allowed; any other value key fails validation (FR-066).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["date", "type", "provider", "values"],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/ownerSchemaVersion" },
+    "date": { "$ref": "../defs.schema.json#/$defs/date" },
+    "type": { "enum": ["dexa", "lab_vo2max"] },
+    "provider": { "$ref": "../defs.schema.json#/$defs/text" },
+    "values": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "body_fat_pct": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 },
+        "weight_kg": { "type": "number", "exclusiveMinimum": 0, "maximum": 400 },
+        "vo2max": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}

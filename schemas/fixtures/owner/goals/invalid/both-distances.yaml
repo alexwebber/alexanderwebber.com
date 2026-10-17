@@ -1,0 +1,6 @@
+- id: 10k-sub-45
+  type: race_time
+  title: 10k under 45 minutes
+  priority: 2
+  featured: true
+  target: { distance: 10k, distance_m: 10000, time: "44:59" }

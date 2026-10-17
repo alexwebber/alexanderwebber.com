@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/published/refresh.schema.json",
+  "title": "RefreshRecord",
+  "description": "data/running/published/state/refresh.json, rewritten only when published data changes. The build-time 'as of' fallback (FR-005); the live value is public/freshness.json in R2, served by the Worker.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "sources", "generated_at"],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/publishedSchemaVersion" },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intervals"],
+      "properties": {
+        "intervals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["last_data_change_at", "last_success_at_build"],
+          "properties": {
+            "last_data_change_at": { "$ref": "../defs.schema.json#/$defs/utcTimestamp" },
+            "last_success_at_build": {
+              "description": "The last successful fetch as known when this file was written.",
+              "$ref": "../defs.schema.json#/$defs/utcTimestamp"
+            }
+          }
+        }
+      }
+    },
+    "generated_at": { "$ref": "../defs.schema.json#/$defs/utcTimestamp" }
+  }
+}

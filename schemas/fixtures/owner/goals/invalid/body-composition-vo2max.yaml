@@ -1,0 +1,1 @@
+- { id: v, type: body_composition, title: VO2, priority: 1, featured: true, target: { metric: vo2max, value: 55, direction: at_least } }

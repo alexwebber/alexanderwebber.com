@@ -1,0 +1,1 @@
+- { id: ultra, type: milestone, title: Ultra, priority: 1, featured: true, target: { distance: marathon, time: "5:00:00" } }

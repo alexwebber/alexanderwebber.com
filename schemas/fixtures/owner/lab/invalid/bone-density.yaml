@@ -1,0 +1,4 @@
+date: 2026-11-20
+type: dexa
+provider: Example Clinic
+values: { body_fat_pct: 24.1, bone_density: 1.21 }

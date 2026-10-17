@@ -1,0 +1,2 @@
+# YAML 1.2: an unquoted 3:30:00 stays a string (YAML 1.1 would read it as 12600)
+- { id: sub-330, type: race_time, title: Sub 3:30, priority: 1, featured: true, target: { distance: marathon, time: 3:30:00 } }

@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/goals.schema.json",
+  "title": "Goals",
+  "description": "data/running/owner/goals.yaml: a list of goals. The fields allowed depend on the goal's type. List files carry no schema_version; they are always the current version.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/goal" },
+  "$defs": {
+    "goal": {
+      "type": "object",
+      "required": ["id", "type", "title", "priority", "featured"],
+      "discriminator": { "propertyName": "type" },
+      "x-error": "is not a goal type (expected race_time, body_composition, metric or milestone)",
+      "oneOf": [
+        { "$ref": "#/$defs/raceTimeGoal" },
+        { "$ref": "#/$defs/bodyCompositionGoal" },
+        { "$ref": "#/$defs/metricGoal" },
+        { "$ref": "#/$defs/milestoneGoal" }
+      ]
+    },
+    "raceTimeGoal": {
+      "title": "RaceTimeGoal",
+      "description": "Achieved by the first eligible effort, in any run or race, faster than the target time (FR-033).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "title", "priority", "featured", "target"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "const": "race_time" },
+        "title": { "$ref": "../defs.schema.json#/$defs/text" },
+        "description": { "$ref": "../defs.schema.json#/$defs/text" },
+        "priority": { "$ref": "#/$defs/priority" },
+        "featured": { "type": "boolean" },
+        "deadline": { "$ref": "../defs.schema.json#/$defs/date" },
+        "created": { "$ref": "#/$defs/created" },
+        "linked_race": { "$ref": "#/$defs/linkedRace" },
+        "status_override": { "$ref": "#/$defs/statusOverride" },
+        "retired": { "$ref": "#/$defs/retired" },
+        "achieved_override": { "$ref": "#/$defs/achievedOverride" },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["time"],
+          "properties": {
+            "distance": { "$ref": "../defs.schema.json#/$defs/distance" },
+            "distance_m": { "$ref": "../defs.schema.json#/$defs/metres" },
+            "time": { "$ref": "../defs.schema.json#/$defs/timeString" }
+          },
+          "oneOf": [
+            { "required": ["distance"], "properties": { "distance_m": false } },
+            { "required": ["distance_m"], "properties": { "distance": false } }
+          ],
+          "x-error": "needs exactly one of distance or distance_m"
+        }
+      }
+    },
+    "bodyCompositionGoal": {
+      "title": "BodyCompositionGoal",
+      "description": "Achieved when the 7-day average first reaches the target (FR-034).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "title", "priority", "featured", "target"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "const": "body_composition" },
+        "title": { "$ref": "../defs.schema.json#/$defs/text" },
+        "description": { "$ref": "../defs.schema.json#/$defs/text" },
+        "priority": { "$ref": "#/$defs/priority" },
+        "featured": { "type": "boolean" },
+        "deadline": { "$ref": "../defs.schema.json#/$defs/date" },
+        "start_value": { "$ref": "#/$defs/startValue" },
+        "created": { "$ref": "#/$defs/created" },
+        "linked_race": { "$ref": "#/$defs/linkedRace" },
+        "status_override": { "$ref": "#/$defs/statusOverride" },
+        "retired": { "$ref": "#/$defs/retired" },
+        "achieved_override": { "$ref": "#/$defs/achievedOverride" },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["metric", "value", "direction"],
+          "properties": {
+            "metric": { "enum": ["weight_kg", "body_fat_pct"] },
+            "value": { "type": "number", "exclusiveMinimum": 0 },
+            "direction": { "$ref": "#/$defs/direction" }
+          }
+        }
+      }
+    },
+    "metricGoal": {
+      "title": "MetricGoal",
+      "description": "Achieved when the recorded value first reaches the target (FR-034). fitness_ctl, fatigue_atl and the manual Garmin figures are not goal metrics.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "title", "priority", "featured", "target"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "const": "metric" },
+        "title": { "$ref": "../defs.schema.json#/$defs/text" },
+        "description": { "$ref": "../defs.schema.json#/$defs/text" },
+        "priority": { "$ref": "#/$defs/priority" },
+        "featured": { "type": "boolean" },
+        "deadline": { "$ref": "../defs.schema.json#/$defs/date" },
+        "start_value": { "$ref": "#/$defs/startValue" },
+        "created": { "$ref": "#/$defs/created" },
+        "linked_race": { "$ref": "#/$defs/linkedRace" },
+        "status_override": { "$ref": "#/$defs/statusOverride" },
+        "retired": { "$ref": "#/$defs/retired" },
+        "achieved_override": { "$ref": "#/$defs/achievedOverride" },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["metric", "value", "direction"],
+          "properties": {
+            "metric": { "enum": ["vo2max", "resting_hr", "hrv"] },
+            "value": { "type": "number", "exclusiveMinimum": 0 },
+            "direction": { "$ref": "#/$defs/direction" }
+          }
+        }
+      }
+    },
+    "milestoneGoal": {
+      "title": "MilestoneGoal",
+      "description": "Achieved only when the owner sets achieved_override.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "title", "priority", "featured"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "const": "milestone" },
+        "title": { "$ref": "../defs.schema.json#/$defs/text" },
+        "description": { "$ref": "../defs.schema.json#/$defs/text" },
+        "priority": { "$ref": "#/$defs/priority" },
+        "featured": { "type": "boolean" },
+        "deadline": { "$ref": "../defs.schema.json#/$defs/date" },
+        "created": { "$ref": "#/$defs/created" },
+        "linked_race": { "$ref": "#/$defs/linkedRace" },
+        "retired": { "$ref": "#/$defs/retired" },
+        "achieved_override": { "$ref": "#/$defs/achievedOverride" }
+      }
+    },
+    "id": { "$ref": "../defs.schema.json#/$defs/slug" },
+    "priority": {
+      "description": "1 is the highest. Unique among featured goals.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "created": {
+      "description": "When the goal was set. Progress starts from the first reading on or after this date (else the first reading in the series), unless start_value is given.",
+      "$ref": "../defs.schema.json#/$defs/date"
+    },
+    "startValue": {
+      "description": "Starting value for progress; overrides the first reading.",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "linkedRace": {
+      "description": "An id from upcoming-races.yaml.",
+      "$ref": "../defs.schema.json#/$defs/slug"
+    },
+    "statusOverride": {
+      "description": "active: ignore an automatic achievement and keep the goal active (FR-036).",
+      "enum": ["active"]
+    },
+    "retired": {
+      "description": "Retired goals are not displayed (FR-041).",
+      "type": "boolean"
+    },
+    "achievedOverride": {
+      "description": "Mark the goal achieved by hand (FR-036). Wins over the automatic status.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date"],
+      "properties": {
+        "date": { "$ref": "../defs.schema.json#/$defs/date" },
+        "note": { "$ref": "../defs.schema.json#/$defs/text" }
+      }
+    },
+    "direction": {
+      "description": "at_most: achieved at or below the target. at_least: at or above.",
+      "enum": ["at_most", "at_least"]
+    }
+  }
+}

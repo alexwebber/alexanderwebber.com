@@ -1,0 +1,4 @@
+date: 2026-11-20
+type: blood_test
+provider: Example Clinic
+values: { weight_kg: 102.4 }

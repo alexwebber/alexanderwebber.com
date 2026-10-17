@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/section.schema.json",
+  "title": "SectionSettings",
+  "description": "data/running/owner/section.yaml: Running section settings and the focus race. Every field except focus_race has a default.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["focus_race"],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/ownerSchemaVersion" },
+    "focus_race": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["race_id", "build_start", "charity"],
+      "properties": {
+        "race_id": {
+          "description": "An id from upcoming-races.yaml.",
+          "$ref": "../defs.schema.json#/$defs/slug"
+        },
+        "build_start": {
+          "description": "First day of the training build.",
+          "$ref": "../defs.schema.json#/$defs/date"
+        },
+        "charity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name"],
+          "properties": { "name": { "$ref": "../defs.schema.json#/$defs/text" } }
+        }
+      }
+    },
+    "story_link": {
+      "description": "The landing page links to the story only once this is set (FR-024).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["href", "label"],
+      "properties": {
+        "href": {
+          "description": "A site path (/story/) or an https link.",
+          "type": "string",
+          "pattern": "^(/(?!/)[^\\s]*|https://[^\\s]+)$",
+          "x-error": "is not a valid link (expected a site path like /story/ or https://...)"
+        },
+        "label": { "$ref": "../defs.schema.json#/$defs/text" }
+      }
+    },
+    "stale_after_hours": {
+      "description": "Data older than this is shown as stale.",
+      "type": "integer",
+      "minimum": 1,
+      "default": 12
+    },
+    "featured_goal_limit": {
+      "description": "Most goals shown on the landing page.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12,
+      "default": 6
+    },
+    "recent_highlight_days": {
+      "description": "How long a new PB or achieved goal is highlighted.",
+      "type": "object",
+      "additionalProperties": false,
+      "default": { "pb": 14, "goal": 14 },
+      "properties": {
+        "pb": { "type": "integer", "minimum": 0, "default": 14 },
+        "goal": { "type": "integer", "minimum": 0, "default": 14 }
+      }
+    }
+  }
+}

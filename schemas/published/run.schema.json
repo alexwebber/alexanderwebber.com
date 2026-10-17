@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/published/run.schema.json",
+  "title": "Run",
+  "description": "One published run: data/running/published/runs/<yyyy>/<run-id>.json. Sanitised: no time of day, no coordinates, no provider IDs, no provider free text.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "id", "date", "type", "treadmill", "is_race", "title",
+    "distance_m", "moving_s", "elapsed_s", "avg_pace_s_per_km", "best_pace_s_per_km",
+    "splits", "series", "best_efforts", "flags"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/publishedSchemaVersion" },
+    "id": { "$ref": "../defs.schema.json#/$defs/runId" },
+    "date": { "$ref": "../defs.schema.json#/$defs/date" },
+    "type": {
+      "description": "Indoor runs are excluded from PBs and race-time goals unless the owner includes them.",
+      "enum": ["road", "track", "trail", "indoor"]
+    },
+    "treadmill": {
+      "description": "True for intervals.icu VirtualRun. Drives the Treadmill label; a treadmill run never has a track_ref.",
+      "type": "boolean"
+    },
+    "is_race": { "type": "boolean" },
+    "title": {
+      "description": "Neutral generated title (e.g. 'Run · 8.2 km'), the owner's custom title, or the race name. Never provider free text.",
+      "$ref": "../defs.schema.json#/$defs/text"
+    },
+    "note": { "description": "Owner note.", "$ref": "../defs.schema.json#/$defs/text" },
+    "distance_m": { "$ref": "../defs.schema.json#/$defs/metres" },
+    "moving_s": { "$ref": "../defs.schema.json#/$defs/seconds" },
+    "elapsed_s": { "$ref": "../defs.schema.json#/$defs/seconds" },
+    "elevation_gain_m": { "type": "number", "minimum": 0 },
+    "elevation_loss_m": { "type": "number", "minimum": 0 },
+    "avg_pace_s_per_km": { "$ref": "../defs.schema.json#/$defs/paceSecondsPerKm" },
+    "best_pace_s_per_km": { "$ref": "../defs.schema.json#/$defs/paceSecondsPerKm" },
+    "hr": {
+      "description": "Omitted when heart rate was not recorded.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["avg", "max"],
+      "properties": {
+        "avg": { "$ref": "#/$defs/bpm" },
+        "max": { "$ref": "#/$defs/bpm" }
+      }
+    },
+    "cadence_avg": { "description": "Steps per minute.", "type": "number", "exclusiveMinimum": 0 },
+    "stride_m_avg": { "type": "number", "exclusiveMinimum": 0 },
+    "power_w_avg": { "type": "number", "exclusiveMinimum": 0 },
+    "dynamics": {
+      "description": "Running dynamics; omitted when absent.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "gct_ms": { "description": "Ground contact time.", "type": "number", "exclusiveMinimum": 0 },
+        "gct_balance_pct": { "description": "Ground contact time balance, left foot %.", "type": "number", "minimum": 0, "maximum": 100 },
+        "vert_osc_mm": { "description": "Vertical oscillation.", "type": "number", "minimum": 0 },
+        "vert_ratio_pct": { "description": "Vertical ratio.", "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "training_effect": {
+      "description": "Not exposed by intervals.icu; kept for a future source.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aerobic", "anaerobic"],
+      "properties": {
+        "aerobic": { "type": "number", "minimum": 0, "maximum": 5 },
+        "anaerobic": { "type": "number", "minimum": 0, "maximum": 5 }
+      }
+    },
+    "splits": {
+      "description": "Per-km splits.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["km", "time_s", "pace_s_per_km"],
+        "properties": {
+          "km": { "type": "integer", "minimum": 1 },
+          "time_s": { "$ref": "../defs.schema.json#/$defs/seconds" },
+          "pace_s_per_km": { "$ref": "../defs.schema.json#/$defs/paceSecondsPerKm" },
+          "hr": { "$ref": "#/$defs/bpm" },
+          "elev_delta_m": { "type": "number" }
+        }
+      }
+    },
+    "hr_zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["zone", "seconds"],
+        "properties": {
+          "zone": { "type": "integer", "minimum": 1, "maximum": 10 },
+          "seconds": { "$ref": "../defs.schema.json#/$defs/seconds" }
+        }
+      }
+    },
+    "series": {
+      "description": "Chart series, downsampled to at most 600 points. The x-axis is distance or elapsed time, never clock time. No coordinates. null marks a gap.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x_dist_m", "x_elapsed_s", "pace"],
+      "properties": {
+        "x_dist_m": { "$ref": "#/$defs/axis" },
+        "x_elapsed_s": { "$ref": "#/$defs/axis" },
+        "pace": { "$ref": "#/$defs/values" },
+        "hr": { "$ref": "#/$defs/values" },
+        "elev": { "$ref": "#/$defs/values" },
+        "cadence": { "$ref": "#/$defs/values" },
+        "power": { "$ref": "#/$defs/values" }
+      }
+    },
+    "best_efforts": {
+      "description": "Fastest continuous segment per standard distance. plausible:false efforts are kept for audit but ignored downstream.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["distance_m", "label", "time_s", "plausible"],
+        "properties": {
+          "distance_m": { "$ref": "../defs.schema.json#/$defs/metres" },
+          "label": { "$ref": "../defs.schema.json#/$defs/text" },
+          "time_s": { "type": "number", "exclusiveMinimum": 0 },
+          "plausible": { "type": "boolean" }
+        }
+      }
+    },
+    "flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "excluded_from_records": {
+          "description": "Mirrors the owner's run-overrides.yaml exclude_from_records.",
+          "type": "boolean"
+        },
+        "include_indoor_in_records": {
+          "description": "Mirrors the owner's run-overrides.yaml include_in_records: the owner marked this treadmill/indoor run eligible for PBs and race-time goals.",
+          "type": "boolean"
+        }
+      }
+    },
+    "track_ref": {
+      "description": "Present only for a race that is not a treadmill run and whose map is not hidden.",
+      "type": "string",
+      "pattern": "^race-tracks/\\d{4}-\\d{2}-\\d{2}-[a-z2-7]{4}$"
+    }
+  },
+  "$defs": {
+    "bpm": { "type": "number", "exclusiveMinimum": 0, "maximum": 260 },
+    "axis": {
+      "type": "array",
+      "maxItems": 600,
+      "items": { "type": "number", "minimum": 0 }
+    },
+    "values": {
+      "type": "array",
+      "maxItems": 600,
+      "items": { "type": ["number", "null"] }
+    }
+  }
+}

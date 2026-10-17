@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/health-exclusions.schema.json",
+  "title": "HealthExclusions",
+  "description": "data/running/owner/health-exclusions.yaml: readings to drop as erroneous (FR-067), removed before any average is computed. List files carry no schema_version; they are always the current version.",
+  "type": "array",
+  "items": {
+    "title": "HealthExclusion",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["metric", "date"],
+    "properties": {
+      "metric": { "$ref": "../defs.schema.json#/$defs/goalMetric" },
+      "date": { "$ref": "../defs.schema.json#/$defs/date" },
+      "reason": { "$ref": "../defs.schema.json#/$defs/text" }
+    }
+  }
+}

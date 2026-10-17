@@ -1,0 +1,5 @@
+- { id: 2026-09-28-q2mb, title: Long run with Sam, note: "Felt strong after 25 km" }
+- { id: 2026-08-02-a7cd, exclude_from_records: true }   # GPS glitch
+- { id: 2026-07-19-zz4k, hide: true }
+- { id: 2026-06-01-p2rt, is_race: true }                # parkrun designated as a race
+- { id: 2026-05-04-t6nb, include_in_records: true }     # treadmill run the owner marks PB-eligible
