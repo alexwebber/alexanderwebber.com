@@ -33,7 +33,7 @@
       "default": 0
     },
     "designate": {
-      "description": "Overrides the intervals.icu race flag for the linked run.",
+      "description": "A race.yaml with run_id makes that run a race by itself; designate: not_race un-designates it. A run-overrides.yaml is_race wins over both.",
       "enum": ["race", "not_race"]
     },
     "photos": {

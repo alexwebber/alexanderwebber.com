@@ -1,23 +1,32 @@
-"""Command-line entry point (contracts/pipeline.md). JSON-lines logs go to stderr and a summary
-of counts to stdout; the exit code is the failure class's (0 for ok or partial).
+"""Command-line entry point (T066; contracts/pipeline.md). JSON-lines logs go to stderr and a
+summary of counts to stdout; the exit code is the failure class's (0 for ok or partial, 2 for
+bad arguments).
 
-``fetch`` and ``backfill`` are wired here; ``process``, ``publish-check``, ``alert`` and
-``reprocess`` arrive with the publish stage (T066).
+- ``fetch``, ``backfill``: intervals.icu -> raw archive.
+- ``process [--all]``, ``reprocess --run RUN_ID``: raw archive -> ``data/running/published/``.
+- ``publish-check``: validates the published tree and its manifest (no archive needed).
+- ``alert``: keeps the ``ingest-failing`` issue in step with ``state/fetch-status.json``.
 """
 
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import date
+from pathlib import Path
 
+from awingest.alerts import GitHubError, GitHubIssues, default_run_url, run_alert
 from awingest.archive.base import ArchiveError, RawArchive
 from awingest.archive.local import LocalArchive
 from awingest.archive.r2 import R2Archive
 from awingest.backfill import run_backfill
 from awingest.fetch import run_fetch
 from awingest.logging import Logger
+from awingest.process.pipeline import PUBLISHED, run_process
 from awingest.providers.intervals import IntervalsProvider
+from awingest.publish.manifest import check_published
+from awingest.schemas import SchemaSet, find_repo_root
 
 LOCAL_ARCHIVE_ENV = "AWINGEST_ARCHIVE_DIR"
 DEFAULT_LOCAL_ARCHIVE = ".archive"
@@ -28,6 +37,12 @@ def _date(value: str) -> date:
         return date.fromisoformat(value)
     except ValueError:
         raise argparse.ArgumentTypeError(f"not a YYYY-MM-DD date: {value!r}") from None
+
+
+def _run_id(value: str) -> str:
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}-[a-z2-7]{4}", value):
+        raise argparse.ArgumentTypeError(f"not a run ID (YYYY-MM-DD-xxxx): {value!r}")
+    return value
 
 
 def _archive(args: argparse.Namespace) -> RawArchive:
@@ -59,12 +74,46 @@ def _parser() -> argparse.ArgumentParser:
     backfill.add_argument("--from", dest="start", type=_date)
     backfill.add_argument("--resume", action="store_true")
     with_archive(backfill)
+
+    def with_repo(sub: argparse.ArgumentParser) -> None:
+        sub.add_argument(
+            "--repo-root",
+            type=Path,
+            help="the repository (holding schemas/ and data/); default: found from the cwd",
+        )
+
+    process = commands.add_parser("process", help="raw archive -> published JSON, incrementally")
+    process.add_argument("--all", action="store_true", help="reprocess every run and series")
+    with_archive(process)
+    with_repo(process)
+
+    reprocess = commands.add_parser("reprocess", help="re-run one published run")
+    reprocess.add_argument("--run", required=True, type=_run_id, metavar="RUN_ID")
+    with_archive(reprocess)
+    with_repo(reprocess)
+
+    check = commands.add_parser("publish-check", help="validate the published tree + manifest")
+    with_repo(check)
+
+    alert = commands.add_parser("alert", help="open, update or close the ingest-failing issue")
+    with_archive(alert)
     return parser
+
+
+def _publish_check(args: argparse.Namespace, log: Logger) -> int:
+    root = args.repo_root or find_repo_root()
+    problems = check_published(root / PUBLISHED, SchemaSet(root / "schemas"))
+    for problem in problems:
+        log.error("publish_invalid", problem=problem)
+    print(json.dumps({"outcome": "failed" if problems else "ok", "problems": len(problems)}))
+    return 20 if problems else 0
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     log = Logger(args.command, provider=IntervalsProvider.name)
+    if args.command == "publish-check":
+        return _publish_check(args, log)
     window = (args.reimport_from, args.reimport_to) if args.command == "fetch" else (None, None)
     if window[1] and (not window[0] or window[0] > window[1]):
         log.error("bad_arguments", message="--reimport-to needs an earlier --reimport-from")
@@ -75,7 +124,28 @@ def main(argv: list[str] | None = None) -> int:
         log.error("archive_unavailable", exc=exc)
         print(json.dumps({"outcome": "failed", "code": exc.code, "exit_code": exc.exit_code}))
         return exc.exit_code
+    if args.command == "alert":
+        try:
+            github = GitHubIssues.from_env()
+        except GitHubError as exc:
+            log.error("alert_failed", exc=exc)
+            print(json.dumps({"action": "none", "code": exc.code, "exit_code": exc.exit_code}))
+            return exc.exit_code
+        alert = run_alert(archive, github, log=log, run_url=default_run_url())
+        print(json.dumps(alert.summary(), sort_keys=True))
+        return alert.exit_code
     provider = IntervalsProvider()
+    if args.command in ("process", "reprocess"):
+        processed = run_process(
+            provider,
+            archive,
+            repo_root=args.repo_root or find_repo_root(),
+            log=log,
+            all_runs=args.command == "process" and args.all,
+            only_run=args.run if args.command == "reprocess" else None,
+        )
+        print(json.dumps(processed.summary(), sort_keys=True))
+        return processed.exit_code
     if args.command == "fetch":
         result = run_fetch(
             provider,

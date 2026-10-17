@@ -100,7 +100,7 @@ recorded in R2 `state/run-ids.json`. **Provider activity IDs (intervals.icu IDs,
 | `note` | string? | Owner note |
 | `distance_m`, `moving_s`, `elapsed_s` | number | |
 | `elevation_gain_m`, `elevation_loss_m` | number? | |
-| `avg_pace_s_per_km`, `best_pace_s_per_km` | number | |
+| `avg_pace_s_per_km`, `best_pace_s_per_km` | number | Average over moving time; best = the fastest kilometre (the 1 km best effort) if plausible, else the average |
 | `hr` | `{avg,max}`? | Omitted when not recorded (FR-048) |
 | `cadence_avg`, `stride_m_avg`, `power_w_avg` | number? | Omitted when absent |
 | `dynamics` | object? | gct, balance, vertical oscillation, vertical ratio; omitted when absent |
@@ -128,7 +128,8 @@ git-friendly diffs). Metrics (approved list only, FR-015/060): `vo2max`, `fitnes
 `fatigue_atl` (intervals.icu's model; form = ctl - atl derived at build, never stored),
 `resting_hr`, `hrv` (rMSSD value; optional baseline low/high, which intervals.icu does not supply;
 `starts_on` implied by first point, FR/Story5.7), `weight_avg7` (trailing 7-day mean of
-non-excluded daily readings in kg; day omitted if no readings in window), `body_fat_pct` (as
+non-excluded daily readings in kg, one decimal; day omitted if no readings in window; points run
+from the first weigh-in to the last day with any wellness data), `body_fat_pct` (as
 recorded, date only, one per day from intervals.icu; displayed as recorded per FR-062 - its 7-day
 average for goal evaluation is derived at build time, never stored). Training status and race
 predictions are **not** health series: they are owner entries (`owner/manual-metrics.yaml`).
@@ -227,7 +228,8 @@ Times: `h:mm:ss` or `mm:ss`.
 - **Goal**: `active -> achieved` (automatic or override; terminal for display; date immutable by
   construction), `active -> deadline_passed` (date-driven; returns to `active` when owner revises
   deadline), `* -> retired` (owner; hidden).
-- **Race designation**: intervals.icu `race` flag -> `race`; owner `designate: race|not_race` overrides; a
+- **Race designation**: intervals.icu `race` flag -> `race`; a `race.yaml` linked by `run_id` designates the
+  run (`designate: not_race` un-designates it); `run-overrides.yaml` `is_race` wins over both; a
   race with `hide_map` loses its published track on next process.
 - **Run visibility**: `visible -> hidden` (owner) removes published file on next process (git
   history retains the earlier file, which contained only sanitised data by design).

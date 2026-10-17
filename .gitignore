@@ -21,5 +21,9 @@ src/shared/storage/generated/
 spikes/**/out/
 __pycache__/
 
+# PublishedWriter's staging and swap folders (only left behind by a crash; the next run removes them)
+data/running/published.staging/
+data/running/published.old/
+
 # LocalArchive default for offline ingest runs (raw provider data; never committed)
 ingest/.archive/

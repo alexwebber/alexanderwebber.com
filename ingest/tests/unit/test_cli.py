@@ -2,6 +2,8 @@
 
 import json
 
+import pytest
+
 from awingest import cli
 
 
@@ -42,3 +44,56 @@ def test_backfill_is_wired(monkeypatch, tmp_path, capsys):
     code = cli.main(["backfill", "--archive", "local", "--archive-dir", str(tmp_path), "--resume"])
     assert code == 10
     assert json.loads(capsys.readouterr().out)["complete"] is False
+
+
+def test_process_and_publish_check_are_wired(filled_archive, repo, capsys):
+    archive_dir = str(filled_archive.root)
+    common = ["--archive", "local", "--archive-dir", archive_dir, "--repo-root", str(repo)]
+    assert cli.main(["process", *common]) == 0
+    summary = json.loads(capsys.readouterr().out)
+    assert summary["runs"]["written"] == 6 and summary["outcome"] == "ok"
+    assert cli.main(["publish-check", "--repo-root", str(repo)]) == 0
+    assert json.loads(capsys.readouterr().out) == {"outcome": "ok", "problems": 0}
+    assert cli.main(["process", "--all", *common]) == 0
+    capsys.readouterr()
+
+    (repo / "data/running/published/stray.json").write_text("{}")
+    assert cli.main(["publish-check", "--repo-root", str(repo)]) == 20
+
+
+def test_reprocess_checks_the_run_id(filled_archive, repo, capsys):
+    common = [
+        "--archive",
+        "local",
+        "--archive-dir",
+        str(filled_archive.root),
+        "--repo-root",
+        str(repo),
+    ]
+    with pytest.raises(SystemExit) as caught:
+        cli.main(["reprocess", "--run", "i90000001", *common])
+    assert caught.value.code == 2
+    assert cli.main(["reprocess", "--run", "2026-01-01-aaaa", *common]) == 2
+
+
+def test_invalid_owner_data_exits_20(filled_archive, repo, capsys):
+    (repo / "data/running/owner/goals.yaml").write_text("- { id: x }\n")
+    code = cli.main(
+        [
+            "process",
+            "--archive",
+            "local",
+            "--archive-dir",
+            str(filled_archive.root),
+            "--repo-root",
+            str(repo),
+        ]
+    )
+    assert code == 20
+    assert json.loads(capsys.readouterr().out)["code"] == "owner_data_invalid"
+
+
+def test_alert_needs_a_github_token(monkeypatch, tmp_path, capsys):
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    assert cli.main(["alert", "--archive", "local", "--archive-dir", str(tmp_path)]) == 1
+    assert json.loads(capsys.readouterr().out)["code"] == "github_unavailable"
