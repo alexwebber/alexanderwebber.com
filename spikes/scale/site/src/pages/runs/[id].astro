@@ -1,0 +1,33 @@
+---
+// Spike 1b dummy run page: reads every synthetic run, renders a stats table,
+// a splits table and an inline SVG pace chart (roughly a real run page's work).
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+export function getStaticPaths() {
+  const root = join(process.cwd(), '..', 'out', 'runs');
+  return readdirSync(root).flatMap((year) =>
+    readdirSync(join(root, year)).map((file) => {
+      const run = JSON.parse(readFileSync(join(root, year, file), 'utf8'));
+      return { params: { id: run.id }, props: { run } };
+    }),
+  );
+}
+
+const { run } = Astro.props;
+const { x_dist_m, pace } = run.series;
+const maxX = x_dist_m.at(-1);
+const minP = Math.min(...pace), maxP = Math.max(...pace);
+const d = pace
+  .map((p: number, i: number) => `${i ? 'L' : 'M'}${((x_dist_m[i] / maxX) * 600).toFixed(1)},${(((p - minP) / (maxP - minP)) * 200).toFixed(1)}`)
+  .join('');
+---
+<html lang="en-GB">
+  <head><meta charset="utf-8" /><title>{run.title} {run.date}</title></head>
+  <body>
+    <h1>{run.title}</h1>
+    <dl><dt>Distance</dt><dd>{(run.distance_m / 1000).toFixed(2)} km</dd><dt>Moving</dt><dd>{run.moving_s} s</dd></dl>
+    <svg viewBox="0 0 600 200" role="img" aria-label="Pace"><path d={d} fill="none" stroke="currentColor" /></svg>
+    <table>{run.splits.map((s: any) => <tr><td>{s.km}</td><td>{s.time_s}</td><td>{s.hr}</td></tr>)}</table>
+  </body>
+</html>

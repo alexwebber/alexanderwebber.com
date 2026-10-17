@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "alexanderwebber",
+  "main": "src/worker/freshness.ts",
+  "compatibility_date": "2026-10-12",
+  // Static assets serve first; the Worker only handles paths with no asset
+  // (GET /running/api/freshness).
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  // The Worker reads only public/freshness.json from the private bucket.
+  "r2_buckets": [
+    {
+      "binding": "FRESHNESS",
+      "bucket_name": "alexanderwebber-private"
+    }
+  ]
+}

@@ -38,18 +38,18 @@ Actions only; there is no PC fallback.
 
 ## Technical Context
 
-**Language/Version**: TypeScript **6.0.3** (Astro 7.3.5, Node >= 22.12; local Node 24.15) for
+**Language/Version**: TypeScript **6.0.3** (Astro 7.4.0, Node >= 22.22; local Node 24.15) for
 site + Worker; Python >= 3.12 (3.12.10 local) for ingest/processing. TypeScript 7.0.x is
 deliberately **not** adopted: `@astrojs/check` 0.9.10 peer-requires `typescript ^5 || ^6`, so TS 7
 would break `astro check` in the build gate. Revisit when `@astrojs/check` supports TS 7
 (decisions-log entry required — see Complexity Tracking).
 
-**Primary Dependencies**: Astro 7.3.5, TypeScript 6.0.3, `@astrojs/check` 0.9.10, sharp 0.35.5
-(images/OG), satori 0.35.0 (OG), ajv 8.20.0, yaml 2.9.1, json-schema-to-typescript 16.0.0,
-maplibre-gl 6.12.0 (lazy, race maps only), wrangler 4.147.0; Python: boto3 1.43.108, jsonschema
+**Primary Dependencies**: Astro 7.4.0, TypeScript 6.0.3, `@astrojs/check` 0.9.10, sharp 0.35.5
+(images/OG), satori 0.62.0 (OG), ajv 8.20.0, yaml 2.9.1, json-schema-to-typescript 16.0.0,
+maplibre-gl 6.14.0 (lazy, race maps only), wrangler 4.151.1; Python: boto3 1.43.114, jsonschema
 4.26.0, pyyaml 6.0.3; the intervals.icu client uses the standard library (`urllib.request`, as in
 Spike 0), so no HTTP or provider library is added. See [research.md](research.md) for the
-comparison tables. (Astro 7.4.0 appeared after the plan; T016 re-verifies pins at scaffold time.)
+comparison tables. (Pins re-verified at scaffold time, T016, 2026-10-17.)
 
 **Storage**: (a) Private Cloudflare R2 bucket `alexanderwebber-private` = raw archive +
 operational state (`RawArchive` abstraction: `R2Archive`, `LocalArchive`). No credentials or
@@ -59,8 +59,8 @@ provider-ID -> public-run-ID map lives only here. (b) Git = sanitised published 
 `RunningStore` read interface (`JsonFileStore`) and a Python `PublishedWriter`. See
 [contracts/](contracts/).
 
-**Testing**: Vitest 5.0.3 (TS unit + contract), pytest 9.1.1 + moto 5.2.3 (Python), Playwright
-1.63.0 + @axe-core/playwright 4.13.0 (e2e, keyboard/a11y), Lighthouse **13.5.0 CLI** run directly
+**Testing**: Vitest 5.0.5 (TS unit + contract), pytest 9.1.1 + moto 5.2.4 (Python), Playwright
+1.64.1 + @axe-core/playwright 4.14.0 (e2e, keyboard/a11y), Lighthouse **13.5.0 CLI** run directly
 (perf budget, non-blocking; `@lhci/cli` 0.15.1 is not used because it still bundles Lighthouse
 12.x). Synthetic anonymised intervals.icu fixtures (shaped from the Spike 0 payloads); shared JSON Schema contract fixtures in both
 languages. Test suites run **locally and at graduation**, not in the mandatory gate; the gate is
@@ -89,8 +89,10 @@ attribution on every view of Garmin-sourced data (intervals.icu API terms, effec
 **Scale/Scope**: ~5,000 runs over the years of Garmin history (~1,500/yr upper bound), daily
 health readings for ~7 metrics (several years), a handful of manual Garmin-figure entries, tens
 of races, ~10-20 goals, <= 100 photos.
-Estimated published JSON <= ~150 MB in git at 5,000 runs (~30 KB/run incl. downsampled streams) —
-**verify in spike**; downsample cap (<= 600 points/stream) is the lever. **Deployed file count at
+Published JSON at 5,000 runs: **~109 MB** (~22 KB/run, worst case: all seven series at 600 points)
+when written **compact** (Spike 1b, 2026-10-17); 2-space indentation would make it ~263 MB, so the
+writer never indents (contracts/storage.md). The 600-point cap stays. A 5,000-run dummy build took
+~10.5 s on 4 cores. **Deployed file count at
 5,000 runs ~= 6,000** (5,000 run pages + ~15 year pages + ~110 race pages + ~20 other pages + ~110
 OG images + <= ~600 optimised photo variants + ~150 JS/CSS/font/sitemap files) against the Workers
 static-assets free-tier limit of **20,000 files per version** — about 30%, so no plan change;

@@ -24,7 +24,8 @@ archive; errors map to `ArchiveUnavailable` / `ArchiveConflict`. Bucket:
 
 ```text
 write_json(path, obj, schema_name)    # validates against schema BEFORE writing; atomic (tmp+rename);
-                                      # stable key order + 1-space-free canonical formatting => minimal diffs
+                                      # sorted keys + compact separators, no indentation (Spike 1b:
+                                      # indenting 600-point series ~2.4x the size) => canonical output
 remove(path)
 commit_plan() -> Diff                 # added/changed/removed files for logging
 ```

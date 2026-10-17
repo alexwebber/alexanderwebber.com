@@ -9,48 +9,33 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** PR #14 (intervals.icu docs amendment) merged with all eight
-  confirmations ticked (see the decisions log). The handoff PR from branch `001-cloud-handoff`
-  narrows FR-031 and writes this block.
-- **This slice runs as a cloud session (claude.ai/code)** to spend the cloud credits (owner
-  pick, 2026-10-17). In a cloud session:
-  - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded, but the
-    norms it holds are here too: branch from `origin/main`, raise a PR, never merge it. The
-    Windows/PowerShell tips under *Upstream candidates* don't apply. Keep capturing new lessons
-    there, including anything cloud-specific.
-  - **Version check:** `check-versions.ps1` lives on the owner's PC. It ran on 2026-10-17 and
-    found nothing important, so T016 only re-verifies the npm/PyPI pins (`npm view <pkg>
-    version`, PyPI's JSON API) and Astro's latest with its `@astrojs/check` peer range.
-  - **No secrets in the sandbox.** They exist only as GitHub Actions secrets. T014 therefore
-    runs as a throwaway workflow on the branch. Use a `push` trigger scoped to that branch and
-    workflow file, because `workflow_dispatch` only works once the file is on `main`.
-    - The workflow uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
-    - It registers the `alexanderwebber` workers.dev subdomain (owner-approved in PR #14) via
-      the API if it isn't set yet. It then deploys the 12,000-file set to a throwaway Worker,
-      checks it serves, and deletes the Worker in an `always()` step.
-    - If the session can't read Actions logs, the workflow writes its result to the job
-      summary and commits `spikes/workers-limit/RESULTS.md` back to the branch.
-    - Remove the workflow before the PR is ready, as T009 did.
-  - **PR:** one PR for Spike 1 + scaffold, with both spikes' results recorded in this file.
-- **Owner setup done:**
-  - **T001:** the R2 bucket `alexanderwebber-private`, with `R2_*` as GitHub secrets and user
-    env vars, round-trip tested.
-  - **T002:** `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub secrets; the token
-    is verified.
-  - **intervals.icu key:** `INTERVALS_API_KEY` as a GitHub secret and user env var.
-  - T003 is dropped.
+- **Status (2026-10-17):** Spike 1 (T013–T014) and the scaffold (T016–T022) are done in a
+  cloud session, on branch `claude/nice-hamilton-jilme1`, and raised as one PR. Results are in
+  the decisions log. The throwaway Spike 1a workflow is removed.
+- **Cloud sessions work well for self-contained slices.** Keep using them until the credits
+  expire on 2026-11-05. In a cloud session:
+  - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
+    still apply: branch from `origin/main`, raise a PR, never merge it. The harness names the
+    branch (`claude/...`); use it.
+  - **No secrets in the sandbox.** Anything that needs them runs as a throwaway workflow with a
+    `push` trigger scoped to the branch and workflow file. The session can read job logs through
+    the GitHub MCP tools once the job has finished (a 404 until then).
+  - **Version check:** re-verify pins with `npm view` and PyPI's JSON API (`check-versions.ps1`
+    is on the owner's PC).
+- **Owner setup done:** T001 (R2 bucket `alexanderwebber-private`, `R2_*` secrets), T002
+  (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), the intervals.icu key
+  (`INTERVALS_API_KEY`). T003 is dropped. The `alexanderwebber` workers.dev subdomain is
+  registered (Spike 1a).
 - **Still with the owner:**
   - T004 (nameservers): the agent walks them through it.
-  - The **Garmin export**: when it arrives, the agent walks them through
-    *intervals.icu → Settings → Import all Garmin data*.
-  - **T150:** the Garmin export import (see above). Afterwards the agent re-runs the probe to
-    check wellness history came across.
+  - **T150:** the Garmin export. When it arrives, the agent walks them through
+    *intervals.icu → Settings → Import all Garmin data*, then re-runs the probe to check wellness
+    history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Spike 1 (T013–T014) and the scaffold (T016–T022)**, on a new branch from
-  `origin/main` (e.g. `001-slice1-spike1-scaffold`). T016 re-verifies the pins first, because
-  Astro 7.4.0 is newer than the plan's 7.3.5. After T016, the rest can run in parallel,
-  except that T019 waits for T017 and T018.
+- **Next step: Phase 2a–2b** (JSON Schemas T023–T032 + T151, `gen-types` T034, shared format
+  and storage), on a new branch from `origin/main`, ideally as another cloud session. If the
+  PR for this slice has unticked confirmations when it merges, ask about them first.
 
 ## Vision
 
@@ -359,8 +344,48 @@ project-specific notes.
   - **Spike 1a's workers.dev subdomain** is `alexanderwebber`.
 - **2026-10-17** — Spike 1 and the scaffold run as a **cloud session** (owner pick), to use
   the cloud credits before they expire on 2026-11-05.
+- **2026-10-17** — **Pins re-verified at scaffold time (T016).** New dependencies start on their
+  current release, so the scaffold adopts:
+  - **npm:** astro 7.4.0 (needs Node >= 22.22.0, so `engines` and the docs say that), satori
+    0.62.0, maplibre-gl 6.14.0, wrangler 4.151.1, vitest 5.0.5, @playwright/test 1.64.1,
+    @axe-core/playwright 4.14.0.
+  - **PyPI:** boto3 1.43.114, moto 5.2.4, ruff 0.17.1.
+  - **Unchanged:** the rest of the plan's pins, and the deliberate TypeScript 6.0.3 pin
+    (`@astrojs/check` 0.9.10 is still the latest and still peer-requires `^5 || ^6`; TS 7.0.2
+    is out).
+  - **Known advisory:** `npm audit` reports a moderate `fflate` issue (infinite loop on
+    malformed ZIP64) via satori. Satori only reads our own build-time inputs, so it's accepted;
+    the fix `npm audit` offers is a satori downgrade. Re-check at the next session-start check.
+  - plan.md and tasks.md carry the new pins. research.md keeps the original comparison.
+- **2026-10-17** — **Spike 1b (T013): size and build time pass, cap unchanged.**
+  - **Size:** 5,000 synthetic runs, worst case (all seven series at 600 points), are **~109 MB
+    as compact JSON** (~22 KB/run), under the ~150 MB estimate. With 2-space indentation they are
+    **~263 MB**, so `PublishedWriter` (T063) writes compact JSON with sorted keys
+    (contracts/storage.md updated). Compressed (gzip) they are ~36 MB, roughly what git stores.
+  - **Build:** a dummy Astro 7.4.0 build of 5,000 run pages took **~10.5 s** on 4 cores
+    (65 MB of HTML).
+  - The 600-point downsample cap stays.
+- **2026-10-17** — **Spike 1a (T014): the Workers free-plan limit is confirmed at 20,000 files
+  per version.** Run from a throwaway branch workflow with wrangler 4.151.1:
+  - **12,000 files** deployed to `spike-workers-limit.alexanderwebber.workers.dev` in ~18 s
+    (asset upload 11.7 s). It served the first and the 12,000th file
+    correctly about 10 s after deploy (one 404 first). Runs 39055362164 and 39055450234.
+  - **20,001 files** were rejected by the API (code 10304): "exceeds the Workers Free limit of
+    20,000 static asset files per Worker version" (Paid: 100,000).
+  - The throwaway Worker was deleted, and the workflow removed. The `alexanderwebber`
+    workers.dev subdomain is now registered.
+  - The plan's ~6,000 deployed files at 5,000 runs is ~30% of the limit, so no plan change.
 
 ## Upstream candidates
+
+- 2026-10-17 — In a GitHub Actions `run:` step (`bash -e`), `x=$(curl ...)` inside a retry loop
+  exits the step on the first curl failure (here exit 35, TLS not yet ready on a newly
+  registered workers.dev subdomain), so the loop never retries. Agent tip: add `|| true` to
+  command substitutions inside retry loops, and allow a few minutes for a new workers.dev
+  subdomain's certificate.
+- 2026-10-17 — Cloud session: the GitHub MCP `get_job_logs` returns 404 while a job is still
+  running, and works once it finishes. Agent tip: poll the job's step status, then read the
+  logs at the end. This made the planned "commit RESULTS.md back" fallback unnecessary.
 
 - 2026-10-17 — The Agent tool's `isolation: "remote"` quietly ran the subagents in a local git
   worktree (`.claude/worktrees/agent-*`), not in the cloud. That spent plan usage, not the

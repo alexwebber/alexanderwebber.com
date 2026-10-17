@@ -7,7 +7,7 @@ plan.md; the agent runs them (owner only supplies the few account actions flagge
 
 ## 0. Prerequisites
 
-- Node >= 22.12 (24.15 local), Python >= 3.12 + `uv`, `gh` authenticated, `wrangler`.
+- Node >= 22.22 (24.15 local), Python >= 3.12 + `uv`, `gh` authenticated, `wrangler`.
 - **Owner (one-off, agent walks through it)**:
   - Done (2026-10-17): Cloudflare account; private R2 bucket `alexanderwebber-private` + R2 API
     token (`R2_*`); Workers deploy token (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`);

@@ -89,47 +89,50 @@ and from GitHub Actions). The original Garmin-direct tasks keep their IDs below.
 
 ### 1c. Spike 1 (next)
 
-- [ ] T013 [P] Spike 1b, size and build time:
+- [X] T013 [P] Spike 1b, size and build time:
   - **Data**: in `spikes/scale/`, generate 5,000 synthetic runs shaped like `published/runs` (each series `<= 600 points`).
   - **Size**: measure the total JSON size against the ~150 MB estimate.
   - **Build**: time a dummy Astro build of 5,000 run pages.
   - **Record**: write the results in `PROJECT_MEMORY.md`.
   - **If over budget**: change the downsample cap in plan.md before T062.
-- [ ] T014 [P] Spike 1a, Workers file limit:
-  - **Deploy**: in `spikes/workers-limit/`, deploy a 12,000-file dummy static-asset set with wrangler 4.147.0 to a throwaway `*.workers.dev` Worker.
+  - **Done 2026-10-17**: ~109 MB compact (worst case, all series at 600 points); ~263 MB if indented, so T063 writes compact JSON. 5,000 pages built in ~10.5 s. Cap unchanged.
+- [X] T014 [P] Spike 1a, Workers file limit:
+  - **Deploy**: in `spikes/workers-limit/`, deploy a 12,000-file dummy static-asset set with wrangler 4.151.1 to a throwaway `*.workers.dev` Worker.
   - **Confirm**: check the free plan's per-version file limit (believed to be 20,000).
   - **Clean up**: delete the throwaway Worker.
   - **Record**: write the result in `PROJECT_MEMORY.md`.
   - **Depends on**: T002.
+  - **Done 2026-10-17** (throwaway branch workflow, since removed): 12,000 files deployed and served; 20,001 rejected by the API (code 10304, Free limit 20,000 per version). The Worker was deleted.
 
 ### 1d. Scaffold (can start in parallel with Spike 1)
 
 - [X] T015 *(Done 2026-10-17, in the intervals.icu docs amendment.)* Update the spec docs to match the owner's 2026-10-04 decisions:
   - **Text to remove**: "proposal, not adopted" (tests.yml) and "needs owner confirmation" (bot commits to `main`).
   - **Where**: `specs/001-running-section/plan.md` (Constitution Check, Project Structure, Graduation plan, Complexity Tracking), `research.md` R9/R10/R12, `contracts/pipeline.md` and `quickstart.md` §4.
-- [ ] T016 Run `C:\Projects\sdd-playbook\scripts\check-versions.ps1`. Re-verify the npm and PyPI pins in plan.md *Primary Dependencies* (current release unless deliberately pinned; TypeScript stays at **6.0.3** because `@astrojs/check` 0.9.10 peer-requires `^5 || ^6`). **Re-verify the latest Astro at scaffold time**: 7.4.0 was seen on 2026-10-17, newer than the plan's 7.3.5 pin; adopt the current release (and its `@astrojs/check` peer range) unless something blocks it, and update the T017 pins. Log any change in the `PROJECT_MEMORY.md` decisions log.
-- [ ] T017 Create the root TypeScript project:
+- [X] T016 *(Done 2026-10-17 in a cloud session: npm/PyPI pins re-verified, current releases adopted, TypeScript stays 6.0.3.)* Run `C:\Projects\sdd-playbook\scripts\check-versions.ps1`. Re-verify the npm and PyPI pins in plan.md *Primary Dependencies* (current release unless deliberately pinned; TypeScript stays at **6.0.3** because `@astrojs/check` 0.9.10 peer-requires `^5 || ^6`). **Re-verify the latest Astro at scaffold time**: 7.4.0 was seen on 2026-10-17, newer than the plan's 7.3.5 pin; adopt the current release (and its `@astrojs/check` peer range) unless something blocks it, and update the T017 pins. Log any change in the `PROJECT_MEMORY.md` decisions log.
+- [X] T017 Create the root TypeScript project:
   - **`package.json`**:
-    - `"type": "module"` and `engines.node >=22.12`.
+    - `"type": "module"` and `engines.node >=22.22.0` (Astro 7.4.0 requires it).
     - Scripts: `dev`, `gen-types`, `build` (= `astro check && astro build`), `preview`, `validate-data`, `scan-images`, `check-boundaries`, `scan-privacy`, `test` (= `vitest run`), `e2e` (= `playwright test`).
-    - Exact pins: astro 7.3.5, typescript 6.0.3, @astrojs/check 0.9.10, @astrojs/sitemap 3.7.4, sharp 0.35.5, satori 0.35.0, ajv 8.20.0, yaml 2.9.1, json-schema-to-typescript 16.0.0, maplibre-gl 6.12.0, wrangler 4.147.0. Dev: vitest 5.0.3, @playwright/test 1.63.0, @axe-core/playwright 4.13.0, lighthouse 13.5.0.
+    - Exact pins (re-verified by T016): astro 7.4.0, typescript 6.0.3, @astrojs/check 0.9.10, @astrojs/sitemap 3.7.4, sharp 0.35.5, satori 0.62.0, ajv 8.20.0, yaml 2.9.1, json-schema-to-typescript 16.0.0, maplibre-gl 6.14.0, wrangler 4.151.1. Dev: vitest 5.0.5, @playwright/test 1.64.1, @axe-core/playwright 4.14.0, lighthouse 13.5.0.
   - **`tsconfig.json`**: Astro strict.
   - **`.gitignore`**: add `node_modules/`, `dist/`, `.astro/`, `.env*`, `ingest/.venv/`, `__pycache__/`, `playwright-report/`, `test-results/`, `src/shared/storage/generated/`, `spikes/**/out/`.
-- [ ] T018 Create the Running integration skeleton in `src/sections/running/integration.ts`:
+- [X] T018 Create the Running integration skeleton in `src/sections/running/integration.ts`:
   - It exports an Astro integration with a **route registry**: each area registers its routes when its story ships, and the section nav and landing links read the registry. Unshipped areas are therefore never linked (FR-027 holds without dead links between increments).
   - Also create the empty `src/sections/running/{pages,components,domain,data,og}/` directories.
-- [ ] T019 Create `astro.config.mjs` (`output: 'static'`, `site: 'https://alexanderwebber.com'`, `trailingSlash: 'always'`, integrations `[sitemap(), running()]`) and a placeholder site home `src/pages/index.astro` that leads to `/running/`. Depends on T017 and T018.
-- [ ] T020 [P] Create `wrangler.jsonc`:
+- [X] T019 Create `astro.config.mjs` (`output: 'static'`, `site: 'https://alexanderwebber.com'`, `trailingSlash: 'always'`, integrations `[sitemap(), running()]`) and a placeholder site home `src/pages/index.astro` that leads to `/running/`. Depends on T017 and T018.
+- [X] T020 [P] Create `wrangler.jsonc`:
   - Worker `main: src/worker/freshness.ts`.
   - Static assets `directory: ./dist`.
   - An R2 binding `FRESHNESS` to the private bucket (the Worker reads only `public/freshness.json`).
   - The current `compatibility_date`.
-- [ ] T021 [P] Create the Python uv project `ingest/pyproject.toml`:
+  - *(Done 2026-10-17. `src/worker/freshness.ts` is a pass-through placeholder so wrangler resolves; T068 implements it.)*
+- [X] T021 [P] Create the Python uv project `ingest/pyproject.toml`:
   - `requires-python >=3.12`.
-  - Exact pins: `boto3==1.43.108`, `jsonschema==4.26.0`, `pyyaml==6.0.3`. Dev: `pytest==9.1.1`, `moto==5.2.3`, `ruff==0.16.10`. The intervals.icu client uses the standard library (`urllib.request`), so there is no HTTP/provider dependency (garminconnect, curl_cffi and cryptography are dropped, 2026-10-17).
+  - Exact pins: `boto3==1.43.114`, `jsonschema==4.26.0`, `pyyaml==6.0.3`. Dev: `pytest==9.1.1`, `moto==5.2.4`, `ruff==0.17.1`. The intervals.icu client uses the standard library (`urllib.request`), so there is no HTTP/provider dependency (garminconnect, curl_cffi and cryptography are dropped, 2026-10-17).
   - A `[project.scripts] awingest` entry point.
   - Also create `ingest/uv.lock`, `ingest/src/awingest/__init__.py` and `ingest/tests/conftest.py`.
-- [ ] T022 [P] Create `vitest.config.ts`, `playwright.config.ts` (a 360 px mobile project plus desktop; `webServer` = `astro preview`) and the empty `tests/unit/`, `tests/contract/`, `tests/e2e/` and `tests/a11y/` directories.
+- [X] T022 [P] Create `vitest.config.ts`, `playwright.config.ts` (a 360 px mobile project plus desktop; `webServer` = `astro preview`) and the empty `tests/unit/`, `tests/contract/`, `tests/e2e/` and `tests/a11y/` directories.
 
 **Checkpoint**: Spike 0 passed (done), Spike 1 recorded, scaffold builds an empty site.
 
@@ -271,7 +274,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `NormalisedActivity` and `NormalisedHealthReading` dataclasses (fields per data-model §2, incl. `treadmill`; a missing optional metric is `None`, **never 0**).
   - The error taxonomy `AuthRejected | ProviderForbidden | RateLimited(retry_after?) | ProviderChanged | Transient`, each with a stable `code` plus `likely_cause` and `action` text.
 - [ ] T048 [P] Create `ingest/src/awingest/archive/base.py` (the `RawArchive` protocol: `get`, `put(if_match)`, `list`, `exists`, `delete`; key validation with no `..`; `ArchiveUnavailable` and `ArchiveConflict`) and `ingest/src/awingest/archive/local.py` (`LocalArchive`, a directory with atomic writes).
-- [ ] T049 [P] Create `ingest/src/awingest/archive/r2.py`: `R2Archive` using boto3 1.43.108 against the S3 endpoint `https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`. It supports conditional `put` with `if_match`, an idempotent re-put of identical bytes, and error mapping. Depends on T048.
+- [ ] T049 [P] Create `ingest/src/awingest/archive/r2.py`: `R2Archive` using boto3 1.43.114 against the S3 endpoint `https://<R2_ACCOUNT_ID>.r2.cloudflarestorage.com`. It supports conditional `put` with `if_match`, an idempotent re-put of identical bytes, and error mapping. Depends on T048.
 - [X] T050 ~~Create `ingest/src/awingest/archive/tokens.py`, the Fernet token store.~~ **Dropped 2026-10-17**: intervals.icu uses a personal API key from the environment; nothing secret is stored in R2.
 
 ### 2e. intervals.icu adapter and fetch stage (rewritten 2026-10-17; builds on Spike 0, T012)
@@ -332,7 +335,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - **Validation**: it validates against the schema **before** writing.
   - **Atomic writes**: it writes into a staging directory and swaps.
   - **Path guard**: it refuses any path outside `data/running/published/`.
-  - **Formatting**: sorted keys with canonical formatting, so diffs show only real changes.
+  - **Formatting**: sorted keys, **compact** separators and no indentation (`separators=(",", ":")`, trailing newline), so output is canonical and the 5,000-run total stays ~109 MB (Spike 1b: indentation makes it ~263 MB).
   - **API**: `remove()` and `commit_plan()`.
 - [ ] T064 Create `ingest/src/awingest/publish/manifest.py` and `ingest/src/awingest/process/pipeline.py`:
   - **Incremental**: processing is driven by `input_hash` (raw ETag + override hash), with `--all` and `reprocess --run RUN_ID`.
@@ -395,7 +398,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - `RangeToggle.astro`: CSS-only radio inputs for 3 months / 1 year / all (FR-068).
   - Target-line and labelled reference-marker support.
   - **No client JS.**
-- [ ] T075 [P] Create the OG image renderer `src/shared/og/render.ts`: satori 0.35.0 → SVG → sharp 0.35.5 PNG at build time. It uses the bundled Inter font (OFL) in `src/shared/og/fonts/` and provides an `/og/<path>.png` endpoint helper. Also add the site-home OG card for `src/pages/index.astro`.
+- [ ] T075 [P] Create the OG image renderer `src/shared/og/render.ts`: satori 0.62.0 → SVG → sharp 0.35.5 PNG at build time. It uses the bundled Inter font (OFL) in `src/shared/og/fonts/` and provides an `/og/<path>.png` endpoint helper. Also add the site-home OG card for `src/pages/index.astro`.
 - [ ] T076 Create the section data and freshness UI:
   - **Loader**: `src/sections/running/data/load.ts`, a typed, validated and memoised loader over `RunningStore`.
   - **`LastUpdated.astro`** (`src/sections/running/components/`):
@@ -693,7 +696,7 @@ race page shows its map and photos.
 - [ ] T130 [P] [US4] Create `src/sections/running/components/PBTable.astro`, `RaceHistory.astro` and `UpcomingRaces.astro`. Upcoming races show the focus race first, then by date, each with days remaining, target time and link. Completed races leave the list (FR-056).
 - [ ] T131 [P] [US4] Create `src/sections/running/components/RaceMap.astro`:
   - **Static baseline**: a build-time SVG route with km markers and a km-axis elevation profile, with zero third-party requests.
-  - **Interactive enhancement**: a "Load interactive map" button lazy-imports maplibre-gl 6.12.0 with OpenFreeMap tiles **only on click**, with attribution. It is the only JS-budget exception.
+  - **Interactive enhancement**: a "Load interactive map" button lazy-imports maplibre-gl 6.14.0 with OpenFreeMap tiles **only on click**, with attribution. It is the only JS-budget exception.
   - **Absence**: renders nothing when there is no track.
 - [ ] T132 [P] [US4] Create `src/sections/running/components/PhotoGallery.astro`: `astro:assets` AVIF/WebP, lazy loading, with the `description` as alt text and an optional caption (FR-055).
 - [ ] T133 [US4] Create `src/sections/running/pages/races.astro` at `/running/races/` (history, PB table, upcoming races) and `src/sections/running/pages/races/[slug].astro`. Each race page shows:
