@@ -7,3 +7,7 @@ dist/
 .astro/
 .env
 .env.*
+
+# Spike output (raw provider payloads; never committed)
+spikes/**/out/
+__pycache__/

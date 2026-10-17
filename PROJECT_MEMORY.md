@@ -9,29 +9,51 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Spec Kit upgraded to 1.2.1 (PR #11, merged). No implementation has
-  started yet.
-- **Owner progress (2026-10-17):**
-  - **Garmin full data export: requested.** Garmin emails a download link (up to 30 days). The
-    owner saves the zip privately outside the repo and tells the agent. It is used later as a
-    bulk history import, so ingest only fetches new data.
-  - **intervals.icu:** connected to Garmin, with a 1-year "download old data" backfill in
-    progress (totals rising). Its wellness list includes Weight, Body Fat, Resting HR, VO2 Max
-    and HRV (rMSSD).
-- **Waiting on the owner:**
-  - Owner prerequisites T001–T004 (Cloudflare account, R2 bucket and tokens, Garmin secrets,
-    nameservers). The agent walks the owner through each one at the start of implementation.
-- **Next step:** implement slice 1 = Phase 1 (owner prerequisites, Spike 0, Spike 1, scaffold).
-  No usage screenshot is needed (see the 2026-10-17 decision). PR #7's open confirmations are
-  answered (see the decisions log). Newer releases exist than the plan's pins: garminconnect
-  0.3.19 (2026-10-16) and Astro 7.4.0. T005 and the scaffold tasks re-verify them anyway.
-  - **Update the docs first, in the slice PR.** Spike 0 is expanded (see the 2026-10-04
-    decision). Amend `research.md` (Spike 0 table, S0.3 at 3-hourly with ≥15/16, the
-    intervals.icu coverage check) and `tasks.md`. New owner prerequisites: the Garmin data export
-    and an intervals.icu account connected to Garmin.
-  - **Order:** start the Garmin export early, because Garmin takes time to prepare it. Spike 0's
-    48-hour schedule needs the spike workflow merged to `main` first (T009). Run Phase 2
-    scaffolding during the 48-hour wait.
+- **Status (2026-10-17):** the provider switched to **intervals.icu**, and Spike 0 (the
+  coverage check) **passed** both locally and from GitHub Actions (see the 2026-10-17 decisions
+  and `spikes/intervals/RESULTS.md`). This was raised as PR **#13** (branch `001-slice1-phase1`).
+  **Check whether #13 has merged** before branching.
+- **Owner setup done:**
+  - **T001:** the R2 bucket `alexanderwebber-private`, with `R2_*` as GitHub secrets and user
+    env vars, round-trip tested.
+  - **T002:** `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub secrets; the token
+    is verified.
+  - **intervals.icu key:** `INTERVALS_API_KEY` as a GitHub secret and user env var.
+  - T003 is dropped.
+- **Still with the owner:**
+  - T004 (nameservers): the agent walks them through it.
+  - The **Garmin export**: when it arrives, the agent walks them through
+    *intervals.icu → Settings → Import all Garmin data*.
+  - The **workers.dev subdomain** for Spike 1a: ask them to pick it (suggested
+    `alexanderwebber`).
+  - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
+    them once T004 is done.
+- **Next step: amend the docs in one pass** (new branch from `origin/main`). Apply the
+  2026-10-17 decisions. Use a subagent for the amendment, then `/speckit-analyze` as a
+  subagent for consistency.
+  - `spec.md`:
+    - The provider is intervals.icu.
+    - Garmin attribution on views of Garmin-sourced data.
+    - Training status and race predictions are manual, dated owner entries.
+    - Fitness/fatigue (ctl/atl) replaces Garmin load.
+    - Treadmill runs count, are labelled, and are never PBs unless marked.
+    - History comes via the Garmin export imported into intervals.icu.
+  - `plan.md` and `research.md` R0:
+    - Drop garminconnect, Fernet tokens and `FETCH_MODE`/PC fetch.
+    - Add the User-Agent requirement.
+    - Strip `latlng` and free-text names for training runs.
+    - Drop sleep/steps/spO2.
+  - `tasks.md`:
+    - Phase 1: T003 and T005–T012 are replaced or done.
+    - The adapter/fetch tasks T051–T055, T067 and T070–T071.
+    - New owner-YAML schema and tasks for the manual metrics.
+    - At go-live (T112), prompt the owner to become an intervals.icu supporter.
+  - `contracts/provider-adapter.md`, `pipeline.md`, `quickstart.md`.
+  - A constitution **PATCH** amendment of the "python-garminconnect" wording, through
+    `/speckit-constitution`.
+
+  After that come Spike 1 and the scaffold (T013–T022). Astro 7.4.0 is newer than the plan's
+  pin, which T016 re-verifies.
 
 ## Vision
 
@@ -273,6 +295,53 @@ project-specific notes.
 - **2026-10-17** — **No usage screenshots** (owner preference). Usage reads near zero at the
   start of a session, so a screenshot there says nothing. The owner says when usage is running
   low, and the agent doesn't ask.
+- **2026-10-17** — **Running provider: intervals.icu, not Garmin direct** (owner decision; this
+  supersedes the 2026-10-04 Garmin-vs-intervals.icu comparison). Why: it is an official Garmin
+  sync partner with a personal API key, so there is no login, token rotation, lockout risk or
+  datacenter-IP question. Sticking with a sync partner is the more elegant design.
+  - **Garmin direct only on a blocker.** It is considered again only if intervals.icu can't
+    supply something required.
+  - **Missing metrics become manual entries.** Data intervals.icu lacks (Garmin training status
+    and race predictions) becomes owner-entered data the owner updates whenever they like.
+  - **Terms checked.** The API terms (effective 2025-10-23) grant a royalty-free licence for
+    any lawful use. The one condition: views showing Garmin-sourced data must show Garmin
+    attribution per Garmin's brand guidelines.
+  - **Full history comes from the Garmin export.** It is loaded into intervals.icu through
+    *Settings → Import all Garmin data*, so ingest reads only intervals.icu.
+  - **API checked.** It publishes an OpenAPI 3 spec at `https://intervals.icu/api/v1/docs`.
+    Activities carry HR zone times, vertical oscillation/ratio, stride, power, training load
+    and a `race` flag. Wellness includes weight, bodyFat, restingHR, hrv, vo2max and ctl/atl.
+  - **Spike 0 is now one check.** It becomes the intervals.icu coverage check
+    (`spikes/intervals/probe.py`), which confirms the API actually returns those fields for
+    Garmin-synced data.
+  - **Dropped:** the 48-hour Garmin schedule, T003, `FETCH_MODE`/PC fetch, Fernet token
+    storage and garminconnect.
+  - **R2 stays**, for raw data.
+  - **Docs follow the evidence.** The spec, plan and tasks, and the constitution's "Garmin access
+    via python-garminconnect" wording (a PATCH amendment), are amended once the probe results
+    are in.
+  - Upstream #444 also closed on 2026-10-16 as a local `.netrc` misconfiguration, not a Garmin
+    block.
+- **2026-10-17** — **Spike 0 (intervals.icu coverage) passed**, locally and from GitHub
+  Actions. Details are in `spikes/intervals/RESULTS.md`.
+  - **Covered:** all required fields for Garmin-synced data. Activities have HR zones, running
+    dynamics (incl. GCT), power, load, streams and FIT files. Wellness has weight, body fat,
+    resting HR, HRV (rMSSD), VO2 max and ctl/atl.
+  - **Missing:** only Garmin training status and race predictions.
+  - **Ingest needs a User-Agent.** It must send its own User-Agent, because Cloudflare blocks
+    Python's default one.
+  - **Fetch stays on Actions.** Actions can fetch directly, so there's no `FETCH_MODE` and no
+    PC fallback.
+  - **History:** it currently goes back to 2025-10-18 until the Garmin export is imported.
+- **2026-10-17** — Owner answers on the intervals.icu gaps:
+  - **Training status and race predictions** are manual, dated owner entries in YAML. They are
+    shown "as of <date>" and updated whenever the owner likes.
+  - **Training load** is intervals.icu's fitness/fatigue/form (ctl/atl), labelled as its own
+    model, not Garmin's.
+  - **Treadmill runs** (`VirtualRun`) count in totals, goals and the run list, with a
+    "treadmill" label. They never get maps and are not PB-eligible unless the owner marks them.
+  - **Supporter tier:** revisit at go-live. The owner will definitely become a supporter once
+    the live integration works, and the agent raises it at T112.
 
 ## Upstream candidates
 
@@ -284,6 +353,24 @@ project-specific notes.
   arguments") when the body contains double quotes. 5.1 splits native arguments at embedded
   `"`. Generalisation (Windows gotchas / agent tips): write PR bodies to a scratch file and pass
   `--body-file`.
+- 2026-10-17 — In Windows PowerShell 5.1, `Get-Content -Raw` followed by
+  `[IO.File]::WriteAllText` garbled every em dash and arrow in a UTF-8 file without a BOM. 5.1
+  reads BOM-less files as ANSI. Agent tip: edit repo files with the Edit tool. If PowerShell
+  must do it, use `Get-Content -Encoding utf8`.
+- 2026-10-17 — Cloudflare-fronted APIs (here intervals.icu) return a 403 HTML challenge for
+  Python `urllib`'s default `Python-urllib/x.y` User-Agent, while PowerShell's request with the
+  same key succeeds. Agent tip: always send a descriptive User-Agent from scripts and ingest
+  clients. Read a 403 with an HTML body as a bot block, not an auth failure.
+- 2026-10-17 — The owner pointed out that an official sync partner (intervals.icu) removes most
+  of the risk of an unofficial client (python-garminconnect), and the agent had kept planning
+  around the riskier source. Generalisation (research before choosing dependencies): when a
+  provider is reachable through an official partner or aggregator, evaluate that route
+  first, and make manual entry the fallback for the few fields it lacks before adopting
+  an unofficial client.
+- 2026-10-17 — The owner offered secrets in a temp file rather than using the
+  hidden-prompt helper. The agent read it while printing only key names and value lengths,
+  then set the secrets directly. Generalisation: a secrets helper should also accept a file
+  path (shape-checked, never echoed), and the agent reminds the owner to delete the file.
 - 2026-10-04 — Piping a here-string into `git commit -F -` from the PowerShell tool succeeds,
   but the subject starts with a UTF-8 BOM (`EF BB BF`), because PowerShell adds one when it
   writes to a native stdin. Strengthen the existing agent tip: never pipe commit messages; use
@@ -300,17 +387,10 @@ project-specific notes.
 
 ## Open questions
 
-- Can python-garminconnect work from GitHub Actions' datacenter IPs? → **Spike 0** of the Running
-  plan, with pass criteria. Evidence on 2026-10-04: issue #444 (403s from datacenter networks;
-  `curl_cffi` workaround). Fallback: fetch via Task Scheduler on the owner's PC.
-- Garmin, intervals.icu, or a hybrid as the running provider? → decided by the expanded
-  **Spike 0** (see the 2026-10-04 decision). Also to check there: whether intervals.icu
-  returns HRV and body fat for the owner's devices, and whether its terms allow publishing.
-  (2026-10-17: its Garmin wellness sync offers HRV (rMSSD) and Body Fat. Confirm that the API
-  actually returns them.)
-  intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
-  imports, plan building and UI features), so the owner stays on the free tier. Revisit if
-  Spike 0 picks intervals.icu, because supporter feature requests get priority.
+- intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
+  imports, plan building and UI features), so the owner stays on the free tier for now. At
+  go-live (T112) the agent raises it again. The owner intends to become a supporter once the
+  live integration works (decided 2026-10-17).
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
