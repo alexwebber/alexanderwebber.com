@@ -373,7 +373,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 
 ### 2g. Pipeline workflows, freshness Worker, production check
 
-- [ ] T067 **Rewritten.** Create `.github/workflows/refresh.yml`. It implements **owner decision 1 exactly**:
+- [X] T067 **Rewritten.** Create `.github/workflows/refresh.yml`. It implements **owner decision 1 exactly**:
   - **Triggers**: `schedule: '17 */2 * * *'`, `workflow_dispatch` (inputs `reimport_from`, `reimport_to`, and boolean `fetch_only`, default false: when true only the `fetch` and `alert` jobs run, with no publish, commit or deploy; used by T070), and `push` to `main` with `paths: data/running/owner/**`.
   - **Concurrency**: `concurrency: { group: refresh, cancel-in-progress: false }`.
   - **`fetch` job**: always runs on Actions (no `FETCH_MODE`). It runs `uv run awingest fetch` with the `INTERVALS_API_KEY` and `R2_*` secrets.
@@ -387,11 +387,18 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - **`alert` job**: `if: always()`, `issues: write`.
   - **Rulesets**: check `main` rulesets and branch protection (`gh api repos/{owner}/{repo}/rulesets`). If they would block the bot push, propose a bypass limited to GitHub Actions in the PR description for the owner's review. Do not change repo settings unasked.
   - Depends on T042, T066 (`INTERVALS_API_KEY` secret already set, T003 note).
-- [ ] T068 [P] Create `src/worker/freshness.ts`:
+  - **Done 2026-10-17 (Phase 2g).** Choices:
+    - **Write access is split off.** `publish` (process, `publish-check`, gate, path check) runs with `contents: read`, because it runs npm and ingest code. A separate `commit` job, the only one with `contents: write`, runs only git and tar: it unpacks the gated tree over `data/running/published/` (so removals carry through), re-checks the paths and pushes `HEAD:main` from the commit `publish` checked out. A rejected push fails the run, and nothing is committed.
+    - **Newest `main`:** `publish` checks out `main`, not the triggering commit, because a queued run can start later.
+    - **Branch runs are fetch-only.** Any ref other than `main` runs only `fetch` and `alert`, like `fetch_only: true`.
+    - **Fetch failures don't block publishing:** `publish` runs unless the run was cancelled, so archived data and owner-file changes still publish. A failed fetch still makes the run red.
+    - **Deploy** uses the `dist/` the gate built, after a bot commit or an owner-file push.
+- [X] T068 [P] Create `src/worker/freshness.ts`:
   - `GET /running/api/freshness` reads `public/freshness.json` from the R2 binding.
   - It returns `200 application/json` `{"intervals":{"last_success_at":...},"generated_at":...}` with `Cache-Control: public, max-age=300`.
   - It returns `503` if the object is absent or the read fails.
   - Every other path falls through to the static assets.
+  - **Done 2026-10-17 (Phase 2g).** The record is re-shaped to the contract's two fields (anything more in R2 is dropped), and a missing or malformed timestamp is a 503 with `Cache-Control: no-store`. `HEAD` is answered; other methods get 405.
 - [X] T069 ~~(Only if `FETCH_MODE=pc`.) PC fallback via Windows Task Scheduler.~~ **Dropped 2026-10-17**: Spike 0 showed Actions can fetch directly; there is no PC fallback.
 - [ ] T070 **Rewritten.** Fetch-only production smoke check (nothing is published or deployed): run `uv run awingest fetch --health-only --archive r2` locally (owner's `INTERVALS_API_KEY` and `R2_*` user env vars), then dispatch `refresh.yml` once with `fetch_only: true` (T067). Confirm 200s with the descriptive User-Agent, wellness objects in R2 hold approved keys only, `state/fetch-status.json` + `public/freshness.json` are written, and no commit or deploy happened. If the key is rejected (`AuthRejected`), go to T071. The first real publish is T085, through the gated bot path, after T077–T084. Depends on T054, T066, T067.
 - [ ] T071 OWNER: **Rewritten.** (Only if T070 shows the key is rejected.) Generate a new API key in intervals.icu (*Settings → Developer Settings*) and paste it into the `gh secret set INTERVALS_API_KEY` command and the user env var the agent supplies.
@@ -475,12 +482,13 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - **Done 2026-10-17** with T063–T066: `tests/contract/test_writer.py`, `tests/contract/test_alerts.py` (fake GitHub API) and the CLI cases in the existing `tests/unit/test_cli.py`. T080–T081 are in `tests/unit/` (`test_sanitise.py`, `test_run_ids.py`, `test_best_efforts.py`, `test_plausibility.py`, `test_health.py`), plus `test_overrides.py` and `test_pipeline.py` (end to end over the fixture archive).
 - [X] T083 [P] Create TS contract tests `tests/contract/schemas.test.ts` (same shared fixtures as T082) and `tests/contract/store.test.ts`. They check the `DataValidationError` shape, newest-first ordering and the speed of listing 5,000 runs.
   - **Done 2026-10-17** with Phase 2a–2b.
-- [ ] T084 [P] Create TS unit tests `tests/unit/format.test.ts`, `validate-data.test.ts`, `check-boundaries.test.ts`, `scan-privacy.test.ts` and `freshness-worker.test.ts`. They cover:
+- [X] T084 [P] Create TS unit tests `tests/unit/format.test.ts`, `validate-data.test.ts`, `check-boundaries.test.ts`, `scan-privacy.test.ts` and `freshness-worker.test.ts`. They cover:
   - the referential and duplicate-race errors
   - a malformed `"3:7x"` time naming the file, entry and field
   - seeded privacy violations are detected, while durations do not produce false positives
   - the Worker's 200 and 503 paths
   - **Done 2026-10-17 except `freshness-worker.test.ts`**, which comes with the Worker (T068).
+  - `freshness-worker.test.ts` **done 2026-10-17** with T068.
 - [ ] T085 Run the backfill and first publish:
   1. Run `uv run awingest backfill` (resumable; agent-run locally with the owner's `INTERVALS_API_KEY`/`R2_*` user env vars).
   2. Dispatch `refresh.yml` (without `fetch_only`) so the **first publish goes through the real gated bot path**.
