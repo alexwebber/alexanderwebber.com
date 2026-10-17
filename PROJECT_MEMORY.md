@@ -11,7 +11,7 @@ Update this as decisions get made — treat it as the source of truth alongside
 
 - **Status (2026-10-17):** Phase 2g (T067 `refresh.yml`, T068 the freshness Worker, T084's
   `freshness-worker.test.ts`, and the Actions half of T070) is done in a cloud session, on branch
-  `claude/loving-tesla-pw385y`, and raised as one PR. A fetch-only run from the branch wrote real
+  `claude/loving-tesla-pw385y`, and raised as PR #23. A fetch-only run from the branch wrote real
   data to R2 (2026-10-03..17), so R2 now has cursors, `fetch-status` and `freshness.json`.
   Decisions are in the log below. Phase 2f (PR #21) merged with its confirmations answered.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
