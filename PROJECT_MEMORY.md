@@ -9,40 +9,51 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** slice 1 (Phase 1) has started on branch `001-slice1-phase1`. The
-  provider is now **intervals.icu** (see the 2026-10-17 decision). Committed so far:
-  `scripts/setup/set-secrets.ps1` (prompts for secrets, then stores them as GitHub secrets and
-  user env vars), the coverage probe `spikes/intervals/probe.py`, and `spikes/**/out/`
-  gitignored.
-- **Owner progress (2026-10-17):**
-  - **T001 done:** the Cloudflare account and the private R2 bucket `alexanderwebber-private`
-    exist. The `R2_*` values are set as GitHub secrets and user env vars. A put/get/delete
-    round-trip with the scoped token passed.
-  - **Garmin full data export: requested.** When it arrives, the owner loads it into
-    intervals.icu via *Settings → Import all Garmin data* (the agent walks them through it).
-  - **intervals.icu:** connected to Garmin, with a 1-year backfill in progress.
-- **Waiting on the owner:**
-  - **intervals.icu API key:** *Settings → Developer Settings*, then run
-    `set-secrets.ps1 INTERVALS_API_KEY`.
-  - T004 (nameservers); the agent walks them through it. T003 (Garmin secrets) is dropped.
-  - **workers.dev subdomain:** none is registered yet (the API returns 404). Spike 1a needs
-    one. Ask the owner to pick it (suggested: `alexanderwebber`), or let wrangler prompt on the
-    first deploy.
-- **T002 done (2026-10-17):** `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template,
-  a user token, verified active, lists Workers scripts) and `CLOUDFLARE_ACCOUNT_ID` are set as
-  GitHub secrets. The owner keeps the setup values in a temp file and deletes it once setup is
-  finished, so remind them.
-- **Next step:** run `python spikes/intervals/probe.py` once the key is set. Write the
-  field-availability results (no values) to `spikes/intervals/RESULTS.md`. Then amend the docs
-  in one pass:
-  - `research.md` R0 and the Spike 0 table; `plan.md`; `spec.md` (Garmin attribution, manual
-    training status and race predictions); `tasks.md` (Phase 1 and the adapter/fetch tasks);
-    `contracts/provider-adapter.md` and `pipeline.md`; `quickstart.md`.
-  - A constitution PATCH amendment of the python-garminconnect wording, made by re-running
+- **Status (2026-10-17):** the provider switched to **intervals.icu**, and Spike 0 (the
+  coverage check) **passed** both locally and from GitHub Actions (see the 2026-10-17 decisions
+  and `spikes/intervals/RESULTS.md`). This was raised as PR **#13** (branch `001-slice1-phase1`).
+  **Check whether #13 has merged** before branching.
+- **Owner setup done:**
+  - **T001:** the R2 bucket `alexanderwebber-private`, with `R2_*` as GitHub secrets and user
+    env vars, round-trip tested.
+  - **T002:** `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub secrets; the token
+    is verified.
+  - **intervals.icu key:** `INTERVALS_API_KEY` as a GitHub secret and user env var.
+  - T003 is dropped.
+- **Still with the owner:**
+  - T004 (nameservers): the agent walks them through it.
+  - The **Garmin export**: when it arrives, the agent walks them through
+    *intervals.icu → Settings → Import all Garmin data*.
+  - The **workers.dev subdomain** for Spike 1a: ask them to pick it (suggested
+    `alexanderwebber`).
+  - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
+    them once T004 is done.
+- **Next step: amend the docs in one pass** (new branch from `origin/main`). Apply the
+  2026-10-17 decisions. Use a subagent for the amendment, then `/speckit-analyze` as a
+  subagent for consistency.
+  - `spec.md`:
+    - The provider is intervals.icu.
+    - Garmin attribution on views of Garmin-sourced data.
+    - Training status and race predictions are manual, dated owner entries.
+    - Fitness/fatigue (ctl/atl) replaces Garmin load.
+    - Treadmill runs count, are labelled, and are never PBs unless marked.
+    - History comes via the Garmin export imported into intervals.icu.
+  - `plan.md` and `research.md` R0:
+    - Drop garminconnect, Fernet tokens and `FETCH_MODE`/PC fetch.
+    - Add the User-Agent requirement.
+    - Strip `latlng` and free-text names for training runs.
+    - Drop sleep/steps/spO2.
+  - `tasks.md`:
+    - Phase 1: T003 and T005–T012 are replaced or done.
+    - The adapter/fetch tasks T051–T055, T067 and T070–T071.
+    - New owner-YAML schema and tasks for the manual metrics.
+    - At go-live (T112), prompt the owner to become an intervals.icu supporter.
+  - `contracts/provider-adapter.md`, `pipeline.md`, `quickstart.md`.
+  - A constitution **PATCH** amendment of the "python-garminconnect" wording, through
     `/speckit-constitution`.
 
-  After that, continue with Spike 1 and the scaffold. Astro 7.4.0 is newer than the plan's
-  7.3.5, so T016 re-verifies the pins.
+  After that come Spike 1 and the scaffold (T013–T022). Astro 7.4.0 is newer than the plan's
+  pin, which T016 re-verifies.
 
 ## Vision
 
@@ -322,6 +333,15 @@ project-specific notes.
   - **Fetch stays on Actions.** Actions can fetch directly, so there's no `FETCH_MODE` and no
     PC fallback.
   - **History:** it currently goes back to 2025-10-18 until the Garmin export is imported.
+- **2026-10-17** — Owner answers on the intervals.icu gaps:
+  - **Training status and race predictions** are manual, dated owner entries in YAML. They are
+    shown "as of <date>" and updated whenever the owner likes.
+  - **Training load** is intervals.icu's fitness/fatigue/form (ctl/atl), labelled as its own
+    model, not Garmin's.
+  - **Treadmill runs** (`VirtualRun`) count in totals, goals and the run list, with a
+    "treadmill" label. They never get maps and are not PB-eligible unless the owner marks them.
+  - **Supporter tier:** revisit at go-live. The owner will definitely become a supporter once
+    the live integration works, and the agent raises it at T112.
 
 ## Upstream candidates
 
@@ -368,9 +388,9 @@ project-specific notes.
 ## Open questions
 
 - intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
-  imports, plan building and UI features), so the owner stays on the free tier. Now that
-  intervals.icu is the provider, the trigger to revisit this has been hit: supporter feature
-  requests get priority, and the fee funds a one-developer service we depend on.
+  imports, plan building and UI features), so the owner stays on the free tier for now. At
+  go-live (T112) the agent raises it again. The owner intends to become a supporter once the
+  live integration works (decided 2026-10-17).
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are
