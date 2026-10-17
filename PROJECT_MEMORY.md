@@ -37,8 +37,8 @@ Update this as decisions get made — treat it as the source of truth alongside
     them once T004 is done.
 - **Next step: Phase 2g**: `refresh.yml` (T067), the freshness Worker (T068, with
   `freshness-worker.test.ts`, the rest of T084) and the fetch-only smoke check (T070). Use a new
-  branch from `origin/main`, ideally as another cloud session, once the Phase 2f PR has merged
-  with its confirmations answered (ask about any left unticked). `refresh.yml` runs
+  branch from `origin/main`, ideally as another cloud session, now that the Phase 2f PR (#21) has
+  merged with its confirmations answered. `refresh.yml` runs
   `uv run awingest process` from `ingest/` (it finds the repo root from the working directory),
   commits only `data/running/published/` after the gate, and runs `alert` with
   `GITHUB_TOKEN` (`issues: write`). T070 needs the owner's PC for the local half; the dispatch
@@ -488,6 +488,13 @@ project-specific notes.
   - **Python validation:** `awingest.schemas.SchemaSet` validates owner and published files.
     Its messages give path and rule, never the value.
   - **Size:** a 1 Hz marathon sanitises in under 0.1 s, to a 17.6 KB file.
+
+- **2026-10-17** — Owner confirmed PR #21's three points:
+  - **Linked races:** a `race.yaml` with `run_id` makes the run a race by itself.
+  - **Best pace** is the fastest kilometre.
+  - **Weight average:** days stay in even when their 7-day window holds only one or two
+    weigh-ins (so the first day shows that weigh-in exactly). The owner isn't worried about
+    privacy here, so the spec's rule stands: a day is left out only when its window has none.
 
 ## Upstream candidates
 
