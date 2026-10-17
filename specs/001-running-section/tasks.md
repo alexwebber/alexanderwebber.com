@@ -320,22 +320,22 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 
 ### 2f. Processor and publish stage (never touches the provider)
 
-- [ ] T056 [P] Create `ingest/src/awingest/process/run_ids.py` for opaque public run IDs:
+- [X] T056 [P] Create `ingest/src/awingest/process/run_ids.py` for opaque public run IDs:
   - **Format**: `YYYY-MM-DD-xxxx` (local run date + 4 characters `[a-z2-7]` drawn with `secrets`, collision-checked per date).
   - **Map**: an **append-only** map in R2 `state/run-ids.json`, written with `if_match`. An ID is never reassigned.
   - **Failure**: it **aborts if the map is unreadable** rather than regenerating it.
-- [ ] T057 [P] Create `ingest/src/awingest/process/titles.py` for neutral generated titles such as `Run · 8.2 km` (a run-type word only where the provider supplies a workout type; intervals.icu has no Garmin training effect, so usually "Run"). It **never copies `title_raw` or `description_raw` for training runs** (FR-011/012). Races use the owner race name (race.yaml) else a neutral title. An owner custom title always wins.
-- [ ] T058 [P] Create `ingest/src/awingest/process/plausibility.py`. An effort is marked `plausible: false` if its time is below **0.85 × the world record** for the distance (table for every best-effort distance, e.g. 5k < 10:54, 10k < 22:30, half < 50:00, marathon < 1:46:00) **or** if its peak 1 km split is < 2:30/km.
-- [ ] T059 [P] Create `ingest/src/awingest/process/best_efforts.py`, a two-pointer sliding window over cumulative distance and elapsed time, with linear interpolation at the window start. It covers 1k, 1mi, 3k, 5k, 10k, 15k, 10mi, 20k, half, 30k and marathon, **plus any goal `race_time` distance** in `goals.yaml`, and attaches plausibility.
-- [ ] T060 [P] Create `ingest/src/awingest/process/health.py`, which turns approved-metric readings into published points:
+- [X] T057 [P] Create `ingest/src/awingest/process/titles.py` for neutral generated titles such as `Run · 8.2 km` (a run-type word only where the provider supplies a workout type; intervals.icu has no Garmin training effect, so usually "Run"). It **never copies `title_raw` or `description_raw` for training runs** (FR-011/012). Races use the owner race name (race.yaml) else a neutral title. An owner custom title always wins.
+- [X] T058 [P] Create `ingest/src/awingest/process/plausibility.py`. An effort is marked `plausible: false` if its time is below **0.85 × the world record** for the distance (table for every best-effort distance, e.g. 5k < 10:54, 10k < 22:30, half < 50:00, marathon < 1:46:00) **or** if its peak 1 km split is < 2:30/km.
+- [X] T059 [P] Create `ingest/src/awingest/process/best_efforts.py`, a two-pointer sliding window over cumulative distance and elapsed time, with linear interpolation at the window start. It covers 1k, 1mi, 3k, 5k, 10k, 15k, 10mi, 20k, half, 30k and marathon, **plus any goal `race_time` distance** in `goals.yaml`, and attaches plausibility.
+- [X] T060 [P] Create `ingest/src/awingest/process/health.py`, which turns approved-metric readings into published points:
   - `weight_avg7` is the **trailing 7-day mean of non-excluded readings in kg; a day is omitted if there are no readings in the window**. Individual weigh-ins are never output (FR-061).
   - `body_fat_pct` is published as recorded, date only (intervals.icu supplies one per day; the schema still allows several).
   - `hrv` (rMSSD) is published as recorded; baseline fields only if a source ever supplies them.
   - `fitness_ctl` and `fatigue_atl` are published per day as supplied (intervals.icu's model; form is derived at build, T156).
   - `vo2max` and `resting_hr` are published as recorded. No training-status or race-prediction series (owner data, T151).
   - Exclusions from `health-exclusions.yaml` are removed before any computation (FR-067).
-- [ ] T061 [P] Create `ingest/src/awingest/process/overrides.py`. It reads and jsonschema-validates `run-overrides.yaml`, `health-exclusions.yaml`, `races/*/race.yaml` (`designate`, `hide_map`, `trim_ends_m`) and `goals.yaml` (goal distances), and provides a per-run override hash.
-- [ ] T062 Create `ingest/src/awingest/process/sanitise.py`, an **allow-list** sanitiser (data-model §7, rules 1–7):
+- [X] T061 [P] Create `ingest/src/awingest/process/overrides.py`. It reads and jsonschema-validates `run-overrides.yaml`, `health-exclusions.yaml`, `races/*/race.yaml` (`designate`, `hide_map`, `trim_ends_m`) and `goals.yaml` (goal distances), and provides a per-run override hash.
+- [X] T062 Create `ingest/src/awingest/process/sanitise.py`, an **allow-list** sanitiser (data-model §7, rules 1–7):
   - **Construction**: published runs are built field by field.
   - **Times**: `start_local` becomes `date` only, and stream timestamps become elapsed seconds.
   - **Series**: the x axis is distance or elapsed time, downsampled to `<= 600 points`.
@@ -343,25 +343,33 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - **Visibility and flags**: hidden runs are **not written at all**; owner flags are mirrored into `flags` (`include_indoor_in_records` from `include_in_records`); `treadmill` copied from the normalised activity; `is_race` comes from the intervals.icu `race` flag or an owner override (`run-overrides.is_race`, race.yaml `designate`).
 
   Depends on T056–T061.
-- [ ] T063 Create `ingest/src/awingest/publish/writer.py` (`PublishedWriter`):
+- [X] T063 Create `ingest/src/awingest/publish/writer.py` (`PublishedWriter`):
   - **Validation**: it validates against the schema **before** writing.
   - **Atomic writes**: it writes into a staging directory and swaps.
   - **Path guard**: it refuses any path outside `data/running/published/`.
   - **Formatting**: sorted keys, **compact** separators and no indentation (`separators=(",", ":")`, trailing newline), so output is canonical and the 5,000-run total stays ~109 MB (Spike 1b: indentation makes it ~263 MB).
   - **API**: `remove()` and `commit_plan()`.
-- [ ] T064 Create `ingest/src/awingest/publish/manifest.py` and `ingest/src/awingest/process/pipeline.py`:
+- [X] T064 Create `ingest/src/awingest/publish/manifest.py` and `ingest/src/awingest/process/pipeline.py`:
   - **Incremental**: processing is driven by `input_hash` (raw ETag + override hash), with `--all` and `reprocess --run RUN_ID`.
   - **Hidden runs**: files of newly hidden runs are removed.
   - **Refresh record**: `state/refresh.json` is written only when data changes.
   - **Failure**: `process` **writes nothing if any validation fails** (exit 20).
   - **`publish-check`**: validates the published tree and checks manifest consistency.
-- [ ] T065 Create `ingest/src/awingest/alerts.py` and the `alert` command (FR-010, SC-012):
+- [X] T065 Create `ingest/src/awingest/alerts.py` and the `alert` command (FR-010, SC-012):
   - **Trigger**: `now - last_success_at(intervals) > 24h`.
   - **Opening**: opens the `ingest-failing` issue titled `intervals.icu refresh failing since <date>`. The body holds the failure class and code, the sanitised last error, the likely cause, the matching owner/agent action row from contracts/pipeline.md, a link to the failing run and the last good timestamp.
   - **While failing**: adds at most one comment per 24 h.
   - **Recovery**: comments "recovered at <time>" and closes the issue.
   - Uses `GITHUB_TOKEN` (`issues: write`).
-- [ ] T066 Create `ingest/src/awingest/cli.py`, wiring the subcommands `fetch`, `backfill`, `process [--all]`, `publish-check`, `alert` and `reprocess --run RUN_ID`, with `--archive r2|local`. It prints JSON-lines logs on stderr and a summary on stdout, and returns the exit codes in contracts/pipeline.md.
+- [X] T066 Create `ingest/src/awingest/cli.py`, wiring the subcommands `fetch`, `backfill`, `process [--all]`, `publish-check`, `alert` and `reprocess --run RUN_ID`, with `--archive r2|local`. It prints JSON-lines logs on stderr and a summary on stdout, and returns the exit codes in contracts/pipeline.md.
+  - **Done 2026-10-17 (T056–T066)**, checked end to end: the fixture archive processed into a temp repo passes `validate-data`, `astro build` and `scan-privacy`. Choices:
+    - **Owner data**: a `race.yaml` linked by `run_id` makes the run a race by itself (`designate: not_race` un-designates; `run-overrides` `is_race` wins). Owner YAML is validated in Python too; goal errors are reported for the goal's own type (jsonschema ignores `discriminator`, so `awingest.schemas` picks the branch as ajv does).
+    - **Run fields**: `best_pace_s_per_km` is the plausible 1 km best effort, else the average. A run whose start date is edited later keeps the date in its ID (IDs are never reassigned, and the gate requires the prefix to match). Out-of-range values are omitted, not fatal. A run with no distance or duration isn't published (and gets no ID).
+    - **Health**: `weight_avg7` is rounded to 0.1 kg; points run to the last day with any wellness data. Each health file's `input_hash` covers its year's wellness ETags (from 26 Dec for the weight average), the series end and the exclusions.
+    - **Pipeline**: the ID map is saved before the published tree is committed. A missing map with published runs aborts (exit 14, `run_ids_missing`). One activity failing to normalise gives `partial` and keeps its last file. `processed_at` and `refresh.json` change only with data, so an idle run changes no file.
+    - **Writer**: commits by building `published.staging` (hard links to unchanged files) and swapping it in with two renames; a crash between them is repaired on the next open. Validation errors give path and rule, never the value.
+    - **Alerts**: the 24-hour comment limit uses the comments API's `since`; a stale success with no recorded failure also alerts ("may not be running"). `alert` exits 1 on a GitHub failure or missing token.
+    - Not here: race tracks and `track_ref` (T125), `refresh.yml` (T067).
 
 ### 2g. Pipeline workflows, freshness Worker, production check
 
@@ -445,25 +453,26 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - non-approved wellness keys (`sleepSecs`, `steps`, `spO2`) are absent from archived and normalised output
   - incremental windows: cursor minus 14 days, unchanged list rows not re-fetched
   - **Done 2026-10-17**, with `tests/unit/test_fetch.py` (status, cursors, freshness, partial failure, back-off), `test_backfill.py` (windows, resume, cursors) and `test_cli.py`.
-- [ ] T080 [P] Create `ingest/tests/unit/test_sanitise.py` and `ingest/tests/unit/test_run_ids.py`:
+- [X] T080 [P] Create `ingest/tests/unit/test_sanitise.py` and `ingest/tests/unit/test_run_ids.py`:
   - exhaustive allow-list tests
   - a **property test** that feeds random raw payloads with sentinels (incl. `latlng` and free-text names/descriptions) and asserts none appear in the serialised output of training runs
   - hidden runs are not written; `treadmill` and `include_indoor_in_records` are mirrored correctly
   - run IDs are stable, append-only and collision-free, and abort when the map is unreadable
   - the processor never emits a provider ID
-- [ ] T081 [P] Create `ingest/tests/unit/test_best_efforts.py`, `test_plausibility.py` and `test_health.py`. They cover:
+- [X] T081 [P] Create `ingest/tests/unit/test_best_efforts.py`, `test_plausibility.py` and `test_health.py`. They cover:
   - a 44:41 continuous 10 km found inside a longer run
   - the plausibility thresholds
   - the weight example `101.2, 100.6, 101.0, 100.4, 100.8, 100.2, 100.5` → `weight_avg7` 100.7
   - an empty window gives an omitted day
   - excluded readings are removed
-- [ ] T082 [P] Create `ingest/tests/contract/test_writer.py`, `test_cli.py`, `test_alerts.py` and `test_schemas.py`. They cover:
+- [X] T082 [P] Create `ingest/tests/contract/test_writer.py`, `test_cli.py`, `test_alerts.py` and `test_schemas.py`. They cover:
   - the writer refuses paths outside the published zone and rejects invalid schemas
   - canonical formatting and staging atomicity
   - the CLI exit codes
   - alert open, update and close per failure class (against a fake GitHub API)
   - the shared schema fixtures (T033)
   - **Schema part done 2026-10-17**: `ingest/tests/contract/test_schemas.py` runs the shared fixtures and the injected-key checks; `ingest/tests/unit/test_yaml12.py` covers `awingest.yaml12`, the YAML 1.2 loader that T061 must use for owner files (PyYAML's YAML 1.1 rules turn `3:30:00` into 12600 and dates into `datetime.date`). The writer, CLI and alert tests remain.
+  - **Done 2026-10-17** with T063–T066: `tests/contract/test_writer.py`, `tests/contract/test_alerts.py` (fake GitHub API) and the CLI cases in the existing `tests/unit/test_cli.py`. T080–T081 are in `tests/unit/` (`test_sanitise.py`, `test_run_ids.py`, `test_best_efforts.py`, `test_plausibility.py`, `test_health.py`), plus `test_overrides.py` and `test_pipeline.py` (end to end over the fixture archive).
 - [X] T083 [P] Create TS contract tests `tests/contract/schemas.test.ts` (same shared fixtures as T082) and `tests/contract/store.test.ts`. They check the `DataValidationError` shape, newest-first ordering and the speed of listing 5,000 runs.
   - **Done 2026-10-17** with Phase 2a–2b.
 - [ ] T084 [P] Create TS unit tests `tests/unit/format.test.ts`, `validate-data.test.ts`, `check-boundaries.test.ts`, `scan-privacy.test.ts` and `freshness-worker.test.ts`. They cover:

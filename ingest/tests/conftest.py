@@ -137,3 +137,38 @@ def make_client(api: FakeIntervalsApi, clock: FakeClock) -> Callable[..., Interv
 @pytest.fixture
 def provider(make_client) -> IntervalsProvider:
     return IntervalsProvider(make_client)
+
+
+REPO = Path(__file__).resolve().parents[2]
+
+
+@pytest.fixture
+def repo(tmp_path) -> Path:
+    """A throwaway repository: the real schemas, and an empty owner and published zone."""
+    root = tmp_path / "repo"
+    (root / "data/running/owner").mkdir(parents=True)
+    (root / "schemas").symlink_to(REPO / "schemas", target_is_directory=True)
+    return root
+
+
+@pytest.fixture
+def filled_archive(tmp_path, provider):
+    """A LocalArchive holding every fixture activity and wellness day, as fetch archives them."""
+    import io
+    from datetime import UTC, date, datetime
+
+    from awingest.archive.local import LocalArchive
+    from awingest.fetch import run_fetch
+    from awingest.logging import Logger
+
+    archive = LocalArchive(tmp_path / "archive")
+    result = run_fetch(
+        provider,
+        archive,
+        log=Logger("fetch", stream=io.StringIO()),
+        now=datetime(2026, 10, 17, 11, 0, tzinfo=UTC),
+        reimport_from=date(2026, 1, 1),
+        reimport_to=date(2026, 10, 17),
+    )
+    assert result.outcome == "ok"
+    return archive

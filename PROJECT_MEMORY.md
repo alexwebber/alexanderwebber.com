@@ -9,12 +9,11 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Phase 2e (the intervals.icu adapter, fetch stage and backfill, plus
-  the fixtures and adapter contract suite: T051–T055, T077, T079) is done in a cloud session,
-  on branch `claude/stoic-franklin-vhiumh`, and raised as one PR. It was checked against the
-  owner's real data from a throwaway workflow (`spikes/intervals/RESULTS.md`). Decisions are
-  in the log below. Phase 2c–2d (PR #18) merged, and its first `gate.yml` deploy on `main`
-  succeeded.
+- **Status (2026-10-17):** Phase 2f (the processor and publish stage, alerts and the rest of the
+  CLI: T056–T066, plus tests T080–T082) is done in a cloud session, on branch
+  `claude/blissful-darwin-xdt15e`, and raised as one PR. Its output from the fixture archive passes
+  the site gate (`validate-data`, `astro build`, `scan-privacy`). Decisions are in the log below.
+  Phase 2e (PR #19) merged with both confirmations ticked, and its `gate.yml` deploys succeeded.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -36,12 +35,14 @@ Update this as decisions get made — treat it as the source of truth alongside
     history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: Phase 2f**: the processor and publish stage (T056–T065), plus the rest of the
-  CLI (T066: `process`, `publish-check`, `alert`, `reprocess`; `fetch` and `backfill` are
-  already wired). Use a new branch from `origin/main`, ideally as another cloud session. Build
-  on `NormalisedActivity`/`NormalisedHealthReading` and read bundles back from
-  `raw/intervals/activities/<id>/` (the `fetch.json` marker lists the parts). If the Phase 2e
-  PR (#19) merged with every confirmation ticked, and its `gate.yml` deploy succeeded.
+- **Next step: Phase 2g**: `refresh.yml` (T067), the freshness Worker (T068, with
+  `freshness-worker.test.ts`, the rest of T084) and the fetch-only smoke check (T070). Use a new
+  branch from `origin/main`, ideally as another cloud session, once the Phase 2f PR has merged
+  with its confirmations answered (ask about any left unticked). `refresh.yml` runs
+  `uv run awingest process` from `ingest/` (it finds the repo root from the working directory),
+  commits only `data/running/published/` after the gate, and runs `alert` with
+  `GITHUB_TOKEN` (`issues: write`). T070 needs the owner's PC for the local half; the dispatch
+  half the agent can do.
 
 ## Vision
 
@@ -465,6 +466,29 @@ project-specific notes.
   Garmin Connect. Use it as a check value once power is published (the normaliser keeps the
   per-sample `power`, so a max can be derived if wanted).
 
+- **2026-10-17** — **Phase 2f built** (processor, publish stage, alerts, CLI). Choices later
+  tasks build on:
+  - **Races:** a `race.yaml` linked by `run_id` makes the run a race by itself, because Garmin
+    sync never sets intervals.icu's race flag. `designate: not_race` un-designates it, and a
+    `run-overrides.yaml` `is_race` wins over both. Owner confirmation asked in the PR.
+  - **Best pace** is the fastest kilometre (the 1 km best effort) if plausible, else the average.
+  - **Plausibility:** the threshold is 0.85 x the current men's world record, rounded down to the
+    second (so it errs towards plausible). Other distances scale with Riegel's formula.
+  - **Weight average:** one decimal; points run to the last day with any wellness data.
+  - **Edited start dates:** a run keeps the date in its ID, because IDs are never reassigned and
+    the gate requires the prefix to match. The process log says `run_date_changed`.
+  - **Unpublishable runs:** no distance or duration means no published file and no ID.
+  - **Failure handling:** one activity that fails to normalise makes the run `partial` and keeps
+    its last good file. Invalid owner or published data writes nothing (exit 20). An unreadable
+    ID map, or a missing one while runs are published, aborts (exit 14).
+  - **Idle runs change nothing:** `processed_at` and `refresh.json` change only with data, so a
+    refresh that finds nothing new makes no commit.
+  - **Writer:** stages the new tree beside the published one (hard links for unchanged files) and
+    swaps it in. The `published.staging`/`published.old` folders are gitignored.
+  - **Python validation:** `awingest.schemas.SchemaSet` validates owner and published files.
+    Its messages give path and rule, never the value.
+  - **Size:** a 1 Hz marathon sanitises in under 0.1 s, to a 17.6 KB file.
+
 ## Upstream candidates
 
 - 2026-10-17 — Astro 7 runs `astro preview` in the background when it detects a coding agent
@@ -571,6 +595,14 @@ project-specific notes.
   `extensions.yml`. It should also say to back up and restore `.specify/feature.json` and
   `extensions/git/git-config.yml` alongside the constitution, and to diff `extensions.yml`,
   restoring it if only the order changed.
+- 2026-10-17 — Python's jsonschema ignores the OpenAPI-style `discriminator` keyword that ajv
+  honours, so a goal with a bad `target.time` reported only "is not a goal type" (the `oneOf`).
+  Agent tip: when two validators share schemas, compare their error output on the shared invalid
+  fixtures, not just pass/fail. Here the fix was choosing the branch by discriminator in Python.
+- 2026-10-17 — jsonschema's error messages quote the offending value (`'2026-10-11T07:15' is not
+  valid`), so logging them from a publish stage would put unpublished data in public CI logs.
+  Generalisation (privacy checks): validators in a privacy-sensitive pipeline report path and rule
+  only.
 
 ## Open questions
 

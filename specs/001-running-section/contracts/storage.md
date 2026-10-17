@@ -28,6 +28,8 @@ write_json(path, obj, schema_name)    # validates against schema BEFORE writing;
                                       # indenting 600-point series ~2.4x the size) => canonical output
 remove(path)
 commit_plan() -> Diff                 # added/changed/removed files for logging
+commit() -> Diff                      # stage (hard links + new files) beside the tree, swap in
+read_json(path) / exists(path) / files(prefix)   # the tree as it will be after commit
 ```
 
 Rules: refuses to write any path outside `data/running/published/`; refuses objects failing the
