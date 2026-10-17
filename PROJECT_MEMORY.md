@@ -10,7 +10,7 @@ Update this as decisions get made — treat it as the source of truth alongside
      A new session reads this first; the owner only needs to type "continue". -->
 
 - **Status (2026-10-17):** Spec Kit upgraded to 1.2.1 (branch `chore/spec-kit-1.2.1`). No
-  implementation has started yet; the empty local branch `001-slice1-spike0` can be deleted.
+  implementation has started yet (the empty `001-slice1-spike0` branch was deleted).
 - **Owner progress:** an intervals.icu account is connected to Garmin, and a 1-year "download old
   data" backfill was requested on 2026-10-17. Its wellness list includes Weight, Body Fat,
   Resting HR, VO2 Max and HRV (rMSSD). The Garmin full data export is explained to the owner;
