@@ -1,0 +1,22 @@
+# Throwaway (removed in the next commit): deletes workflow run 39060846318, whose log holds
+# summed wellness values from a buggy report script. Approved by the owner on 2026-10-17.
+name: Spike delete run
+
+on:
+  push:
+    branches: [claude/stoic-franklin-vhiumh]
+    paths:
+      - .github/workflows/spike-delete-run.yml
+
+permissions:
+  actions: write
+
+jobs:
+  delete:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Delete the run and its logs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X DELETE "repos/${{ github.repository }}/actions/runs/39060846318"
