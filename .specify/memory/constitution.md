@@ -49,16 +49,16 @@ independent of any one platform.
 
 ### IV. Pluggable Providers & Storage
 
-- Every external source (Garmin Connect, fundraising platforms, future sources) MUST sit behind
-  a provider adapter that maps provider-specific data into the site's own normalised schemas.
-  Nothing outside an adapter may depend on a provider's raw format.
+- Every external source (intervals.icu for Garmin-synced running data, fundraising platforms,
+  future sources) MUST sit behind a provider adapter that maps provider-specific data into the
+  site's own normalised schemas. Nothing outside an adapter may depend on a provider's raw format.
 - Persistence MUST sit behind a storage abstraction so JSON-in-git can be replaced (e.g. by a
   database) without changing sections or adapters.
 - Provider failure (auth breakage, API change, rate limiting) MUST only cause staleness, never
   an outage or a broken build.
 
-Rationale: the Garmin integration relies on an unofficial client that will break periodically;
-isolation keeps repairs local and lets sources be swapped or added.
+Rationale: third-party providers and their APIs change, rate-limit and fail; isolation keeps
+repairs local and lets sources be swapped or added.
 
 ### V. Serverless, Gracefully Degrading
 
@@ -132,8 +132,8 @@ and a measured path to delegation preserves it.
 **Technology constraints:**
 
 - Site: a TypeScript static-site framework (Astro favoured), hosted on Cloudflare (Pages/Workers).
-- Ingest jobs: Python permitted (Garmin access via `python-garminconnect`), scheduled with GitHub
-  Actions or Cloudflare cron triggers.
+- Ingest jobs: Python permitted (running data via the intervals.icu API, an official Garmin sync
+  partner), scheduled with GitHub Actions or Cloudflare cron triggers.
 - Domain: alexanderwebber.com, registered at Namecheap.
 - Cost is not a constraint — choose on merit; plans MUST note any recurring costs.
 - Library and detail choices are made in each feature's plan.
@@ -166,4 +166,4 @@ backward-incompatible principle removal/redefinition, MINOR for a new principle/
 materially expanded guidance, PATCH for wording or clarification only. Feature plans MUST
 include a constitution check against these principles.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-03
+**Version**: 1.0.1 | **Ratified**: 2026-10-03 | **Last Amended**: 2026-10-17

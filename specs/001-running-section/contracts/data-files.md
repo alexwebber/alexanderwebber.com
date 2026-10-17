@@ -18,11 +18,12 @@ data/running/owner/run-overrides.yaml                schemas/owner/run-overrides
 data/running/owner/health-exclusions.yaml            schemas/owner/health-exclusions.schema.json
 data/running/owner/races/<slug>/race.yaml            schemas/owner/race.schema.json
 data/running/owner/lab/<date>-<type>.yaml            schemas/owner/lab.schema.json
+data/running/owner/manual-metrics.yaml               schemas/owner/manual-metrics.schema.json
 ```
 
 `<run-id>` is the opaque public run ID `YYYY-MM-DD-xxxx` (schema pattern
-`^\d{4}-\d{2}-\d{2}-[a-z2-7]{4}$`). **Garmin activity IDs never appear in any file, filename or
-URL**; the mapping exists only in private R2 (`state/run-ids.json`). Owner files reference runs by
+`^\d{4}-\d{2}-\d{2}-[a-z2-7]{4}$`). **Provider activity IDs (intervals.icu IDs, Garmin
+`external_id`s) never appear in any file, filename or URL**; the mapping exists only in private R2 (`state/run-ids.json`). Owner files reference runs by
 this ID (copy it from the run page URL).
 
 ## Cross-cutting rules
@@ -30,10 +31,15 @@ this ID (copy it from the run page URL).
 - Every published and owner file carries/gets a `schema_version` (published: in file; owner:
   optional, default current). Breaking changes bump it and ship a migration.
 - Published schemas: `additionalProperties: false` everywhere; no fields named or typed for
-  coordinates in anything but `race-track`; a schema test asserts no `lat|lon|latitude|longitude|
-  start_time|startTime` key can validate outside `race-track`.
+  coordinates in anything but `race-track`; a schema test asserts no `lat|lon|latlng|latitude|
+  longitude|start_time|startTime` key can validate outside `race-track`, and no `name|description`
+  key can validate in a published run (run titles use the `title` field only). The health-series `metric` enum is exactly `vo2max,
+  fitness_ctl, fatigue_atl, resting_hr, hrv, weight_avg7, body_fat_pct`; there is no published
+  training-status or race-prediction series (those are owner data).
 - Owner schemas: strict too (typos like `offical_time` are errors, not ignored). Lab `values` are
-  limited to `body_fat_pct`, `weight_kg`, `vo2max` (FR-066).
+  limited to `body_fat_pct`, `weight_kg`, `vo2max` (FR-066). Manual metrics: `as_of` required on
+  every entry, not in the future, unique within its list; `status` from the fixed Garmin
+  training-status enum; each prediction entry has at least one of `5k`, `10k`, `half`, `marathon`.
 - Formats: dates `YYYY-MM-DD`; durations/times as seconds in published JSON, `h:mm:ss`/`mm:ss`
   strings in owner YAML (parsed + range-checked); distances metres in JSON, named distances or
   metres in YAML; numbers finite; strings trimmed; photo `description` minLength 1.
@@ -42,9 +48,9 @@ this ID (copy it from the run page URL).
   existing race entry; race `run_id` exists in published runs (warning if run not yet ingested);
   override `id` exists; photo files exist and have no EXIF; unique ids; at most
   `featured_goal_limit` (default 6) featured goals; priorities unique among featured;
-  **duplicate race**: a hand-entered race (no `run_id`) matching a Garmin race run (same date,
+  **duplicate race**: a hand-entered race (no `run_id`) matching a recorded race run (same date,
   distance within 2%) is an error - add `run_id` to it (no fuzzy auto-merge); at most one entry per
-  `run_id`; no Garmin-style activity IDs in any owner file.
+  `run_id`; no provider-style activity IDs in any owner file.
 ## Owner-content examples (illustrative values)
 
 ```yaml
@@ -98,7 +104,7 @@ recent_highlight_days: { pb: 14, goal: 14 }
 ```
 
 ```yaml
-# races/hastings-half-2026/race.yaml  (links to a Garmin-recorded race by run_id)
+# races/hastings-half-2026/race.yaml  (links to a recorded race by run_id)
 slug: hastings-half-2026
 run_id: 2026-05-17-k3f9          # opaque ID from the run page URL; official details below win
 name: Hastings Half Marathon
@@ -127,6 +133,16 @@ official_time: "52:30"
 - { id: 2026-08-02-a7cd, exclude_from_records: true }   # GPS glitch
 - { id: 2026-07-19-zz4k, hide: true }
 - { id: 2026-06-01-p0rt, is_race: true }                # parkrun designated as a race
+- { id: 2026-05-04-t6nb, include_in_records: true }     # treadmill run the owner marks PB-eligible
+```
+
+```yaml
+# manual-metrics.yaml  (Garmin figures intervals.icu lacks; read in Garmin Connect, dated)
+training_status:
+  - { as_of: 2026-10-12, status: productive }
+  - { as_of: 2026-10-17, status: maintaining, note: "Taper week" }
+race_predictions:
+  - { as_of: 2026-10-17, 5k: "21:05", 10k: "44:10", half: "1:38:30", marathon: "3:28:40" }
 ```
 
 ```yaml

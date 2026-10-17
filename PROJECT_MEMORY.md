@@ -9,10 +9,15 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** the provider switched to **intervals.icu**, and Spike 0 (the
-  coverage check) **passed** both locally and from GitHub Actions (see the 2026-10-17 decisions
-  and `spikes/intervals/RESULTS.md`). This was raised as PR **#13** (branch `001-slice1-phase1`).
-  **Check whether #13 has merged** before branching.
+- **Status (2026-10-17):** the intervals.icu docs amendment is raised as a PR from branch
+  `001-intervals-docs`. It covers constitution v1.0.1, spec/plan/tasks/contracts, T015, and
+  fixes for the `/speckit-analyze` findings.
+  - **Check it has merged** (`gh pr list --state all --head 001-intervals-docs`) before
+    branching.
+  - **Ask about any unticked checkboxes** before building on them: ratifying v1.0.1, treadmill
+    vs race-time goals, training effect omitted, HRV wording, per-run load private,
+    attribution on manual figures, 2-hour cadence, FR-031's metric-goal scope vs the closed
+    enum, and the workers.dev subdomain.
 - **Owner setup done:**
   - **T001:** the R2 bucket `alexanderwebber-private`, with `R2_*` as GitHub secrets and user
     env vars, round-trip tested.
@@ -24,36 +29,18 @@ Update this as decisions get made — treat it as the source of truth alongside
   - T004 (nameservers): the agent walks them through it.
   - The **Garmin export**: when it arrives, the agent walks them through
     *intervals.icu → Settings → Import all Garmin data*.
-  - The **workers.dev subdomain** for Spike 1a: ask them to pick it (suggested
-    `alexanderwebber`).
+  - The **workers.dev subdomain** for Spike 1a: suggested `alexanderwebber`, asked as a
+    checkbox in the PR.
+  - **T150:** the Garmin export import (see above). Afterwards the agent re-runs the probe to
+    check wellness history came across.
   - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
     them once T004 is done.
-- **Next step: amend the docs in one pass** (new branch from `origin/main`). Apply the
-  2026-10-17 decisions. Use a subagent for the amendment, then `/speckit-analyze` as a
-  subagent for consistency.
-  - `spec.md`:
-    - The provider is intervals.icu.
-    - Garmin attribution on views of Garmin-sourced data.
-    - Training status and race predictions are manual, dated owner entries.
-    - Fitness/fatigue (ctl/atl) replaces Garmin load.
-    - Treadmill runs count, are labelled, and are never PBs unless marked.
-    - History comes via the Garmin export imported into intervals.icu.
-  - `plan.md` and `research.md` R0:
-    - Drop garminconnect, Fernet tokens and `FETCH_MODE`/PC fetch.
-    - Add the User-Agent requirement.
-    - Strip `latlng` and free-text names for training runs.
-    - Drop sleep/steps/spO2.
-  - `tasks.md`:
-    - Phase 1: T003 and T005–T012 are replaced or done.
-    - The adapter/fetch tasks T051–T055, T067 and T070–T071.
-    - New owner-YAML schema and tasks for the manual metrics.
-    - At go-live (T112), prompt the owner to become an intervals.icu supporter.
-  - `contracts/provider-adapter.md`, `pipeline.md`, `quickstart.md`.
-  - A constitution **PATCH** amendment of the "python-garminconnect" wording, through
-    `/speckit-constitution`.
-
-  After that come Spike 1 and the scaffold (T013–T022). Astro 7.4.0 is newer than the plan's
-  pin, which T016 re-verifies.
+- **Next step: Spike 1 (T013–T014) and the scaffold (T016–T022)**, on a new branch from
+  `origin/main`. T016 re-verifies the pins first, because Astro 7.4.0 is newer than the plan's
+  7.3.5.
+  - **To spend the cloud credits:** the Agent tool's `remote` isolation fell back to a local
+    worktree here. Suggest the owner runs this slice as a cloud session (claude.ai/code)
+    instead.
 
 ## Vision
 
@@ -342,8 +329,35 @@ project-specific notes.
     "treadmill" label. They never get maps and are not PB-eligible unless the owner marks them.
   - **Supporter tier:** revisit at go-live. The owner will definitely become a supporter once
     the live integration works, and the agent raises it at T112.
+- **2026-10-17** — **Constitution v1.0.1** (PATCH, via `/speckit-constitution`). The Garmin
+  wording now says intervals.icu:
+  - **Principle IV:** the example source list names intervals.icu, and the rationale no longer
+    claims an unofficial client.
+  - **Technology constraints:** ingest gets running data via the intervals.icu API.
+
+  No principle's meaning changed.
 
 ## Upstream candidates
+
+- 2026-10-17 — The Agent tool's `isolation: "remote"` quietly ran the subagents in a local git
+  worktree (`.claude/worktrees/agent-*`), not in the cloud. That spent plan usage, not the
+  owner's cloud credits. The agent also couldn't check out the branch held by the main
+  checkout, so it pushed with `HEAD:<branch>` and left a stray worktree and branches behind.
+  Worktrees lack the gitignored `.specify/feature.json`, so the speckit scripts needed
+  `SPECIFY_FEATURE_DIRECTORY=specs/<feature>`. Agent tips:
+  - Check `git worktree list` after a "remote" run, and clean up.
+  - Pass the branch and that env var in the prompt of any isolated speckit subagent.
+  - Don't promise cloud-credit spend from `remote` isolation; a claude.ai/code session is the
+    reliable route.
+
+- 2026-10-17 — The mandatory `/speckit-git-initialize` pre-hook of `/speckit-constitution` was
+  blocked by the auto-mode permission classifier inside a subagent. It is a no-op when a repo
+  already exists, so nothing was lost, but the run reported a failed mandatory hook. Agent
+  tip: when dispatching speckit commands to subagents in an existing repo, say this hook can
+  be skipped. Alternatively, the git extension could make it conditional.
+- 2026-10-17 — `/speckit-constitution` writes its Sync Impact Report as an HTML comment at the
+  top of the constitution, to be removed before commit. Agent tip: copy it into the PR body
+  first, so the owner still reviews it (the governance section says the owner reviews it).
 
 <!-- Lessons that might help future projects, captured the moment they happen (see the working
      norm above). One line each: date, what happened, and the suggested generalisation. The
@@ -387,6 +401,10 @@ project-specific notes.
 
 ## Open questions
 
+- The owner has **$100 of cloud session credits that expire 2026-11-05** (noted 2026-10-17).
+  Prefer running self-contained slices (spikes, scaffold, review passes) as cloud sessions
+  until the credits are used or expire. `remote` subagent isolation fell back to local on
+  2026-10-17, so it doesn't spend them.
 - intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
   imports, plan building and UI features), so the owner stays on the free tier for now. At
   go-live (T112) the agent raises it again. The owner intends to become a supporter once the
