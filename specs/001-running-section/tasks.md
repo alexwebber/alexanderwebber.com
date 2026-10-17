@@ -907,5 +907,5 @@ Each story is a PR-sized slice (one implement session per slice, per the house s
 - Owner input is always requested during a review the owner is already doing (orchestrator norm).
   No owner task is a recurring chore.
 - Commit after each task or logical group. Stop at any checkpoint to validate a story on its own.
-- Ask the owner for a usage screenshot before starting `/speckit-implement` (project canary
-  override).
+- No usage screenshot before `/speckit-implement`: the owner says when usage is running low
+  (project override, 2026-10-17).
