@@ -1,7 +1,8 @@
 // The shared shell in a real browser (T072-T076, T152): axe (WCAG 2.2 AA rules) in light and
 // dark, no sideways scroll at 320px, keyboard use of the skip link, range toggle and data table,
 // and the freshness script's three outcomes. /shell-preview/ exists only in a build made with
-// SHELL_PREVIEW=1 (astro.config.mjs; tests.yml builds that way).
+// SHELL_PREVIEW=1 (astro.config.mjs; tests.yml builds that way). Its data is all synthetic,
+// including a fixed build-time freshness, so results don't depend on what the repo has published.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -124,11 +125,11 @@ test.describe('last updated', () => {
     await expect(notice(page)).toContainText('may be out of date');
   });
 
-  test('keeps the build-time text when the endpoint fails', async ({ page }) => {
+  test('keeps the build-time text and notice when the endpoint fails', async ({ page }) => {
     await page.route('**/running/api/freshness', (route) => route.fulfill({ status: 503, body: '' }));
     await open(page, PREVIEW);
-    // The preview build has no published data, so the build-time text is "Not updated yet".
-    await expect(text(page)).toHaveText('Not updated yet');
-    await expect(notice(page)).toBeHidden();
+    // The preview page fixes its build-time value at 1 Jan 2026 09:00 UTC, stale at build.
+    await expect(text(page)).toHaveText('Last updated 1 Jan 2026, 09:00');
+    await expect(notice(page)).toBeVisible();
   });
 });

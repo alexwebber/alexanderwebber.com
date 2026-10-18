@@ -9,6 +9,7 @@ import ProgressBar from '../../src/shared/charts/ProgressBar.astro';
 import RangeToggle from '../../src/shared/charts/RangeToggle.astro';
 import { addDays, formatDate } from '../../src/shared/format/dates.ts';
 import GarminAttribution from '../../src/sections/running/components/GarminAttribution.astro';
+import LastUpdated from '../../src/sections/running/components/LastUpdated.astro';
 import SectionLayout from '../../src/sections/running/components/SectionLayout.astro';
 
 const end = '2026-10-17';
@@ -20,9 +21,13 @@ const kg = (v: number) => `${v} kg`;
 const series = (from?: string) => [{ label: 'Weight (7-day average)', points: weight, color: 'var(--running-series)' }].map((s) => ({ ...s, from }));
 const weeks = Array.from({ length: 12 }, (_, i) => ({ label: formatDate(addDays('2026-07-27', i * 7)).replace(/ 2026$/, ''), value: 20 + ((i * 7) % 23), showValue: i === 11, highlight: i === 11 }));
 const latest = weight.findLast((p) => p.value !== null)!;
+// A fixed build-time freshness, so the browser checks don't depend on whatever the repo has
+// published: long past, so the notice shows until the (mocked) live value says otherwise.
+const BUILD_SUCCESS = '2026-01-01T09:00:00Z';
 ---
 
 <SectionLayout heading="Shell preview" title="Shell preview" description="The shared shell's components over synthetic data." image="/og/site.png" imageAlt="Preview card" garmin>
+  <LastUpdated slot="last-updated" lastSuccessAt={BUILD_SUCCESS} staleAfterHours={12} />
   <h2>Progress</h2>
   <p id="progress-label">Weight goal: 7.2 of 8 kg lost</p>
   <ProgressBar label="Progress to 93 kg" fraction={0.9} valueText="7.2 of 8 kg lost (90%)" />
