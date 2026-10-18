@@ -9,32 +9,34 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-18):** T086 (the graduation review) and the Garmin device attribution are in
-  PR #27 (branch `001-phase2-graduation`). It has three confirmations for the owner.
-  - **If it has merged**, check each box answer first, and record the answers in the decisions
-    log.
-  - **The next scheduled refresh after the merge** reprocesses every run (`PROCESSOR_VERSION`
-    2), so published runs gain `device`. Check the bot commit adds it.
+- **Status (2026-10-18):** PR #27 (T086 graduation, device attribution) merged; answers are in
+  the decisions log. The refresh trigger is in PR #28 (branch `001-refresh-cron-trigger`): the
+  Worker's Cloudflare cron dispatches `refresh.yml`, and `schedule` is a guarded 6-hourly backup.
+  - **If it has merged:** check `gh run list --workflow refresh.yml --event workflow_dispatch`
+    shows a run every 2 h (at about :17), and the backup slots (01:47, 07:47, 13:47, 19:47 UTC)
+    skip after their guard job. Any `refresh-trigger-failing` issue comes first.
+  - **The `GITHUB_DISPATCH_TOKEN` Worker secret** must be set before (or right after) merge; see
+    the PR. Its expiry date goes in the decisions log, and the agent rotates it with the owner a
+    week before.
+  - **Device field:** the first refresh after PR #27 reprocesses every run (`PROCESSOR_VERSION`
+    2). Check the bot commit adds `device` to published runs.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
   start. Cloud credits remain until 2026-11-05 but are mostly used, so only suggest a cloud
   session for a slice that needs no secrets and no owner input.
 - **Each session, first:**
-  - **Refresh runs:** fix any red one first.
-  - **Scheduler gaps:** on 2026-10-18 GitHub dropped the 00:17, 02:17 and 06:17 UTC slots (gaps
-    up to 4 h). If gaps over 3 h are still happening, raise the PR in which the freshness Worker's
-    Cloudflare cron dispatches `refresh.yml`, and keep `schedule` as a backup. The owner then
-    creates a fine-grained token (Actions: write, this repo only); the agent walks them through
-    it.
-  - **Actions minutes:** if the owner has run `gh auth refresh -h github.com -s user`, read the
-    usage (`gh api "/users/alexwebber/settings/billing/usage/summary?product=actions"`) and warn
-    before the 2,000-minute limit. If the scope hasn't been granted yet, remind the owner once.
+  - **Refresh runs:** fix any red one first, and any `refresh-trigger-failing` or
+    `ingest-failing` issue.
+  - **Actions minutes:** read the usage
+    (`gh api "/users/alexwebber/settings/billing/usage/summary?product=actions"`) and warn before
+    the 2,000-minute limit. 149 minutes were used by 2026-10-18.
 - **Owner setup done:** T001 (R2 + `R2_*`), T002 (Cloudflare token and account), the
-  intervals.icu key, and the `alexanderwebber` workers.dev subdomain. T003 is dropped.
+  intervals.icu key, the `alexanderwebber` workers.dev subdomain, and the `gh` `user` scope.
+  T003 is dropped.
 - **Still with the owner:**
   - **T004 (nameservers):** the agent walks them through it.
   - **T150:** the Garmin export. When it arrives, the agent walks them through *intervals.icu →
     Settings → Import all Garmin data*, re-runs the probe, then runs T085's backfill.
-  - **Setup values file:** the owner keeps them in `C:	emp2.txt`. Remind them to delete it
+  - **Setup values file:** the owner keeps them in `C:\temp\2.txt`. Remind them to delete it
     once T004 is done.
 - **Next step: Phase 3 (US2 Goals, T087–T095, T153–T154)** on a new branch from `origin/main`.
   - **Start with a question round.** Ask for:
@@ -596,6 +598,27 @@ project-specific notes.
     owner grants `gh` the `user` scope, the agent checks usage each session and warns before the
     limit.
 
+- **2026-10-18** — Owner ticked all three PR #27 confirmations:
+  - **Each run publishes its watch model** (`device`), a newly approved public field.
+  - **Two review findings stay in the backlog:** deploy ordering across workflows, and Garmin
+    `external_id`s in the provider-ID scan.
+  - **`gh` has the `user` scope**, so the agent reads Actions minutes each session.
+- **2026-10-18** — **Refresh trigger: Cloudflare cron dispatches `refresh.yml`** (PR #28). The
+  watch-for-a-day check failed: after 04:37 UTC the 06:17 and 08:17 slots were dropped too (a
+  4 h 10 min gap and counting).
+  - **Worker cron** `17 */2 * * *` POSTs a `workflow_dispatch` on `main`. The token is a
+    fine-grained one with Actions: write on this repo only, held as the Worker secret
+    `GITHUB_DISPATCH_TOKEN`. The ingest still runs on Actions. Free plan: 5 crons per account,
+    and this uses 1.
+  - **`schedule` is a thinner backup**, `47 1-23/6 * * *`. A `guard` job (schedule events only,
+    about 1 billed minute) skips the run if a dispatched run started in the last 150 min. If
+    none has started in 6 h, it opens a `refresh-trigger-failing` issue, which closes itself
+    once dispatches resume. Why every 6 h, not every 2: a guard on every 2-hourly slot would
+    cost about 360 minutes a month against GitHub Free's 2,000.
+  - **Failures are visible:** a failed dispatch logs `refresh_dispatch_failed` (code, status,
+    likely cause, action, never the token) and fails the invocation. Worker logs are on
+    (`observability.enabled`).
+
 ## Upstream candidates
 
 - 2026-10-18 — Tests written in Linux cloud sessions symlinked a directory into temp repos. On
@@ -620,7 +643,10 @@ project-specific notes.
   Wait about two slots, and check the workflow is `active` on the default branch. Later that
   day it **dropped** three of five 2-hourly slots outright, not just delayed them (a 4 h gap).
   So a freshness requirement of a few hours can't rest on GitHub `schedule` alone; plan for an
-  external trigger (e.g. Cloudflare cron calling `workflow_dispatch`).
+  external trigger (e.g. Cloudflare cron calling `workflow_dispatch`). Pattern adopted here
+  (PR #28): keep `schedule` as a sparse backup whose first job skips the run when a dispatched
+  run is recent, and opens an issue when dispatches stop, so a dead external trigger isn't
+  silent.
 - 2026-10-17 — satori sizes boxes content-box. A root with `width: 100%` plus padding and a border
   rendered at 1360 x 790 on a 1200 x 630 canvas, and the footer line fell off the image. Agent
   tip: give the sized root no padding or border, and put the padding on a `flexGrow: 1` child.

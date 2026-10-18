@@ -9,11 +9,16 @@
 # A run on any ref other than main is fetch-only, like `fetch_only: true`, so a branch run can never
 # publish. Commits made with GITHUB_TOKEN don't trigger other workflows, so gate.yml doesn't re-run
 # for bot commits; this workflow deploys the build it gated instead.
+#
+# The 2-hourly trigger is the site Worker's Cloudflare cron, which dispatches this workflow on main
+# (src/worker/refresh-trigger.ts). GitHub's `schedule` dropped slots and left 4-hour gaps
+# (2026-10-18), so it is now only a 6-hourly backup: the guard job skips it while the dispatches
+# arrive, and raises an issue when they stop.
 name: Refresh
 
 on:
   schedule:
-    - cron: '17 */2 * * *'
+    - cron: '47 1-23/6 * * *'
   workflow_dispatch:
     inputs:
       reimport_from:
@@ -44,7 +49,62 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Backup-schedule runs only, so dispatched runs don't pay for it. A dispatched run in the last
+  # 150 minutes means the Worker's cron is working: skip. Otherwise refresh, and once none has
+  # arrived for 6 hours open a refresh-trigger-failing issue (closed when dispatches resume). If the
+  # check itself fails, the run goes ahead and the issue is left alone.
+  guard:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      issues: write
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          LABEL: refresh-trigger-failing
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if ! last=$(gh run list --workflow refresh.yml --event workflow_dispatch --limit 1 --json createdAt --jq '.[0].createdAt // ""'); then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Couldn't list dispatched runs, so the backup schedule refreshes."
+            exit 0
+          fi
+          age=100000
+          if [ -n "$last" ]; then age=$(( ($(date -u +%s) - $(date -u -d "$last" +%s)) / 60 )); fi
+          echo "Last dispatched refresh: ${last:-none} (${age} min ago)."
+          open=$(gh issue list --label "$LABEL" --state open --json number --jq '.[0].number // ""') || open=''
+          if [ "$age" -le 150 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "The Worker's cron is dispatching; the backup schedule skips this run."
+            if [ -n "$open" ]; then
+              gh issue close "$open" --comment "Dispatches resumed: the last dispatched refresh started at $last." ||
+                echo "::warning::Couldn't close issue #$open."
+            fi
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "::warning::No dispatched refresh in the last 150 minutes, so the backup schedule refreshes."
+          if [ "$age" -gt 360 ] && [ -z "$open" ]; then
+            gh label create "$LABEL" --color D93F0B --force --description "The Worker's cron isn't dispatching refresh.yml" || true
+            gh issue create --label "$LABEL" --title "Refresh trigger failing (last dispatch: ${last:-none})" --body-file - <<EOF || echo "::warning::Couldn't open the $LABEL issue."
+          The site Worker's Cloudflare cron should dispatch \`refresh.yml\` every 2 hours, but none has started in the last 6 hours (last dispatch: ${last:-none}). The 6-hourly backup schedule is refreshing instead, so data can lag by up to about 6 hours.
+
+          **Likely cause:** the \`GITHUB_DISPATCH_TOKEN\` Worker secret expired, was revoked or is missing, or the cron trigger was removed from \`wrangler.jsonc\`.
+          **Action:** check the Worker's logs (Cloudflare dashboard → Workers → alexanderwebber → Logs) for \`refresh_dispatch_failed\`, which names the cause. To replace the token, create a fine-grained token with Actions: write on this repository only, then run \`npx wrangler secret put GITHUB_DISPATCH_TOKEN\`.
+
+          This issue closes itself once dispatches resume. Backup run: $RUN_URL
+          EOF
+          fi
+
   fetch:
+    needs: guard
+    if: ${{ !cancelled() && needs.guard.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
@@ -77,9 +137,12 @@ jobs:
           ${REIMPORT_TO:+--reimport-to "$REIMPORT_TO"}
 
   # Runs even when fetch failed: already-archived data and owner-file changes still publish.
+  # `!cancelled()` here and on fetch also lets them run when guard is skipped (non-schedule events).
   publish:
-    needs: fetch
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && !inputs.fetch_only }}
+    needs: [guard, fetch]
+    if: >-
+      ${{ !cancelled() && needs.guard.outputs.skip != 'true' && github.ref == 'refs/heads/main' &&
+      !inputs.fetch_only }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -250,8 +313,8 @@ jobs:
   # After every fetch, even a failed one: opens, updates or closes the ingest-failing issue from
   # R2 state/fetch-status.json (alert contract: no success for 24 h).
   alert:
-    needs: fetch
-    if: ${{ always() }}
+    needs: [guard, fetch]
+    if: ${{ always() && needs.guard.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

@@ -19,9 +19,11 @@ fully successful point; `process` writes nothing if any validation fails.
 
 ## Workflows
 
-- **`refresh.yml`** — triggers: `schedule: 17 */2 * * *`, `workflow_dispatch` (inputs
-  `reimport_from`, `reimport_to`, `fetch_only` (runs `fetch` and skips publish/deploy; used by the
-  T070 smoke check)), `push` to `main` touching `data/running/owner/**`.
+- **`refresh.yml`** — triggers: `workflow_dispatch` (inputs `reimport_from`, `reimport_to`,
+  `fetch_only` (runs `fetch` and skips publish/deploy; used by the T070 smoke check)), dispatched
+  every 2 hours by the site Worker's cron (see *Refresh trigger*); a backup
+  `schedule: 47 1-23/6 * * *`, whose `guard` job skips the run while dispatches arrive; and `push`
+  to `main` touching `data/running/owner/**`.
   `concurrency: refresh` with `cancel-in-progress: false` (runs never overlap, so two runs cannot
   race on cursors, the run-ID map or bot commits; later runs queue).
   Jobs: `fetch` (always on Actions; Spike 0 confirmed GitHub-hosted runners reach intervals.icu)
@@ -47,7 +49,8 @@ confirmed by the owner on 2026-10-04; humans/agents editing code or owner files 
 
 Secrets: `INTERVALS_API_KEY` (intervals.icu personal API key), `R2_ACCOUNT_ID`,
 `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (`alexanderwebber-private`),
-`CLOUDFLARE_API_TOKEN` (Workers deploy), `CLOUDFLARE_ACCOUNT_ID`. No repo variables. None
+`CLOUDFLARE_API_TOKEN` (Workers deploy), `CLOUDFLARE_ACCOUNT_ID`. No repo variables. Worker
+secret (set with `wrangler secret put`, not a repo secret): `GITHUB_DISPATCH_TOKEN`. None
 committed (Principle VI).
 
 ## Alert contract (FR-010, SC-012)
@@ -73,6 +76,27 @@ committed (Principle VI).
 | `Transient` (1) | network/5xx | None; retried on the next 2-hourly run; alert only if it persists > 24 h |
 - Permissions: `issues: write` on `GITHUB_TOKEN`. The agent watches the issue list at session start
   (orchestrator norm), so the owner is not asked to remember to check.
+
+## Refresh trigger
+
+GitHub's `schedule` is best-effort, and on 2026-10-18 it dropped three of five 2-hourly slots
+(gaps of 4 h, past FR-002's 3 h). So the 2-hourly trigger is the site Worker's Cloudflare cron
+(`wrangler.jsonc` `triggers.crons: 17 */2 * * *`, `src/worker/refresh-trigger.ts`):
+
+- `POST https://api.github.com/repos/<REFRESH_REPO>/actions/workflows/<REFRESH_WORKFLOW>/dispatches`
+  with `{"ref":"main"}`, a descriptive User-Agent and `Authorization: Bearer
+  <GITHUB_DISPATCH_TOKEN>`: a fine-grained token with **Actions: write** on this repository only.
+  `REFRESH_REPO` and `REFRESH_WORKFLOW` are Worker vars.
+- Any 2xx is success (log `refresh_dispatched`). Otherwise the handler logs one JSON line,
+  `refresh_dispatch_failed` with `code` (`token_missing`, `token_rejected` 401, `not_permitted`
+  403/404, `rejected` 422, `transient`, `network`), `status`, `likely_cause` and `action` (never
+  the token), and throws, so Cloudflare records the invocation as failed. Worker logs are kept
+  (`observability.enabled`).
+- **Backup:** `refresh.yml`'s 6-hourly `schedule` runs a `guard` job (schedule events only). If a
+  `workflow_dispatch` run started in the last 150 min, it skips the run (about 1 billed minute);
+  otherwise it refreshes. If none has started in 6 h, it opens a `refresh-trigger-failing` issue
+  (likely cause and action included), and closes it once dispatches resume. If listing runs fails,
+  the run goes ahead and issues are left alone.
 
 ## Freshness endpoint
 

@@ -9,6 +9,19 @@
     "directory": "./dist",
     "binding": "ASSETS"
   },
+  // Dispatches refresh.yml on main every 2 hours (src/worker/refresh-trigger.ts). The token is
+  // the secret GITHUB_DISPATCH_TOKEN (`npx wrangler secret put`), never a var.
+  "triggers": {
+    "crons": ["17 */2 * * *"]
+  },
+  // Keeps the Worker's log lines (e.g. refresh_dispatch_failed) for the dashboard's Logs view.
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "REFRESH_REPO": "alexwebber/alexanderwebber.com",
+    "REFRESH_WORKFLOW": "refresh.yml"
+  },
   // The Worker reads only public/freshness.json from the private bucket.
   "r2_buckets": [
     {

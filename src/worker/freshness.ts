@@ -1,4 +1,5 @@
-// The site's one Worker route (T068; contracts/pipeline.md "Freshness endpoint").
+// The site's one Worker (T068; contracts/pipeline.md "Freshness endpoint" and "Refresh trigger").
+// Its cron (wrangler.jsonc `triggers`) dispatches refresh.yml; see refresh-trigger.ts.
 // GET /running/api/freshness reads public/freshness.json from R2 and returns the last successful
 // fetch, so a refresh that finds nothing new needs no commit. Static assets serve first; every
 // other path that reaches the Worker falls through to them.
@@ -6,6 +7,8 @@
 // The object is re-shaped rather than passed through, so the response holds only the contract's
 // fields even if the stored record ever gains more. Anything missing or malformed is a 503: the
 // page then keeps its build-time "as of" text.
+
+import { dispatchRefresh, type TriggerEnv } from './refresh-trigger.ts';
 
 export const FRESHNESS_PATH = '/running/api/freshness';
 export const FRESHNESS_KEY = 'public/freshness.json';
@@ -15,7 +18,7 @@ interface StoredObject {
   text(): Promise<string>;
 }
 
-export interface Env {
+export interface Env extends TriggerEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
   FRESHNESS: { get(key: string): Promise<StoredObject | null> };
 }
@@ -81,5 +84,8 @@ export default {
   fetch(request: Request, env: Env): Promise<Response> {
     if (new URL(request.url).pathname === FRESHNESS_PATH) return freshness(request, env);
     return env.ASSETS.fetch(request);
+  },
+  scheduled(_controller: unknown, env: Env): Promise<void> {
+    return dispatchRefresh(env);
   },
 };
