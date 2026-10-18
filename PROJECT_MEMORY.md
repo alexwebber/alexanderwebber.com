@@ -562,6 +562,11 @@ project-specific notes.
 
 ## Upstream candidates
 
+- 2026-10-18 — The browser-test page for the shared shell read "Last updated" from the repo's
+  published data. Its tests assumed there was none, so they broke on the PR as soon as the first
+  scheduled refresh published real data to `main` (PR CI tests the merge with the base).
+  Generalisation (testing): test fixture pages pin every input they assert on, never repo data
+  that a bot can change underneath an open PR.
 - 2026-10-18 — A newly merged GitHub Actions `schedule` fired its first slot about 1h45 late
   (22:17 slot, run started 00:03 UTC), with zero schedule runs listed in between. Agent tip:
   don't treat a missed first slot as a failure or dispatch a publishing run to "unstick" it.
