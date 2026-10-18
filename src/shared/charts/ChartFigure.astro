@@ -1,0 +1,148 @@
+---
+// The frame every chart sits in (T074, FR-071, FR-074): a <figure> whose caption names the chart
+// and states its key message in words, then the chart (or a RangeToggle of charts), then the
+// underlying data as a table in <details>. <summary> is natively keyboard-operable, and the
+// table's scroll box is focusable so a keyboard can scroll it at 320px. Everything works without
+// JS, so the key figures survive if any enhancement fails.
+//
+// Slots: default = the chart; "source" = data attribution, shown at the caption, right under the
+// chart's title (e.g. the Running section's Garmin attribution, FR-077).
+import { chartId } from './ids.ts';
+
+export interface ChartTable {
+  /** Column headings, e.g. ["Date", "Weight (7-day average)"]. */
+  columns: readonly string[];
+  /** Already formatted cells, one row per data point. */
+  rows: readonly (readonly (string | number)[])[];
+  /** Words for the toggle, e.g. "Show the weekly figures"; defaults to "Show the data". */
+  summary?: string;
+}
+
+export interface Props {
+  title: string;
+  /** The key message in words; shown under the title. */
+  summary?: string;
+  table?: ChartTable;
+  /** Render the title as a heading at this level, for pages that outline charts. */
+  heading?: 2 | 3 | 4;
+  id?: string;
+}
+
+const { title, summary, table, heading } = Astro.props;
+const id = chartId('figure', Astro.props.id);
+const Heading = heading ? (`h${heading}` as const) : 'p';
+---
+
+<figure class="chart-figure" aria-labelledby={`${id}-title`}>
+  <figcaption>
+    <Heading class="chart-figure-title" id={`${id}-title`}>{title}</Heading>
+    {Astro.slots.has('source') && <div class="chart-figure-source"><slot name="source" /></div>}
+    {summary && <p class="chart-figure-summary">{summary}</p>}
+  </figcaption>
+  <slot />
+  {
+    table && (
+      <details class="chart-figure-data">
+        <summary>{table.summary ?? 'Show the data'}</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label={`${title}: data`}>
+          <table>
+            <caption class="visually-hidden">{title}</caption>
+            <thead>
+              <tr>
+                {table.columns.map((column) => (
+                  <th scope="col">{column}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {table.rows.map((row) => (
+                <tr>
+                  {row.map((cell, i) => (i === 0 ? <th scope="row">{cell}</th> : <td>{cell}</td>))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    )
+  }
+</figure>
+
+<style>
+  .chart-figure {
+    margin: 0 0 var(--space-6);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  @media (min-width: 40rem) {
+    .chart-figure {
+      padding: var(--space-4);
+    }
+  }
+
+  figcaption {
+    margin-bottom: var(--space-3);
+  }
+
+  .chart-figure-title {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-tight);
+  }
+
+  .chart-figure-source {
+    margin-top: var(--space-1);
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
+  }
+
+  .chart-figure-summary {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-secondary);
+  }
+
+  .chart-figure-data summary {
+    min-height: 1.5rem;
+    color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .table-scroll {
+    max-height: 24rem;
+    margin-top: var(--space-2);
+    overflow: auto;
+  }
+
+  table {
+    width: 100%;
+    margin: 0;
+    font-size: var(--step--1);
+  }
+
+  th,
+  td {
+    padding: var(--space-1) var(--space-3) var(--space-1) 0;
+    border-bottom: 1px solid var(--color-border);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+  }
+
+  tbody th {
+    font-weight: normal;
+  }
+</style>

@@ -1,0 +1,49 @@
+---
+// The <head> metadata every page carries (T073, FR-072): a unique title and description, a
+// canonical URL, and Open Graph and Twitter tags with a share image. Titles and descriptions are
+// required props, so a page can't be built without them.
+export interface Props {
+  /** The whole <title>; unique per page. */
+  title: string;
+  /** The meta description; unique per page. */
+  description: string;
+  /** Site path of the share image, e.g. /og/site.png (1200 x 630 PNG). */
+  image: string;
+  /** Text alternative for the share image. */
+  imageAlt: string;
+  /** Open Graph type: a page is a website; an article (e.g. a race report) says so. */
+  type?: 'website' | 'article';
+}
+
+const { title, description, image, imageAlt, type = 'website' } = Astro.props;
+if (!title.trim() || !description.trim()) {
+  throw new Error(`${Astro.url.pathname}: every page needs a title and a description (FR-072)`);
+}
+if (!Astro.site) throw new Error('astro.config.mjs must set `site` for canonical and share URLs');
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const imageUrl = new URL(image, Astro.site).href;
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<link rel="sitemap" href="/sitemap-index.xml" />
+
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content="Alexander Webber" />
+<meta property="og:locale" content="en_GB" />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={imageAlt} />

@@ -1,0 +1,75 @@
+---
+// A labelled navigation list (T073). The link to the current page gets aria-current="page"; on a
+// page below an item (e.g. a run under Training) the caller names that item in `current`, which
+// gets aria-current="true". Links wrap onto further lines at 320px rather than scrolling sideways.
+export interface NavItem {
+  label: string;
+  /** Site path with a trailing slash. */
+  href: string;
+}
+
+export interface Props {
+  /** Accessible name, e.g. "Running"; tells this nav apart from others on the page. */
+  label: string;
+  items: readonly NavItem[];
+  /** href of the item this page belongs under, when the page isn't itself in the list. */
+  current?: string;
+}
+
+const { label, items, current } = Astro.props;
+const path = Astro.url.pathname;
+
+function ariaCurrent(href: string): 'page' | 'true' | undefined {
+  if (path === href) return 'page';
+  return href === current ? 'true' : undefined;
+}
+---
+
+{
+  items.length > 0 && (
+    <nav aria-label={label}>
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={item.href} aria-current={ariaCurrent(item.href)}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: inline-block;
+    /* 24px minimum target size (WCAG 2.2 2.5.8) */
+    min-height: 1.5rem;
+    padding-block: var(--space-1);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-accent-strong);
+    text-decoration: underline;
+  }
+
+  a[aria-current] {
+    color: var(--color-text);
+    font-weight: var(--weight-bold);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 2px;
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+// Garmin attribution (T152, FR-077): a condition of the intervals.icu API terms (effective
+// 2025-10-23) for every view of Garmin-sourced data, following Garmin's API brand guidelines.
+//
+// Source: Garmin Developer API Brand Guidelines, V 6.30.2025
+// (https://developer.garmin.com/brand-guidelines/api-brand-guidelines/ and
+// https://developer.garmin.com/downloads/brand/Garmin-Developer-API-Brand-Guidelines.pdf),
+// re-read 2026-10-17 through published excerpts (the cloud sandbox can't reach
+// developer.garmin.com). What they ask, and how this follows it:
+// - Wording: "Garmin [device model]" on every use of Garmin device-sourced data in dashboards,
+//   activity feeds, overview cards and summary views, and in detailed views, reports and
+//   historical views. When the device model is unknown, Garmin is listed as the source. So the
+//   text is "Garmin" plus the device when known.
+// - Derived data: "Insights derived in part from Garmin device-sourced data" style wording (not a
+//   made-up "Garmin model"). Used for intervals.icu's fitness/fatigue/form (`derived`).
+// - Form: the Garmin tag logo followed by the device, or appropriately sized text. This uses text
+//   only (no Garmin logo files in the repo), at the same size as the secondary text around it.
+// - Placement: title level, directly beneath or next to the primary heading of each data view;
+//   also inside exported images (share images that show Garmin data pass `attribution` to the OG
+//   renderer). See src/sections/running/README.md for where each page puts it.
+export interface Props {
+  /** Device model, e.g. "Forerunner 965" or "Index S2"; omitted when unknown. */
+  device?: string;
+  /** For figures intervals.icu derives from Garmin data (fitness/fatigue/form). */
+  derived?: boolean;
+}
+
+const { device, derived = false } = Astro.props;
+const source = device ? `Garmin ${device}` : 'Garmin';
+---
+
+<p class="garmin-attribution" data-garmin-attribution>
+  {derived ? `Derived in part from ${source} device-sourced data` : `Source: ${source}`}
+</p>
+
+<style>
+  .garmin-attribution {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
+  }
+</style>

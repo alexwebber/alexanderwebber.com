@@ -1,0 +1,187 @@
+/*
+ * Shared chart frame (T074): a grid of y-axis labels, the plot and x-axis labels. The plot's SVG is
+ * stretched over its box (preserveAspectRatio="none", non-scaling strokes) and everything with a
+ * real size (labels, dots, bars' rounded ends) is HTML placed by percentage, so the chart reads
+ * the same at 320px and on a desktop. Marks follow the dataviz specs: 2px lines, >= 8px dots
+ * with a 2px surface ring, bars <= 24px wide with 4px rounded data ends, hairline solid grid.
+ */
+.chart {
+  display: grid;
+  grid-template-columns: var(--chart-y-width, 3rem) 1fr;
+  grid-template-rows: var(--chart-height, 12rem) auto;
+  margin-bottom: var(--space-3);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--chart-label);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Line charts keep room right of the plot for the end value's direct label. */
+.line-chart {
+  --chart-end-space: 3rem;
+}
+
+@media (min-width: 40rem) {
+  .chart {
+    grid-template-rows: var(--chart-height-wide, 16rem) auto;
+  }
+
+  .line-chart {
+    --chart-end-space: 3.5rem;
+  }
+}
+
+.chart-y {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  margin-right: var(--space-2);
+}
+
+.chart-y span {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.chart-plot {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  /* Room for direct labels that sit beyond the last point */
+  margin-right: var(--chart-end-space, 0);
+}
+
+.chart-plot > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.chart-grid line {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.chart-baseline {
+  stroke: var(--chart-axis);
+  stroke-width: 1;
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-x {
+  position: relative;
+  grid-column: 2;
+  grid-row: 2;
+  height: 1.5rem;
+  margin-right: var(--chart-end-space, 0);
+}
+
+.chart-x span {
+  position: absolute;
+  top: var(--space-1);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.chart-x span:first-child {
+  transform: none;
+}
+
+.chart-x span:last-child:not(:first-child) {
+  transform: translateX(-100%);
+}
+
+/* Minor x labels (a line chart's inner months, every other column label) give way on narrow
+   screens, so labels never collide at 320px. */
+@media (max-width: 39.99rem) {
+  .chart-x .minor {
+    visibility: hidden;
+  }
+}
+
+/* A target or reference level across the plot: dashed, so it never reads as gridline or data. */
+.chart-target {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed var(--chart-reference);
+}
+
+.chart-target span {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  padding-inline: var(--space-1);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.chart-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--dot-color, var(--chart-reference));
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+/* A wider invisible hit area, so the native tooltip (title) is easy to reach */
+.chart-dot::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+.chart-dot-label {
+  position: absolute;
+  transform: translate(8px, -50%);
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+.chart-dot-label.is-left {
+  transform: translate(calc(-100% - 8px), -50%);
+}
+
+.chart-legend {
+  grid-column: 2;
+  grid-row: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+}
+
+.chart-legend li::before {
+  content: '';
+  display: inline-block;
+  width: 1rem;
+  height: 2px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  background: var(--key-color);
+}
+
+@media (forced-colors: active) {
+  .chart-line {
+    stroke: CanvasText;
+  }
+
+  .chart-dot {
+    background: CanvasText;
+  }
+}
