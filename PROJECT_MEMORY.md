@@ -10,7 +10,7 @@ Update this as decisions get made — treat it as the source of truth alongside
      A new session reads this first; the owner only needs to type "continue". -->
 
 - **Status (2026-10-18):** T086 (the graduation review) and the Garmin device attribution are in
-  the PR from branch `001-phase2-graduation`. It has three confirmations for the owner.
+  PR #27 (branch `001-phase2-graduation`). It has three confirmations for the owner.
   - **If it has merged**, check each box answer first, and record the answers in the decisions
     log.
   - **The next scheduled refresh after the merge** reprocesses every run (`PROCESSOR_VERSION`
