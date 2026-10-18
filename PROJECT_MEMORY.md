@@ -15,11 +15,6 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **Check first:** `gh run list --workflow refresh.yml --event workflow_dispatch` shows a run
     every 2 h (at about :17), and the backup slots (01:47, 07:47, 13:47, 19:47 UTC) skip after
     their guard job. Any `refresh-trigger-failing` issue comes first.
-  - **Leaked credentials (2026-10-18):** a shape check printed the R2 access key and secret,
-    the Cloudflare API token and the intervals.icu key into the session transcript (not the
-    repo or any log). Ask whether the owner has rotated them. If yes, update the repo secrets
-    (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `CLOUDFLARE_API_TOKEN`, `INTERVALS_API_KEY`)
-    and the owner's local `R2_*` user env vars from the setup file, without printing values.
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
   - **Device field:** the first refresh after PR #27 reprocesses every run (`PROCESSOR_VERSION`
@@ -628,6 +623,10 @@ project-specific notes.
   schedule keeps refreshing and the `refresh-trigger-failing` issue opens within 6 h. The secret
   was set with the Cloudflare API token from the setup file (no `wrangler login`), and a test
   dispatch with it returned 204.
+- **2026-10-18** — **No credential rotation** (owner decision). A shape check printed the R2
+  access key and secret, the Cloudflare API token and the intervals.icu key into the session
+  transcript (not the repo or any log). Only the owner has access to the chat, so they're kept
+  as they are.
 
 ## Upstream candidates
 
