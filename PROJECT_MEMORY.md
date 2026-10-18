@@ -38,8 +38,10 @@ Update this as decisions get made — treat it as the source of truth alongside
 - **Next step: T086 (graduation review of the shared plumbing)**, then Phase 3 (US2 Goals,
   T087 onwards). Ideally run it as another cloud session from `origin/main` once PR #25 merges.
   - **First, ask about PR #25's confirmations** if any were left unticked.
-  - **Check the scheduled refresh on `main`.** Look for a green run and a bot commit to
-    `data/running/published/`. If a run is red, fix that first.
+  - **The scheduled refresh works on `main`** (checked 2026-10-18). The first scheduled run
+    (39081375802) started at 00:03 UTC; the 22:17 slot fired about 1h45 late. Fetch, publish
+    with the gate, the bot commit `29d617f` and the deploy were all green. Each session, glance
+    at the latest refresh runs, and fix any red one first.
   - **Goals need the owner's input.** Phase 3 needs `goals.yaml`, `upcoming-races.yaml` and
     `section.yaml`, including the VO2 max target value and the Brighton build start (see *Open
     questions*). Run a question round first.
@@ -560,6 +562,10 @@ project-specific notes.
 
 ## Upstream candidates
 
+- 2026-10-18 — A newly merged GitHub Actions `schedule` fired its first slot about 1h45 late
+  (22:17 slot, run started 00:03 UTC), with zero schedule runs listed in between. Agent tip:
+  don't treat a missed first slot as a failure or dispatch a publishing run to "unstick" it.
+  Wait about two slots, and check the workflow is `active` on the default branch.
 - 2026-10-17 — satori sizes boxes content-box. A root with `width: 100%` plus padding and a border
   rendered at 1360 x 790 on a 1200 x 630 canvas, and the footer line fell off the image. Agent
   tip: give the sized root no padding or border, and put the padding on a `flexGrow: 1` child.
