@@ -9,11 +9,8 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-17):** Phase 2h is built in a cloud session on branch
-  `claude/busy-hawking-42kpne`, PR #25. It covers the shared shell: tokens, layout, charts, share
-  images, the Running loader, LastUpdated, SectionLayout and Garmin attribution (T072–T076,
-  T152). Decisions are in the log below. Phase 2g (PR #23) merged with all four confirmations
-  ticked.
+- **Status (2026-10-18):** Phase 2h (the shared shell, T072–T076, T152) merged as PR #25, with
+  all four confirmations ticked (see the log). The scheduled refresh publishes on its own.
 - **Cloud sessions work well for self-contained slices.** Keep using them until the credits
   expire on 2026-11-05. In a cloud session:
   - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
@@ -37,7 +34,9 @@ Update this as decisions get made — treat it as the source of truth alongside
     them once T004 is done.
 - **Next step: T086 (graduation review of the shared plumbing)**, then Phase 3 (US2 Goals,
   T087 onwards). Ideally run it as another cloud session from `origin/main` once PR #25 merges.
-  - **First, ask about PR #25's confirmations** if any were left unticked.
+  - **First, ask which Garmin devices to name** in the attribution (PR #25 confirmation 2 was
+    ticked "yes" with no models given): the watch or watches for runs, and the scale for weight
+    and body fat. Add them as an optional `section.yaml` setting that `GarminAttribution` reads.
   - **The scheduled refresh works on `main`** (checked 2026-10-18). The first scheduled run
     (39081375802) started at 00:03 UTC; the 22:17 slot fired about 1h45 late. Fetch, publish
     with the gate, the bot commit `29d617f` and the deploy were all green. Each session, glance
@@ -559,6 +558,14 @@ project-specific notes.
     (`@astrojs/check` still peer-requires `^5 || ^6`). The `fflate` advisory via satori is
     unchanged and still accepted: satori now runs, but only reads our own fonts and card text,
     never ZIP archives.
+
+- **2026-10-18** — Owner ticked all four PR #25 confirmations:
+  - **Garmin attribution placement** is OK: title level, under each page heading and at each
+    chart, tile or card heading, plain text. Re-check the PDF at T112.
+  - **Device names: yes.** No models were given yet, so the next session asks which watch(es)
+    and which scale. Until then the text stays "Source: Garmin".
+  - **Running's warm look** is OK as a starting point.
+  - **Dark mode follows the OS setting only**, with no toggle.
 
 ## Upstream candidates
 
