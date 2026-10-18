@@ -6,6 +6,7 @@
   "treadmill": false,
   "is_race": true,
   "title": "Hastings Half Marathon",
+  "device": "Venu X1",
   "distance_m": 21180,
   "moving_s": 6060,
   "elapsed_s": 6070,

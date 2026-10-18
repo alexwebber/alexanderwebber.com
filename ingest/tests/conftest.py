@@ -1,6 +1,7 @@
 """Shared pytest fixtures for the ingest tests."""
 
 import json
+import os
 import re
 import urllib.parse
 import urllib.request
@@ -142,12 +143,24 @@ def provider(make_client) -> IntervalsProvider:
 REPO = Path(__file__).resolve().parents[2]
 
 
+def link_dir(link: Path, target: Path) -> None:
+    """A directory symlink, or on Windows without the symlink privilege a junction (same effect)."""
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError:
+        if os.name != "nt":
+            raise
+        import _winapi
+
+        _winapi.CreateJunction(str(target), str(link))
+
+
 @pytest.fixture
 def repo(tmp_path) -> Path:
     """A throwaway repository: the real schemas, and an empty owner and published zone."""
     root = tmp_path / "repo"
     (root / "data/running/owner").mkdir(parents=True)
-    (root / "schemas").symlink_to(REPO / "schemas", target_is_directory=True)
+    link_dir(root / "schemas", REPO / "schemas")
     return root
 
 

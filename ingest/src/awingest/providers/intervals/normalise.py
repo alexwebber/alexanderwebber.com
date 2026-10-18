@@ -15,10 +15,14 @@ reprocessing the archive (Rule 1). Units come out as metres, seconds, kg and bpm
 - Free text (``name``, ``description``) is kept only as the private ``title_raw`` and
   ``description_raw``; the provider ID only as ``provider_id``.
 - ``training_effect`` is always ``None``: intervals.icu doesn't expose Garmin's.
+- ``device`` is the Garmin model from ``device_name`` (``Garmin Venu X1`` -> ``Venu X1``), for the
+  Garmin attribution. Any other or unusual value is ``None``, so nothing but a plain model name
+  can reach a published file.
 """
 
 import json
 import math
+import re
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from typing import Any
@@ -53,6 +57,11 @@ WELLNESS_METRICS: dict[str, tuple[str, bool]] = {
     "ctl": ("fitness_ctl", True),
     "atl": ("fatigue_atl", True),
 }
+
+# "Garmin " + schemas/defs.schema.json garminDevice (a test keeps the two in step), so a device
+# that would fail the published schema is dropped here instead of failing the publish.
+DEVICE_PATTERN = r"(?!Garmin )[A-Za-z0-9][A-Za-z0-9 +.-]{0,38}[A-Za-z0-9+]"
+GARMIN_DEVICE = re.compile(rf"Garmin ({DEVICE_PATTERN})")
 
 
 def _number(value: Any) -> float | None:
@@ -308,6 +317,11 @@ def _text(value: Any) -> str | None:
     return value if isinstance(value, str) and value.strip() else None
 
 
+def _device(value: Any) -> str | None:
+    match = GARMIN_DEVICE.fullmatch(value) if isinstance(value, str) else None
+    return match.group(1) if match else None
+
+
 def normalise_activity(bundle: RawBundle) -> NormalisedActivity:
     parts = bundle.parts
     summary = _json(parts, "summary.json", dict) or {}
@@ -346,6 +360,7 @@ def normalise_activity(bundle: RawBundle) -> NormalisedActivity:
         training_load=load,
         dynamics=_dynamics(record, streams),
         training_effect=None,
+        device=_device(record.get("device_name")),
         title_raw=_text(record.get("name")),
         description_raw=_text(record.get("description")),
         splits=km_splits(points),

@@ -44,6 +44,17 @@
         "label": { "$ref": "../defs.schema.json#/$defs/text" }
       }
     },
+    "garmin_devices": {
+      "description": "Garmin devices named in the attribution where the data doesn't say which device recorded it (FR-077). Runs carry their own watch.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scale": {
+          "description": "The scale behind weight and body fat, e.g. Index S2.",
+          "$ref": "../defs.schema.json#/$defs/garminDevice"
+        }
+      }
+    },
     "stale_after_hours": {
       "description": "Data older than this is shown as stale.",
       "type": "integer",

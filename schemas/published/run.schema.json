@@ -28,6 +28,10 @@
       "$ref": "../defs.schema.json#/$defs/text"
     },
     "note": { "description": "Owner note.", "$ref": "../defs.schema.json#/$defs/text" },
+    "device": {
+      "description": "The Garmin watch that recorded the run (intervals.icu device_name), for the Garmin attribution. Omitted when unknown or not a Garmin device.",
+      "$ref": "../defs.schema.json#/$defs/garminDevice"
+    },
     "distance_m": { "$ref": "../defs.schema.json#/$defs/metres" },
     "moving_s": { "$ref": "../defs.schema.json#/$defs/seconds" },
     "elapsed_s": { "$ref": "../defs.schema.json#/$defs/seconds" },

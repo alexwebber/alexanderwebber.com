@@ -197,6 +197,7 @@ class NormalisedActivity:
     training_load: float | None = None  # private; per-run load is not published
     dynamics: Dynamics | None = None
     training_effect: TrainingEffect | None = None  # not exposed by intervals.icu
+    device: str | None = None  # Garmin model that recorded it, e.g. "Venu X1" (attribution)
     title_raw: str | None = field(default=None, repr=False)
     description_raw: str | None = field(default=None, repr=False)
     splits: tuple[Split, ...] = ()

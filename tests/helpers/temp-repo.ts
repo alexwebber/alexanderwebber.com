@@ -13,7 +13,8 @@ export interface TempRepo {
 
 export function tempRepo(): TempRepo {
   const root = mkdtempSync(join(tmpdir(), 'aw-repo-'));
-  symlinkSync(join(REPO_ROOT, 'schemas'), join(root, 'schemas'), 'dir');
+  // A junction on Windows (no symlink privilege needed); the type is ignored elsewhere.
+  symlinkSync(join(REPO_ROOT, 'schemas'), join(root, 'schemas'), 'junction');
   return {
     root,
     write(path, content) {

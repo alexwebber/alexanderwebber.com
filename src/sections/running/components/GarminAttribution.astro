@@ -7,6 +7,9 @@
 // https://developer.garmin.com/downloads/brand/Garmin-Developer-API-Brand-Guidelines.pdf),
 // re-read 2026-10-17 through published excerpts (the cloud sandbox can't reach
 // developer.garmin.com). What they ask, and how this follows it:
+// - Devices: a run names its own watch (published `device`); a multi-run view lists its watches;
+//   weight and body fat name the scale from section.yaml; watch wellness (VO2 max, HRV, resting
+//   HR) has no per-day device, so it says just "Garmin".
 // - Wording: "Garmin [device model]" on every use of Garmin device-sourced data in dashboards,
 //   activity feeds, overview cards and summary views, and in detailed views, reports and
 //   historical views. When the device model is unknown, Garmin is listed as the source. So the
@@ -18,15 +21,24 @@
 // - Placement: title level, directly beneath or next to the primary heading of each data view;
 //   also inside exported images (share images that show Garmin data pass `attribution` to the OG
 //   renderer). See src/sections/running/README.md for where each page puts it.
+import { sectionSettings } from '../data/load.ts';
+
 export interface Props {
-  /** Device model, e.g. "Forerunner 965" or "Index S2"; omitted when unknown. */
-  device?: string;
+  /**
+   * Device model, e.g. "Venu X1", or the watches behind a multi-run view (`runDevices()`, newest
+   * first); omitted when unknown.
+   */
+  device?: string | readonly string[];
+  /** Weight and body fat: names the scale from section.yaml `garmin_devices.scale`. */
+  scale?: boolean;
   /** For figures intervals.icu derives from Garmin data (fitness/fatigue/form). */
   derived?: boolean;
 }
 
-const { device, derived = false } = Astro.props;
-const source = device ? `Garmin ${device}` : 'Garmin';
+const { device, scale = false, derived = false } = Astro.props;
+const devices = scale ? [(await sectionSettings()).garmin_devices.scale] : [device].flat();
+const named = devices.filter((d): d is string => Boolean(d)).map((d) => `Garmin ${d}`);
+const source = named.length ? named.join(', ') : 'Garmin';
 ---
 
 <p class="garmin-attribution" data-garmin-attribution>

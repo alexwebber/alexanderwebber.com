@@ -61,7 +61,8 @@ works only on these. Full-fidelity (still private).
   private, not published: per-run load is not in FR-047), `dynamics{gct_ms (average_stance_time), gct_balance_pct
   (summary `average_stance_time_balance` when present, else derived from the `stance_time_balance`
   stream), vert_osc_mm, vert_ratio_pct}`, `training_effect` (always `None`:
-  not exposed by the API), `title_raw` / `description_raw` (free text; private), `splits[]`
+  not exposed by the API), `device` (the Garmin model from `device_name`, e.g. `Garmin Venu X1` ->
+  `Venu X1`; `None` for a non-Garmin or unusual value), `title_raw` / `description_raw` (free text; private), `splits[]`
   (per-km, computed from the `distance`/`time` streams), `hr_zones[]` (`icu_hr_zone_times` /
   `time-at-hr`), `samples[]` (t_s, dist_m, speed_mps, hr, cadence, power, elev_m, lat, lon — lat/lon
   from the `latlng` stream).
@@ -98,6 +99,7 @@ recorded in R2 `state/run-ids.json`. **Provider activity IDs (intervals.icu IDs,
 | `is_race` | bool | From intervals.icu `race` flag **or** owner override |
 | `title` | string | Neutral generated, e.g. `Run · 8.2 km`; owner custom title wins (FR-012, FR-049). Race: owner race name. Provider free-text `name`/`description` never copied for training runs |
 | `note` | string? | Owner note |
+| `device` | string? | The Garmin watch that recorded the run (e.g. `Venu X1`), for the Garmin attribution (FR-077); a plain model name only, omitted when unknown or not Garmin. Owner-approved 2026-10-18 |
 | `distance_m`, `moving_s`, `elapsed_s` | number | |
 | `elevation_gain_m`, `elevation_loss_m` | number? | |
 | `avg_pace_s_per_km`, `best_pace_s_per_km` | number | Average over moving time; best = the fastest kilometre (the 1 km best effort) if plausible, else the average |
@@ -158,7 +160,7 @@ All validated at build; errors report `file`, entry (index/id) and `field` (FR-0
 | File | Entity (spec) | Fields |
 |---|---|---|
 | `owner/goals.yaml` | **Goal** | list of `{id, type: race_time\|body_composition\|metric\|milestone, title, description?, priority, featured, deadline?, start_value?, linked_race?, status_override?, retired?, achieved_override?{date,note}, target...}` where target is by type: race_time `{distance_m\|distance:"10k", time:"44:59"}`; body_composition/metric `{metric, value, direction: at_most\|at_least}`; milestone none. Prior targets kept via git history (FR-040), not in file |
-| `owner/section.yaml` | **Section settings** (+ focus race) | `{focus_race: {race_id (from upcoming-races), build_start, charity: {name}}, story_link?: {href, label} (link hidden until set, FR-024), stale_after_hours: 12, featured_goal_limit: 6, recent_highlight_days: {pb: 14, goal: 14}}` (FR-020/021/026/042). Every field except `focus_race` has a schema default; all are owner-editable |
+| `owner/section.yaml` | **Section settings** (+ focus race) | `{focus_race: {race_id (from upcoming-races), build_start, charity: {name}}, story_link?: {href, label} (link hidden until set, FR-024), garmin_devices?: {scale?} (the scale named in weight and body-fat attribution, FR-077; runs carry their own watch), stale_after_hours: 12, featured_goal_limit: 6, recent_highlight_days: {pb: 14, goal: 14}}` (FR-020/021/026/042). Every field except `focus_race` has a schema default; all are owner-editable |
 | `owner/upcoming-races.yaml` | **Upcoming Race** | list `{id, name, date, distance_m\|distance, target_time?, url?, result_ref?}`; `result_ref` = slug of the owner race entry holding the result (see state machine below) |
 | `owner/races/<slug>/race.yaml` | **Race** (+ **Race Photo**) | `{slug, run_id? (opaque public run ID), name?, date, distance, official_time?, official_distance_m?, position?, results_url?, note?, hide_map?, trim_ends_m?, designate: race\|not_race?, photos:[{file, description (required), caption?}]}`; `run_id` absent => hand-entered (FR-051); present => details for that Garmin-recorded race. Photos are files beside it |
 | `owner/run-overrides.yaml` | **Run** flags | list `{id, title?, note?, hide?, exclude_from_records?, include_in_records?, is_race?}` (FR-049/050); `include_in_records: true` is the owner's PB/race-time-goal eligibility override for a treadmill/indoor run (FR-057) |

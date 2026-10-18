@@ -5,6 +5,7 @@ import json
 import os
 
 import pytest
+from conftest import link_dir
 
 from awingest.publish import writer as writer_module
 from awingest.publish.writer import PublishedWriter, PublishInvalid, canonical_json
@@ -71,7 +72,7 @@ def test_paths_outside_the_published_zone_are_refused(writer, path):
 def test_a_symlink_out_of_the_zone_is_refused(writer, root, tmp_path):
     root.mkdir(parents=True)
     (tmp_path / "outside").mkdir()
-    (root / "health").symlink_to(tmp_path / "outside", target_is_directory=True)
+    link_dir(root / "health", tmp_path / "outside")
     with pytest.raises(PublishInvalid, match="outside the published zone"):
         writer.write_json("health/vo2max/2026.json", series(), "published/health-series")
 

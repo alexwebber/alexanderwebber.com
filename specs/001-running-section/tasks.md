@@ -446,6 +446,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   - Every Running page or component that shows Garmin-sourced data (runs, health readings, manual Garmin figures) carries it as placed; it stays visible without JS and meets contrast/a11y rules (text alternative for any mark).
   - Add an e2e assertion (in each story's e2e spec: T095, T109, T123, T137, T144) that the attribution is present, matching the chosen placement, on landing, goals, training, run, race and health pages.
   - **Done 2026-10-17** (the e2e assertions come with each story spec). Placement is title-level: under each page's `<h1>` via `SectionLayout`, and at every chart, tile or card heading (`ChartFigure`'s `source` slot), plus in share images showing Garmin data. Text only, "Source: Garmin [device]". The guidelines (V 6.30.2025) were read through excerpts, because the sandbox can't reach developer.garmin.com, so re-check the PDF at T112. Details are in `src/sections/running/README.md`.
+  - **Devices added 2026-10-18** (owner decision): runs publish their Garmin watch (`device`, from intervals.icu `device_name`); multi-run views list the watches in view (`runDevices()`); weight and body fat name the scale from `section.yaml` `garmin_devices.scale` (T106 sets it to `Index S2`); watch wellness says plain "Garmin".
 
 ### 2i. Foundational graduation coverage, backfill and first publish
 
@@ -505,10 +506,15 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
   4. After a post-import backfill, check the wellness history: the earliest date per wellness field (weight, body fat, HRV, VO2 max, resting HR), from the T150 probe re-run, is recorded in `PROJECT_MEMORY.md`; if wellness history did not import, raise it with the owner (accept the gap, or add a manual history path).
 
   Depends on T001, T055, T067, T070 and T077–T084. **The full-history backfill needs T150** (Garmin export imported into intervals.icu); if T150 is still pending, publish what intervals.icu has (from 2025-10-18) and re-run `backfill --from <earliest>` after the import.
-- [ ] T086 Run the graduation review of the shared plumbing (storage layer, intervals.icu adapter, sanitiser + run IDs + privacy scan, shared shell, Garmin attribution):
+- [X] T086 Run the graduation review of the shared plumbing (storage layer, intervals.icu adapter, sanitiser + run IDs + privacy scan, shared shell, Garmin attribution):
   - Write short design notes in `src/shared/README.md` and `ingest/README.md`, linking to contracts/.
   - Run `uv run pytest` and `npm test` locally.
   - Carry out an adversarial self-review against Principles II, IV and VI, and summarise it in the PR.
+  - **Done 2026-10-18** (local Windows session). pytest: 375 passed, 1 skipped (live R2). Vitest: 327 passed. Build, validate-data, check-boundaries and both scans are clean. The review fixed:
+    - the test helpers' directory symlinks, which need a privilege on Windows (they now fall back to a junction);
+    - processor changes needing a manual `--all`: `PROCESSOR_VERSION` in the input hashes now reprocesses on the next refresh.
+
+    It sent two findings to `BACKLOG.md`: deploy ordering across workflows, and Garmin `external_id`s in the provider-ID scan. The summary is in the PR.
 
 **Checkpoint**: Real sanitised data is in `data/running/published/`, refresh runs every 2 h through
 the gate, and the shell renders. User stories can now begin.
@@ -627,7 +633,7 @@ featured goal and this week's distance within the first two screens.
 - [ ] T103 [US1] Create `src/sections/running/components/Countdown.astro`, an inline script under 1 KB that corrects days remaining client-side in Europe/London. Without JS, the build-time value stays.
 - [ ] T104 [US1] Create the landing OG card `src/sections/running/og/landing.ts` → `/og/running.png`, embedding "N days to Brighton" (FR-072).
 - [ ] T105 [US1] Create `.github/workflows/rebuild-daily.yml`: crons `5 23 * * *` and `5 0 * * *` (UTC) that run gate → deploy (`concurrency: deploy`), so the countdown and OG image follow the UK date.
-- [ ] T106 [US1] Create `data/running/owner/section.yaml`: `focus_race: {race_id: brighton-2027, build_start: <owner value>, charity: {name: Martlets hospice}}`, schema defaults, and no `story_link`. Also add a **validate-data warning** in `scripts/validate-data.ts` when the focus race's `target_time` differs from an active, featured `race_time` goal linked to it. This guards US1.2 (3:30 vs 3:20 shown in two places).
+- [ ] T106 [US1] Create `data/running/owner/section.yaml`: `focus_race: {race_id: brighton-2027, build_start: <owner value>, charity: {name: Martlets hospice}}`, `garmin_devices: {scale: Index S2}` (owner, 2026-10-18), schema defaults, and no `story_link`. Also add a **validate-data warning** in `scripts/validate-data.ts` when the focus race's `target_time` differs from an active, featured `race_time` goal linked to it. This guards US1.2 (3:30 vs 3:20 shown in two places).
 - [ ] T107 [US1] OWNER: Supply the Brighton training-build start date. It is required before the US1 PR merges, and the agent asks for it at that review.
 - [ ] T108 [P] [US1] Create `tests/unit/races.test.ts` and `tests/unit/weeks.test.ts`. They cover:
   - 182 days from 2026-10-04 to 2027-04-04
