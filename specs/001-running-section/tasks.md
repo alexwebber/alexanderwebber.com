@@ -374,7 +374,7 @@ are strict as well (a typo such as `offical_time` is an error, not ignored). Eve
 ### 2g. Pipeline workflows, freshness Worker, production check
 
 - [X] T067 **Rewritten.** Create `.github/workflows/refresh.yml`. It implements **owner decision 1 exactly**:
-  - **Triggers**: `schedule: '17 */2 * * *'`, `workflow_dispatch` (inputs `reimport_from`, `reimport_to`, and boolean `fetch_only`, default false: when true only the `fetch` and `alert` jobs run, with no publish, commit or deploy; used by T070), and `push` to `main` with `paths: data/running/owner/**`.
+  - **Triggers** (amended 2026-10-18: the 2-hourly trigger is now the Worker cron's dispatch, and `schedule` is a guarded `47 1-23/6 * * *` backup; see contracts/pipeline.md "Refresh trigger"): `schedule: '17 */2 * * *'`, `workflow_dispatch` (inputs `reimport_from`, `reimport_to`, and boolean `fetch_only`, default false: when true only the `fetch` and `alert` jobs run, with no publish, commit or deploy; used by T070), and `push` to `main` with `paths: data/running/owner/**`.
   - **Concurrency**: `concurrency: { group: refresh, cancel-in-progress: false }`.
   - **`fetch` job**: always runs on Actions (no `FETCH_MODE`). It runs `uv run awingest fetch` with the `INTERVALS_API_KEY` and `R2_*` secrets.
   - **`publish` job**, in this order:

@@ -13,6 +13,8 @@ function env(stored: unknown, { fails = false } = {}): Env & { reads: string[]; 
   return {
     reads,
     assets,
+    REFRESH_REPO: 'alexwebber/alexanderwebber.com',
+    REFRESH_WORKFLOW: 'refresh.yml',
     ASSETS: {
       async fetch(request) {
         assets.push(new URL(request.url).pathname);

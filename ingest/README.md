@@ -2,7 +2,8 @@
 
 The Python half of the Running pipeline (constitution Principles III, IV and VI): intervals.icu →
 private raw archive (R2) → sanitised JSON in `data/running/published/`. GitHub Actions runs it
-every 2 hours (`.github/workflows/refresh.yml`). The site never calls a provider.
+every 2 hours (`.github/workflows/refresh.yml`, dispatched by the site Worker's Cloudflare cron,
+with a guarded 6-hourly `schedule` as backup). The site never calls a provider.
 
 Contracts: [pipeline](../specs/001-running-section/contracts/pipeline.md) (CLI, workflows,
 alerts, freshness), [provider adapter](../specs/001-running-section/contracts/provider-adapter.md),

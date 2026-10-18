@@ -259,6 +259,10 @@ preview image on every page, not a unique one):
   cron is best-effort and can be delayed 10-60 min, so 2 h gives margin against the 3 h
   requirement). Off-minute avoids the top-of-hour crunch. Cloudflare cron triggers rejected: the
   ingest is Python and needs a runner, Actions is free for this volume and already the build gate.
+  **Amended 2026-10-18:** in practice GitHub dropped three of five slots on the first full day
+  (4 h gaps), so the site Worker's Cloudflare cron now *dispatches* `refresh.yml` every 2 hours
+  (the ingest still runs on Actions), and `schedule` is a guarded 6-hourly backup
+  (contracts/pipeline.md "Refresh trigger"). Free plan: 5 cron triggers per account; this uses 1.
 - **Manual refresh (FR-003)**: `workflow_dispatch` with optional `reimport_from` / `reimport_to`
   inputs (FR-008 re-import). Agent runs `gh workflow run`; owner never needs to.
 - **Daily rebuild**: two crons (`5 23 * * *` and `5 0 * * *` UTC) so the UK date rolls correctly
