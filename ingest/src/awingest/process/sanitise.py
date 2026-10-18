@@ -12,6 +12,8 @@ new provider field can't reach a published file by accident. The published schem
   provider ``name``/``description`` (``title_raw``/``description_raw`` are never read). Titles
   come from ``titles.py``; the note is the owner's (FR-011, FR-012). Race tracks are written by
   their own module (T125), not here.
+- **Device**: the Garmin model (``device``) is kept for the Garmin attribution (FR-077); the
+  adapter has already reduced it to a plain model name.
 - **IDs**: the public run ID comes from ``run_ids.py``; ``provider_id`` is never read.
 - **Series** are averaged into at most 600 buckets (Spike 1b).
 - **Flags**: the owner's ``exclude_from_records`` and ``include_in_records`` are mirrored as
@@ -215,6 +217,8 @@ def sanitise_run(
     }
     if override.note:
         run["note"] = override.note
+    if activity.device:
+        run["device"] = activity.device
     for key, value in (
         ("elevation_gain_m", activity.elevation_gain_m),
         ("elevation_loss_m", activity.elevation_loss_m),

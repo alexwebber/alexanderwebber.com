@@ -5,8 +5,11 @@ the adapter's pure ``normalise_*`` functions.
 - **Incremental**: each run's ``input_hash`` covers its archived parts' ETags and the owner
   overrides for it (``OwnerInputs.run_hash``, which includes the goal distances); each health
   file's covers the wellness days it depends on and the exclusions in them. Unchanged hashes are
-  skipped. ``--all`` redoes everything (after an adapter or processor fix); ``reprocess --run``
-  redoes one run.
+  skipped. Both hashes include ``PROCESSOR_VERSION``: bump it whenever the same archive and
+  owner files would now publish something different (a new published field, an adapter or
+  processor fix), and the next scheduled refresh reprocesses everything, with no manual step.
+  Files whose output didn't change still produce no diff. ``--all`` redoes everything at once;
+  ``reprocess --run`` redoes one run.
 - **IDs**: new activities get a public run ID from the append-only map (``run_ids.py``), which is
   saved before the published tree is committed, so a published ID is always on record.
 - **Hidden runs** are recorded in the manifest as hidden and their file is removed (FR-017).
@@ -54,6 +57,9 @@ from awingest.publish.writer import PublishedWriter
 from awingest.schemas import SchemaSet
 from awingest.state import FETCH_STATUS, StateDoc, parse_utc, utc_iso
 
+# Bump when unchanged inputs would now publish differently (see the module docstring).
+# 2: runs carry the Garmin ``device`` (FR-077 attribution).
+PROCESSOR_VERSION = 2
 MARKER = "fetch.json"
 PUBLISHED = Path("data/running/published")
 OWNER = Path("data/running/owner")
@@ -186,7 +192,9 @@ def load_bundle(archive: RawArchive, prefix: str, provider_id: str, names: list[
 
 def _run_hash(ctx: _Context, run_id: str, objects: dict[str, ObjectInfo]) -> str:
     etags = {name: info.etag for name, info in objects.items()}
-    return input_hash({"parts": etags, "owner": ctx.owner.run_hash(run_id)})
+    return input_hash(
+        {"processor": PROCESSOR_VERSION, "parts": etags, "owner": ctx.owner.run_hash(run_id)}
+    )
 
 
 def _drop(ctx: _Context, run_id: str | None) -> None:
@@ -316,6 +324,7 @@ def process_health(ctx: _Context) -> None:
             until = min(end, last_day) if last_day else end
             entry_hash = input_hash(
                 {
+                    "processor": PROCESSOR_VERSION,
                     "days": {d.isoformat(): e for d, e in etags.items() if start <= d <= end},
                     "until": until.isoformat(),
                     "excluded": ctx.owner.exclusion_hash(source, start, end),

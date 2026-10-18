@@ -42,6 +42,16 @@ developer.garmin.com. Re-check the PDF itself before go-live (T112).
 - **Text only:** "Source: Garmin" or "Source: Garmin <device>", and for intervals.icu's
   fitness/fatigue/form, "Derived in part from Garmin device-sourced data". There is no logo, so
   there are no brand assets in the repo.
+- **Which device** (owner decision, 2026-10-18):
+  - **Runs** carry the watch that recorded them (published `device`, from intervals.icu's
+    `device_name`), so a run page names its own watch (`device={run.device}`).
+  - **Multi-run views** name each watch in view, newest first (`device={runDevices(runs)}`,
+    `domain/attribution.ts`). With more than three watches they fall back to plain "Garmin".
+  - **Weight and body fat** name the scale from `section.yaml` `garmin_devices.scale`
+    (`<GarminAttribution scale />`).
+  - **Watch wellness** (VO2 max, HRV, resting HR) and the manual figures say plain "Garmin",
+    because no per-day device is recorded.
+  - **The HRM 600 strap** isn't named, because the recording device is the watch.
 - **Under every page heading:** each page that shows Garmin data passes `garmin` to
   `SectionLayout`, which puts the attribution directly under the `<h1>`.
 - **On every chart, tile and card:** each one showing Garmin data also carries it at its own

@@ -23,7 +23,7 @@ export interface Props {
   image: string;
   imageAlt: string;
   /** Show Garmin attribution under the heading (any page showing Garmin-sourced data, FR-077). */
-  garmin?: boolean | { device?: string; derived?: boolean };
+  garmin?: boolean | { device?: string | readonly string[]; scale?: boolean; derived?: boolean };
   /** href of the nav item this page sits under (e.g. a run page under Training). */
   current?: string;
 }

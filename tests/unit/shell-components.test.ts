@@ -251,7 +251,9 @@ describe('LastUpdated', () => {
 describe('GarminAttribution', () => {
   it.each([
     [{}, 'Source: Garmin'],
-    [{ device: 'Forerunner 965' }, 'Source: Garmin Forerunner 965'],
+    [{ device: 'Venu X1' }, 'Source: Garmin Venu X1'],
+    [{ device: ['Venu X1', 'Venu 2 Plus'] }, 'Source: Garmin Venu X1, Garmin Venu 2 Plus'],
+    [{ device: [] }, 'Source: Garmin'],
     [{ derived: true }, 'Derived in part from Garmin device-sourced data'],
   ])('%o reads "%s"', async (props, text) => {
     const html = await render(GarminAttribution, props);
@@ -306,6 +308,13 @@ describe('SectionLayout', () => {
     setRunningStore(fakeStore());
     const html = await render(SectionLayout, { ...props, garmin: true }, {}, '/running/goals/');
     expect(html).toMatch(/<\/h1>\s*<p class="garmin-attribution" data-garmin-attribution>Source: Garmin<\/p>/);
+  });
+
+  it('names the scale from section.yaml for weight and body fat, else plain Garmin', async () => {
+    setRunningStore(fakeStore({ garmin_devices: { scale: 'Index S2' } }));
+    expect(await render(GarminAttribution, { scale: true })).toContain('>Source: Garmin Index S2</p>');
+    setRunningStore(fakeStore());
+    expect(await render(GarminAttribution, { scale: true })).toContain('>Source: Garmin</p>');
   });
 
   it("uses the owner's stale threshold", async () => {

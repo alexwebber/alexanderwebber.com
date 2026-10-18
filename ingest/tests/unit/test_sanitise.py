@@ -21,7 +21,7 @@ SCHEMAS = SchemaSet(PACKAGE_REPO / "schemas")
 
 # Everything a published run may hold (run.schema.json); the sanitiser must add nothing else.
 ALLOWED = {
-    "schema_version", "id", "date", "type", "treadmill", "is_race", "title", "note",
+    "schema_version", "id", "date", "type", "treadmill", "is_race", "title", "note", "device",
     "distance_m", "moving_s", "elapsed_s", "elevation_gain_m", "elevation_loss_m",
     "avg_pace_s_per_km", "best_pace_s_per_km", "hr", "cadence_avg", "stride_m_avg",
     "power_w_avg", "dynamics", "training_effect", "splits", "hr_zones", "series",
@@ -74,6 +74,11 @@ def test_missing_metrics_are_omitted_not_zero():
                 "elevation_gain_m", "elevation_loss_m"):  # fmt: skip
         assert key not in run
     assert set(run["series"]) == {"x_dist_m", "x_elapsed_s", "pace"}
+
+
+def test_the_device_is_kept_for_the_attribution_and_omitted_when_unknown():
+    assert valid(sanitise_run(activity(device="Venu X1"), run_id=RUN))["device"] == "Venu X1"
+    assert "device" not in valid(sanitise_run(activity(), run_id=RUN))
 
 
 def test_out_of_range_values_are_left_out_rather_than_failing():

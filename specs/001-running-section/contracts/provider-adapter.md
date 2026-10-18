@@ -104,7 +104,8 @@ required fields present; units normalised (metres, seconds, kg, bpm); `type` map
 `road|track|trail|indoor` and `VirtualRun` -> `treadmill: true`; non-run activities rejected;
 missing optional metrics are `None` (never 0); per-km splits computed from streams; timestamps
 converted to Europe/London; non-approved wellness keys absent from archived and normalised output;
-403-HTML vs 401/403-JSON error mapping; the User-Agent header always set; and the same fixture
+403-HTML vs 401/403-JSON error mapping; the User-Agent header always set; `device` is a plain
+Garmin model name or `None` (its pattern matches the published schema's); and the same fixture
 always yields identical output (determinism).
 
 ## Adding a provider

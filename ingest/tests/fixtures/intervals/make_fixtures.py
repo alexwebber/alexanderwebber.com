@@ -34,6 +34,14 @@ ACTIVITIES = [
     ("trail", "i90000005", "TrailRun", "2026-06-20T08:45:00", 12.3, 390, {"hilly": True}),
     ("trainer-run", "i90000006", "Run", "2026-02-10T12:00:00", 4.0, 340, {"trainer": True}),
 ]
+# intervals.icu device_name per activity; run-basic has none, and a non-Garmin name is dropped.
+DEVICES = {
+    "run-dynamics": "Garmin Venu X1",
+    "treadmill": "Garmin Venu 2 Plus",
+    "race": "Garmin Venu X1",
+    "trail": "Garmin Venu X1",
+    "trainer-run": "Zwift",
+}
 NON_RUN = ("weights", "i90000007", "WeightTraining", "2026-10-12T17:30:00")
 
 
@@ -129,6 +137,7 @@ def detail(
         "average_vertical_oscillation": None,
         "average_vertical_ratio": None,
         "timezone": "Europe/London",
+        "device_name": DEVICES.get(name),
         "icu_intervals": [],
     }
     if extras.get("dynamics"):
@@ -167,6 +176,7 @@ def list_row(full: dict) -> dict:
         "trainer",
         "device_watts",
         "timezone",
+        "device_name",
     ]
     return {k: full[k] for k in keep} | {"icu_average_watts": None}
 

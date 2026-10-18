@@ -89,6 +89,8 @@ def test_a_first_run_publishes_every_run_and_series(run, published, repo, filled
     ids = json.loads(filled_archive.get(RUN_IDS))
     assert sorted(ids) == [f"i9000000{n}" for n in range(1, 7)]
     assert set(runs(published)) == set(ids.values())
+    devices = [doc.get("device") for doc in runs(published).values()]
+    assert sorted(devices, key=str) == [None, None, "Venu 2 Plus", "Venu X1", "Venu X1", "Venu X1"]
 
 
 def test_nothing_private_reaches_the_published_tree_or_the_log(run, published):
@@ -132,6 +134,18 @@ def test_all_reprocesses_but_identical_output_is_not_a_change(run, published):
     result = run(now=LATER, all_runs=True)
     assert result.runs.written == 6 and result.health.written == 7
     assert tree(published) == before
+
+
+def test_a_processor_version_bump_reprocesses_everything_on_the_next_run(
+    run, published, monkeypatch
+):
+    run()
+    before = tree(published)
+    monkeypatch.setattr(pipeline, "PROCESSOR_VERSION", pipeline.PROCESSOR_VERSION + 1)
+    result = run(now=LATER)
+    assert result.runs.written == 6 and result.health.written == 7
+    assert set(tree(published)) == set(before)  # same files; only the manifest hashes differ
+    assert run(now=LATER).runs.unchanged == 6  # and then it settles again
 
 
 def test_an_owner_change_rewrites_only_the_runs_it_touches(run, published, repo, filled_archive):

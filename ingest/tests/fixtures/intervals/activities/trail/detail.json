@@ -33,5 +33,6 @@
   "average_vertical_oscillation": null,
   "average_vertical_ratio": null,
   "timezone": "Europe/London",
+  "device_name": "Garmin Venu X1",
   "icu_intervals": []
 }

@@ -35,6 +35,8 @@ export interface Settings {
   /** Undefined until section.yaml exists. */
   focus_race: SectionSettings['focus_race'] | undefined;
   story_link: SectionSettings['story_link'];
+  /** Devices the data doesn't name itself (FR-077); runs carry their own watch. */
+  garmin_devices: { scale?: string };
 }
 
 /** section.yaml with every default filled in, also before the file exists. */
@@ -50,6 +52,7 @@ export function sectionSettings(): Promise<Settings> {
       },
       focus_race: section?.focus_race,
       story_link: section?.story_link,
+      garmin_devices: { ...section?.garmin_devices },
     }));
   return settings;
 }

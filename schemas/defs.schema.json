@@ -30,6 +30,12 @@
       "maxLength": 80,
       "x-error": "is not a valid id (use lowercase letters, digits and hyphens, e.g. brighton-2027)"
     },
+    "garminDevice": {
+      "description": "A Garmin device model without the 'Garmin ' prefix, e.g. Venu X1 or Index S2 (FR-077 attribution).",
+      "type": "string",
+      "pattern": "^(?!Garmin )[A-Za-z0-9][A-Za-z0-9 +.-]{0,38}[A-Za-z0-9+]$",
+      "x-error": "is not a device model (letters, digits, spaces, '+', '.' or '-', e.g. Venu X1)"
+    },
     "text": {
       "description": "Free text: non-empty, with no leading or trailing whitespace.",
       "type": "string",

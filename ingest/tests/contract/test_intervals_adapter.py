@@ -130,6 +130,46 @@ def test_type_mapping(runs, name, kind, treadmill):
     assert (runs[name].type, runs[name].treadmill) == (kind, treadmill)
 
 
+@pytest.mark.parametrize(
+    ("name", "device"),
+    [
+        ("run-dynamics", "Venu X1"),
+        ("treadmill", "Venu 2 Plus"),
+        ("run-basic", None),  # no device_name
+        ("trainer-run", None),  # not a Garmin device
+    ],
+)
+def test_the_garmin_device_is_the_model_name_only(runs, name, device):
+    assert runs[name].device == device
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "Garmin ",
+        "Garmin Venu X1\n",
+        "Garmin <b>Venu</b>",
+        "Garmin Garmin Venu",
+        "Garmin " + "A" * 41,
+        "Venu X1",
+        12,
+    ],
+)
+def test_an_unusual_device_name_is_dropped(value):
+    from awingest.providers.intervals.normalise import _device
+
+    assert _device(value) is None
+
+
+def test_the_device_pattern_matches_the_published_schema():
+    from conftest import REPO
+
+    from awingest.providers.intervals.normalise import DEVICE_PATTERN
+
+    defs = json.loads((REPO / "schemas/defs.schema.json").read_text(encoding="utf-8"))
+    assert defs["$defs"]["garminDevice"]["pattern"] == f"^{DEVICE_PATTERN}$"
+
+
 def test_the_race_flag_is_carried(runs):
     assert runs["race"].is_race_flag is True
     assert runs["run-dynamics"].is_race_flag is False

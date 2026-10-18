@@ -21,6 +21,7 @@
     "trainer": false,
     "device_watts": true,
     "timezone": "Europe/London",
+    "device_name": "Garmin Venu X1",
     "icu_average_watts": null
   },
   {
@@ -45,6 +46,7 @@
     "trainer": false,
     "device_watts": false,
     "timezone": "Europe/London",
+    "device_name": null,
     "icu_average_watts": null
   },
   {
@@ -69,6 +71,7 @@
     "trainer": true,
     "device_watts": false,
     "timezone": "Europe/London",
+    "device_name": "Garmin Venu 2 Plus",
     "icu_average_watts": null
   },
   {
@@ -93,6 +96,7 @@
     "trainer": false,
     "device_watts": false,
     "timezone": "Europe/London",
+    "device_name": "Garmin Venu X1",
     "icu_average_watts": null
   },
   {
@@ -117,6 +121,7 @@
     "trainer": false,
     "device_watts": false,
     "timezone": "Europe/London",
+    "device_name": "Garmin Venu X1",
     "icu_average_watts": null
   },
   {
@@ -141,6 +146,7 @@
     "trainer": true,
     "device_watts": false,
     "timezone": "Europe/London",
+    "device_name": "Zwift",
     "icu_average_watts": null
   },
   {

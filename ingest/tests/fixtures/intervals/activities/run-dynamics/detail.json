@@ -33,6 +33,7 @@
   "average_vertical_oscillation": 86.4,
   "average_vertical_ratio": 7.3,
   "timezone": "Europe/London",
+  "device_name": "Garmin Venu X1",
   "icu_intervals": [],
   "average_step_length": 1.18
 }

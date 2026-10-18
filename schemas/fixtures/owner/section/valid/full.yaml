@@ -5,6 +5,7 @@ focus_race:
   charity:
     name: Martlets hospice
 story_link: { href: /story/, label: My story }
+garmin_devices: { scale: Index S2 }
 stale_after_hours: 12
 featured_goal_limit: 6
 recent_highlight_days: { pb: 14, goal: 14 }

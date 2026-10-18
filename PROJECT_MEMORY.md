@@ -9,41 +9,42 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-18):** Phase 2h (the shared shell, T072–T076, T152) merged as PR #25, with
-  all four confirmations ticked (see the log). The scheduled refresh publishes on its own.
-- **Cloud sessions work well for self-contained slices.** Keep using them until the credits
-  expire on 2026-11-05. In a cloud session:
-  - **Linux, not Windows.** The owner's global `~/.claude/CLAUDE.md` isn't loaded. Its norms
-    still apply: branch from `origin/main`, raise a PR, never merge it. The harness names the
-    branch (`claude/...`); use it.
-  - **No secrets in the sandbox.** Anything that needs them runs as a throwaway workflow with a
-    `push` trigger scoped to the branch and workflow file. The session can read job logs through
-    the GitHub MCP tools once the job has finished (a 404 until then).
-  - **Version check:** re-verify pins with `npm view` and PyPI's JSON API (`check-versions.ps1`
-    is on the owner's PC).
-- **Owner setup done:** T001 (R2 bucket `alexanderwebber-private`, `R2_*` secrets), T002
-  (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`), the intervals.icu key
-  (`INTERVALS_API_KEY`). T003 is dropped. The `alexanderwebber` workers.dev subdomain is
-  registered (Spike 1a).
+- **Status (2026-10-18):** T086 (the graduation review) and the Garmin device attribution are in
+  PR #27 (branch `001-phase2-graduation`). It has three confirmations for the owner.
+  - **If it has merged**, check each box answer first, and record the answers in the decisions
+    log.
+  - **The next scheduled refresh after the merge** reprocesses every run (`PROCESSOR_VERSION`
+    2), so published runs gain `device`. Check the bot commit adds it.
+- **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
+  start. Cloud credits remain until 2026-11-05 but are mostly used, so only suggest a cloud
+  session for a slice that needs no secrets and no owner input.
+- **Each session, first:**
+  - **Refresh runs:** fix any red one first.
+  - **Scheduler gaps:** on 2026-10-18 GitHub dropped the 00:17, 02:17 and 06:17 UTC slots (gaps
+    up to 4 h). If gaps over 3 h are still happening, raise the PR in which the freshness Worker's
+    Cloudflare cron dispatches `refresh.yml`, and keep `schedule` as a backup. The owner then
+    creates a fine-grained token (Actions: write, this repo only); the agent walks them through
+    it.
+  - **Actions minutes:** if the owner has run `gh auth refresh -h github.com -s user`, read the
+    usage (`gh api "/users/alexwebber/settings/billing/usage/summary?product=actions"`) and warn
+    before the 2,000-minute limit. If the scope hasn't been granted yet, remind the owner once.
+- **Owner setup done:** T001 (R2 + `R2_*`), T002 (Cloudflare token and account), the
+  intervals.icu key, and the `alexanderwebber` workers.dev subdomain. T003 is dropped.
 - **Still with the owner:**
-  - T004 (nameservers): the agent walks them through it.
-  - **T150:** the Garmin export. When it arrives, the agent walks them through
-    *intervals.icu → Settings → Import all Garmin data*, then re-runs the probe to check wellness
-    history came across.
-  - The owner keeps setup values in `C:\temp\r2.txt` and will delete it after setup. Remind
-    them once T004 is done.
-- **Next step: T086 (graduation review of the shared plumbing)**, then Phase 3 (US2 Goals,
-  T087 onwards). Ideally run it as another cloud session from `origin/main` once PR #25 merges.
-  - **First, ask which Garmin devices to name** in the attribution (PR #25 confirmation 2 was
-    ticked "yes" with no models given): the watch or watches for runs, and the scale for weight
-    and body fat. Add them as an optional `section.yaml` setting that `GarminAttribution` reads.
-  - **The scheduled refresh works on `main`** (checked 2026-10-18). The first scheduled run
-    (39081375802) started at 00:03 UTC; the 22:17 slot fired about 1h45 late. Fetch, publish
-    with the gate, the bot commit `29d617f` and the deploy were all green. Each session, glance
-    at the latest refresh runs, and fix any red one first.
-  - **Goals need the owner's input.** Phase 3 needs `goals.yaml`, `upcoming-races.yaml` and
-    `section.yaml`, including the VO2 max target value and the Brighton build start (see *Open
-    questions*). Run a question round first.
+  - **T004 (nameservers):** the agent walks them through it.
+  - **T150:** the Garmin export. When it arrives, the agent walks them through *intervals.icu →
+    Settings → Import all Garmin data*, re-runs the probe, then runs T085's backfill.
+  - **Setup values file:** the owner keeps them in `C:	emp2.txt`. Remind them to delete it
+    once T004 is done.
+- **Next step: Phase 3 (US2 Goals, T087–T095, T153–T154)** on a new branch from `origin/main`.
+  - **Start with a question round.** Ask for:
+    - the VO2 max target (T093);
+    - the Brighton build start date (it goes in `section.yaml` in T106, alongside
+      `garmin_devices.scale: Index S2`);
+    - the featured goals, their priorities and any start values;
+    - the current Garmin training status and race predictions for 5k, 10k, half and marathon,
+      with the date read (T154).
+  - **Don't invent values** (Principle VIII). A missing value means the goal waits.
   - T085 (full backfill) still waits on T150.
 
 ## Vision
@@ -567,7 +568,46 @@ project-specific notes.
   - **Running's warm look** is OK as a starting point.
   - **Dark mode follows the OS setting only**, with no toggle.
 
+- **2026-10-18** — **Back to local sessions** (owner). The owner has a large local allowance and
+  has used much of the cloud credit, so sessions run locally on Windows again.
+- **2026-10-18** — **Garmin devices in the attribution** (owner answers):
+  - **Kit:** a Venu X1 watch, an Index S2 scale, and an HRM 600 strap (new).
+  - **Runs publish their own watch.** The new `device` field comes from intervals.icu's
+    `device_name`. Only a plain Garmin model name is kept, with the "Garmin " prefix stripped.
+    Recent history shows Venu X1 (236 activities) and Venu 2 Plus (43), so naming today's kit on
+    every view would have mislabelled older runs.
+  - **Multi-run views** list their watches, newest first, falling back to plain "Garmin" past
+    three.
+  - **Weight and body fat** name the scale from `section.yaml` `garmin_devices.scale`
+    (`Index S2`; it has always been the S2). T106 writes it when it creates `section.yaml`.
+  - **Watch wellness and manual figures** say plain "Garmin".
+  - **The HRM 600 isn't named**, because the recording device is the watch.
+  - **Shoes and gear** went to the backlog.
+- **2026-10-18** — **`PROCESSOR_VERSION` in the input hashes** (T086 review). Bumping it makes
+  the next scheduled refresh reprocess everything, so a processor change (like `device`) needs no
+  manual `process --all`. It is now 2.
+- **2026-10-18** — **Scheduler and Actions minutes** (owner picks):
+  - **Watch the schedule for a day.** GitHub fired only the 22:17 slot (at 00:03) and the 04:17
+    slot (at 04:37), and dropped the 00:17, 02:17 and 06:17 slots. If gaps over 3 h persist, the
+    agent raises a PR in which the freshness Worker's Cloudflare cron dispatches `refresh.yml`.
+    That needs a fine-grained token with Actions: write on this repo only.
+  - **Minutes are monitored.** The private repo meters Actions: a refresh bills about 3 minutes,
+    or 5 when it publishes, so roughly 1,200–1,500 a month against GitHub Free's 2,000. Once the
+    owner grants `gh` the `user` scope, the agent checks usage each session and warns before the
+    limit.
+
 ## Upstream candidates
+
+- 2026-10-18 — Tests written in Linux cloud sessions symlinked a directory into temp repos. On
+  Windows that needs the symlink privilege (WinError 1314), so 48 pytest cases errored on the
+  first local run, while CI and the cloud were green. Agent tip (Windows gotchas): when a
+  project alternates between cloud and local sessions, run the full suites locally on return.
+  Test helpers should fall back to a directory junction (`_winapi.CreateJunction`; Node
+  `symlinkSync(..., 'junction')`).
+- 2026-10-18 — Incremental processing keyed on input hashes alone meant a processor change
+  (a new published field) would never reach already-published files without a manual `--all`
+  that no workflow ran. Generalisation (pipelines): include a code or processor version in
+  every incremental cache key, so a change reprocesses on its own.
 
 - 2026-10-18 — The browser-test page for the shared shell read "Last updated" from the repo's
   published data. Its tests assumed there was none, so they broke on the PR as soon as the first
@@ -577,7 +617,10 @@ project-specific notes.
 - 2026-10-18 — A newly merged GitHub Actions `schedule` fired its first slot about 1h45 late
   (22:17 slot, run started 00:03 UTC), with zero schedule runs listed in between. Agent tip:
   don't treat a missed first slot as a failure or dispatch a publishing run to "unstick" it.
-  Wait about two slots, and check the workflow is `active` on the default branch.
+  Wait about two slots, and check the workflow is `active` on the default branch. Later that
+  day it **dropped** three of five 2-hourly slots outright, not just delayed them (a 4 h gap).
+  So a freshness requirement of a few hours can't rest on GitHub `schedule` alone; plan for an
+  external trigger (e.g. Cloudflare cron calling `workflow_dispatch`).
 - 2026-10-17 — satori sizes boxes content-box. A root with `width: 100%` plus padding and a border
   rendered at 1360 x 790 on a 1200 x 630 canvas, and the footer line fell off the image. Agent
   tip: give the sized root no padding or border, and put the padding on a `flexGrow: 1` child.

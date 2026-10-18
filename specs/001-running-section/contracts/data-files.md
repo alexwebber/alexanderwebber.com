@@ -57,6 +57,7 @@ this ID (copy it from the run page URL).
 # section.yaml  (every field optional except focus_race; defaults shown)
 focus_race: { race_id: brighton-2027, build_start: 2026-11-16, charity: { name: Martlets hospice } }
 # story_link: { href: /story/, label: My story }   # hidden until set (FR-024)
+garmin_devices: { scale: Index S2 }   # named in weight/body-fat attribution (FR-077)
 stale_after_hours: 12
 featured_goal_limit: 6
 recent_highlight_days: { pb: 14, goal: 14 }
