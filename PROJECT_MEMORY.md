@@ -9,15 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-18):** PR #27 (T086 graduation, device attribution) merged; answers are in
-  the decisions log. The refresh trigger is in PR #28 (branch `001-refresh-cron-trigger`): the
-  Worker's Cloudflare cron dispatches `refresh.yml`, and `schedule` is a guarded 6-hourly backup.
-  - **If it has merged:** check `gh run list --workflow refresh.yml --event workflow_dispatch`
-    shows a run every 2 h (at about :17), and the backup slots (01:47, 07:47, 13:47, 19:47 UTC)
-    skip after their guard job. Any `refresh-trigger-failing` issue comes first.
-  - **The `GITHUB_DISPATCH_TOKEN` Worker secret** must be set before (or right after) merge; see
-    the PR. Its expiry date goes in the decisions log, and the agent rotates it with the owner a
-    week before.
+- **Status (2026-10-18):** PRs #27 and #28 merged. The Worker's Cloudflare cron now dispatches
+  `refresh.yml` every 2 h (first slot 18:17 UTC), and `schedule` is a guarded 6-hourly backup.
+  The `GITHUB_DISPATCH_TOKEN` secret is set, and a test dispatch returned 204.
+  - **Check first:** `gh run list --workflow refresh.yml --event workflow_dispatch` shows a run
+    every 2 h (at about :17), and the backup slots (01:47, 07:47, 13:47, 19:47 UTC) skip after
+    their guard job. Any `refresh-trigger-failing` issue comes first.
+  - **Leaked credentials (2026-10-18):** a shape check printed the R2 access key and secret,
+    the Cloudflare API token and the intervals.icu key into the session transcript (not the
+    repo or any log). Ask whether the owner has rotated them. If yes, update the repo secrets
+    (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `CLOUDFLARE_API_TOKEN`, `INTERVALS_API_KEY`)
+    and the owner's local `R2_*` user env vars from the setup file, without printing values.
+  - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
+    week of 2027-10-11.
   - **Device field:** the first refresh after PR #27 reprocesses every run (`PROCESSOR_VERSION`
     2). Check the bot commit adds `device` to published runs.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -618,8 +622,20 @@ project-specific notes.
   - **Failures are visible:** a failed dispatch logs `refresh_dispatch_failed` (code, status,
     likely cause, action, never the token) and fails the invocation. Worker logs are on
     (`observability.enabled`).
+- **2026-10-18** — Owner ticked all three PR #28 confirmations. The dispatch token has a
+  **1-year expiry: 2027-10-17 23:00 UTC** (18 Oct UK time). GitHub offers no expiry, but
+  advises against it. The agent raises a new token a week before; if it lapses, the backup
+  schedule keeps refreshing and the `refresh-trigger-failing` issue opens within 6 h. The secret
+  was set with the Cloudflare API token from the setup file (no `wrangler login`), and a test
+  dispatch with it returned 204.
 
 ## Upstream candidates
+
+- 2026-10-18 — A secrets-file shape check (`awk -F=` printing the key and value length) assumed
+  `KEY=value` lines. The owner's file used `Key: value`, so each whole line, value included,
+  printed as the "key", leaking four credentials into the transcript. Agent tip for the secrets
+  file helper: never print any part of a line. Print line numbers, a fixed label for known keys,
+  and lengths only, and treat a line with no `=` as unparsed rather than as a key.
 
 - 2026-10-18 — Tests written in Linux cloud sessions symlinked a directory into temp repos. On
   Windows that needs the symlink privilege (WinError 1314), so 48 pytest cases errored on the
