@@ -26,8 +26,8 @@ and performance trends.
 
 All running and health data comes from his **Garmin** watch and Garmin Index smart scale, reaching
 the site through **intervals.icu**, an official Garmin sync partner that the site reads with
-Alexander's personal API key. His full history comes from his Garmin data export, imported into
-intervals.icu. The site keeps its own copy of that data, refreshed every few hours, so pages never
+Alexander's personal API key. His history starts in October 2025, when his serious training began;
+his Garmin data export is used to check that no run since then is missing. The site keeps its own copy of that data, refreshed every few hours, so pages never
 depend on intervals.icu or Garmin being available. Two Garmin figures intervals.icu does not
 provide — **training status** and **race predictions** — are entered by hand with the date they
 were read and shown "as of" that date. Everything Alexander adds by hand — goals, older races,
@@ -555,8 +555,8 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
 - **SC-008**: Every page, shared in common messaging and social apps, shows a preview with its own
   title, description and image.
 - **SC-009**: The full backfill covers 100% of running activities and approved health history
-  present in intervals.icu at the time of the backfill (after the owner's Garmin export has been
-  imported into it), and spot-checks of 20 random runs match intervals.icu's distance, time and
+  present in intervals.icu at the time of the backfill (from October 2025, with any runs missing
+  from the owner's Garmin export uploaded to intervals.icu first), and spot-checks of 20 random runs match intervals.icu's distance, time and
   heart-rate figures.
 - **SC-010**: The owner can add a new goal, race result, photo or lab measurement by editing files and
   see it live within one site update, with any mistake caught before going live 100% of the time.
@@ -590,9 +590,12 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
 - **Data provider** (owner decision 2026-10-17): intervals.icu, an official Garmin sync partner,
   read with a personal API key. Garmin Connect directly is reconsidered only if intervals.icu
   cannot supply something required.
-- **History**: the owner's Garmin data export is imported into intervals.icu (*Settings → Import
-  all Garmin data*), so full history arrives through the same provider; pre-Garmin races remain
-  manual entries.
+- **History** (owner decision 2026-10-23, replacing the full import): history starts in October
+  2025, what intervals.icu holds (from 2025-10-18). The full Garmin export is **not** imported into
+  intervals.icu: it would add no PBs or goal data, and a bulk import risks duplicate activities.
+  The export is instead audited against the published runs from 2025-10-01, and any missing runs
+  are uploaded to intervals.icu as FIT files, so they flow through the normal pipeline. Older races
+  can still be manual entries (none wanted at the time of the decision).
 - **Manual Garmin figures**: Garmin training status and race predictions are not available from
   intervals.icu, so the owner enters them (dated) whenever he likes; they are shown "as of" their
   date.
