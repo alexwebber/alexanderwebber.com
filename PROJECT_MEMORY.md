@@ -9,17 +9,20 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, evening):** Phase 4 (US1 Landing, #38) is merged, with all seven
-  confirmations ticked (SC-001's goal count is fine for now, to revisit at the site review).
-  Spec Kit 1.2.3 (#35) and the Brighton sub-3:20 target (#36) are merged. The Quality-workflow
-  fix (#37, `001-lighthouse-socket`) is raised; #38 already carries the same script change.
+- **Status (2026-10-23, late):** Phase 4 (US1 Landing, #38) is merged, plus the owner's first
+  site-review fixes: "if raced today" predictions and "in a longer run" efforts (#40), body fat
+  on its 7-day average (#41), and the full intervals.icu history (197 runs). The timer-time
+  best-effort fix is raised as a PR (`001-pause-free-efforts`).
   - **Check first:**
-    - whether #37 merged (and the site-review norm PR, `001-site-review-norm`).
-    - the first 00:17 UTC catch-all after the landing PR merges: its `deploy` job must run even
-      with no data change (T105). Check the run.
+    - whether `001-pause-free-efforts` merged, and that the next refresh reprocessed everything
+      (`PROCESSOR_VERSION` 3). The 5 Apr 2026 half should then read about 1:43:42, the fastest
+      21.1 km inside a 21.13 km run timed at 1:43:51 without pauses.
+    - the first 00:17 UTC catch-all since #38: its `deploy` job must run even with no data
+      change (T105). Check the run.
     - **all** workflows on each PR, including the non-required Quality check, not only the gate.
-    - minutes: 530 used at about 14:20 UTC on 2026-10-23 (October should end near 850).
-      If it's close to the limit, use the owner's lever order (2026-10-23 decision).
+    - minutes: 649 used by 19:30 UTC on 2026-10-23 (the backfill and PR checks took about 120
+      that day). October should end under 1,000. If it's close to the limit, use the owner's
+      lever order (2026-10-23 decision).
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -49,7 +52,9 @@ Update this as decisions get made — treat it as the source of truth alongside
     live site (`https://alexanderwebber.alexanderwebber.workers.dev/running/`, the goals page
     and a run page) on a phone and a desktop, with exact steps. Then run a question round on
     what they saw, including whether seven goals on the landing page is too many (SC-001).
-    Fold the answers into the T110 fixes.
+    Fold the answers into the T110 fixes. The owner has already looked once (2026-10-23) and
+    found three wording/number problems, all fixed; they offered to check more figures, so
+    include a figures pass (do the numbers on each card and chart agree?).
   - **T110:** the graduation review: Playwright, axe, the Lighthouse budget (CI only on
     Windows), privacy scans, an adversarial self-review and the design note
     `src/sections/running/README.md`.
@@ -762,9 +767,25 @@ project-specific notes.
     fat's headline is the latest reading"). The card said "8.7% to go" (from the 26.2% average)
     next to "Now 26.0%" (that day's reading). "Now" is now the same average, labelled
     "(7-day average)" like weight, so every figure on a card agrees.
+  - **History backfilled:** both re-imports succeeded (19 min of fetch for Oct 2025 to Apr 2026),
+    so the site has **197 runs** back to October 2025, and the training build fills from 5 Sep.
+  - **Best efforts use timer time** (owner pick; replaces the plan's elapsed-time rule). The April
+    half read 1:46:02 because two watch pauses (71 s and 70 s) counted; the owner's figure was
+    1:43:52, and intervals.icu's `icu_recording_time` for it is 6,231 s (1:43:51). A watch pause
+    shows in the time stream as a jump with almost no distance, so `track()` leaves out any gap
+    over 1 s covering under 0.5 m/s. A throwaway check on all 197 runs found these jumps match
+    the paused time to within 5 s in 168 runs. A stop with the watch running still counts, and
+    races keep their official times. `PROCESSOR_VERSION` 3 makes the next refresh reprocess
+    everything.
 
 ## Upstream candidates
 
+- 2026-10-23 — Most of the owner's first comments on the live site were about meaning, not
+  bugs the tests could catch: Garmin predictions read as race-day forecasts, a "fastest" time
+  counted watch pauses that Garmin leaves out, and one card mixed a 7-day average with a single
+  reading. Generalisation (spec quality, personal-data sites): for every figure shown, the spec
+  should say what it means in the source app (now vs forecast, timer vs elapsed, average vs
+  reading), and the owner should see the real page early, before more is built on it.
 - 2026-10-23 — The site's run history started on the day the refresh first ran, because the
   full backfill was held back until a later data import, so the owner's real best half (from
   April) was missing and the page showed a slower one as "fastest". Generalisation (data

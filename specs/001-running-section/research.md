@@ -329,7 +329,8 @@ only from `astro.config.mjs`.
   marathon < 1:46:00) **or** the segment's peak 1 km split is < 2:30/km. Table in
   `ingest/.../plausibility.py`, owner can still exclude any run. Rationale: catches GPS glitches
   while being irrelevant to a real recreational runner.
-- **Best-effort algorithm**: sliding window over the cumulative-distance / elapsed-time stream
+- **Best-effort algorithm**: sliding window over the cumulative-distance / timer-time stream (watch
+  pauses, seen as time jumps with almost no distance, are left out, as on Garmin; owner 2026-10-23)
   (two-pointer with linear interpolation at the window start), for fixed distances (1 km, 1 mi,
   3 km, 5 km, 10 km, 15 km, 10 mi, 20 km, half, 30 km, marathon) plus any goal distance. Computed
   in the processor (needs second-by-second data) and stored in each published run.
