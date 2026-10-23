@@ -1,0 +1,149 @@
+---
+// /running/ (T101, US1; contracts/routes.md): "how is Alex doing and what is he aiming for?". In
+// order: the focus-race hero (countdown, target, Garmin prediction "as of" its date, charity,
+// training build), the featured goals in priority order, this week and the latest run, the story
+// link (only once it exists), and links to the section's other areas. "Last updated" and the stale
+// notice come from SectionLayout.
+//
+// Featured goals (owner pick, 2026-10-23): one column on phones; wider, the first goal spans the
+// full width as the lead card and the rest follow two by two, so an odd count fills the rows.
+// Achieved featured goals stay (in priority order) with the celebratory card; newly achieved ones
+// are highlighted for recent_highlight_days.goal days (FR-042).
+//
+// Evaluated at build time for today in Europe/London; the daily 00:17 UTC deploy keeps the
+// countdown and dates current, and Countdown corrects the day count client-side.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { ogPath } from '../../../shared/og/render.ts';
+import AchievedGoalCard from '../components/AchievedGoalCard.astro';
+import GoalCard from '../components/GoalCard.astro';
+import Hero from '../components/Hero.astro';
+import RunCard from '../components/RunCard.astro';
+import SectionLayout from '../components/SectionLayout.astro';
+import SectionLinks from '../components/SectionLinks.astro';
+import StoryLink from '../components/StoryLink.astro';
+import ThisWeek from '../components/ThisWeek.astro';
+import { loadLanding } from '../data/landing.ts';
+import { sectionSettings } from '../data/load.ts';
+import { viewAttribution } from '../domain/attribution.ts';
+import { countdownText } from '../domain/races.ts';
+import { shippedAreas } from '../integration.ts';
+
+const PATH = '/running/';
+const data = await loadLanding();
+const settings = await sectionSettings();
+const { focus, week, weekRuns, lastWeekRuns, latest, featured, today } = data;
+const goalsHref = shippedAreas().find((area) => area.key === 'goals')?.href;
+// Under the page heading: every watch behind the runs, efforts and readings shown (FR-077).
+const shownRuns = [...weekRuns, ...lastWeekRuns, ...(focus?.build.runs ?? []), ...(latest ? [latest.run] : [])];
+const attribution = viewAttribution({ runs: shownRuns, goals: featured, scale: settings.garmin_devices.scale, manual: focus?.prediction !== undefined });
+
+const [count, unit] = focus ? countdownText(focus.days) : ['', ''];
+const raceLine = focus
+  ? `${focus.race.name} on ${formatDate(focus.race.date)}: ${focus.state === 'completed' ? 'finished' : `${count}${unit ? ` ${unit}` : ''}`.toLowerCase()}${focus.target ? `, aiming for ${focus.target}` : ''}, for ${focus.charity}. `
+  : '';
+const description = `Alexander Webber's running: ${raceLine}Goals, this week's training and the latest run.`;
+---
+
+<SectionLayout
+  heading="Running"
+  title="Running · Alexander Webber"
+  description={description}
+  image={ogPath(PATH)}
+  imageAlt={focus ? `${focus.race.name}: ${count} ${unit}`.trim() : "Alexander Webber's running"}
+  garmin={attribution ?? false}
+>
+  {focus ? <Hero focus={focus} today={today} /> : null}
+
+  <section class="landing-section" aria-labelledby="featured-goals" data-featured>
+    <div class="landing-section-header">
+      <h2 id="featured-goals">Goals</h2>
+      {goalsHref && <a href={goalsHref}>All goals</a>}
+    </div>
+    {
+      featured.length > 0 ? (
+        <ol class="featured-goals" data-featured-goals>
+          {featured.map((evaluation) => (
+            <li>{evaluation.status === 'achieved' ? <AchievedGoalCard evaluation={evaluation} compact /> : <GoalCard evaluation={evaluation} compact />}</li>
+          ))}
+        </ol>
+      ) : (
+        <p>No featured goals yet.</p>
+      )
+    }
+  </section>
+
+  <div class="landing-week">
+    <ThisWeek week={week} runs={[...weekRuns, ...lastWeekRuns]} />
+    <section class="latest-run" aria-labelledby="latest-run-title" data-latest-run>
+      <h2 id="latest-run-title">Latest run</h2>
+      {latest ? <RunCard run={latest.run} heading={3} sameDay={latest.sameDay} /> : <p>No runs yet.</p>}
+    </section>
+  </div>
+
+  <StoryLink />
+  <SectionLinks />
+</SectionLayout>
+
+<style>
+  .landing-section {
+    margin-bottom: var(--space-6);
+  }
+
+  .landing-section-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .landing-section-header a {
+    display: inline-block;
+    min-height: 1.5rem;
+  }
+
+  .featured-goals {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .featured-goals {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+
+    /* The lead goal (priority 1, Brighton) spans the full width. */
+    .featured-goals > li:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .landing-week {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  @media (min-width: 48rem) {
+    .landing-week {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .latest-run {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .latest-run h2 {
+    font-size: var(--step-2);
+  }
+
+  .latest-run :global(.run-card) {
+    flex: 1;
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+// Days to a race (T103, FR-020): "163 days to go", "1 day to go", "Race day" or "Result coming
+// soon". The build works it out for the build day in Europe/London, and the daily deploy (the
+// 00:17 UTC refresh) keeps that current. The page can still be up to about 1h20 behind the UK date
+// in summer, so a tiny inline script (well under 1 KB) recomputes it from the visitor's clock in
+// Europe/London. Without JS, or if anything fails, the build-time text stays (FR-074).
+import { countdownText } from '../domain/races.ts';
+
+export interface Props {
+  /** Race day, YYYY-MM-DD. */
+  date: string;
+  /** Days remaining at build time (0 on race day, negative after). */
+  days: number;
+}
+
+const { date, days } = Astro.props;
+const [value, unit] = countdownText(days);
+---
+
+<p class="countdown" data-countdown data-race-date={date}>
+  <span class="countdown-value" data-countdown-value data-word={unit ? undefined : ''}>{value}</span>{' '}
+  <span class="countdown-unit" data-countdown-unit hidden={!unit}>{unit}</span>
+</p>
+
+<script>
+  // Keep in step with countdownText() in domain/races.ts.
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+  if (/^\d{4}-\d\d-\d\d$/.test(day)) {
+    for (const el of document.querySelectorAll<HTMLElement>('[data-countdown]')) {
+      const d = Math.round((Date.parse(el.dataset.raceDate!) - Date.parse(day)) / 864e5);
+      const unit = el.querySelector<HTMLElement>('[data-countdown-unit]')!;
+      const value = el.querySelector<HTMLElement>('[data-countdown-value]')!;
+      value.textContent = d > 0 ? String(d) : d ? 'Result coming soon' : 'Race day';
+      value.toggleAttribute('data-word', d < 1);
+      unit.textContent = d > 1 ? 'days to go' : d ? 'day to go' : '';
+      unit.hidden = d < 1;
+    }
+  }
+</script>
+
+<style>
+  .countdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+    align-items: baseline;
+    margin: 0;
+  }
+
+  .countdown-value {
+    font-size: var(--step-hero);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+    color: var(--color-accent-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .countdown-value[data-word] {
+    font-size: var(--step-3);
+  }
+
+  .countdown-unit {
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+  }
+
+  .countdown-unit[hidden] {
+    display: none;
+  }
+</style>

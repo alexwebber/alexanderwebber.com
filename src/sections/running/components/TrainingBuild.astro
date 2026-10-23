@@ -1,0 +1,99 @@
+---
+// The training build towards the focus race (T098, FR-021): weekly distance since the owner's
+// build_start as columns, the current week in the accent colour and labelled, and the longest run
+// in the build. The words under the title carry the key figures and the table under the chart has
+// every week (FR-071), so it all reads without the chart and without JS. Treadmill runs count
+// (FR-058). When the site's runs start after build_start (before the full history is imported),
+// the chart starts at the first run and says so, rather than drawing weeks of zeros. Garmin
+// attribution names the watches behind the build's runs (FR-077). No client JS.
+import BarChart from '../../../shared/charts/BarChart.astro';
+import ChartFigure from '../../../shared/charts/ChartFigure.astro';
+import { addDays, formatDate, formatDayMonth } from '../../../shared/format/dates.ts';
+import { formatKm } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { runDevices } from '../domain/attribution.ts';
+import type { TrainingBuild } from '../domain/weeks.ts';
+import { runHref } from '../links.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  build: TrainingBuild<Run>;
+  /** Europe/London YYYY-MM-DD: the week holding it is "this week". */
+  today: string;
+  heading?: 2 | 3 | 4;
+}
+
+const { build, today, heading = 3 } = Astro.props;
+const km = (km: number) => formatKm(km * 1000, Number.isInteger(km) ? 0 : 1);
+const current = build.weeks.at(-1);
+// The last week shown is this week, unless the build ended with the race in an earlier week.
+const thisWeek = current && today <= addDays(current.start, 6) ? current : undefined;
+const longest = build.longest;
+const longestHref = longest ? runHref(longest.id) : undefined;
+const bars = build.weeks.map((w) => ({
+  label: formatDayMonth(w.start),
+  value: Math.round(w.distance_m / 100) / 10,
+  highlight: w === thisWeek,
+  showValue: w === thisWeek,
+}));
+const lateStart = build.from > build.buildStart;
+const summary = [
+  `Weekly distance since ${formatDate(build.buildStart)}: ${formatKm(build.total.distance_m)} in ${build.total.runs} ${build.total.runs === 1 ? 'run' : 'runs'}`,
+  thisWeek ? `, ${formatKm(thisWeek.distance_m)} this week` : '',
+  '.',
+  lateStart ? ` The runs on this site start on ${formatDate(build.from)}.` : '',
+].join('');
+---
+
+{
+  build.weeks.length === 0 ? (
+    <p class="build-empty" data-training-build>
+      The training build starts on {formatDate(build.buildStart)}.
+    </p>
+  ) : (
+    <div data-training-build>
+      <ChartFigure
+        title="Training build"
+        heading={heading}
+        summary={summary}
+        table={{
+          columns: ['Week starting', 'Distance', 'Runs'],
+          rows: build.weeks.map((w) => [formatDate(w.start), formatKm(w.distance_m), w.runs]),
+          summary: 'Show the weekly figures',
+        }}
+      >
+        {build.runs.length > 0 && <GarminAttribution slot="source" device={runDevices(build.runs)} />}
+        <BarChart
+          title="Weekly distance in the training build"
+          desc={summary}
+          bars={bars}
+          format={km}
+          color="var(--running-series)"
+          maxLabels={6}
+        />
+        {
+          longest && (
+            <p class="build-longest" data-longest-run>
+              Longest run: {longestHref ? <a href={longestHref}>{formatKm(longest.distance_m)}</a> : <strong>{formatKm(longest.distance_m)}</strong>} on {formatDate(longest.date)}
+            </p>
+          )
+        }
+      </ChartFigure>
+    </div>
+  )
+}
+
+<style>
+  .build-empty {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+
+  .build-longest {
+    margin: var(--space-3) 0 var(--space-2);
+  }
+
+  [data-training-build] :global(.chart-figure) {
+    margin-bottom: 0;
+  }
+</style>

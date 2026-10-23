@@ -14,9 +14,11 @@ import GarminAttribution from './GarminAttribution.astro';
 export interface Props {
   evaluation: GoalEvaluation;
   heading?: 2 | 3 | 4;
+  /** The landing page's shorter card: no description. */
+  compact?: boolean;
 }
 
-const { evaluation: e, heading = 3 } = Astro.props;
+const { evaluation: e, heading = 3, compact = false } = Astro.props;
 const { goal } = e;
 const achievement = e.achievement;
 if (!achievement) throw new Error(`AchievedGoalCard: goal "${goal.id}" is not achieved`);
@@ -33,7 +35,7 @@ const reading =
     : undefined;
 ---
 
-<article class="goal-card goal-card-achieved" aria-labelledby={id} data-goal-id={goal.id} data-priority={goal.priority} data-status="achieved" data-achieved-on={achievement.date}>
+<article class:list={['goal-card goal-card-achieved', { 'goal-card-new': e.newlyAchieved }]} aria-labelledby={id} data-goal-id={goal.id} data-priority={goal.priority} data-status="achieved" data-achieved-on={achievement.date}>
   <header class="goal-card-header">
     <svg class="goal-medal" aria-hidden="true" viewBox="0 0 24 24" width="28" height="28">
       <circle cx="12" cy="12" r="11" fill="var(--color-accent)"></circle>
@@ -42,13 +44,20 @@ const reading =
     <div>
       <p class="goal-achieved-label">
         Achieved {formatDate(achievement.date)}
-        {e.newlyAchieved && <span class="goal-new" data-newly-achieved>New</span>}
+        {e.newlyAchieved && (
+          <>
+            {' '}
+            <span class="goal-new" data-newly-achieved>
+              New
+            </span>
+          </>
+        )}
       </p>
       <Heading class="goal-card-title" id={id}>{goal.title}</Heading>
       {attribution && <GarminAttribution {...attribution} />}
     </div>
   </header>
-  {goal.description && <p class="goal-description">{goal.description}</p>}
+  {!compact && goal.description && <p class="goal-description">{goal.description}</p>}
   <dl class="goal-facts">
     {
       target && (
@@ -166,6 +175,11 @@ const reading =
 
   .goal-facts dd {
     margin: 0;
+  }
+
+  /* Newly achieved (FR-042): a celebratory tint for the highlight window. */
+  .goal-card-new {
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
   }
 
   @media (forced-colors: active) {
