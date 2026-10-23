@@ -9,12 +9,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, evening):** Phase 4 (US1 Landing) is raised as a PR (`001-landing`).
+- **Status (2026-10-23, evening):** Phase 4 (US1 Landing, #38) is merged, with all seven
+  confirmations ticked (SC-001's goal count is fine for now, to revisit at the site review).
   Spec Kit 1.2.3 (#35) and the Brighton sub-3:20 target (#36) are merged. The Quality-workflow
-  fix (#37, `001-lighthouse-socket`) is raised; Quality had failed on every PR since #33.
+  fix (#37, `001-lighthouse-socket`) is raised; #38 already carries the same script change.
   - **Check first:**
-    - whether `001-landing` and #37 merged, and the PR's checkbox answers. Ask about any left
-      unticked before building on them.
+    - whether #37 merged (and the site-review norm PR, `001-site-review-norm`).
     - the first 00:17 UTC catch-all after the landing PR merges: its `deploy` job must run even
       with no data change (T105). Check the run.
     - **all** workflows on each PR, including the non-required Quality check, not only the gate.
@@ -44,8 +44,12 @@ Update this as decisions get made — treat it as the source of truth alongside
     2026-10-23 decision).
   - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
     again in the Cloudflare dashboard.
-- **Next step: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session, once the
-  landing PR merges.
+- **Next step: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session.
+  - **Start with a guided site review** (owner, PR #38 comment): walk the owner through the
+    live site (`https://alexanderwebber.alexanderwebber.workers.dev/running/`, the goals page
+    and a run page) on a phone and a desktop, with exact steps. Then run a question round on
+    what they saw, including whether seven goals on the landing page is too many (SC-001).
+    Fold the answers into the T110 fixes.
   - **T110:** the graduation review: Playwright, axe, the Lighthouse budget (CI only on
     Windows), privacy scans, an adversarial self-review and the design note
     `src/sections/running/README.md`.
@@ -99,6 +103,12 @@ project-specific notes.
 - **Draw requirements out with questions.** For specs, clarifications and design decisions, the
   agent asks focused rounds of questions with recommended options rather than expecting the
   owner to supply everything up front.
+- **The owner sees the real site** (owner, 2026-10-23). Every PR that changes what visitors see
+  has a *How to view it* section: the exact URLs to open once it merges and deploys (workers.dev
+  until go-live), what to look at on a phone and on a desktop, and what isn't built yet. After
+  the merge, the agent checks that the deploy finished before pointing the owner at it. Each
+  phase that ships pages starts its next session with a short guided review of the live site
+  and a question round on what the owner saw.
 - **Run spec-kit commands as real subagents.** `/speckit-*` commands are dispatched via the
   Agent tool to a subagent that follows the actual `.claude/skills/speckit-*/SKILL.md`, not
   simulated inline by the main conversation. Subagents can't converse with the owner, so the
@@ -739,6 +749,12 @@ project-specific notes.
 
 ## Upstream candidates
 
+- 2026-10-23 — Two phases of pages (the shared shell, the goals page, the landing page) shipped
+  with tests and Lighthouse scores in their PRs, but the owner had never looked at the site
+  itself. The owner asked for a review of the real site
+  with steps to view it. Generalisation (house norm, for projects with a UI): every PR that
+  changes what users see says how to view it (URLs, phone and desktop checks), and each phase
+  that ships UI starts the next session with a guided review of the live result.
 - 2026-10-23 — Astro's build strips line-break whitespace between inline elements, so
   `<span>163</span>` and `<span>days</span>` on separate lines rendered "163days". A test helper
   that strips tags hid it. Agent tip (Astro): add an explicit `{' '}` between inline elements on
