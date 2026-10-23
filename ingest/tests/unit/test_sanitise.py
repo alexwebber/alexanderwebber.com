@@ -81,6 +81,14 @@ def test_the_device_is_kept_for_the_attribution_and_omitted_when_unknown():
     assert "device" not in valid(sanitise_run(activity(), run_id=RUN))
 
 
+def test_an_owner_device_fills_in_or_corrects_the_watch():
+    # A manually uploaded FIT file has no intervals.icu device_name.
+    override = RunOverride(device="Venu X1")
+    assert valid(sanitise_run(activity(), run_id=RUN, override=override))["device"] == "Venu X1"
+    corrected = sanitise_run(activity(device="Venu 2 Plus"), run_id=RUN, override=override)
+    assert valid(corrected)["device"] == "Venu X1"
+
+
 def test_out_of_range_values_are_left_out_rather_than_failing():
     odd = activity(max_hr=300.0, dynamics=Dynamics(gct_ms=240.0, vert_ratio_pct=140.0))
     run = valid(sanitise_run(odd, run_id=RUN))

@@ -217,8 +217,9 @@ def sanitise_run(
     }
     if override.note:
         run["note"] = override.note
-    if activity.device:
-        run["device"] = activity.device
+    device = override.device or activity.device
+    if device:
+        run["device"] = device
     for key, value in (
         ("elevation_gain_m", activity.elevation_gain_m),
         ("elevation_loss_m", activity.elevation_loss_m),

@@ -21,7 +21,11 @@
         "description": "Make a treadmill/indoor run eligible for PBs and race-time goals (FR-057). Published as the run's flags.include_indoor_in_records.",
         "type": "boolean"
       },
-      "is_race": { "description": "Designate the run as a race (or not).", "type": "boolean" }
+      "is_race": { "description": "Designate the run as a race (or not).", "type": "boolean" },
+      "device": {
+        "description": "The Garmin watch that recorded the run, published as the run's device. Wins over intervals.icu's device_name, which is missing for manually uploaded FIT files (FR-077).",
+        "$ref": "../defs.schema.json#/$defs/garminDevice"
+      }
     }
   }
 }

@@ -628,7 +628,49 @@ project-specific notes.
   transcript (not the repo or any log). Only the owner has access to the chat, so they're kept
   as they are.
 
+- **2026-10-18** — **Phase 3 goal answers** (owner question round; goals not yet written):
+  - **Featured, in priority order:**
+    1. Brighton sub-3:25 (`upcoming-races.yaml` `target_time: "3:25:00"`)
+    2. Half sub-1:40 (new)
+    3. 10k sub-43
+    4. 5k sub-20 (already achieved: 19:44 on 17 Oct 2026, track run `2026-10-17-ofka`; the
+       goal finds it, so no override is needed)
+    5. Weight 93 kg (`at_most`)
+    6. Body fat 17.5% (`at_most`)
+    7. VO2 max 52.5 (`at_least`, "superior" for the owner's age; Garmin reports whole numbers,
+       so it counts at 53)
+
+    With the 5k achieved, the six active goals fit `featured_goal_limit: 6`.
+  - **VO2 max 55 comes next.** The agent adds it at the review after 52.5 is achieved.
+  - **Progress start: October 2025.** `created: 2025-10-01` on weight, body fat and VO2 max, so
+    the start doesn't jump back years when the Garmin export is imported.
+  - **Build start:** `section.yaml` `build_start: 2026-09-05`, when the owner's Garmin Coach
+    plan started. The current block ends on 26 Dec with a fast solo half, and then the Brighton
+    block starts. No other races are planned.
+  - **Lab VO2 max test:** some time in the new year, recorded as a lab reference point.
+  - **Still needed:** Garmin training status and race predictions (T154).
+- **2026-10-23** — **The 17 Oct track session never reached intervals.icu** (three Track
+  Running activities: a warm-up, a 19:44 5k and a cool-down). intervals.icu had no activity of
+  any type that day, while later runs synced normally. So Garmin didn't push those activities
+  to intervals.icu. The owner uploaded the FIT files on the Calendar page, and a dispatched
+  refresh published them.
+  - **Stay on intervals.icu** (agent recommendation; the owner had asked about Strava).
+    Strava's API terms forbid showing data to others, and Strava receives Garmin's activities
+    by the same partner push, so it wouldn't be more complete.
+  - **Audit at T150:** compare every run in the Garmin export with intervals.icu, to size the
+    gap and decide whether ongoing detection is needed. A daily Garmin-direct activity-list
+    check is an option, used only to raise an issue, never as a data source.
+  - **Device override:** manual uploads have no intervals.icu device name, so
+    `run-overrides.yaml` gained `device`, which wins over intervals.icu's (owner: Venu X1 for
+    the three runs).
+
 ## Upstream candidates
+
+- 2026-10-23 — Garmin's push to a sync partner (intervals.icu) silently skipped three Track
+  Running activities from one day, while other activities synced. Generalisation (provider
+  choice): a partner sync is not a complete copy of the source. Plan a reconciliation against
+  the source of truth, such as a full export at onboarding, and a way to repair gaps, such as a
+  manual upload that flows through the normal pipeline.
 
 - 2026-10-18 — A secrets-file shape check (`awk -F=` printing the key and value length) assumed
   `KEY=value` lines. The owner's file used `Key: value`, so each whole line, value included,
