@@ -351,6 +351,6 @@ describe('composition (T088)', () => {
     const e = one<ValueEvaluation>({ goals: [valueGoal('bf', 'body_fat_pct', 17.5, 'at_most')], health: { body_fat_pct: readings } });
     expect(e.status).toBe('active');
     expect(e.current?.value).toBe(17.8);
-    expect(e.latest?.value).toBe(18.2); // the headline is the latest recorded reading
+    expect(e.latest?.value).toBe(17.8); // the headline is the same 7-day average, not the day's 18.2
   });
 });

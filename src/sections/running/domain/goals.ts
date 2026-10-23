@@ -73,7 +73,7 @@ export interface ValueEvaluation extends Common {
   start?: number;
   /** The value progress and achievement are judged on (latest 7-day average or recorded value). */
   current?: DatedValue;
-  /** The headline figure: the latest recorded value (weight: its 7-day average, FR-061). */
+  /** The headline figure, the same as `current` (body composition: its 7-day average, FR-061). */
   latest?: DatedValue;
   fraction?: number;
 }
@@ -154,7 +154,9 @@ export function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
       if (hit) automatic = { date: hit.date, by: 'reading', reading: hit };
       const start = goal.start_value ?? (recorded.find(inScope) ?? recorded[0])?.value;
       const current = judged.at(-1);
-      const latest = recorded.filter(inScope).at(-1);
+      // One figure throughout (owner, 2026-10-23): "Now" is the value "to go" and progress use, so
+      // body fat shows its 7-day average like weight, not the day's reading.
+      const latest = current;
       let fraction: number | undefined;
       if (current && start !== undefined) {
         fraction = target === start ? (reaches(current.value, target, direction) ? 1 : 0) : clamp01((current.value - start) / (target - start));

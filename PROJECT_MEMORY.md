@@ -758,6 +758,10 @@ project-specific notes.
     held runs from 3 Oct 2026; the owner's best is 1:43:52 (5 Apr 2026). Two `refresh.yml`
     re-imports (2025-10-01 to 2026-04-30, then 2026-05-01 to 2026-10-02) pull everything
     intervals.icu holds. The Garmin export's older history still follows at T150.
+  - **Body fat uses its 7-day average throughout** (owner pick; this replaces Phase 3's "body
+    fat's headline is the latest reading"). The card said "8.7% to go" (from the 26.2% average)
+    next to "Now 26.0%" (that day's reading). "Now" is now the same average, labelled
+    "(7-day average)" like weight, so every figure on a card agrees.
 
 ## Upstream candidates
 

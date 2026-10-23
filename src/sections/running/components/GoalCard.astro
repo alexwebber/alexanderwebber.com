@@ -82,7 +82,7 @@ const fastestSuffix =
             {e.kind === 'value' && e.latest && (
               <span data-current>
                 Now <strong>{formatMetric(e.metric, e.latest.value, true)}</strong>
-                {e.metric === 'weight_kg' ? ' (7-day average)' : ''} ·{' '}
+                {e.averaged ? ' (7-day average)' : ''} ·{' '}
               </span>
             )}
             <span data-target>Target {shortTarget}</span>
@@ -136,7 +136,7 @@ const fastestSuffix =
     {
       e.kind === 'value' && (
         <div>
-          <dt>{e.metric === 'weight_kg' ? 'Weight (7-day average)' : metricName(e.metric)}</dt>
+          <dt>{e.averaged ? `${metricName(e.metric)} (7-day average)` : metricName(e.metric)}</dt>
           <dd data-current data-no-data={e.latest ? undefined : ''}>
             {e.latest ? (
               <>
