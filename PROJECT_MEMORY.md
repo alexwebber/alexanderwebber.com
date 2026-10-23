@@ -9,16 +9,15 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23):** the Cloudflare cron dispatches `refresh.yml` every 2 h, all green.
-  `device` is published, and the three hand-uploaded 17 Oct track runs carry
-  `"device":"Venu X1"`.
-  - **Merged:** #30 (device override, goal answers) and #31 (fewer Actions minutes). The first
-    run after #31 published with "the last refresh ended 'failure'", which was expected: the
-    run before it lost its push race when #31 merged.
+- **Status (2026-10-23, afternoon):** Phase 3 (US2 Goals) is built and raised as the
+  `001-goals` PR, which is stacked on #32 (`manual-metrics.yaml`). Refresh runs are all green;
+  the Cloudflare cron dispatches `refresh.yml` every 2 h.
   - **Check first:**
-    - whether this handoff's PR (`manual-metrics.yaml`) merged;
-    - minutes per day: expect about 35–40, down from 55. If it's still close to the limit,
-      use the owner's lever order (2026-10-23 decision).
+    - whether #32 and the `001-goals` PR merged. Ask the owner any of the goals PR's checkbox
+      questions left unticked before building on them (Phase 4 reuses `goals.ts`).
+    - minutes per day: 487 used by 13:00 on 2026-10-23, and PR #31 merged at 12:38. Expect
+      about 35–40 a day, down from 55. If it's still close to the limit, use the owner's lever
+      order (2026-10-23 decision).
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -43,16 +42,19 @@ Update this as decisions get made — treat it as the source of truth alongside
     2026-10-23 decision).
   - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
     again in the Cloudflare dashboard.
-- **Next step: Phase 3 (US2 Goals, T087–T095, T153–T154)** on a new branch from `origin/main`.
-  - **The question round is done.** The answers are in the 2026-10-18 *Phase 3 goal answers*
-    decision. Update T092's goal list in tasks.md to match (sub-3:25, half sub-1:40, 10k
-    sub-43, VO2 max 52.5).
-  - **T154 is done:** `data/running/owner/manual-metrics.yaml` holds the owner's 2026-10-23
-    readings (Productive; 19:31, 40:56, 1:32:01, 3:25:18). No owner input is left for Phase 3.
-    Offer a fresh reading at later reviews; never ask as a chore.
+- **Next step: upgrade Spec Kit 1.2.1 → 1.2.3** as its own short session, on a branch from
+  `origin/main`, following PLAYBOOK > Upgrading Spec Kit (plus the project's *Upstream
+  candidates* note on the missing steps). The 1.2.2 and 1.2.3 notes have nothing that reaches
+  us (a PowerShell bracketed-path fix, hook and extension housekeeping), but core releases are
+  adopted.
+- **Then: Phase 4 (US1 Landing, from T096)** in its own session. It reuses `goals.ts`,
+  `loadGoals(today)` (`src/sections/running/data/goals.ts`), `GoalCard` and `AsOf`. T106
+  writes `section.yaml` from known answers: `focus_race` `brighton-2027`, `build_start:
+  2026-09-05`, charity Martlets, `garmin_devices.scale: Index S2`. Effort times become run
+  links once T102's run pages ship (`src/sections/running/links.ts`).
+  - Offer the owner a fresh Garmin training-status and predictions reading at reviews; never
+    ask as a chore.
   - **Don't invent values** (Principle VIII).
-  - **Not blocked by T150:** goals evaluate from the data there is, and they fill in after the
-    backfill.
 
 ## Vision
 
@@ -676,7 +678,37 @@ project-specific notes.
   5k 19:31, 10k 40:56, half 1:32:01, marathon 3:25:18, all read on 2026-10-23
   (`manual-metrics.yaml`).
 
+- **2026-10-23** — **Phase 3 (US2 Goals) built** (`001-goals` PR; implement subagent about
+  265k tokens). Choices later tasks build on; the owner confirms them in the PR:
+  - **The achieved 5k is not featured.** Seven featured goals broke `featured_goal_limit: 6`,
+    and "featured" only means the landing page. The six active goals are priorities 1–6.
+  - **`created` limits achievement too:** only data on or after it counts, so the Garmin
+    export can't achieve a goal with an old reading.
+  - **Race-time progress** is target ÷ fastest time (46:00 against 43:00 is 93%), with the
+    gap in words. An effort counts only if its time rounded to the second is under the target.
+  - **Body fat's headline** is the latest reading; the 7-day mean only drives progress.
+  - **Validation at build start:** the Running integration validates all data in
+    `astro:build:start`, because Astro 7 empties `dist/` before rendering, so a bad goal would
+    otherwise wipe the last good build (US2.7).
+  - **Run links** wait for T102's run pages (`links.ts`), so there are no dead links.
+  - **Real data:** 5k achieved 17 Oct 2026 by `2026-10-17-ofka`; half 1:47:21, 10k 46:00,
+    weight and body fat 7–8% of the way, VO2 max 52 (80%); Brighton has no marathon effort yet.
+
 ## Upstream candidates
+
+- 2026-10-23 — Astro 7 empties `outDir` before it renders pages, so a data error thrown while
+  rendering still wipes the previous `dist/`. Agent tip (Astro): when a failed build must leave
+  `dist/` untouched, validate in an integration's `astro:build:start` hook.
+- 2026-10-23 — `scripts/lighthouse-budget.mjs` calls `spawn('npx', ...)`, which fails on Windows
+  with ENOENT (it needs `shell: true` or `npx.cmd`), so the Lighthouse budget runs only in CI.
+  Agent tip (Windows gotchas): spawn `npx` via `shell: true` in cross-platform scripts.
+- 2026-10-23 — A keyboard-path test that de-duplicated focus stops by `href` stopped early,
+  because the site name and the footer both link to `/`. Agent tip (a11y tests): key focus
+  stops on the `href` plus the link text.
+- 2026-10-23 — The owner's goal list (seven featured goals) broke a validator limit (six) that
+  the question round never mentioned. Generalisation (question rounds): when collecting owner
+  data, check the answers against the schema's rules before the round ends, so a conflict is
+  asked about while the owner is there.
 
 - 2026-10-23 — GitHub Actions bills each job as at least a whole minute, so a 2-hourly refresh
   split into many short jobs used about 55 minutes a day (about 1,700 a month on a private repo,
