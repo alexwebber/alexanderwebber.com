@@ -102,11 +102,19 @@ jobs:
           EOF
           fi
 
+  # Fetch, then the ingest-failing alert, in one job: Actions bills each job as at least a whole
+  # minute, and both take seconds. The fetch step has its own timeout so the alert still runs.
   fetch:
     needs: guard
     if: ${{ !cancelled() && needs.guard.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    outputs:
+      publish: ${{ steps.decide.outputs.publish }}
     defaults:
       run:
         working-directory: ingest
@@ -122,7 +130,11 @@ jobs:
 
       - run: uv sync --locked --no-dev
 
+      # stdout is the one-line JSON summary (logs go to stderr); the decide step reads it.
       - name: Fetch (intervals.icu -> R2)
+        id: fetch
+        timeout-minutes: 25
+        shell: bash # -eo pipefail, so a failed fetch isn't hidden by tee
         env:
           INTERVALS_API_KEY: ${{ secrets.INTERVALS_API_KEY }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -135,14 +147,63 @@ jobs:
           uv run --no-sync awingest fetch --archive r2
           ${REIMPORT_FROM:+--reimport-from "$REIMPORT_FROM"}
           ${REIMPORT_TO:+--reimport-to "$REIMPORT_TO"}
+          | tee "$RUNNER_TEMP/fetch-summary.json"
+
+      # After every fetch, even a failed one: opens, updates or closes the ingest-failing issue from
+      # R2 state/fetch-status.json (alert contract: no success for 24 h).
+      - name: Alert
+        if: ${{ always() }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: uv run --no-sync awingest alert --archive r2
+
+      # Publishing is skipped only when this run is provably idle: a clean fetch that archived
+      # nothing new, after a refresh that succeeded, outside the daily catch-all (the 00:17 UTC
+      # slot, which reprocesses after a processor change even on a day with no new data). Anything
+      # unexpected publishes.
+      - name: Decide whether to publish
+        id: decide
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          FETCH: ${{ steps.fetch.outcome }}
+          REIMPORT_FROM: ${{ inputs.reimport_from }}
+        run: |
+          summary="$RUNNER_TEMP/fetch-summary.json"
+          if [ "$EVENT" = push ]; then reason='owner files changed'
+          elif [ "$FETCH" != success ]; then reason="the fetch step's outcome was $FETCH"
+          elif [ -n "$REIMPORT_FROM" ]; then reason='a re-import'
+          elif [ "$(date -u +%H)" = 00 ]; then reason='the daily catch-all'
+          elif ! idle=$(jq -r '.outcome == "ok" and .activities.fetched == 0 and .wellness.written == 0' "$summary"); then
+            reason="the fetch summary couldn't be read"
+          elif [ "$idle" != true ]; then reason='the fetch archived new data or was partial'
+          elif ! last=$(gh run list --workflow refresh.yml --branch main --status completed --limit 1 --json conclusion --jq '.[0].conclusion // ""'); then
+            reason="the last refresh couldn't be checked"
+          elif [ "$last" != success ]; then reason="the last refresh ended '${last:-unknown}'"
+          else reason=''
+          fi
+          if [ -n "$reason" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "Publishing: $reason."
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing new since a successful refresh, so publishing is skipped."
+          fi
 
   # Runs even when fetch failed: already-archived data and owner-file changes still publish.
   # `!cancelled()` here and on fetch also lets them run when guard is skipped (non-schedule events).
+  # A missing decision (the fetch job died early) publishes.
   publish:
     needs: [guard, fetch]
     if: >-
       ${{ !cancelled() && needs.guard.outputs.skip != 'true' && github.ref == 'refs/heads/main' &&
-      !inputs.fetch_only }}
+      !inputs.fetch_only && needs.fetch.outputs.publish != 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -309,37 +370,3 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler deploy
-
-  # After every fetch, even a failed one: opens, updates or closes the ingest-failing issue from
-  # R2 state/fetch-status.json (alert contract: no success for 24 h).
-  alert:
-    needs: [guard, fetch]
-    if: ${{ always() && needs.guard.outputs.skip != 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      issues: write
-    defaults:
-      run:
-        working-directory: ingest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
-        with:
-          working-directory: ingest
-          enable-cache: true
-
-      - run: uv sync --locked --no-dev
-
-      - name: Alert
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: uv run --no-sync awingest alert --archive r2

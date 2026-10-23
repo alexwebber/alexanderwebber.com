@@ -26,11 +26,15 @@ fully successful point; `process` writes nothing if any validation fails.
   to `main` touching `data/running/owner/**`.
   `concurrency: refresh` with `cancel-in-progress: false` (runs never overlap, so two runs cannot
   race on cursors, the run-ID map or bot commits; later runs queue).
-  Jobs: `fetch` (always on Actions; Spike 0 confirmed GitHub-hosted runners reach intervals.icu)
-  -> `publish` (`process`, run **gate**; if the published tree changed, commit as
-  `github-actions[bot]` to `main`) -> `deploy` (`wrangler deploy`, only if gate passed and
-  something changed or owner files changed) -> `alert` (always, even on failure). There is no
-  `FETCH_MODE` and no PC fallback.
+  Jobs: `fetch` (always on Actions; Spike 0 confirmed GitHub-hosted runners reach intervals.icu;
+  then `alert` as a step that always runs, even on failure) -> `publish` (`process`, run **gate**;
+  if the published tree changed, commit as `github-actions[bot]` to `main`) -> `deploy`
+  (`wrangler deploy`, only if gate passed and something changed or owner files changed). There is
+  no `FETCH_MODE` and no PC fallback.
+  **Idle runs skip `publish`** (2026-10-23, Actions minutes; each job bills at least a minute):
+  only when the fetch succeeded with nothing new archived, the last refresh succeeded, it is not an
+  owner-file push or a re-import, and it is not the 00:17 UTC daily catch-all (which reprocesses
+  after a processor change on a day with no new data). Any doubt publishes.
 - **Gate** (reusable job, also `gate.yml` for pushes/PRs, no deploy on PR) = **site build + data-schema
   validation** per the constitution: install; `validate-data` (schemas + referential, incl.
   duplicate-race and ID checks); `scan-images`; **section-boundary check**
