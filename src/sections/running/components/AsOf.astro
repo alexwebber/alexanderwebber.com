@@ -1,0 +1,39 @@
+---
+// A manual Garmin figure with its "as of" date (T153, FR-069), e.g.
+// "Garmin predicted 20:47 (as of 1 Mar 2027)". The owner reads these in Garmin Connect, so they
+// are only as fresh as the last entry and always carry their date. With no entry it says
+// "not recorded yet" rather than showing a value. Used by goal cards, the hero and the health page.
+import { formatDate } from '../../../shared/format/dates.ts';
+
+export interface Props {
+  /** Words before the value, e.g. "Garmin predicted". */
+  label?: string;
+  /** The figure as displayed, e.g. "20:47" or "Productive"; undefined: not recorded yet. */
+  value?: string;
+  /** YYYY-MM-DD the owner read it; required with a value. */
+  asOf?: string;
+}
+
+const { label, value, asOf } = Astro.props;
+if (value !== undefined && asOf === undefined) throw new Error('AsOf: a value needs its as-of date');
+---
+
+{
+  value !== undefined && asOf !== undefined ? (
+    <span class="as-of" data-as-of>
+      {label && <>{label} </>}
+      <strong>{value}</strong> <span class="as-of-date">(as of <time datetime={asOf}>{formatDate(asOf)}</time>)</span>
+    </span>
+  ) : (
+    <span class="as-of" data-as-of>
+      {label && <>{label}: </>}
+      <span class="as-of-date">not recorded yet</span>
+    </span>
+  )
+}
+
+<style>
+  .as-of-date {
+    color: var(--color-text-secondary);
+  }
+</style>

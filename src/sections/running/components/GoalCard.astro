@@ -1,0 +1,218 @@
+---
+// An active goal (T090; FR-032, FR-038, FR-039, FR-041): its target, where Alex is now, a progress
+// bar with the same figures in words, the time left to its deadline (or "deadline passed"), and
+// for race-time goals the fastest effort (linked to its run once run pages exist) and the owner's
+// latest Garmin prediction "as of" its date (nothing when there is no entry). With nothing to
+// measure yet it says "No data yet" rather than showing 0%. Garmin attribution sits under the
+// card's heading whenever the card shows Garmin data (T152). No client JS.
+import ProgressBar from '../../../shared/charts/ProgressBar.astro';
+import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
+import { goalAttribution } from '../domain/attribution.ts';
+import { deadlineText, distanceLabel, formatMetric, gapText, metricName, progressText, targetText } from '../domain/goal-text.ts';
+import type { GoalEvaluation } from '../domain/goals.ts';
+import { runHref } from '../links.ts';
+import AsOf from './AsOf.astro';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  evaluation: GoalEvaluation;
+  /** The card title's heading level (3 under a page's h2 sections). */
+  heading?: 2 | 3 | 4;
+}
+
+const { evaluation: e, heading = 3 } = Astro.props;
+const { goal } = e;
+const Heading = `h${heading}` as const;
+const id = `goal-${goal.id}`;
+const attribution = goalAttribution(e);
+const target = targetText(e);
+const race = e.linkedRace;
+const deadlineIsRaceDay = race && goal.deadline === race.date;
+const progress = e.kind === 'milestone' ? undefined : progressText(e);
+const fastestHref = e.kind === 'race_time' && e.fastest?.run_id ? runHref(e.fastest.run_id) : undefined;
+// " on 9 Oct 2026 (Brighton 10k), 3:00 to go"
+const fastestSuffix =
+  e.kind === 'race_time' && e.fastest
+    ? ` on ${formatDate(e.fastest.date)}${e.fastest.race?.name ? ` (${e.fastest.race.name})` : ''}, ${gapText(e)}`
+    : '';
+---
+
+<article class="goal-card" aria-labelledby={id} data-goal-id={goal.id} data-priority={goal.priority} data-status={e.status}>
+  <header class="goal-card-header">
+    <Heading class="goal-card-title" id={id}>{goal.title}</Heading>
+    {attribution && <GarminAttribution {...attribution} />}
+  </header>
+  {
+    e.status === 'deadline_passed' && (
+      <p class="goal-flag" data-deadline-passed>
+        Deadline passed
+      </p>
+    )
+  }
+  {goal.description && <p class="goal-description">{goal.description}</p>}
+  <dl class="goal-facts">
+    {
+      target && (
+        <div>
+          <dt>Target</dt>
+          <dd>{target}</dd>
+        </div>
+      )
+    }
+    {
+      e.kind === 'race_time' && (
+        <div>
+          <dt>Fastest {distanceLabel(e.distance_m)}</dt>
+          <dd data-fastest data-no-data={e.fastest ? undefined : ''}>
+            {e.fastest ? (
+              <>
+                {fastestHref ? <a href={fastestHref}>{formatDuration(e.fastest.time_s)}</a> : <strong>{formatDuration(e.fastest.time_s)}</strong>}{fastestSuffix}
+              </>
+            ) : (
+              'No data yet'
+            )}
+          </dd>
+        </div>
+      )
+    }
+    {
+      e.kind === 'race_time' && e.prediction && (
+        <div>
+          <dt>Garmin prediction</dt>
+          <dd data-prediction>
+            <AsOf label="Garmin predicted" value={e.prediction.time} asOf={e.prediction.as_of} />
+          </dd>
+        </div>
+      )
+    }
+    {
+      e.kind === 'value' && (
+        <div>
+          <dt>{e.metric === 'weight_kg' ? 'Weight (7-day average)' : metricName(e.metric)}</dt>
+          <dd data-current data-no-data={e.latest ? undefined : ''}>
+            {e.latest ? (
+              <>
+                <strong>{formatMetric(e.metric, e.latest.value, true)}</strong> on {formatDate(e.latest.date)}
+              </>
+            ) : (
+              'No data yet'
+            )}
+          </dd>
+        </div>
+      )
+    }
+    {
+      e.kind === 'value' && e.start !== undefined && e.latest && (
+        <div>
+          <dt>Start</dt>
+          <dd>{formatMetric(e.metric, e.start, true)}</dd>
+        </div>
+      )
+    }
+    {
+      race && (
+        <div>
+          <dt>{deadlineIsRaceDay ? 'Race day' : 'Race'}</dt>
+          <dd>
+            {race.name}, {formatDate(race.date)}
+            {deadlineIsRaceDay && e.daysToDeadline !== undefined && <> · {deadlineText(e.daysToDeadline)}</>}
+          </dd>
+        </div>
+      )
+    }
+    {
+      goal.deadline && !deadlineIsRaceDay && e.daysToDeadline !== undefined && (
+        <div>
+          <dt>Deadline</dt>
+          <dd>
+            {formatDate(goal.deadline)} · {deadlineText(e.daysToDeadline)}
+          </dd>
+        </div>
+      )
+    }
+  </dl>
+  {
+    e.kind !== 'milestone' &&
+      e.fraction !== undefined &&
+      progress && (
+        <div class="goal-progress">
+          <ProgressBar label={`${goal.title}: progress`} fraction={e.fraction} valueText={progress} color="var(--running-series)" />
+          <p class="goal-progress-text">{progress}</p>
+        </div>
+      )
+  }
+</article>
+
+<style>
+  .goal-card {
+    height: 100%;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .goal-card-header {
+    margin-bottom: var(--space-3);
+  }
+
+  .goal-card-title {
+    margin: 0;
+    font-size: var(--step-1);
+    line-height: var(--leading-tight);
+  }
+
+  .goal-flag {
+    display: inline-block;
+    margin: 0 0 var(--space-3);
+    padding: var(--space-1) var(--space-2);
+    border-left: 4px solid var(--color-notice-border);
+    border-radius: var(--radius-mark);
+    background: var(--color-notice-bg);
+    color: var(--color-notice-text);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+  }
+
+  .goal-description {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-secondary);
+  }
+
+  .goal-facts {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+  }
+
+  .goal-facts div {
+    display: grid;
+    gap: 0 var(--space-3);
+  }
+
+  @media (min-width: 30rem) {
+    .goal-facts div {
+      grid-template-columns: 9rem 1fr;
+    }
+  }
+
+  .goal-facts dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .goal-facts dd {
+    margin: 0;
+  }
+
+  .goal-progress :global(.progress) {
+    margin-bottom: var(--space-2);
+  }
+
+  .goal-progress-text {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
+  }
+</style>

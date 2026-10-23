@@ -1,0 +1,91 @@
+---
+// /running/goals/ (T091, US2; contracts/routes.md): everything Alex is working towards. Active
+// goals in priority order (deadline-passed ones included, flagged), then the achieved goals,
+// newest first. Retired goals are never shown. Evaluated at build time for today in
+// Europe/London; the daily rebuild keeps deadlines and "New" badges current. No client JS.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { ogPath } from '../../../shared/og/render.ts';
+import AchievedGoalCard from '../components/AchievedGoalCard.astro';
+import GoalCard from '../components/GoalCard.astro';
+import SectionLayout from '../components/SectionLayout.astro';
+import { loadGoals } from '../data/goals.ts';
+import { sectionSettings } from '../data/load.ts';
+import { goalsViewAttribution } from '../domain/attribution.ts';
+import { achievedGoals, activeGoals } from '../domain/goals.ts';
+
+const PATH = '/running/goals/';
+const { evaluations } = await loadGoals();
+const settings = await sectionSettings();
+const active = activeGoals(evaluations);
+const achieved = achievedGoals(evaluations);
+const attribution = goalsViewAttribution(evaluations, settings.garmin_devices.scale);
+const latest = achieved[0];
+const description =
+  `Alexander Webber's running goals and his progress towards them: ${active.length} active` +
+  (active[0] ? `, led by ${active[0].goal.title}` : '') +
+  `, and ${achieved.length} achieved` +
+  (latest ? ` (most recently ${latest.goal.title}, ${formatDate(latest.achievement!.date)}).` : '.');
+---
+
+<SectionLayout
+  heading="Goals"
+  title="Goals · Running · Alexander Webber"
+  description={description}
+  image={ogPath(PATH)}
+  imageAlt="Alexander Webber's running goals"
+  garmin={attribution ?? false}
+>
+  <section class="goals-section" aria-labelledby="active-goals">
+    <h2 id="active-goals">Working towards</h2>
+    {
+      active.length > 0 ? (
+        <ol class="goal-list" data-active-goals>
+          {active.map((evaluation) => (
+            <li>
+              <GoalCard evaluation={evaluation} />
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p>No active goals right now.</p>
+      )
+    }
+  </section>
+
+  <section class="goals-section" aria-labelledby="achieved-goals">
+    <h2 id="achieved-goals">Achieved</h2>
+    {
+      achieved.length > 0 ? (
+        <ol class="goal-list" data-achieved-goals>
+          {achieved.map((evaluation) => (
+            <li>
+              <AchievedGoalCard evaluation={evaluation} />
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p>None yet. Achieved goals will be celebrated here.</p>
+      )
+    }
+  </section>
+</SectionLayout>
+
+<style>
+  .goals-section {
+    margin-bottom: var(--space-7);
+  }
+
+  .goal-list {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .goal-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

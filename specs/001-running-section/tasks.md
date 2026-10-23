@@ -535,12 +535,12 @@ matching goal becomes achieved with the right date.
 
 ### Implementation for User Story 2
 
-- [ ] T087 [P] [US2] Create the Best Effort index in `src/sections/running/domain/efforts.ts`:
+- [x] T087 [P] [US2] Create the Best Effort index in `src/sections/running/domain/efforts.ts`:
   - **Eligible runs**: not indoor/treadmill unless the owner set `include_in_records`, not `excluded_from_records`, and `plausible: true`.
   - **Also counted**: owner race results (official time wins; hand-entered races included), per FR-035.
   - **Output**: a per-distance list sorted by date.
-- [ ] T088 [P] [US2] Create `src/sections/running/domain/composition.ts`. Body fat's trailing 7-day mean is computed at build time from the recorded `body_fat_pct` readings (a day with no readings in the window has no value, and the mean is never stored or shown as the headline). Weight reads the published `weight_avg7`.
-- [ ] T089 [US2] Create goal evaluation in `src/sections/running/domain/goals.ts`, following data-model §5:
+- [x] T088 [P] [US2] Create `src/sections/running/domain/composition.ts`. Body fat's trailing 7-day mean is computed at build time from the recorded `body_fat_pct` readings (a day with no readings in the window has no value, and the mean is never stored or shown as the headline). Weight reads the published `weight_avg7`.
+- [x] T089 [US2] Create goal evaluation in `src/sections/running/domain/goals.ts`, following data-model §5:
   - **race_time**: achieved on the first date with an eligible effort `< target` at the goal distance, as `achieved{date, effort, run_id}`.
   - **body_composition**: achieved on the first date the **7-day average** reaches the target in the stated direction.
   - **metric**: achieved on the first date the recorded value reaches the target.
@@ -555,32 +555,37 @@ matching goal becomes achieved with the right date.
   - **Highlight**: a goal is flagged "newly achieved" within `recent_highlight_days.goal` days.
 
   Depends on T087, T088 and T153.
-- [ ] T090 [P] [US2] Create the goal cards in `src/sections/running/components/`:
+- [x] T090 [P] [US2] Create the goal cards in `src/sections/running/components/`:
   - `GoalCard.astro` shows the target, current value and a `ProgressBar`, plus the time left to the deadline or "deadline passed", "no data yet", the fastest effort with a run link, and "Garmin predicted 20:47 (as of 1 Mar 2027)" via `AsOf.astro` (T153), or nothing when there is no prediction entry.
   - `AchievedGoalCard.astro` gives the celebratory treatment, with the date and the achieving effort, reading or note, and a link.
-- [ ] T091 [US2] Create `src/sections/running/pages/goals.astro` at `/running/goals/`:
+- [x] T091 [US2] Create `src/sections/running/pages/goals.astro` at `/running/goals/`:
   - Active goals in priority order.
   - An achieved list, newest first.
   - Retired goals are never shown.
   - Include `LastUpdated`, a unique title and description, and the OG hub card `/og/running-goals.png`.
   - Register the route in `src/sections/running/integration.ts`.
-- [ ] T092 [US2] Create `data/running/owner/goals.yaml` with the owner-confirmed initial goals:
-  - Brighton sub-3:30 (`linked_race: brighton-2027`, `deadline: 2027-04-04`, priority 1).
-  - 10k under 45:00 and 5k under 20:00.
-  - Body fat 17.5% (`at_most`) and weight 93 kg (`at_most`).
+- [x] T092 [US2] Create `data/running/owner/goals.yaml` with the owner-confirmed initial goals (2026-10-18 answers). Featured, in priority order:
+  1. Brighton sub-3:25 (`linked_race: brighton-2027`, `deadline: 2027-04-04`).
+  2. Half marathon under 1:40.
+  3. 10k under 43:00.
+  4. Weight 93 kg (`at_most`).
+  5. Body fat 17.5% (`at_most`).
+  6. VO2 max 52.5 (`at_least`).
 
-  Also create `data/running/owner/upcoming-races.yaml` with the Brighton Marathon entry (`id: brighton-2027`, `date: 2027-04-04`, `distance: marathon`, `target_time: "3:30:00"`) so that `linked_race` resolves. The VO2 max goal is **left out until the owner supplies a value** (T093). No invented targets (Principle VIII).
-- [ ] T093 [US2] OWNER: Supply the VO2 max target value, and confirm the featured set, priorities and any start values. The agent asks at the US2 PR review and then adds the goal.
-- [ ] T153 [P] [US2] Create the manual Garmin figures support (FR-069):
+  5k under 20:00 is `featured: false` (priority 7): it was already achieved on 17 Oct 2026, the evaluator finds the effort (no override), and the six active goals fill `featured_goal_limit: 6`.
+
+  Weight, body fat and VO2 max have `created: 2025-10-01`, so progress starts in October 2025. Also create `data/running/owner/upcoming-races.yaml` with the Brighton Marathon entry (`id: brighton-2027`, `date: 2027-04-04`, `distance: marathon`, `target_time: "3:25:00"`) so that `linked_race` resolves. No invented targets (Principle VIII).
+- [x] T093 [US2] OWNER: Supply the VO2 max target value, and confirm the featured set, priorities and any start values. Answered 2026-10-18 (VO2 max 52.5; VO2 max 55 follows once it is achieved).
+- [x] T153 [P] [US2] Create the manual Garmin figures support (FR-069):
   - `src/sections/running/domain/manual-metrics.ts`: reads `manualMetrics` from the loader, returns the latest entry per list (current training status; current prediction per distance, each with its `as_of`) and the full dated history for trends; "not recorded yet" when absent.
   - `src/sections/running/components/AsOf.astro`: renders a value with "as of <UK date>" (e.g. "as of 1 Mar 2027"), used by goal cards, the hero and the health page.
   - `data/running/owner/manual-metrics.yaml` from the owner's values (T154), validated by T151.
   - Unit tests in `tests/unit/manual-metrics.test.ts` (latest-entry selection, per-distance latest when entries cover different distances, empty file).
 - [ ] T154 [US2] OWNER: Read the current Garmin training status and race predictions (5k, 10k, half, marathon) in Garmin Connect and give them to the agent, with the date read. The agent asks at the US2 PR review and writes `manual-metrics.yaml`; afterwards the owner sends new readings whenever they like (the agent offers at reviews already happening, never as a chore).
-- [ ] T094 [P] [US2] Create `tests/unit/goals.test.ts`, covering:
+- [x] T094 [P] [US2] Create `tests/unit/goals.test.ts`, covering:
   - acceptance scenarios US2.1 (44:41 inside a longer run gives achieved on 12 Mar 2027), US2.2 (prediction 20:47 as of 1 Mar 2027), US2.3 (26.0 → 22.0 toward 17.5 ≈ 47%), US2.4 (target revised), US2.5 (deadline passed, then retired), US2.6 (regression stays achieved)
   - edge cases: no data yet; indoor/treadmill and implausible efforts excluded; a treadmill run with `include_in_records` counts; a hand-entered race counts; an override; no prediction entry
-- [ ] T095 [P] [US2] Create `tests/e2e/goals.spec.ts` and `tests/a11y/goals.spec.ts`. They cover the 360 px layout, priority ordering, the achieved list, and US2.7 (a malformed `"3:7x"` stops the build with a message naming the file, goal and field, and leaves `dist/` untouched), Garmin attribution present as placed (T152), with zero axe violations and a working keyboard path.
+- [x] T095 [P] [US2] Create `tests/e2e/goals.spec.ts` and `tests/a11y/goals.spec.ts`. They cover the 360 px layout, priority ordering, the achieved list, and US2.7 (a malformed `"3:7x"` stops the build with a message naming the file, goal and field, and leaves `dist/` untouched), Garmin attribution present as placed (T152), with zero axe violations and a working keyboard path.
 
 **Checkpoint**: The Goals page works on its own and can be shipped.
 
