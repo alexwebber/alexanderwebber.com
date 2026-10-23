@@ -198,9 +198,21 @@ export function validateData(root: string, options: ValidateOptions = {}): DataI
       if (parseTime(goal.target.time) === undefined) {
         error(file, entry, 'target.time', `"${goal.target.time}" is not a valid time (expected mm:ss or h:mm:ss)`);
       }
+      // The landing hero shows the race's target_time and the goal card shows the goal's, so a
+      // mismatch would show two targets (US1.2, T106). Retired goals and goals the owner marked
+      // achieved by hand are history (a tightened target is a new goal), so they don't count.
       const race = goal.linked_race ? upcoming[upcomingIds.get(goal.linked_race) ?? -1] : undefined;
-      if (race?.target_time && parseTime(race.target_time) !== parseTime(goal.target.time)) {
-        warning(file, entry, 'target.time', `"${goal.target.time}" differs from upcoming race "${race.id}" target_time "${race.target_time}"`);
+      const inPlay = !goal.retired && !goal.achieved_override;
+      if (inPlay && race?.target_time && parseTime(race.target_time) !== parseTime(goal.target.time)) {
+        const isFocus = section?.value.focus_race.race_id === race.id;
+        warning(
+          file,
+          entry,
+          'target.time',
+          isFocus && goal.featured
+            ? `"${goal.target.time}" differs from focus race "${race.id}" target_time "${race.target_time}" in upcoming-races.yaml; the landing page would show both`
+            : `"${goal.target.time}" differs from upcoming race "${race.id}" target_time "${race.target_time}"`,
+        );
       }
     }
   });

@@ -82,7 +82,24 @@ describe('validate-data', () => {
       '- { id: b, type: race_time, title: B, priority: 1, featured: true, linked_race: brighton-2027, target: { distance: marathon, time: "3:20:00" } }\n',
     );
     expect(warnings()).toEqual([
-      'data/running/owner/goals.yaml  goal "b"  field target.time: "3:20:00" differs from upcoming race "brighton-2027" target_time "3:30:00"',
+      'data/running/owner/goals.yaml  goal "b"  field target.time: "3:20:00" differs from focus race "brighton-2027" target_time "3:30:00" in upcoming-races.yaml; the landing page would show both',
+    ]);
+  });
+
+  it('warns more plainly for a goal off the landing page, and not for retired or hand-achieved goals (T106)', () => {
+    owner();
+    repo.write(
+      'data/running/owner/goals.yaml',
+      [
+        '- { id: unfeatured, type: race_time, title: U, priority: 1, featured: false, linked_race: brighton-2027, target: { distance: marathon, time: "3:20:00" } }',
+        '- { id: retired, type: race_time, title: R, priority: 2, featured: true, retired: true, linked_race: brighton-2027, target: { distance: marathon, time: "3:45:00" } }',
+        '- { id: done, type: race_time, title: D, priority: 3, featured: true, linked_race: brighton-2027, achieved_override: { date: "2026-10-01" }, target: { distance: marathon, time: "3:40:00" } }',
+        '- { id: same, type: race_time, title: S, priority: 4, featured: true, linked_race: brighton-2027, target: { distance: marathon, time: "3:30:00" } }',
+        '',
+      ].join('\n'),
+    );
+    expect(warnings()).toEqual([
+      'data/running/owner/goals.yaml  goal "unfeatured"  field target.time: "3:20:00" differs from upcoming race "brighton-2027" target_time "3:30:00"',
     ]);
   });
 
