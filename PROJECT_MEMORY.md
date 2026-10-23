@@ -674,6 +674,9 @@ project-specific notes.
 - **2026-10-23** — **T154 entered:** Garmin training status Productive, and race predictions
   5k 19:31, 10k 40:56, half 1:32:01, marathon 3:25:18, all read on 2026-10-23
   (`manual-metrics.yaml`).
+- **2026-10-23** — **Brighton target tightened to sub-3:20** (owner), from sub-3:25. Both places
+  changed together: the goal (now `brighton-sub-3-20`, no other file used the old ID) and
+  `upcoming-races.yaml` `target_time: "3:20:00"`.
 
 - **2026-10-23** — **Phase 3 (US2 Goals) built** (`001-goals` PR; implement subagent about
   265k tokens). Choices later tasks build on; the owner confirms them in the PR:

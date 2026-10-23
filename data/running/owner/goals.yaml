@@ -1,16 +1,16 @@
 # Running goals (schemas/owner/goals.schema.json). Priority 1 is the highest.
 # Owner answers of 2026-10-18 (PROJECT_MEMORY.md, "Phase 3 goal answers").
 
-- id: brighton-sub-3-25
+- id: brighton-sub-3-20
   type: race_time
-  title: Brighton Marathon under 3:25
+  title: Brighton Marathon under 3:20
   priority: 1
   featured: true
   linked_race: brighton-2027
   deadline: 2027-04-04
   target:
     distance: marathon
-    time: "3:25:00"
+    time: "3:20:00"
 
 - id: half-sub-1-40
   type: race_time
