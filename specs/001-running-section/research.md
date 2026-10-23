@@ -268,6 +268,9 @@ preview image on every page, not a unique one):
 - **Daily rebuild**: two crons (`5 23 * * *` and `5 0 * * *` UTC) so the UK date rolls correctly
   across BST/GMT; re-deploys so "days to Brighton" and the OG image are right even if no data
   changed. A <1 KB inline script also corrects countdowns client-side.
+  **Amended 2026-10-23 (owner pick, T105):** no separate workflow. The `refresh.yml` 00:17 UTC
+  catch-all, which already publishes daily, also deploys its gated build when no data changed
+  (about 1-2 billed minutes a day instead of 8-10). 00:17 UTC is after UK midnight in BST and GMT.
 - **Freshness / staleness (FR-005/006)**: a data-less successful poll must still advance "last
   refreshed" but must not create a git commit every 2 hours. R2 holds
   `public/freshness.json`; a tiny Worker route `/running/api/freshness` serves it; a small script

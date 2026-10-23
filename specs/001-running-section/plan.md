@@ -229,8 +229,8 @@ scripts/
 tests/                         # vitest (unit/contract) + playwright (e2e, a11y) - local/graduation
 spikes/                        # throwaway Spike 0/1 code (Principle I); Spike 0 = spikes/intervals/
 .github/workflows/
-├── refresh.yml                # schedule 2h + dispatch: fetch -> publish -> gate -> commit -> deploy -> alert
-├── rebuild-daily.yml          # 23:05 + 00:05 UTC: gate -> build -> deploy (countdown/OG)
+├── refresh.yml                # Worker cron dispatch 2h (+ 6h backup schedule): fetch -> publish -> gate -> commit -> deploy -> alert;
+│                              #   the 00:17 UTC catch-all also deploys daily (countdown/OG; T105 replaced rebuild-daily.yml)
 ├── gate.yml                   # push/PR: validate-data + scans + boundary check + build (no deploy on PR)
 ├── quality.yml                # non-blocking: Lighthouse 13 CLI + axe (PR + nightly)
 └── tests.yml                  # PR, path-filtered: pytest / Vitest (adopted 2026-10-04)
