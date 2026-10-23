@@ -568,11 +568,10 @@ matching goal becomes achieved with the right date.
   1. Brighton sub-3:25 (`linked_race: brighton-2027`, `deadline: 2027-04-04`).
   2. Half marathon under 1:40.
   3. 10k under 43:00.
-  4. Weight 93 kg (`at_most`).
-  5. Body fat 17.5% (`at_most`).
-  6. VO2 max 52.5 (`at_least`).
-
-  5k under 20:00 is `featured: false` (priority 7): it was already achieved on 17 Oct 2026, the evaluator finds the effort (no override), and the six active goals fill `featured_goal_limit: 6`.
+  4. 5k under 20:00 (already achieved on 17 Oct 2026; the evaluator finds the effort, so no override). Featured as a major milestone (owner, PR #33), so `section.yaml` sets `featured_goal_limit: 7`.
+  5. Weight 93 kg (`at_most`).
+  6. Body fat 17.5% (`at_most`).
+  7. VO2 max 52.5 (`at_least`).
 
   Weight, body fat and VO2 max have `created: 2025-10-01`, so progress starts in October 2025. Also create `data/running/owner/upcoming-races.yaml` with the Brighton Marathon entry (`id: brighton-2027`, `date: 2027-04-04`, `distance: marathon`, `target_time: "3:25:00"`) so that `linked_race` resolves. No invented targets (Principle VIII).
 - [x] T093 [US2] OWNER: Supply the VO2 max target value, and confirm the featured set, priorities and any start values. Answered 2026-10-18 (VO2 max 52.5; VO2 max 55 follows once it is achieved).
@@ -638,7 +637,7 @@ featured goal and this week's distance within the first two screens.
 - [ ] T103 [US1] Create `src/sections/running/components/Countdown.astro`, an inline script under 1 KB that corrects days remaining client-side in Europe/London. Without JS, the build-time value stays.
 - [ ] T104 [US1] Create the landing OG card `src/sections/running/og/landing.ts` → `/og/running.png`, embedding "N days to Brighton" (FR-072).
 - [ ] T105 [US1] Create `.github/workflows/rebuild-daily.yml`: crons `5 23 * * *` and `5 0 * * *` (UTC) that run gate → deploy (`concurrency: deploy`), so the countdown and OG image follow the UK date.
-- [ ] T106 [US1] Create `data/running/owner/section.yaml`: `focus_race: {race_id: brighton-2027, build_start: <owner value>, charity: {name: Martlets hospice}}`, `garmin_devices: {scale: Index S2}` (owner, 2026-10-18), schema defaults, and no `story_link`. Also add a **validate-data warning** in `scripts/validate-data.ts` when the focus race's `target_time` differs from an active, featured `race_time` goal linked to it. This guards US1.2 (3:30 vs 3:20 shown in two places).
+- [ ] T106 [US1] ~~Create `data/running/owner/section.yaml`~~ (written early, 2026-10-23: `focus_race: {race_id: brighton-2027, build_start: 2026-09-05, charity: {name: Martlets hospice}}`, `garmin_devices: {scale: Index S2}`, `featured_goal_limit: 7`, other schema defaults, and no `story_link`). Still to do: add a **validate-data warning** in `scripts/validate-data.ts` when the focus race's `target_time` differs from an active, featured `race_time` goal linked to it. This guards US1.2 (3:30 vs 3:20 shown in two places).
 - [ ] T107 [US1] OWNER: Supply the Brighton training-build start date. It is required before the US1 PR merges, and the agent asks for it at that review.
 - [ ] T108 [P] [US1] Create `tests/unit/races.test.ts` and `tests/unit/weeks.test.ts`. They cover:
   - 182 days from 2026-10-04 to 2027-04-04
