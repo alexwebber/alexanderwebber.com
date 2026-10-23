@@ -39,28 +39,50 @@ def test_goal_distances_are_added_and_deduplicated():
     assert efforts["8 km"].time_s == pytest.approx(2400, abs=0.5)
 
 
-def test_pauses_count_against_an_effort():
+def test_a_watch_pause_is_left_out_like_garmin_timer_time():
     points = samples([(2500, 300)], step_s=1.0)
-    # A two-minute stop at 1.2 km: elapsed time keeps running, distance doesn't.
+    # The watch paused for two minutes at 1.2 km: no samples, then time jumps 120 s further on.
     stop = next(i for i, p in enumerate(points) if p.dist_m >= 1200)
     paused = points[: stop + 1] + [
         Sample(t_s=p.t_s + 120, dist_m=p.dist_m, speed_mps=p.speed_mps) for p in points[stop + 1 :]
     ]
-    assert efforts_by_label(paused)["1k"].time_s == pytest.approx(300, abs=0.5)  # before the stop
-    longer = efforts_by_label(paused)["1mi"].time_s
-    assert longer == pytest.approx(482.8 + 120, abs=0.5)
+    assert efforts_by_label(paused)["1k"].time_s == pytest.approx(300, abs=0.5)
+    assert efforts_by_label(paused)["1mi"].time_s == pytest.approx(482.8, abs=1.5)
+
+
+def test_a_stop_with_the_watch_running_still_counts():
+    points = samples([(2500, 300)], step_s=1.0)
+    # Standing still for two minutes at 1.2 km with the watch recording every second.
+    stop = next(i for i, p in enumerate(points) if p.dist_m >= 1200)
+    at = points[stop]
+    standing = [Sample(t_s=at.t_s + k, dist_m=at.dist_m, speed_mps=0.0) for k in range(1, 121)]
+    stopped = (
+        points[: stop + 1]
+        + standing
+        + [
+            Sample(t_s=p.t_s + 120, dist_m=p.dist_m, speed_mps=p.speed_mps)
+            for p in points[stop + 1 :]
+        ]
+    )
+    assert efforts_by_label(stopped)["1mi"].time_s == pytest.approx(482.8 + 120, abs=0.5)
+
+
+def test_a_gap_while_moving_is_not_a_pause():
+    # Samples every 10 s at 300 s/km (33 m per gap): sparse recording, not a pause.
+    points = samples([(3000, 300)], step_s=10.0)
+    assert efforts_by_label(points)["1k"].time_s == pytest.approx(300, abs=0.1)
 
 
 def test_distance_never_runs_backwards_and_missing_distance_is_skipped():
     points = [
         Sample(t_s=0, dist_m=0),
-        Sample(t_s=10, dist_m=40),
-        Sample(t_s=20, dist_m=35),  # GPS wobble
-        Sample(t_s=30, dist_m=None),
-        Sample(t_s=40, dist_m=120),
+        Sample(t_s=1, dist_m=4),
+        Sample(t_s=2, dist_m=3.5),  # GPS wobble
+        Sample(t_s=3, dist_m=None),
+        Sample(t_s=4, dist_m=12),
     ]
-    assert track(points) == ([0, 40, 40, 120], [0, 10, 20, 40])
-    assert fastest(*track(points), 200) is None
+    assert track(points) == ([0, 4, 4, 12], [0, 1, 2, 4])
+    assert fastest(*track(points), 20) is None
 
 
 def test_implausible_efforts_are_kept_but_marked():
