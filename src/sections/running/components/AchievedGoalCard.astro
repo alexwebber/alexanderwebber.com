@@ -1,0 +1,176 @@
+---
+// An achieved goal, celebrated (T090; FR-036, FR-037, FR-042): the date it was achieved and what
+// achieved it (the effort, linked to its run once run pages exist; the 7-day average or reading;
+// or the owner's note for a goal marked by hand). Achieved goals keep their original date even if
+// later values regress. A goal achieved in the last recent_highlight_days.goal days is marked
+// "New". Garmin attribution sits under the heading when the card shows Garmin data. No client JS.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { goalAttribution } from '../domain/attribution.ts';
+import { effortText, formatMetric, metricName, targetText } from '../domain/goal-text.ts';
+import type { GoalEvaluation } from '../domain/goals.ts';
+import { runHref } from '../links.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  evaluation: GoalEvaluation;
+  heading?: 2 | 3 | 4;
+}
+
+const { evaluation: e, heading = 3 } = Astro.props;
+const { goal } = e;
+const achievement = e.achievement;
+if (!achievement) throw new Error(`AchievedGoalCard: goal "${goal.id}" is not achieved`);
+const Heading = `h${heading}` as const;
+const id = `goal-${goal.id}`;
+const attribution = goalAttribution(e);
+const target = targetText(e);
+const effort = achievement.effort;
+const effortHref = effort?.run_id ? runHref(effort.run_id) : undefined;
+const effortWords = e.kind === 'race_time' && effort ? effortText(e, effort) : undefined;
+const reading =
+  e.kind === 'value' && achievement.reading
+    ? { label: e.averaged ? `${metricName(e.metric)} (7-day average)` : metricName(e.metric), value: formatMetric(e.metric, achievement.reading.value, true) }
+    : undefined;
+---
+
+<article class="goal-card goal-card-achieved" aria-labelledby={id} data-goal-id={goal.id} data-priority={goal.priority} data-status="achieved" data-achieved-on={achievement.date}>
+  <header class="goal-card-header">
+    <svg class="goal-medal" aria-hidden="true" viewBox="0 0 24 24" width="28" height="28">
+      <circle cx="12" cy="12" r="11" fill="var(--color-accent)"></circle>
+      <path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="var(--color-surface)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    <div>
+      <p class="goal-achieved-label">
+        Achieved {formatDate(achievement.date)}
+        {e.newlyAchieved && <span class="goal-new" data-newly-achieved>New</span>}
+      </p>
+      <Heading class="goal-card-title" id={id}>{goal.title}</Heading>
+      {attribution && <GarminAttribution {...attribution} />}
+    </div>
+  </header>
+  {goal.description && <p class="goal-description">{goal.description}</p>}
+  <dl class="goal-facts">
+    {
+      target && (
+        <div>
+          <dt>Target</dt>
+          <dd>{target}</dd>
+        </div>
+      )
+    }
+    {
+      effortWords && (
+        <div>
+          <dt>Achieved with</dt>
+          <dd data-achieved-with>
+            {effortHref ? <a href={effortHref}>{effortWords}</a> : effortWords}
+            {effort?.race?.name && <> ({effort.race.name})</>}
+          </dd>
+        </div>
+      )
+    }
+    {
+      reading && (
+        <div>
+          <dt>{reading.label}</dt>
+          <dd data-achieved-with>
+            <strong>{reading.value}</strong> on {formatDate(achievement.date)}
+          </dd>
+        </div>
+      )
+    }
+    {
+      achievement.note && (
+        <div>
+          <dt>Note</dt>
+          <dd>{achievement.note}</dd>
+        </div>
+      )
+    }
+  </dl>
+</article>
+
+<style>
+  .goal-card {
+    height: 100%;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-left: 6px solid var(--color-accent);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .goal-card-header {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    margin-bottom: var(--space-3);
+  }
+
+  .goal-medal {
+    flex: none;
+    margin-top: 0.1rem;
+  }
+
+  .goal-achieved-label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    margin: 0 0 var(--space-1);
+    color: var(--color-accent-strong);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+  }
+
+  .goal-new {
+    padding: 0 var(--space-2);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-mark);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .goal-card-title {
+    margin: 0;
+    font-size: var(--step-1);
+    line-height: var(--leading-tight);
+  }
+
+  .goal-description {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-secondary);
+  }
+
+  .goal-facts {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .goal-facts div {
+    display: grid;
+    gap: 0 var(--space-3);
+  }
+
+  @media (min-width: 30rem) {
+    .goal-facts div {
+      grid-template-columns: 9rem 1fr;
+    }
+  }
+
+  .goal-facts dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .goal-facts dd {
+    margin: 0;
+  }
+
+  @media (forced-colors: active) {
+    .goal-card {
+      border-left-color: Highlight;
+    }
+  }
+</style>

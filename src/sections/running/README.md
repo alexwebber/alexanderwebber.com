@@ -11,7 +11,17 @@ adds the section to the site.
 - `components/LastUpdated.astro`: FR-005/006. It shows the build-time value from `refresh.json`,
   then fetches the live one from `/running/api/freshness`.
 - `data/load.ts`: the only way Running code reads data (`runningStore()`, `sectionSettings()`,
-  `buildFreshness()`), memoised per build.
+  `buildFreshness()`), memoised per build. `data/goals.ts` (`loadGoals()`) evaluates every goal
+  for today from it.
+- `domain/`: pure functions, unit-tested with "today" passed in. `efforts.ts` (the Best Effort
+  index), `composition.ts` (body fat's build-time 7-day mean), `manual-metrics.ts` (the owner's
+  Garmin training status and race predictions, latest per distance), `goals.ts` (goal status and
+  progress, data-model §5) and `goal-text.ts` (the words and figures cards show).
+- `links.ts`: links to another area (e.g. a run page) only once that area has shipped.
+- Goals (US2): `pages/goals.astro` at `/running/goals/`, `components/GoalCard.astro`,
+  `AchievedGoalCard.astro` and `AsOf.astro`, and the share image `og/goals.png.ts`.
+- `integration.ts` also validates all Running data when a build starts, so bad owner data stops
+  the build before Astro empties `dist/` (US2.7).
 
 ## Garmin attribution (FR-077, T152)
 
