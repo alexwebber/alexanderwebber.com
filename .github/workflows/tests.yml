@@ -90,7 +90,13 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # A stalled Ubuntu mirror once hung this install for 10 minutes (PR #44), so apt gives up on
+      # a slow download after 30 s and retries it, and the step fails fast rather than eating the
+      # job's time.
+      - run: |
+          printf 'Acquire::http::Timeout "30";\nAcquire::https::Timeout "30";\nAcquire::Retries "3";\n' | sudo tee /etc/apt/apt.conf.d/80-timeouts > /dev/null
+          npx playwright install --with-deps chromium
+        timeout-minutes: 8
       # SHELL_PREVIEW=1 adds /shell-preview/ (astro.config.mjs), the page tests/a11y/shell.spec.ts
       # checks the shared shell on; deploy builds never set it.
       - run: npm run build

@@ -1,7 +1,8 @@
 ---
-// /running/goals/ (T091, US2; contracts/routes.md): everything Alex is working towards. Active
-// goals in priority order (deadline-passed ones included, flagged), then the achieved goals,
-// newest first. Retired goals are never shown. Evaluated at build time for today in
+// /running/goals/ (T091, US2; contracts/routes.md): everything Alex is working towards. Goals
+// achieved in the last recent_highlight_days.goal days lead as "Just achieved" (owner,
+// 2026-10-23), then active goals in priority order (deadline-passed ones included, flagged), then
+// the other achieved goals, newest first. Retired goals are never shown. Evaluated at build time for today in
 // Europe/London; the daily rebuild keeps deadlines and "New" badges current. No client JS.
 import { formatDate } from '../../../shared/format/dates.ts';
 import { ogPath } from '../../../shared/og/render.ts';
@@ -18,6 +19,8 @@ const { evaluations } = await loadGoals();
 const settings = await sectionSettings();
 const active = activeGoals(evaluations);
 const achieved = achievedGoals(evaluations);
+const fresh = achieved.filter((e) => e.newlyAchieved);
+const earlier = achieved.filter((e) => !e.newlyAchieved);
 const attribution = goalsViewAttribution(evaluations, settings.garmin_devices.scale);
 const latest = achieved[0];
 const description =
@@ -35,6 +38,21 @@ const description =
   imageAlt="Alexander Webber's running goals"
   garmin={attribution ?? false}
 >
+  {
+    fresh.length > 0 && (
+      <section class="goals-section" aria-labelledby="new-goals">
+        <h2 id="new-goals">Just achieved</h2>
+        <ol class="goal-list goal-list-new" data-new-goals>
+          {fresh.map((evaluation) => (
+            <li>
+              <AchievedGoalCard evaluation={evaluation} />
+            </li>
+          ))}
+        </ol>
+      </section>
+    )
+  }
+
   <section class="goals-section" aria-labelledby="active-goals">
     <h2 id="active-goals">Working towards</h2>
     {
@@ -52,22 +70,24 @@ const description =
     }
   </section>
 
-  <section class="goals-section" aria-labelledby="achieved-goals">
-    <h2 id="achieved-goals">Achieved</h2>
-    {
-      achieved.length > 0 ? (
-        <ol class="goal-list" data-achieved-goals>
-          {achieved.map((evaluation) => (
-            <li>
-              <AchievedGoalCard evaluation={evaluation} />
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p>None yet. Achieved goals will be celebrated here.</p>
-      )
-    }
-  </section>
+  {
+    (earlier.length > 0 || fresh.length === 0) && (
+      <section class="goals-section" aria-labelledby="achieved-goals">
+        <h2 id="achieved-goals">Achieved</h2>
+        {earlier.length > 0 ? (
+          <ol class="goal-list" data-achieved-goals>
+            {earlier.map((evaluation) => (
+              <li>
+                <AchievedGoalCard evaluation={evaluation} />
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p>None yet. Achieved goals will be celebrated here.</p>
+        )}
+      </section>
+    )
+  }
 </SectionLayout>
 
 <style>
@@ -86,6 +106,11 @@ const description =
   @media (min-width: 48rem) {
     .goal-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* A lone celebration card spans the row. */
+    .goal-list-new > li:only-child {
+      grid-column: 1 / -1;
     }
   }
 </style>

@@ -159,7 +159,7 @@ All validated at build; errors report `file`, entry (index/id) and `field` (FR-0
 
 | File | Entity (spec) | Fields |
 |---|---|---|
-| `owner/goals.yaml` | **Goal** | list of `{id, type: race_time\|body_composition\|metric\|milestone, title, description?, priority, featured, deadline?, start_value?, linked_race?, status_override?, retired?, achieved_override?{date,note}, target...}` where target is by type: race_time `{distance_m\|distance:"10k", time:"44:59"}`; body_composition/metric `{metric, value, direction: at_most\|at_least}`; milestone none. Prior targets kept via git history (FR-040), not in file |
+| `owner/goals.yaml` | **Goal** | list of `{id, type: race_time\|body_composition\|metric\|milestone, title, description?, priority, featured, deadline?, start_value?, start_date? (needs start_value), all_time_start?{value,date} (value goals; reference only), linked_race?, status_override?, retired?, achieved_override?{date,note}, target...}` where target is by type: race_time `{distance_m\|distance:"10k", time:"44:59"}`; body_composition/metric `{metric, value, direction: at_most\|at_least}`; milestone none. Prior targets kept via git history (FR-040), not in file |
 | `owner/section.yaml` | **Section settings** (+ focus race) | `{focus_race: {race_id (from upcoming-races), build_start, charity: {name}}, story_link?: {href, label} (link hidden until set, FR-024), garmin_devices?: {scale?} (the scale named in weight and body-fat attribution, FR-077; runs carry their own watch), stale_after_hours: 12, featured_goal_limit: 6, recent_highlight_days: {pb: 14, goal: 14}}` (FR-020/021/026/042). Every field except `focus_race` has a schema default; all are owner-editable |
 | `owner/upcoming-races.yaml` | **Upcoming Race** | list `{id, name, date, distance_m\|distance, target_time?, url?, result_ref?}`; `result_ref` = slug of the owner race entry holding the result (see state machine below) |
 | `owner/races/<slug>/race.yaml` | **Race** (+ **Race Photo**) | `{slug, run_id? (opaque public run ID), name?, date, distance, official_time?, official_distance_m?, position?, results_url?, note?, hide_map?, trim_ends_m?, designate: race\|not_race?, photos:[{file, description (required), caption?}]}`; `run_id` absent => hand-entered (FR-051); present => details for that Garmin-recorded race. Photos are files beside it |
@@ -207,11 +207,13 @@ Times: `h:mm:ss` or `mm:ss`.
     build-time trailing 7-day mean of the recorded readings (days with none in the window have no
     value). `metric` goals (VO2 max, etc.): first date the recorded value reaches the target. Progress =
     `(current-start)/(target-start)` clamped 0..1 (current = latest 7-day average for
-    body-composition goals) (start = `start_value` else first reading on/after
+    body-composition goals) (start = `start_value`, dated by `start_date`, else first reading on/after
     goal creation = first reading in series if none, per Assumption). No data -> "no data yet".
+    `all_time_start` only adds "X down/up since <date> (<value>)" against the current value.
   - `milestone`: only `achieved_override`.
   - Owner `achieved_override` wins. Achieved stays achieved because "first date" is order-based.
-  - Newly achieved within `recent_highlight_days.goal` days (default 14) -> landing highlight (FR-042).
+  - Newly achieved within `recent_highlight_days.goal` days (default 14) -> landing highlight (FR-042),
+    first among the featured goals and in a "Just achieved" section on the Goals page.
 - **Period totals** (FR-045): week (Mon-Sun, Europe/London), month, year, all-time: runs, distance,
   moving time, avg pace (distance-weighted), elevation. Includes indoor/treadmill in totals
   (FR-058).

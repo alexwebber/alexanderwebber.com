@@ -56,7 +56,11 @@ export function upcomingRaces(races: readonly UpcomingRace[], focusId: string | 
 /** "sub-3:25" for 3:25:00, "sub-44:30" for 44:30: whole minutes drop their seconds past an hour. */
 export function targetLabel(targetTime: string): string | undefined {
   const seconds = parseTime(targetTime);
-  if (seconds === undefined) return undefined;
+  return seconds === undefined ? undefined : subLabel(seconds);
+}
+
+/** "sub-3:20", "sub-1:40", "sub-43:00": a target time in seconds as runners say it. */
+export function subLabel(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;

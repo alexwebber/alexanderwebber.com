@@ -91,6 +91,8 @@ recent_highlight_days: { pb: 14, goal: 14 }
   priority: 5
   featured: true
   start_value: 102.4
+  start_date: 2026-06-02                                          # optional: when start_value was read
+  all_time_start: { value: 110.0, date: 2023-01-31 }              # optional: "7.6 kg down since 31 Jan 2023"
   target: { metric: weight_kg, value: 93, direction: at_most }     # judged on the 7-day average
 - id: body-fat-17-5
   type: body_composition

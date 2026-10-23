@@ -117,7 +117,7 @@ describe('landing page (US1)', () => {
     expect(t).toContain('Brighton Marathon · 4 April 2027');
     expect(t).toContain('182 days to go');
     expect(t).toContain('Target: sub-3:30');
-    expect(t).toContain('Garmin: 3:28:40 if raced today (1 Oct 2026)');
+    expect(t).toContain('Garmin predicts 3:28:40 at current fitness (1 Oct 2026)');
     expect(t).toContain('For Martlets hospice');
   });
 
@@ -128,14 +128,15 @@ describe('landing page (US1)', () => {
     expect(t).not.toMatch(/3:30/);
   });
 
-  it('US1.3: featured goals in priority order, each with its target, current value and progress', async () => {
+  it('US1.3: featured goals in priority order after the newly achieved, each with its target, current value and progress', async () => {
     const html = await page();
-    expect(ids(html, 'data-featured-goals')).toEqual(['brighton', '10k', '5k', 'weight']);
+    // The 5k (achieved 28 Sep, six days ago) leads while it is new.
+    expect(ids(html, 'data-featured-goals')).toEqual(['5k', 'brighton', '10k', 'weight']);
     const tenK = text(html.match(/data-goal-id="10k"[\s\S]*?<\/article>/)![0]);
     expect(tenK).toContain('Fastest 46:00 (in a longer run)');
-    expect(tenK).toContain('Target 45:00');
+    expect(tenK).toContain('Target sub-45:00');
     expect(tenK).toContain('1:00 to go');
-    expect(tenK).toContain('Garmin: 44:10 if raced today (1 Oct 2026)');
+    expect(tenK).toContain('Garmin predicts 44:10 at current fitness (1 Oct 2026)');
     expect(html.match(/data-goal-id="10k"[\s\S]*?<\/article>/)![0]).toContain('role="meter"');
   });
 
@@ -146,13 +147,26 @@ describe('landing page (US1)', () => {
     expect(card).toMatch(/role="meter"[^>]*aria-valuenow="17"/); // (103 - 105) / (93 - 105)
   });
 
-  it('highlights a newly achieved featured goal (FR-042) and keeps it in priority order', async () => {
+  it('celebrates a newly achieved featured goal first (FR-042), then returns it to its priority place', async () => {
     const html = await page();
     const card = html.match(/<article[^>]*data-goal-id="5k"[\s\S]*?<\/article>/)![0];
     expect(card).toContain('data-status="achieved"');
     expect(card).toContain('goal-card-new');
     expect(text(card)).toContain('Achieved 28 Sep 2026 New');
+    expect(text(card)).toContain('19:45');
     expect(card).toContain('href="/running/runs/2026-09-28-abcd/"');
+    // Wider screens: the celebration and the lead goal span both columns; 10k and weight pair up.
+    const wide = [...html.matchAll(/<li data-wide[^>]*>\s*<article[^>]*data-goal-id="([^"]+)"/g)].map((m) => m[1]);
+    expect(wide).toEqual(['5k', 'brighton']);
+    // Fourteen days on (12 Oct), it is back in priority order; the lead spans, and weight, left
+    // alone on the last row, spans it.
+    vi.setSystemTime(new Date('2026-10-12T10:00:00Z'));
+    clearGoalsCache();
+    clearLandingCache();
+    const later = await page();
+    expect(ids(later, 'data-featured-goals')).toEqual(['brighton', '10k', '5k', 'weight']);
+    expect(later.match(/<article[^>]*data-goal-id="5k"[^>]*>/)![0]).not.toContain('goal-card-new');
+    expect([...later.matchAll(/<li data-wide[^>]*>\s*<article[^>]*data-goal-id="([^"]+)"/g)].map((m) => m[1])).toEqual(['brighton', 'weight']);
   });
 
   it('US1.5: this week (runs, distance, time) against last week, and the latest run linking to its page', async () => {

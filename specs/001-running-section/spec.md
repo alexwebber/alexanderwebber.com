@@ -351,6 +351,8 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
   the owner-defined start of the build, and the longest run in the build so far.
 - **FR-022**: The landing page MUST show the owner's featured goals (up to the owner's featured-goal limit, 6 by default) in priority order, each
   with target, current value, progress indicator and, where set, time remaining to its deadline.
+  Newly achieved featured goals (FR-042) come first for their highlight window (owner, 2026-10-23).
+  Race-time targets read as runners say them ("sub-3:20", achieved by any time under 3:20:00).
 - **FR-023**: The landing page MUST show a this-week snapshot (Monday–Sunday): run count, distance and
   time, comparison with the previous week, and a summary card for the most recent run linking to
   its detail page.
@@ -391,15 +393,19 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
   newest first.
 - **FR-038**: For race-time goals at 5k, 10k, half marathon and marathon, the goal MUST show the
   latest owner-entered Garmin race prediction for that distance, with its "as of" date (FR-069),
-  alongside the fastest recorded effort.
+  alongside the fastest recorded effort. It is Garmin's estimate at current fitness, not a
+  race-day forecast, and reads "Garmin predicts 3:25:18 at current fitness (23 Oct 2026)".
 - **FR-039**: Progress MUST be shown visually: for time goals, the gap between the fastest effort and
   the target; for body composition and metric goals, the proportion of the distance travelled from
-  the starting value to the target.
+  the starting value to the target. An owner-entered starting value carries its date, and the
+  owner MAY add an earlier reference reading, shown as the change since it ("32.1 kg down since
+  31 Jan 2023"), which doesn't affect progress.
 - **FR-040**: When a goal's target is revised, the site MUST show only the current target; earlier
   targets are kept in the record's history but not displayed.
 - **FR-041**: A goal whose deadline has passed unachieved MUST be shown as "deadline passed" until the
   owner revises or retires it; retired goals MUST NOT be displayed.
-- **FR-042**: Newly achieved goals SHOULD be highlighted on the landing page for 14 days.
+- **FR-042**: Newly achieved goals SHOULD be highlighted on the landing page for 14 days, as a
+  celebration card that leads the goals there and on the Goals page.
 
 #### Training stats and run detail (Story 3)
 

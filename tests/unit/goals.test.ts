@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { bodyFatAverage, trailingMean } from '../../src/sections/running/domain/composition.ts';
 import { buildEffortIndex, effortsAt, fastestEffort } from '../../src/sections/running/domain/efforts.ts';
 import { goalAttribution, goalsViewAttribution } from '../../src/sections/running/domain/attribution.ts';
-import { deadlineText, gapText, progressText, targetText } from '../../src/sections/running/domain/goal-text.ts';
+import { allTimeText, deadlineText, gapText, progressText, shortTargetText, startText, targetText } from '../../src/sections/running/domain/goal-text.ts';
 import {
   achievedGoals,
   activeGoals,
@@ -96,7 +96,7 @@ describe('US2 acceptance scenarios', () => {
     });
     const e = one<RaceTimeEvaluation>({ goals: [raceTimeGoal('5k-sub-20', '5k', '20:00')], runs: [run('2027-03-05-abcd', [fiveK(1225.4)])], manual });
     expect(e.status).toBe('active');
-    expect(targetText(e)).toBe('Under 20:00 for 5k');
+    expect(targetText(e)).toBe('Sub-20:00 5k');
     expect(e.fastest).toMatchObject({ time_s: 1225.4, date: '2027-03-05' });
     expect(e.prediction).toEqual({ distance: '5k', time: '20:47', seconds: 1247, as_of: '2027-03-01' });
     expect(gapText(e)).toBe('0:25 to go');
@@ -115,7 +115,7 @@ describe('US2 acceptance scenarios', () => {
   it('US2.4: a revised target is the only target, and is judged against the revised time', () => {
     const marathon = run('2027-04-04-race', [{ distance_m: 42195, label: 'marathon', time_s: 12300 }], { distance_m: 42400 }); // 3:25:00
     const revised = one<RaceTimeEvaluation>({ goals: [raceTimeGoal('brighton', 'marathon', '3:20:00')], runs: [marathon], today: '2027-04-04' });
-    expect(targetText(revised)).toBe('Under 3:20:00 for marathon');
+    expect(targetText(revised)).toBe('Sub-3:20 marathon');
     expect(revised.target_s).toBe(12000);
     expect(revised.status).toBe('active');
   });
@@ -254,8 +254,39 @@ describe('edge cases', () => {
     expect(e.start).toBe(101.0);
     expect(e.current).toEqual({ date: '2025-10-03', value: 100.4 });
     expect(e.fraction).toBeCloseTo(0.6 / 8, 5);
+    expect(e.startDate).toBe('2025-10-02');
     // Without `created`, the first reading in the series is the start.
     expect(one<ValueEvaluation>({ goals: [valueGoal('weight', 'weight_kg', 85, 'at_most')], health: { weight_kg: weight } }).start).toBe(92.0);
+  });
+
+  it('dates an owner start value, and measures the all-time change from its reference reading', () => {
+    const weight = series('2025-10-01', [101.4, 101.1]);
+    const goal = valueGoal('weight', 'weight_kg', 93, 'at_most', {
+      created: '2025-10-01',
+      start_value: 127.6,
+      start_date: '2025-06-02',
+      all_time_start: { value: 133.2, date: '2023-01-31' },
+    });
+    const e = one<ValueEvaluation>({ goals: [goal], health: { weight_kg: weight }, today: '2025-10-02' });
+    expect(startText(e)).toBe('127.6 kg on 2 Jun 2025');
+    expect(e.fraction).toBeCloseTo((127.6 - 101.1) / (127.6 - 93), 5); // the reference doesn't move progress
+    expect(allTimeText(e)).toBe('32.1 kg down since 31 Jan 2023 (133.2 kg)');
+    // An undated start value says no date; no reference, no all-time line.
+    const plain = one<ValueEvaluation>({ goals: [valueGoal('weight', 'weight_kg', 93, 'at_most', { start_value: 127.6 })], health: { weight_kg: weight } });
+    expect(startText(plain)).toBe('127.6 kg');
+    expect(allTimeText(plain)).toBeUndefined();
+    // A metric that has gone up says so.
+    const vo2 = one<ValueEvaluation>({ goals: [valueGoal('vo2', 'vo2max', 55, 'at_least', { all_time_start: { value: 37, date: '2025-10-01' } })], health: { vo2max: series('2026-10-01', [52]) } });
+    expect(allTimeText(vo2)).toBe('15 up since 1 Oct 2025 (37)');
+  });
+
+  it('reads race targets as runners say them', () => {
+    const e = one<RaceTimeEvaluation>({ goals: [raceTimeGoal('half', 'half', '1:40:00')], runs: [run('2027-03-05-abcd', [{ distance_m: 21097.5, label: 'half', time_s: 6223 }])] });
+    expect(targetText(e)).toBe('Sub-1:40 half marathon');
+    expect(shortTargetText(e)).toBe('sub-1:40');
+    expect(progressText(e)).toBe('Fastest 1:43:43, 3:43 off sub-1:40 (96% of the target pace)');
+    const beaten = one<RaceTimeEvaluation>({ goals: [raceTimeGoal('5k', '5k', '20:00')], runs: [run('2027-03-05-abcd', [fiveK(1184)])] });
+    expect(progressText(beaten)).toBe('Fastest 19:44: sub-20:00 by 0:16');
   });
 
   it('judges metric goals on the recorded value, at least or at most', () => {
@@ -290,6 +321,22 @@ describe('edge cases', () => {
     expect(featuredGoals(all, 6).map((e) => e.goal.id)).toEqual(['a', 'c', 'old', 'new']);
     expect(featuredGoals(all, 3).map((e) => e.goal.id)).toEqual(['a', 'c', 'old']);
     expect(featuredGoals(all, 1).map((e) => e.goal.id)).toEqual(['a']);
+  });
+
+  it('puts newly achieved featured goals first, newest first, for the highlight window', () => {
+    const goals = [
+      raceTimeGoal('lead', '10k', '40:00', { priority: 1 }),
+      raceTimeGoal('5k', '5k', '20:00', { priority: 3 }),
+      raceTimeGoal('5k-fast', '5k', '19:50', { priority: 4 }),
+      raceTimeGoal('10k', '10k', '45:00', { priority: 2, featured: false }),
+    ];
+    const runs = [run('2027-03-10-aaaa', [fiveK(1195)]), run('2027-03-15-bbbb', [fiveK(1185)])];
+    // 20 Mar: both 5k goals are new (5k achieved 10 Mar, 5k-fast 15 Mar), newest first.
+    expect(featuredGoals(evaluate({ goals, runs }), 6).map((e) => e.goal.id)).toEqual(['5k-fast', '5k', 'lead']);
+    // 25 Mar: 5k is 15 days on, so back in its priority place; 5k-fast is still new.
+    expect(featuredGoals(evaluate({ goals, runs, today: '2027-03-25' }), 6).map((e) => e.goal.id)).toEqual(['5k-fast', 'lead', '5k']);
+    // The limit still picks by priority first.
+    expect(featuredGoals(evaluate({ goals, runs }), 2).map((e) => e.goal.id)).toEqual(['5k', 'lead']);
   });
 
   it('attaches the linked upcoming race', () => {

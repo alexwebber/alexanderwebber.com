@@ -9,24 +9,25 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, night):** Phases 1–4 are merged, and the history work is finished. The
-  full Garmin import was dropped (owner decision 2026-10-23). The export audit found nothing
-  missing from 18 Oct 2025 on. Four Oct 2025 treadmill runs were uploaded and published, and
-  SC-009 passed 20/20 against the export. The `001-history-audit` PR hides the two junior
-  parkruns and labels the four uploaded runs "Venu 2 Plus". The 5 Apr half reads 1:43:43 live
-  (checked). **Next: Phase 5.**
+- **Status (2026-10-23, late):** Phase 5 has started. #44 merged and published (junior
+  parkruns `dvor`/`huen` 404, Oct 2025 runs show "Venu 2 Plus"). The guided site review is
+  done: all figures agreed with Garmin Connect, and the owner's four notes are built in the
+  `001-review-fixes` PR (newly achieved goals lead, Jun 2025 starts plus the all-time weight
+  line, "sub-3:20" targets, "at current fitness"). **Next: T110 graduation review**, in a new
+  session.
   - **Check first:**
-    - that the `001-history-audit` PR merged and its refresh published: 8 and 15 Mar 2026 gone
-      from the run list, and the four Oct 2025 runs showing "Venu 2 Plus". If it merged with
-      any unticked confirmation, ask the owner.
-    - the first 00:17 UTC catch-all since #38 (2026-10-24): its `deploy` job must run even with
-      no data change (T105). Check the run.
+    - that `001-review-fixes` merged and its deploy finished, then look at `/running/` and
+      `/running/goals/` live (the 5k leads until 31 Oct). Ask about any unticked confirmation.
+    - the 00:17 UTC catch-all on 2026-10-24: its `deploy` job must run even with no data change
+      (T105). Not yet checkable at the end of this session.
     - **all** workflows on each PR, including the non-required Quality check, not only the gate.
-    - minutes: 668 used by 19:40 UTC on 2026-10-23 (plus about 15 for the Oct 2025 re-import).
-      October should end under 1,000. If it's close to the limit, use the owner's lever order
-      (2026-10-23 decision).
-  - **Owner's local files:** the export zip is in Downloads (their backup); `C:\temp\runs`
-    (a duplicate copy plus the four extracted FIT files) can be deleted. Remind them once.
+    - minutes: 703 used by 20:15 UTC on 2026-10-23. October should end under 1,000. If it's
+      close to the limit, use the owner's lever order (2026-10-23 decision).
+  - **T110 notes:** the review fixes already cover the owner's wording/figures pass, so T110 is
+    the automated and adversarial part. On 31 Oct the 5k's "New" window ends: check the landing
+    page falls back to priority order (unit-tested, not yet seen live).
+  - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
+    repeat. The export zip in Downloads stays as their backup.
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -52,13 +53,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
-  - **Start with a guided site review** (owner, PR #38 comment): walk the owner through the
-    live site (`https://alexanderwebber.alexanderwebber.workers.dev/running/`, the goals page
-    and a run page) on a phone and a desktop, with exact steps. Then run a question round on
-    what they saw, including whether seven goals on the landing page is too many (SC-001).
-    Fold the answers into the T110 fixes. The owner has already looked once (2026-10-23) and
-    found three wording/number problems, all fixed; they offered to check more figures, so
-    include a figures pass (do the numbers on each card and chart agree?).
+  - **Guided site review: done** (2026-10-23; see the decisions log). Seven landing goals stay.
   - **T110:** the graduation review: Playwright, axe, the Lighthouse budget (CI only on
     Windows), privacy scans, an adversarial self-review and the design note
     `src/sections/running/README.md`.
@@ -803,8 +798,49 @@ project-specific notes.
     15 Mar 2026, about 2 km, Sundays just after 9am) are junior parkruns with the owner's son.
     Garmin logged them as "Other", and intervals.icu typed them as runs. Owner: ignore them, so
     `run-overrides.yaml` hides them.
+- **2026-10-23** — **Phase 5 guided site review** (owner, on phone and desktop). Every figure
+  agreed with Garmin Connect. Answers, built in the `001-review-fixes` PR:
+  - **Seven landing goals stay** (SC-001 is fine).
+  - **Newly achieved goals lead.** For their 14-day "New" window they come first on the
+    landing page (full width, above Brighton), with a larger medal and title and the achieving
+    figure in large type, and in a "Just achieved" section at the top of the Goals page. Then
+    they drop back to their priority place. On wider screens a lone last card spans its row.
+  - **Start values:** progress for weight and body fat runs from the start of the current
+    journey, 2 Jun 2025 (127.6 kg, 33.7%), dated on the card. New goal fields `start_date`
+    (needs `start_value`) and `all_time_start` (a reference only, shown as "32.1 kg down since
+    31 Jan 2023 (133.2 kg)"). The owner remembered about 128 kg and 34% in Jun 2025 and 133.2 kg
+    in Feb 2023; the Garmin export's weigh-ins gave the exact values and dates. No 2023 body
+    fat was estimated (Principle VIII). VO2 max's start (37, Oct 2025) was confirmed. `created`
+    stays 2025-10-01, so only data from then counts toward achievement.
+  - **Race targets read "sub-3:20"** (runners' shorthand, and it matches the hero), not
+    3:19:59. Achievement is unchanged: any time under 3:20:00. Gaps still run to the target
+    line ("3:43 to go", "3:43 off sub-1:40").
+  - **Prediction wording:** "Garmin predicts 3:25:18 at current fitness (23 Oct 2026)",
+    replacing "if raced today", which still read as unclear.
+  - **CI:** the Playwright job's browser install stalled on an Ubuntu mirror for 10 minutes on
+    PR #44 (then the re-run was cancelled by the merge). apt now times out slow downloads after
+    30 s and retries, and the step has an 8-minute limit.
 
 ## Upstream candidates
+
+- 2026-10-23 — In the guided review, the owner gave remembered figures ("about 128 kg, 34%,
+  Jun 2025"; "133.2 kg in Feb 2023"). The Garmin export had the exact weigh-ins (127.6 kg and
+  33.7% on 2 Jun 2025; 133.2 kg on 31 Jan 2023), so the site uses those. Generalisation
+  (Authentic Voice / owner data): when the owner supplies a figure from memory and a source
+  export exists, look it up read-only and confirm the exact value and date, rather than
+  entering the remembered one or estimating a missing one.
+- 2026-10-23 — On a phone, "Target sub-43:00" broke after the hyphen ("sub-" / "43:00"), and
+  "(23 Oct 2026)" split mid-date. Unit and e2e tests passed; only a screenshot showed it.
+  Agent tip (UI): keep short labels that contain hyphens or dates on one line
+  (`white-space: nowrap`), and look at a phone-width screenshot before raising a UI PR.
+- 2026-10-23 — Locally, Playwright's `webServer` failed with "was not able to start" while an
+  `astro preview` the agent had started for screenshots was still running on another port.
+  Stopping it by PID fixed it. Agent tip (Astro 7): one `astro preview` at a time; stop your own
+  before running Playwright.
+- 2026-10-23 — A Playwright job's `playwright install --with-deps` hung for 10 minutes on a
+  stalled Ubuntu apt mirror, with no output and no failure until the job was cancelled. Agent
+  tip (CI): give apt `Acquire::http::Timeout` and `Acquire::Retries` before installing browser
+  deps, and give the step its own `timeout-minutes`.
 
 - 2026-10-23 — The plan carried "import the full Garmin history" from spec time to the eve of
   doing it, and the owner then asked whether it was safe and worth it. It wasn't: it added no

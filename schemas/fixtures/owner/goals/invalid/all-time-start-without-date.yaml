@@ -1,0 +1,1 @@
+- { id: weight-93, type: body_composition, title: Weight 93 kg, priority: 1, featured: true, all_time_start: { value: 133.2 }, target: { metric: weight_kg, value: 93, direction: at_most } }

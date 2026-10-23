@@ -3,8 +3,11 @@
 // achieved it (the effort, linked to its run once run pages exist; the 7-day average or reading;
 // or the owner's note for a goal marked by hand). Achieved goals keep their original date even if
 // later values regress. A goal achieved in the last recent_highlight_days.goal days is marked
-// "New". Garmin attribution sits under the heading when the card shows Garmin data. No client JS.
+// "New" and celebrated: a larger medal and title, and the achieving figure in large type ("19:44"),
+// while it leads the landing page's goals and the Goals page (owner, 2026-10-23). Garmin
+// attribution sits under the heading when the card shows Garmin data. No client JS.
 import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
 import { goalAttribution } from '../domain/attribution.ts';
 import { effortText, formatMetric, metricName, targetText } from '../domain/goal-text.ts';
 import type { GoalEvaluation } from '../domain/goals.ts';
@@ -33,6 +36,8 @@ const reading =
   e.kind === 'value' && achievement.reading
     ? { label: e.averaged ? `${metricName(e.metric)} (7-day average)` : metricName(e.metric), value: formatMetric(e.metric, achievement.reading.value, true) }
     : undefined;
+// The figure a newly achieved goal celebrates: the effort's time, or the reading.
+const headline = e.newlyAchieved ? (effort ? formatDuration(effort.time_s) : reading?.value) : undefined;
 ---
 
 <article class:list={['goal-card goal-card-achieved', { 'goal-card-new': e.newlyAchieved }]} aria-labelledby={id} data-goal-id={goal.id} data-priority={goal.priority} data-status="achieved" data-achieved-on={achievement.date}>
@@ -57,6 +62,13 @@ const reading =
       {attribution && <GarminAttribution {...attribution} />}
     </div>
   </header>
+  {
+    headline && (
+      <p class="goal-celebrate" data-celebrate>
+        {headline}
+      </p>
+    )
+  }
   {!compact && goal.description && <p class="goal-description">{goal.description}</p>}
   <dl class="goal-facts">
     {
@@ -177,9 +189,26 @@ const reading =
     margin: 0;
   }
 
-  /* Newly achieved (FR-042): a celebratory tint for the highlight window. */
+  /* Newly achieved (FR-042): a celebratory tint, a larger medal and title, and the big figure. */
   .goal-card-new {
     background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  }
+
+  .goal-card-new .goal-medal {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .goal-card-new .goal-card-title {
+    font-size: var(--step-2);
+  }
+
+  .goal-celebrate {
+    margin: 0 0 var(--space-3);
+    font-size: var(--step-3);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-tight);
+    color: var(--color-accent-strong);
   }
 
   @media (forced-colors: active) {

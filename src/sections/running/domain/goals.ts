@@ -16,8 +16,10 @@
 //   so an import of older history can't achieve a goal (or move its start) years back.
 // - deadline < today, unachieved: deadline_passed. Retired goals are left out entirely.
 // - Progress for value goals: (current - start) / (target - start), clamped 0..1. Start is
-//   start_value, else the first reading on/after created, else the first reading in the series.
-// - Newly achieved: achieved within recent_highlight_days.goal days (FR-042).
+//   start_value (dated by start_date when given), else the first reading on/after created, else the
+//   first reading in the series. all_time_start is a reference only ("32.1 kg down since ...").
+// - Newly achieved: achieved within recent_highlight_days.goal days (FR-042); they lead the
+//   landing page's featured goals for that window (owner, 2026-10-23).
 import { daysBetween } from '../../../shared/format/dates.ts';
 import { parseDistance, parseTime } from '../../../shared/format/parse.ts';
 import type { Goal, UpcomingRace } from '../../../shared/storage/index.ts';
@@ -71,6 +73,10 @@ export interface ValueEvaluation extends Common {
   /** Judged on the 7-day average (body composition) rather than the recorded value. */
   averaged: boolean;
   start?: number;
+  /** The start's date: start_date, or the first reading's; undefined for an undated start_value. */
+  startDate?: string;
+  /** The owner's earlier reference reading (all_time_start), shown as the change since it. */
+  allTimeStart?: DatedValue;
   /** The value progress and achievement are judged on (latest 7-day average or recorded value). */
   current?: DatedValue;
   /** The headline figure, the same as `current` (body composition: its 7-day average, FR-061). */
@@ -152,7 +158,9 @@ export function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
       const judged = judgedSeries.filter(inScope);
       const hit = judged.find((p) => reaches(p.value, target, direction));
       if (hit) automatic = { date: hit.date, by: 'reading', reading: hit };
-      const start = goal.start_value ?? (recorded.find(inScope) ?? recorded[0])?.value;
+      const firstReading = recorded.find(inScope) ?? recorded[0];
+      const start = goal.start_value ?? firstReading?.value;
+      const startDate = goal.start_value !== undefined ? goal.start_date : firstReading?.date;
       const current = judged.at(-1);
       // One figure throughout (owner, 2026-10-23): "Now" is the value "to go" and progress use, so
       // body fat shows its 7-day average like weight, not the day's reading.
@@ -168,6 +176,8 @@ export function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
         target,
         averaged,
         ...(start !== undefined ? { start } : {}),
+        ...(startDate ? { startDate } : {}),
+        ...(goal.all_time_start ? { allTimeStart: { date: goal.all_time_start.date, value: goal.all_time_start.value } } : {}),
         ...(current ? { current } : {}),
         ...(latest ? { latest } : {}),
         ...(fraction !== undefined ? { fraction } : {}),
@@ -217,14 +227,17 @@ export function achievedGoals(evaluations: readonly GoalEvaluation[]): GoalEvalu
 /**
  * The landing page's featured goals (FR-022): every featured goal, by priority, up to `limit`.
  * Achieved ones stay while the owner keeps them featured (the achieved 5k is featured as a
- * milestone, owner 2026-10-23), and show as newly achieved for the highlight window (FR-042).
+ * milestone, owner 2026-10-23). Newly achieved ones (FR-042) come first, newest first, for the
+ * highlight window, then drop back to their priority place (owner, 2026-10-23).
  * validate-data counts achieved featured goals toward the limit too.
  */
 export function featuredGoals(evaluations: readonly GoalEvaluation[], limit: number): GoalEvaluation[] {
-  return evaluations
+  const featured = evaluations
     .filter((e) => e.goal.featured)
     .sort(byPriority)
     .slice(0, limit);
+  const fresh = achievedGoals(featured.filter((e) => e.newlyAchieved));
+  return [...fresh, ...featured.filter((e) => !e.newlyAchieved)];
 }
 
 /** Whether there is anything to show progress from. */

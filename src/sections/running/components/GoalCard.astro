@@ -8,12 +8,16 @@
 //
 // `compact` (the landing page's featured goals, T101) keeps what FR-022 asks for in less height:
 // how far is left in words ("3:00 to go", "8.6 kg to go"), the current value and the target, the
-// Garmin prediction, the progress bar with its figures, and the time left to the deadline.
+// Garmin prediction, the progress bar with its figures, and the time left to the deadline. Value
+// goals with an all-time reference add the change since it ("32.1 kg down since 31 Jan 2023").
+//
+// Race targets read "sub-3:20", and the prediction reads "Garmin predicts 3:25:18 at current
+// fitness (23 Oct 2026)" (owner, 2026-10-23): it is Garmin's estimate for today, not a forecast.
 import ProgressBar from '../../../shared/charts/ProgressBar.astro';
 import { formatDate } from '../../../shared/format/dates.ts';
 import { formatDuration } from '../../../shared/format/units.ts';
 import { goalAttribution } from '../domain/attribution.ts';
-import { deadlineText, distanceLabel, formatMetric, gapText, metricName, progressText, targetText, toGoText } from '../domain/goal-text.ts';
+import { allTimeText, deadlineText, distanceLabel, formatMetric, gapText, metricName, progressText, shortTargetText, startText, targetText, toGoText } from '../domain/goal-text.ts';
 import type { GoalEvaluation } from '../domain/goals.ts';
 import { runHref } from '../links.ts';
 import AsOf from './AsOf.astro';
@@ -40,7 +44,9 @@ const fastestHref = e.kind === 'race_time' && e.fastest?.run_id ? runHref(e.fast
 // Compact: the headline (how far is left) and the line under it (now and the target).
 const headline = e.kind === 'race_time' ? gapText(e) : e.kind === 'value' ? toGoText(e) : undefined;
 // The title names the distance or metric, so the compact target is just the figure.
-const shortTarget = e.kind === 'race_time' ? formatDuration(e.target_s) : e.kind === 'value' ? formatMetric(e.metric, e.target) : undefined;
+const shortTarget = e.kind === 'milestone' ? undefined : shortTargetText(e);
+const allTime = e.kind === 'value' ? allTimeText(e) : undefined;
+const start = e.kind === 'value' ? startText(e) : undefined;
 const deadlineLine =
   goal.deadline && e.daysToDeadline !== undefined
     ? `${deadlineIsRaceDay ? 'Race day' : 'Deadline'} ${formatDate(goal.deadline)} · ${deadlineText(e.daysToDeadline)}`
@@ -88,9 +94,14 @@ const fastestSuffix =
             <span data-target>Target {shortTarget}</span>
           </p>
         )}
+        {allTime && (
+          <p class="goal-all-time" data-all-time>
+            {allTime}
+          </p>
+        )}
         {e.kind === 'race_time' && e.prediction && (
           <p class="goal-prediction" data-prediction>
-            <AsOf label="Garmin:" value={e.prediction.time} after="if raced today" asOf={e.prediction.as_of} />
+            <AsOf label="Garmin predicts" value={e.prediction.time} after="at current fitness" asOf={e.prediction.as_of} />
           </p>
         )}
       </div>
@@ -128,7 +139,7 @@ const fastestSuffix =
         <div>
           <dt>Garmin race predictor</dt>
           <dd data-prediction>
-            <AsOf value={e.prediction.time} after="if raced today" asOf={e.prediction.as_of} />
+            <AsOf value={e.prediction.time} after="at current fitness" asOf={e.prediction.as_of} />
           </dd>
         </div>
       )
@@ -150,10 +161,18 @@ const fastestSuffix =
       )
     }
     {
-      e.kind === 'value' && e.start !== undefined && e.latest && (
+      e.kind === 'value' && start && e.latest && (
         <div>
           <dt>Start</dt>
-          <dd>{formatMetric(e.metric, e.start, true)}</dd>
+          <dd data-start>{start}</dd>
+        </div>
+      )
+    }
+    {
+      allTime && (
+        <div>
+          <dt>All time</dt>
+          <dd data-all-time>{allTime}</dd>
         </div>
       )
     }
@@ -269,12 +288,18 @@ const fastestSuffix =
   }
 
   .goal-now,
-  .goal-prediction {
+  .goal-prediction,
+  .goal-all-time {
     margin: var(--space-1) 0 0;
   }
 
   .goal-compact {
     margin-bottom: var(--space-3);
+  }
+
+  /* "sub-43:00" never breaks at its hyphen. */
+  .goal-now [data-target] {
+    white-space: nowrap;
   }
 
   .goal-deadline {

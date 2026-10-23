@@ -59,6 +59,7 @@
       "description": "Achieved when the 7-day average first reaches the target (FR-034).",
       "type": "object",
       "additionalProperties": false,
+      "dependentRequired": { "start_date": ["start_value"] },
       "required": ["id", "type", "title", "priority", "featured", "target"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
@@ -69,6 +70,8 @@
         "featured": { "type": "boolean" },
         "deadline": { "$ref": "../defs.schema.json#/$defs/date" },
         "start_value": { "$ref": "#/$defs/startValue" },
+        "start_date": { "$ref": "#/$defs/startDate" },
+        "all_time_start": { "$ref": "#/$defs/allTimeStart" },
         "created": { "$ref": "#/$defs/created" },
         "linked_race": { "$ref": "#/$defs/linkedRace" },
         "status_override": { "$ref": "#/$defs/statusOverride" },
@@ -91,6 +94,7 @@
       "description": "Achieved when the recorded value first reaches the target (FR-034). fitness_ctl, fatigue_atl and the manual Garmin figures are not goal metrics.",
       "type": "object",
       "additionalProperties": false,
+      "dependentRequired": { "start_date": ["start_value"] },
       "required": ["id", "type", "title", "priority", "featured", "target"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
@@ -101,6 +105,8 @@
         "featured": { "type": "boolean" },
         "deadline": { "$ref": "../defs.schema.json#/$defs/date" },
         "start_value": { "$ref": "#/$defs/startValue" },
+        "start_date": { "$ref": "#/$defs/startDate" },
+        "all_time_start": { "$ref": "#/$defs/allTimeStart" },
         "created": { "$ref": "#/$defs/created" },
         "linked_race": { "$ref": "#/$defs/linkedRace" },
         "status_override": { "$ref": "#/$defs/statusOverride" },
@@ -152,6 +158,20 @@
       "description": "Starting value for progress; overrides the first reading.",
       "type": "number",
       "exclusiveMinimum": 0
+    },
+    "startDate": {
+      "description": "The date of start_value (e.g. the weigh-in it came from), shown beside it. Needs start_value; without both, the start is the first reading and its date.",
+      "$ref": "../defs.schema.json#/$defs/date"
+    },
+    "allTimeStart": {
+      "description": "An earlier reading to measure the whole journey from (e.g. the heaviest weigh-in, years before the goal), shown as \"32.1 kg down since 31 Jan 2023 (133.2 kg)\". It doesn't change progress or achievement.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "date"],
+      "properties": {
+        "value": { "type": "number", "exclusiveMinimum": 0 },
+        "date": { "$ref": "../defs.schema.json#/$defs/date" }
+      }
     },
     "linkedRace": {
       "description": "An id from upcoming-races.yaml.",

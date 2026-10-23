@@ -46,7 +46,7 @@ test('has its own title, description, share image and nav entry', async ({ page 
 
 test('shows every goal once, never a retired one', async ({ page }) => {
   await open(page);
-  const shown = [...(await ids(page, 'data-active-goals')), ...(await ids(page, 'data-achieved-goals'))];
+  const shown = [...(await ids(page, 'data-new-goals')), ...(await ids(page, 'data-active-goals')), ...(await ids(page, 'data-achieved-goals'))];
   expect(shown.sort()).toEqual(goals.filter((g) => !g.retired).map((g) => g.id).sort());
 });
 
@@ -61,9 +61,13 @@ test('lists active goals in priority order', async ({ page }) => {
   expect(active).toEqual(byPriority);
 });
 
-test('lists achieved goals newest first, each with its date', async ({ page }) => {
+test('lists achieved goals newest first, each with its date, the newly achieved ones on top', async ({ page }) => {
   await open(page);
-  const achieved = page.locator('[data-achieved-goals] [data-goal-id]');
+  for (const card of await page.locator('[data-new-goals] [data-goal-id]').all()) {
+    await expect(card.locator('[data-newly-achieved]')).toHaveText('New');
+  }
+  await expect(page.locator('[data-achieved-goals] [data-newly-achieved]')).toHaveCount(0);
+  const achieved = page.locator('[data-new-goals] [data-goal-id], [data-achieved-goals] [data-goal-id]');
   const dates = await achieved.evaluateAll((els) => els.map((el) => el.getAttribute('data-achieved-on')!));
   expect(dates).toEqual([...dates].sort().reverse());
   for (const card of await achieved.all()) {
