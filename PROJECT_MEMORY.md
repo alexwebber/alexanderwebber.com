@@ -10,15 +10,15 @@ Update this as decisions get made — treat it as the source of truth alongside
      A new session reads this first; the owner only needs to type "continue". -->
 
 - **Status (2026-10-23):** the Cloudflare cron dispatches `refresh.yml` every 2 h, all green.
-  `device` is published, and the three hand-uploaded 17 Oct track runs are in. Open PRs:
-  - **#30:** the run-overrides `device` field (Venu X1 for the 17 Oct runs), plus the Phase 3
-    goal answers and the intervals.icu decision in this file.
-  - **#31:** fewer Actions minutes (the alert folded into the fetch job; idle runs skip publish).
+  `device` is published, and the three hand-uploaded 17 Oct track runs carry
+  `"device":"Venu X1"`.
+  - **Merged:** #30 (device override, goal answers) and #31 (fewer Actions minutes). The first
+    run after #31 published with "the last refresh ended 'failure'", which was expected: the
+    run before it lost its push race when #31 merged.
   - **Check first:**
-    - whether #30 and #31 merged, and any unanswered checkboxes;
-    - after #31, a refresh log's "Decide whether to publish" line;
-    - after #30, the 17 Oct runs carry `"device":"Venu X1"`;
-    - minutes per day (expect about 35–40, down from 55).
+    - whether this handoff's PR (`manual-metrics.yaml`) merged;
+    - minutes per day: expect about 35–40, down from 55. If it's still close to the limit,
+      use the owner's lever order (2026-10-23 decision).
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -47,9 +47,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **The question round is done.** The answers are in the 2026-10-18 *Phase 3 goal answers*
     decision. Update T092's goal list in tasks.md to match (sub-3:25, half sub-1:40, 10k
     sub-43, VO2 max 52.5).
-  - **T154 is the only owner input left:** Garmin training status and race predictions (5k,
-    10k, half, marathon) with the date read. If the owner hasn't sent them, build without
-    `manual-metrics.yaml`; cards then show no prediction.
+  - **T154 is done:** `data/running/owner/manual-metrics.yaml` holds the owner's 2026-10-23
+    readings (Productive; 19:31, 40:56, 1:32:01, 3:25:18). No owner input is left for Phase 3.
+    Offer a fresh reading at later reviews; never ask as a chore.
   - **Don't invent values** (Principle VIII).
   - **Not blocked by T150:** goals evaluate from the data there is, and they fill in after the
     backfill.
@@ -669,6 +669,12 @@ project-specific notes.
   - **Device override:** manual uploads have no intervals.icu device name, so
     `run-overrides.yaml` gained `device`, which wins over intervals.icu's (owner: Venu X1 for
     the three runs).
+- **2026-10-23** — **If Actions minutes still run close to the limit** (owner, PR #31): first
+  move the refresh to every 3 hours (the constitution allows 1–3 h). After that, weigh making
+  the repo public against paying a few dollars a month.
+- **2026-10-23** — **T154 entered:** Garmin training status Productive, and race predictions
+  5k 19:31, 10k 40:56, half 1:32:01, marathon 3:25:18, all read on 2026-10-23
+  (`manual-metrics.yaml`).
 
 ## Upstream candidates
 
