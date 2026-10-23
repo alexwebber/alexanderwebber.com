@@ -106,6 +106,7 @@ const text = (html: string) =>
     .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')
     .replace(/ ([,.):])/g, '$1')
+    .replace(/\( /g, '(')
     .trim();
 const page = async () => clean(await container.renderToString(Landing, { request: new Request('https://alexanderwebber.com/running/') }));
 const ids = (html: string, list: string) => [...(html.match(new RegExp(`${list}[\\s\\S]*?</ol>`))?.[0] ?? '').matchAll(/data-goal-id="([^"]+)"/g)].map((m) => m[1]);
@@ -116,7 +117,7 @@ describe('landing page (US1)', () => {
     expect(t).toContain('Brighton Marathon · 4 April 2027');
     expect(t).toContain('182 days to go');
     expect(t).toContain('Target: sub-3:30');
-    expect(t).toContain('Garmin predicts 3:28:40 (as of 1 Oct 2026)');
+    expect(t).toContain('Garmin: 3:28:40 if raced today (1 Oct 2026)');
     expect(t).toContain('For Martlets hospice');
   });
 
@@ -131,10 +132,10 @@ describe('landing page (US1)', () => {
     const html = await page();
     expect(ids(html, 'data-featured-goals')).toEqual(['brighton', '10k', '5k', 'weight']);
     const tenK = text(html.match(/data-goal-id="10k"[\s\S]*?<\/article>/)![0]);
-    expect(tenK).toContain('Fastest 46:00');
+    expect(tenK).toContain('Fastest 46:00 (in a longer run)');
     expect(tenK).toContain('Target 45:00');
     expect(tenK).toContain('1:00 to go');
-    expect(tenK).toContain('Garmin predicts 44:10 (as of 1 Oct 2026)');
+    expect(tenK).toContain('Garmin: 44:10 if raced today (1 Oct 2026)');
     expect(html.match(/data-goal-id="10k"[\s\S]*?<\/article>/)![0]).toContain('role="meter"');
   });
 

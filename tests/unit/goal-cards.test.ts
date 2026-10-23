@@ -47,6 +47,7 @@ async function text(component: Parameters<AstroContainer['renderToString']>[0], 
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .replace(/ ([,.)])/g, '$1')
+    .replace(/\( /g, '(')
     .trim();
 }
 
@@ -60,6 +61,10 @@ const effort = (extra: Partial<Effort> = {}): Effort => ({ distance_m: 5000, tim
 describe('AsOf', () => {
   it('shows a figure with its UK "as of" date', async () => {
     expect(await text(AsOf, { label: 'Garmin predicted', value: '20:47', asOf: '2027-03-01' })).toBe('Garmin predicted 20:47 (as of 1 Mar 2027)');
+    // Garmin's predictions are for a race run today, so the words after the value replace "as of".
+    expect(await text(AsOf, { label: 'Garmin:', value: '3:25:18', after: 'if raced today', asOf: '2026-10-23' })).toBe(
+      'Garmin: 3:25:18 if raced today (23 Oct 2026)',
+    );
     expect(await html(AsOf, { value: 'Productive', asOf: '2026-10-23' })).toContain('<time datetime="2026-10-23">23 Oct 2026</time>');
   });
 
@@ -85,7 +90,7 @@ describe('GoalCard', () => {
     const t = await text(GoalCard, { evaluation });
     expect(t).toContain('Target Under 20:00 for 5k');
     expect(t).toContain('Fastest 5k 20:25 on 5 Mar 2027, 0:25 to go');
-    expect(t).toContain('Garmin predicted 20:47 (as of 1 Mar 2027)');
+    expect(t).toContain('Garmin race predictor 20:47 if raced today (1 Mar 2027)');
     expect(t).toContain('Source: Garmin Venu X1');
     const h = await html(GoalCard, { evaluation });
     expect(h).toMatch(/<h3 class="goal-card-title" id="goal-g">5k under 20 minutes<\/h3>\s*<p class="garmin-attribution"/);

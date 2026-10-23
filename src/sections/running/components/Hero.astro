@@ -64,7 +64,7 @@ const { race, state, prediction, result } = focus;
       {
         prediction && (
           <li data-prediction>
-            <AsOf label="Garmin predicts" value={prediction.time} asOf={prediction.as_of} />
+            <AsOf label="Garmin:" value={prediction.time} after="if raced today" asOf={prediction.as_of} />
           </li>
         )
       }

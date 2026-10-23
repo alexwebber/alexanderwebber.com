@@ -27,7 +27,13 @@ export interface Effort {
   device?: string;
   /** The owner's race entry, for a race result. */
   race?: { slug: string; name?: string };
+  /** A stretch of a longer run (e.g. a 10k inside a tempo run), not a run of about this distance. */
+  inLongerRun?: boolean;
 }
+
+/** A run more than 5% longer than an effort's distance makes it "in a longer run" (GPS on a real attempt
+ *  usually overruns by 1-3%; a 10.7 km tempo run holding a 10k effort is 7% over). */
+const LONGER_RUN_RATIO = 1.05;
 
 /** Distance (metres) -> efforts at that distance, oldest first (fastest first within a day). */
 export type EffortIndex = ReadonlyMap<number, readonly Effort[]>;
@@ -83,6 +89,7 @@ export function buildEffortIndex(runs: readonly Run[], races: readonly Race[] = 
         source: 'run',
         run_id: run.id,
         ...(run.device ? { device: run.device } : {}),
+        ...(run.distance_m > effort.distance_m * LONGER_RUN_RATIO ? { inLongerRun: true } : {}),
       });
     }
   }

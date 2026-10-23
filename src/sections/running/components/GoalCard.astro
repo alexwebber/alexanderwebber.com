@@ -45,11 +45,10 @@ const deadlineLine =
   goal.deadline && e.daysToDeadline !== undefined
     ? `${deadlineIsRaceDay ? 'Race day' : 'Deadline'} ${formatDate(goal.deadline)} · ${deadlineText(e.daysToDeadline)}`
     : undefined;
-// " on 9 Oct 2026 (Brighton 10k), 3:00 to go"
+// " on 9 Oct 2026 (Brighton 10k), 3:00 to go", or " on 3 Oct 2026 (in a longer run), 3:00 to go"
+const fastestNote = e.kind === 'race_time' && e.fastest ? (e.fastest.race?.name ?? (e.fastest.inLongerRun ? 'in a longer run' : undefined)) : undefined;
 const fastestSuffix =
-  e.kind === 'race_time' && e.fastest
-    ? ` on ${formatDate(e.fastest.date)}${e.fastest.race?.name ? ` (${e.fastest.race.name})` : ''}, ${gapText(e)}`
-    : '';
+  e.kind === 'race_time' && e.fastest ? ` on ${formatDate(e.fastest.date)}${fastestNote ? ` (${fastestNote})` : ''}, ${gapText(e)}` : '';
 ---
 
 <article class="goal-card" aria-labelledby={id} data-goal-id={goal.id} data-priority={goal.priority} data-status={e.status}>
@@ -76,7 +75,8 @@ const fastestSuffix =
           <p class="goal-now">
             {e.kind === 'race_time' && e.fastest && (
               <span data-fastest>
-                Fastest {fastestHref ? <a href={fastestHref}>{formatDuration(e.fastest.time_s)}</a> : <strong>{formatDuration(e.fastest.time_s)}</strong>} ·{' '}
+                Fastest {fastestHref ? <a href={fastestHref}>{formatDuration(e.fastest.time_s)}</a> : <strong>{formatDuration(e.fastest.time_s)}</strong>}
+                {e.fastest.inLongerRun && <> (in a longer run)</>} ·{' '}
               </span>
             )}
             {e.kind === 'value' && e.latest && (
@@ -90,7 +90,7 @@ const fastestSuffix =
         )}
         {e.kind === 'race_time' && e.prediction && (
           <p class="goal-prediction" data-prediction>
-            <AsOf label="Garmin predicts" value={e.prediction.time} asOf={e.prediction.as_of} />
+            <AsOf label="Garmin:" value={e.prediction.time} after="if raced today" asOf={e.prediction.as_of} />
           </p>
         )}
       </div>
@@ -126,9 +126,9 @@ const fastestSuffix =
     {
       e.kind === 'race_time' && e.prediction && (
         <div>
-          <dt>Garmin prediction</dt>
+          <dt>Garmin race predictor</dt>
           <dd data-prediction>
-            <AsOf label="Garmin predicted" value={e.prediction.time} asOf={e.prediction.as_of} />
+            <AsOf value={e.prediction.time} after="if raced today" asOf={e.prediction.as_of} />
           </dd>
         </div>
       )
