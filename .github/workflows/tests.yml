@@ -72,6 +72,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+          check-latest: true
           cache: npm
       - run: npm ci
       - run: npm test
@@ -88,6 +89,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
+          check-latest: true
           cache: npm
       - run: npm ci
       # No --with-deps: its apt install (extra fonts and library upgrades) stalled on the Azure

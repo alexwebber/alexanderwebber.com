@@ -835,7 +835,9 @@ project-specific notes.
     (93.1 kg from 127.6 kg is 99.7%). A race time that rounds to the target (42:59.6 against
     sub-43:00) doesn't count, and reads "Under a second to go", not "Beaten by 0:00".
   - **Pins:** Astro 7.4.2 raises its Node floor to 22.23.4 for the October 2026 Node security
-    releases, so `engines` follows. Also `@astrojs/check` 0.9.12 (still TypeScript `^5 || ^6`, so
+    releases, so `engines` follows. Every `setup-node` step now has `check-latest: true`: with
+    `.nvmrc` at `22`, setup-node took the runner's cached 22.23.3, so PR #46's first CI run
+    failed (the refresh's publish would have too). Also `@astrojs/check` 0.9.12 (still TypeScript `^5 || ^6`, so
     the 6.0.3 pin stays), wrangler 4.152.0, maplibre-gl 6.15.0 and satori 0.63.2 (still the
     same `fflate`, so the accepted advisory is unchanged).
   - **Lighthouse budget runs locally** on Windows now (bins run with `node`, not `npx`).
@@ -855,6 +857,8 @@ project-specific notes.
 - 2026-10-23 — Astro raised its minimum Node version in a patch release (7.4.2, for Node security
   fixes), which only the release notes said. Agent tip (update checks): read the release notes
   of core-framework patch releases too, and keep `engines` in step with the framework's floor.
+  `actions/setup-node` with a major-only version uses the runner's cached release, which can be
+  below a new floor; set `check-latest: true`.
 
 - 2026-10-23 — In the guided review, the owner gave remembered figures ("about 128 kg, 34%,
   Jun 2025"; "133.2 kg in Feb 2023"). The Garmin export had the exact weigh-ins (127.6 kg and
