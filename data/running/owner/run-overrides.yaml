@@ -1,0 +1,10 @@
+# Per-run owner changes (schemas/owner/run-overrides.schema.json).
+
+# The 17 Oct 2026 track session was uploaded to intervals.icu by hand (Garmin never sent it),
+# so intervals.icu has no device name for it.
+- id: 2026-10-17-wxyj
+  device: Venu X1
+- id: 2026-10-17-ofka
+  device: Venu X1
+- id: 2026-10-17-iaae
+  device: Venu X1

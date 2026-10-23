@@ -9,16 +9,18 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-18):** PRs #27 and #28 merged. The Worker's Cloudflare cron now dispatches
-  `refresh.yml` every 2 h (first slot 18:17 UTC), and `schedule` is a guarded 6-hourly backup.
-  The `GITHUB_DISPATCH_TOKEN` secret is set, and a test dispatch returned 204.
-  - **Check first:** `gh run list --workflow refresh.yml --event workflow_dispatch` shows a run
-    every 2 h (at about :17), and the backup slots (01:47, 07:47, 13:47, 19:47 UTC) skip after
-    their guard job. Any `refresh-trigger-failing` issue comes first.
+- **Status (2026-10-23):** the Cloudflare cron dispatches `refresh.yml` every 2 h, all green.
+  `device` is published, and the three hand-uploaded 17 Oct track runs are in. Open PRs:
+  - **#30:** the run-overrides `device` field (Venu X1 for the 17 Oct runs), plus the Phase 3
+    goal answers and the intervals.icu decision in this file.
+  - **#31:** fewer Actions minutes (the alert folded into the fetch job; idle runs skip publish).
+  - **Check first:**
+    - whether #30 and #31 merged, and any unanswered checkboxes;
+    - after #31, a refresh log's "Decide whether to publish" line;
+    - after #30, the 17 Oct runs carry `"device":"Venu X1"`;
+    - minutes per day (expect about 35–40, down from 55).
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
-  - **Device field:** the first refresh after PR #27 reprocesses every run (`PROCESSOR_VERSION`
-    2). Check the bot commit adds `device` to published runs.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
   start. Cloud credits remain until 2026-11-05 but are mostly used, so only suggest a cloud
   session for a slice that needs no secrets and no owner input.
@@ -27,26 +29,30 @@ Update this as decisions get made — treat it as the source of truth alongside
     `ingest-failing` issue.
   - **Actions minutes:** read the usage
     (`gh api "/users/alexwebber/settings/billing/usage/summary?product=actions"`) and warn before
-    the 2,000-minute limit. 149 minutes were used by 2026-10-18.
+    the 2,000-minute limit. 435 minutes were used by 2026-10-23; the rate was about 55 a day
+    before PR #31. Billing check 2026-10-23: everything is $0. Cloudflare R2 and Workers are far
+    inside their free tiers, and Workers is on the Free plan.
 - **Owner setup done:** T001 (R2 + `R2_*`), T002 (Cloudflare token and account), the
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, and the `gh` `user` scope.
   T003 is dropped.
 - **Still with the owner:**
   - **T004 (nameservers):** the agent walks them through it.
-  - **T150:** the Garmin export. When it arrives, the agent walks them through *intervals.icu →
-    Settings → Import all Garmin data*, re-runs the probe, then runs T085's backfill.
-  - **Setup values file:** the owner keeps them in `C:\temp\2.txt`. Remind them to delete it
-    once T004 is done.
+  - **T150:** the Garmin export, still not arrived (2026-10-23). When it does, the agent walks
+    them through *intervals.icu → Settings → Import all Garmin data*, re-runs the probe, runs
+    T085's backfill, and then **audits the export against intervals.icu run by run** (see
+    2026-10-23 decision).
+  - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
+    again in the Cloudflare dashboard.
 - **Next step: Phase 3 (US2 Goals, T087–T095, T153–T154)** on a new branch from `origin/main`.
-  - **Start with a question round.** Ask for:
-    - the VO2 max target (T093);
-    - the Brighton build start date (it goes in `section.yaml` in T106, alongside
-      `garmin_devices.scale: Index S2`);
-    - the featured goals, their priorities and any start values;
-    - the current Garmin training status and race predictions for 5k, 10k, half and marathon,
-      with the date read (T154).
-  - **Don't invent values** (Principle VIII). A missing value means the goal waits.
-  - T085 (full backfill) still waits on T150.
+  - **The question round is done.** The answers are in the 2026-10-18 *Phase 3 goal answers*
+    decision. Update T092's goal list in tasks.md to match (sub-3:25, half sub-1:40, 10k
+    sub-43, VO2 max 52.5).
+  - **T154 is the only owner input left:** Garmin training status and race predictions (5k,
+    10k, half, marathon) with the date read. If the owner hasn't sent them, build without
+    `manual-metrics.yaml`; cards then show no prediction.
+  - **Don't invent values** (Principle VIII).
+  - **Not blocked by T150:** goals evaluate from the data there is, and they fill in after the
+    backfill.
 
 ## Vision
 
@@ -628,7 +634,56 @@ project-specific notes.
   transcript (not the repo or any log). Only the owner has access to the chat, so they're kept
   as they are.
 
+- **2026-10-18** — **Phase 3 goal answers** (owner question round; goals not yet written):
+  - **Featured, in priority order:**
+    1. Brighton sub-3:25 (`upcoming-races.yaml` `target_time: "3:25:00"`)
+    2. Half sub-1:40 (new)
+    3. 10k sub-43
+    4. 5k sub-20 (already achieved: 19:44 on 17 Oct 2026, track run `2026-10-17-ofka`; the
+       goal finds it, so no override is needed)
+    5. Weight 93 kg (`at_most`)
+    6. Body fat 17.5% (`at_most`)
+    7. VO2 max 52.5 (`at_least`, "superior" for the owner's age; Garmin reports whole numbers,
+       so it counts at 53)
+
+    With the 5k achieved, the six active goals fit `featured_goal_limit: 6`.
+  - **VO2 max 55 comes next.** The agent adds it at the review after 52.5 is achieved.
+  - **Progress start: October 2025.** `created: 2025-10-01` on weight, body fat and VO2 max, so
+    the start doesn't jump back years when the Garmin export is imported.
+  - **Build start:** `section.yaml` `build_start: 2026-09-05`, when the owner's Garmin Coach
+    plan started. The current block ends on 26 Dec with a fast solo half, and then the Brighton
+    block starts. No other races are planned.
+  - **Lab VO2 max test:** some time in the new year, recorded as a lab reference point.
+  - **Still needed:** Garmin training status and race predictions (T154).
+- **2026-10-23** — **The 17 Oct track session never reached intervals.icu** (three Track
+  Running activities: a warm-up, a 19:44 5k and a cool-down). intervals.icu had no activity of
+  any type that day, while later runs synced normally. So Garmin didn't push those activities
+  to intervals.icu. The owner uploaded the FIT files on the Calendar page, and a dispatched
+  refresh published them.
+  - **Stay on intervals.icu** (agent recommendation; the owner had asked about Strava).
+    Strava's API terms forbid showing data to others, and Strava receives Garmin's activities
+    by the same partner push, so it wouldn't be more complete.
+  - **Audit at T150:** compare every run in the Garmin export with intervals.icu, to size the
+    gap and decide whether ongoing detection is needed. A daily Garmin-direct activity-list
+    check is an option, used only to raise an issue, never as a data source.
+  - **Device override:** manual uploads have no intervals.icu device name, so
+    `run-overrides.yaml` gained `device`, which wins over intervals.icu's (owner: Venu X1 for
+    the three runs).
+
 ## Upstream candidates
+
+- 2026-10-23 — GitHub Actions bills each job as at least a whole minute, so a 2-hourly refresh
+  split into many short jobs used about 55 minutes a day (about 1,700 a month on a private repo,
+  against Free's 2,000). The plan's estimate of 1,200–1,500 had counted run time, not jobs.
+  Also, the runs `timing` API reported 0 billable ms, so measure from job start and end times.
+  Agent tip (CI cost): estimate minutes as jobs per run x runs per day, and fold short steps
+  into one job unless they need different permissions.
+
+- 2026-10-23 — Garmin's push to a sync partner (intervals.icu) silently skipped three Track
+  Running activities from one day, while other activities synced. Generalisation (provider
+  choice): a partner sync is not a complete copy of the source. Plan a reconciliation against
+  the source of truth, such as a full export at onboarding, and a way to repair gaps, such as a
+  manual upload that flows through the normal pipeline.
 
 - 2026-10-18 — A secrets-file shape check (`awk -F=` printing the key and value length) assumed
   `KEY=value` lines. The owner's file used `Key: value`, so each whole line, value included,

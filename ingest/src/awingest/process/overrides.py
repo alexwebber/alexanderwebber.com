@@ -54,6 +54,7 @@ class RunOverride:
     exclude_from_records: bool = False
     include_in_records: bool = False
     is_race: bool | None = None
+    device: str | None = None
 
 
 @dataclass(frozen=True)
