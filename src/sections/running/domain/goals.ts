@@ -15,6 +15,8 @@
 // - created: when a goal has one, only data from that date counts, for achievement and progress,
 //   so an import of older history can't achieve a goal (or move its start) years back.
 // - deadline < today, unachieved: deadline_passed. Retired goals are left out entirely.
+// - An unreached target never shows as 100%: its fraction stops at 0.99 (a 0.997 would round to
+//   "100%" with 0.1 kg still to go, or with a 43:00 that doesn't count as under 43:00).
 // - Progress for value goals: (current - start) / (target - start), clamped 0..1. Start is
 //   start_value (dated by start_date when given), else the first reading on/after created, else the
 //   first reading in the series. all_time_start is a reference only ("32.1 kg down since ...").
@@ -57,7 +59,7 @@ export interface RaceTimeEvaluation extends Common {
   target_s: number;
   /** The fastest eligible effort at the distance; undefined: no data yet. */
   fastest?: Effort;
-  /** Fastest minus target, in whole seconds (positive: still slower than the target). */
+  /** Fastest (rounded) minus target, in whole seconds: below 0 beats it; 0 rounds to it but doesn't. */
   gap_s?: number;
   /** Target time as a share of the fastest time, clamped 0..1. */
   fraction?: number;
@@ -110,6 +112,10 @@ const reaches = (value: number, target: number, direction: 'at_most' | 'at_least
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
+/** The most an unreached target's progress can show, so it never rounds to 100%. */
+export const UNREACHED_MAX = 0.99;
+const progress = (fraction: number, reached: boolean) => (reached ? 1 : Math.min(UNREACHED_MAX, clamp01(fraction)));
+
 /** Every goal that isn't retired, evaluated. Order follows the input. */
 export function evaluateGoals(inputs: GoalInputs): GoalEvaluation[] {
   return inputs.goals.filter((goal) => !goal.retired).map((goal) => evaluateGoal(goal, inputs));
@@ -136,13 +142,14 @@ export function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
         automatic = { date: effort.date, by: 'effort', effort };
       }
       const fastest = efforts.reduce<Effort | undefined>((best, e) => (!best || e.time_s < best.time_s ? e : best), undefined);
+      const gap = fastest ? Math.round(fastest.time_s) - target : undefined;
       const predictionKey = predictionDistanceFor(distance);
       const prediction = predictionKey ? inputs.manual.predictions[predictionKey] : undefined;
       evaluation = {
         kind: 'race_time',
         distance_m: distance,
         target_s: target,
-        ...(fastest ? { fastest, gap_s: Math.round(fastest.time_s) - target, fraction: clamp01(target / fastest.time_s) } : {}),
+        ...(fastest ? { fastest, gap_s: gap, fraction: progress(target / fastest.time_s, gap! < 0) } : {}),
         ...(prediction ? { prediction } : {}),
       };
       break;
@@ -167,7 +174,8 @@ export function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
       const latest = current;
       let fraction: number | undefined;
       if (current && start !== undefined) {
-        fraction = target === start ? (reaches(current.value, target, direction) ? 1 : 0) : clamp01((current.value - start) / (target - start));
+        const reached = reaches(current.value, target, direction);
+        fraction = target === start ? (reached ? 1 : 0) : progress((current.value - start) / (target - start), reached);
       }
       evaluation = {
         kind: 'value',

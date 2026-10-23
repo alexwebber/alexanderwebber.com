@@ -4,8 +4,8 @@
 //   weigh-ins are never published, FR-061), so it is used as it is.
 // - Body fat: published as recorded (FR-062). Its trailing 7-day mean is computed here at build
 //   time from the recorded readings. A day whose window holds no reading has no value (no value is
-//   carried forward). The mean is only used to judge goals and their progress; it is never stored
-//   and never shown as the headline figure (the latest recorded reading is).
+//   carried forward). It judges goals and their progress, and is the body-fat goal card's "Now"
+//   figure too, so every figure on the card agrees (owner, 2026-10-23). It is never stored.
 //
 // Owner exclusions (health-exclusions.yaml) are already removed from the published series.
 import { addDays, daysBetween } from '../../../shared/format/dates.ts';

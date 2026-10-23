@@ -5,6 +5,65 @@ loader and share images, and uses only `src/shared/` (layout, design system, cha
 `integration.ts` injects the routes of each shipped area; `astro.config.mjs` is the one line that
 adds the section to the site.
 
+This is the section's graduation design note (T110, for the MVP: Goals and the landing page).
+The contracts it builds on are [routes](../../../specs/001-running-section/contracts/routes.md),
+[data files](../../../specs/001-running-section/contracts/data-files.md) and
+[pipeline](../../../specs/001-running-section/contracts/pipeline.md) (freshness endpoint). The
+shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
+
+## Contract
+
+- **Input:** only the store (`RunningStore` over `data/running/`): published runs and health
+  series, the owner's YAML (goals, upcoming races, races, run overrides, manual Garmin metrics,
+  `section.yaml`) and `refresh.json`. No page calls a third-party API (Principle III).
+- **Output:** static pages and share images, built for one Europe/London "today". The pages
+  are `/running/`, `/running/goals/` and `/running/runs/<id>/`; the share images are
+  `/og/running.png`, `/og/running-goals.png` and `/og/running-run.png`.
+- **Figures mean what the owner's Garmin Connect means** (owner review, 2026-10-23):
+  - **Best efforts** use timer time (watch pauses left out); races use the official time.
+  - **Weight and body fat** are 7-day averages throughout a card.
+  - **Garmin's predictions** are "at current fitness", dated, not race-day forecasts.
+  - **Race targets** read "sub-3:20" and count only a time under 3:20:00 to the second.
+  - **Unreached targets** never show as beaten or as 100%.
+- **Goal logic is pure** (`domain/`): every function takes "today" as an argument, so tests pin
+  dates without a clock.
+
+## Failure behaviour
+
+- **Bad owner data stops the build, not the site.** `integration.ts` validates everything in
+  `astro:build:start`, before Astro empties `dist/`, so the deploy keeps the last good build.
+  The error names the file, entry and field (FR-070).
+- **Missing data renders as "no data yet",** never as zeros. Examples: a goal with no effort, the
+  training build before the first run, a page before `section.yaml` exists.
+- **Stale data says so.** "Last updated" and the stale notice are decided at build time, then
+  corrected by the freshness script. If `/running/api/freshness` fails, the build-time text
+  stays (FR-005/006/074).
+- **Day-based text follows the UK date.** The 00:17 UTC refresh deploys daily (T105), and
+  `Countdown` corrects the day count in the browser.
+- **Without JavaScript** every figure, chart table and goal is still there. JS only refreshes
+  "Last updated" and the countdown.
+
+## Tests and budgets
+
+- **Vitest** (`tests/unit/`, `tests/contract/`): goal evaluation and card text (`goals.test.ts`,
+  `goal-cards.test.ts`), races, weeks, manual metrics, attribution, the landing page rendered
+  with only `Date` faked (`landing.test.ts`), data validation and the schemas.
+- **Playwright** (`tests/e2e/`, `tests/a11y/`): each page at 360 px and on desktop, axe (WCAG 2.2
+  AA) in light and dark, heading order, and the keyboard path through every link and control.
+- **Lighthouse** (`scripts/lighthouse-budget.mjs`, also local on Windows): at graduation every
+  built page scored 100 for performance and accessibility on mobile. The landing LCP was
+  1.06 s, the largest page 11.2 KB gzip, with no script files and no third-party requests.
+- **Gate:** the site build, `validate-data`, `check-boundaries`, `scan-images` and
+  `scan-privacy`, on every push and every bot commit.
+
+## Known limits
+
+- **Share images are built daily.** Messaging apps cache them, so a shared link can show an
+  older day count.
+- **Share previews can't be checked until go-live.** Canonical and `og:image` URLs point at
+  `alexanderwebber.com`, so the two-app check (T111) runs after the domain is live (T112).
+- **The screen-reader pass** of the progress bar and the bar chart is the owner's check (T111).
+
 - `components/SectionLayout.astro`: the layout for every Running page. Shared `Base` in the warm
   Running theme (`styles/theme.css`), the section nav from the route registry, the page heading,
   Garmin attribution (below) and "Last updated".

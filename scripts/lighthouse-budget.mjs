@@ -30,6 +30,17 @@ const BUDGET = { performance: 90, landingLcpMs: 2500, jsGzip: 10 * KB, pageGzip:
 // if it ever is, it doesn't count against the JS budget (plan.md Constraints).
 const MAP_SCRIPT = /maplibre|race-map/i;
 
+/**
+ * A package's CLI as `[node, its bin file]`. Not `npx`: on Windows that's `npx.cmd`, which Node
+ * won't spawn without a shell, and a shell would split the quoted Chrome flags and leave
+ * `child.kill()` stopping the shell instead of the preview server.
+ */
+function bin(pkg, name = pkg) {
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'node_modules', pkg, 'package.json'), 'utf8'));
+  const entry = typeof manifest.bin === 'string' ? manifest.bin : manifest.bin[name];
+  return [process.execPath, join(ROOT, 'node_modules', pkg, entry)];
+}
+
 /** First built page under dist/<dir>/ (e.g. one run page), as a site path. */
 function firstBuilt(dir) {
   const full = join(DIST, dir);
@@ -60,7 +71,8 @@ async function exists(baseUrl, path, local) {
 
 async function startPreview() {
   // CLAUDECODE/AI_AGENT cleared: Astro 7 backgrounds `astro preview` under a coding agent.
-  const child = spawn('npx', ['astro', 'preview', '--port', String(PORT)], {
+  const [node, astro] = bin('astro');
+  const child = spawn(node, [astro, 'preview', '--port', String(PORT)], {
     cwd: ROOT,
     env: { ...process.env, CLAUDECODE: '', AI_AGENT: '' },
     stdio: 'ignore',
@@ -84,11 +96,12 @@ async function startPreview() {
 async function runLighthouse(url) {
   const dir = mkdtempSync(join(tmpdir(), 'lh-'));
   const out = join(dir, 'report.json');
+  const [node, lighthouse] = bin('lighthouse');
   try {
     await execFileAsync(
-      'npx',
+      node,
       [
-        'lighthouse',
+        lighthouse,
         url,
         '--only-categories=performance,accessibility',
         '--output=json',

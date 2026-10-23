@@ -10,6 +10,7 @@ import {
   achievedGoals,
   activeGoals,
   evaluateGoals,
+  UNREACHED_MAX,
   featuredGoals,
   type GoalEvaluation,
   type GoalInputs,
@@ -287,6 +288,23 @@ describe('edge cases', () => {
     expect(progressText(e)).toBe('Fastest 1:43:43, 3:43 off sub-1:40 (96% of the target pace)');
     const beaten = one<RaceTimeEvaluation>({ goals: [raceTimeGoal('5k', '5k', '20:00')], runs: [run('2027-03-05-abcd', [fiveK(1184)])] });
     expect(progressText(beaten)).toBe('Fastest 19:44: sub-20:00 by 0:16');
+  });
+
+  it('never shows an unreached target as beaten or 100%', () => {
+    // 42:59.6 rounds to 43:00, which doesn't count as under 43:00.
+    const tenK = { distance_m: 10000, label: '10k', time_s: 2579.6 };
+    const close = one<RaceTimeEvaluation>({ goals: [raceTimeGoal('10k', '10k', '43:00')], runs: [run('2027-03-05-abcd', [tenK])] });
+    expect(close.status).toBe('active');
+    expect(close.gap_s).toBe(0);
+    expect(close.fraction).toBe(UNREACHED_MAX);
+    expect(gapText(close)).toBe('Under a second to go');
+    expect(progressText(close)).toBe('Fastest 43:00, under a second off sub-43:00 (99% of the target pace)');
+    // 93.1 kg from 127.6 kg is 99.7% of the way to 93 kg: still shown as 99%.
+    const weight = one<ValueEvaluation>({ goals: [valueGoal('weight', 'weight_kg', 93, 'at_most', { start_value: 127.6 })], health: { weight_kg: series('2027-03-10', [93.1]) } });
+    expect(weight.fraction).toBe(UNREACHED_MAX);
+    expect(progressText(weight)).toBe('7-day average 93.1 kg: 99% of the way from 127.6 kg to 93 kg');
+    const reached = one<ValueEvaluation>({ goals: [valueGoal('weight', 'weight_kg', 93, 'at_most', { start_value: 127.6 })], health: { weight_kg: series('2027-03-10', [93.0]) } });
+    expect(reached.fraction).toBe(1);
   });
 
   it('judges metric goals on the recorded value, at least or at most', () => {

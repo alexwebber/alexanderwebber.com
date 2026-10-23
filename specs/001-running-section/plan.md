@@ -38,15 +38,15 @@ Actions only; there is no PC fallback.
 
 ## Technical Context
 
-**Language/Version**: TypeScript **6.0.3** (Astro 7.4.0, Node >= 22.22; local Node 24.15) for
+**Language/Version**: TypeScript **6.0.3** (Astro 7.4.2, Node >= 22.23.4; local Node 24.15) for
 site + Worker; Python >= 3.12 (3.12.10 local) for ingest/processing. TypeScript 7.0.x is
-deliberately **not** adopted: `@astrojs/check` 0.9.10 peer-requires `typescript ^5 || ^6`, so TS 7
+deliberately **not** adopted: `@astrojs/check` 0.9.12 peer-requires `typescript ^5 || ^6`, so TS 7
 would break `astro check` in the build gate. Revisit when `@astrojs/check` supports TS 7
 (decisions-log entry required — see Complexity Tracking).
 
-**Primary Dependencies**: Astro 7.4.0, TypeScript 6.0.3, `@astrojs/check` 0.9.10, sharp 0.35.5
-(images/OG), satori 0.62.0 (OG), ajv 8.20.0, yaml 2.9.1, json-schema-to-typescript 16.0.0,
-maplibre-gl 6.14.0 (lazy, race maps only), wrangler 4.151.1; Python: boto3 1.43.114, jsonschema
+**Primary Dependencies**: Astro 7.4.2, TypeScript 6.0.3, `@astrojs/check` 0.9.12, sharp 0.35.5
+(images/OG), satori 0.63.2 (OG), ajv 8.20.0, yaml 2.9.1, json-schema-to-typescript 16.0.0,
+maplibre-gl 6.15.0 (lazy, race maps only), wrangler 4.152.0; Python: boto3 1.43.114, jsonschema
 4.26.0, pyyaml 6.0.3; the intervals.icu client uses the standard library (`urllib.request`, as in
 Spike 0), so no HTTP or provider library is added. See [research.md](research.md) for the
 comparison tables. (Pins re-verified at scaffold time, T016, 2026-10-17.)
@@ -281,5 +281,5 @@ were adopted by the owner on 2026-10-04 as a partial BACKLOG "Broader CI" revisi
 | Freshness Worker route | Static site + "last updated within a few hours" + no-commit-on-no-change would otherwise show a stale timestamp and force a commit every 2 h | Committing `refresh.json` 12x/day pollutes history; build-time-only stamp misreports freshness |
 | Bot commits to `main` after the gate | Unattended ingest must publish without a human; gated by build gate per constitution | PR-per-refresh (auto-merge) adds noise and latency; owner-confirmed 2026-10-04 as a narrow exception to the PR norm (sanitised data files only, after the gate) |
 | Owner-editable `section.yaml` and `manual-metrics.yaml` | `section.yaml` keeps thresholds/limits out of code; `manual-metrics.yaml` holds the Garmin figures intervals.icu lacks (training status, race predictions) as dated entries | Constants in code (owner edits need a code change); falling back to Garmin direct for two figures (reintroduces the unofficial-client risk the provider switch removed) |
-| TypeScript pinned to 6.0.3 (core-component pin) | `@astrojs/check` 0.9.10 peer range is `^5 \|\| ^6`; TS 7 would break `astro check` in the gate. Logged in the `PROJECT_MEMORY.md` decisions log on 2026-10-04 | Using TS 7: gate breaks. Revisit when `@astrojs/check` supports TS 7 |
+| TypeScript pinned to 6.0.3 (core-component pin) | `@astrojs/check` 0.9.12 peer range is `^5 \|\| ^6`; TS 7 would break `astro check` in the gate. Logged in the `PROJECT_MEMORY.md` decisions log on 2026-10-04 | Using TS 7: gate breaks. Revisit when `@astrojs/check` supports TS 7 |
 | Build-time SVG charts instead of a charting library | Zero JS, accessible by construction, no library churn | uPlot/Chart.js add JS and manual a11y; kept as optional later enhancement |
