@@ -9,12 +9,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, afternoon):** Phase 3 (US2 Goals) is built and raised as the
-  `001-goals` PR, which is stacked on #32 (`manual-metrics.yaml`). Refresh runs are all green;
-  the Cloudflare cron dispatches `refresh.yml` every 2 h.
+- **Status (2026-10-23, evening):** Phase 3 (US2 Goals) is merged (#32, #33). The owner left
+  one #33 box unticked: the achieved 5k is featured after all, so a follow-up PR
+  (`001-feature-5k`) sets `featured_goal_limit: 7` in a new `section.yaml`. Refresh runs are all
+  green; the Cloudflare cron dispatches `refresh.yml` every 2 h.
   - **Check first:**
-    - whether #32 and the `001-goals` PR merged. Ask the owner any of the goals PR's checkbox
-      questions left unticked before building on them (Phase 4 reuses `goals.ts`).
+    - whether the `001-feature-5k` PR merged.
     - minutes per day: 487 used by 13:00 on 2026-10-23, and PR #31 merged at 12:38. Expect
       about 35–40 a day, down from 55. If it's still close to the limit, use the owner's lever
       order (2026-10-23 decision).
@@ -48,10 +48,11 @@ Update this as decisions get made — treat it as the source of truth alongside
   us (a PowerShell bracketed-path fix, hook and extension housekeeping), but core releases are
   adopted.
 - **Then: Phase 4 (US1 Landing, from T096)** in its own session. It reuses `goals.ts`,
-  `loadGoals(today)` (`src/sections/running/data/goals.ts`), `GoalCard` and `AsOf`. T106
-  writes `section.yaml` from known answers: `focus_race` `brighton-2027`, `build_start:
-  2026-09-05`, charity Martlets, `garmin_devices.scale: Index S2`. Effort times become run
-  links once T102's run pages ship (`src/sections/running/links.ts`).
+  `loadGoals(today)` (`src/sections/running/data/goals.ts`), `GoalCard` and `AsOf`.
+  `section.yaml` already exists (T106's data part); T106 still adds the target-time warning.
+  The landing page shows **seven** featured goals (one achieved), so lay the cards out for an
+  odd count. Effort times become run links once T102's run pages ship
+  (`src/sections/running/links.ts`).
   - Offer the owner a fresh Garmin training-status and predictions reading at reviews; never
     ask as a chore.
   - **Don't invent values** (Principle VIII).
@@ -680,8 +681,10 @@ project-specific notes.
 
 - **2026-10-23** — **Phase 3 (US2 Goals) built** (`001-goals` PR; implement subagent about
   265k tokens). Choices later tasks build on; the owner confirms them in the PR:
-  - **The achieved 5k is not featured.** Seven featured goals broke `featured_goal_limit: 6`,
-    and "featured" only means the landing page. The six active goals are priorities 1–6.
+  - **The achieved 5k is featured** (owner, PR #33 comment: "a major milestone"), back at
+    priority 4. `section.yaml` was written early to set `featured_goal_limit: 7`, with the
+    known focus race, build start, charity and scale. The other seven confirmations were
+    ticked.
   - **`created` limits achievement too:** only data on or after it counts, so the Garmin
     export can't achieve a goal with an old reading.
   - **Race-time progress** is target ÷ fastest time (46:00 against 43:00 is 93%), with the

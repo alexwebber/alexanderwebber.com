@@ -30,13 +30,13 @@
     distance: 10k
     time: "43:00"
 
-# Already achieved (19:44 on 17 Oct 2026); the evaluator finds the effort itself. Not featured,
-# so the landing page shows the six active goals; the Goals page lists it under achieved.
+# Already achieved (19:44 on 17 Oct 2026); the evaluator finds the effort itself. Featured
+# anyway, as a major milestone (owner, PR #33).
 - id: 5k-sub-20
   type: race_time
   title: 5k under 20 minutes
-  priority: 7
-  featured: false
+  priority: 4
+  featured: true
   target:
     distance: 5k
     time: "20:00"
@@ -45,7 +45,7 @@
 - id: weight-93
   type: body_composition
   title: Weight 93 kg
-  priority: 4
+  priority: 5
   featured: true
   created: 2025-10-01
   target:
@@ -56,7 +56,7 @@
 - id: body-fat-17-5
   type: body_composition
   title: Body fat 17.5%
-  priority: 5
+  priority: 6
   featured: true
   created: 2025-10-01
   target:
@@ -68,7 +68,7 @@
 - id: vo2max-52-5
   type: metric
   title: VO2 max 52.5
-  priority: 6
+  priority: 7
   featured: true
   created: 2025-10-01
   target:

@@ -349,7 +349,7 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
   and the charity being supported.
 - **FR-021**: The hero MUST show the training build towards the focus race: weekly distance since
   the owner-defined start of the build, and the longest run in the build so far.
-- **FR-022**: The landing page MUST show the owner's featured goals (up to 6) in priority order, each
+- **FR-022**: The landing page MUST show the owner's featured goals (up to the owner's featured-goal limit, 6 by default) in priority order, each
   with target, current value, progress indicator and, where set, time remaining to its deadline.
 - **FR-023**: The landing page MUST show a this-week snapshot (Monday–Sunday): run count, distance and
   time, comparison with the previous week, and a summary card for the most recent run linking to

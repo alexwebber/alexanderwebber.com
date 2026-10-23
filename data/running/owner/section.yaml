@@ -1,0 +1,16 @@
+# Running section settings (schemas/owner/section.schema.json). Every field except focus_race
+# has a default.
+
+focus_race:
+  race_id: brighton-2027
+  # The owner's Garmin Coach plan started on 5 Sep 2026.
+  build_start: 2026-09-05
+  charity:
+    name: Martlets hospice
+
+garmin_devices:
+  # Behind weight and body fat; it has always been the Index S2.
+  scale: Index S2
+
+# All seven goals are featured, the achieved 5k included (owner, PR #33).
+featured_goal_limit: 7
