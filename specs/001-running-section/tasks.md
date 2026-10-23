@@ -664,11 +664,12 @@ data.
 **Purpose**: The constitution's graduation bar applies when the section goes live on
 alexanderwebber.com.
 
-- [ ] T110 Graduation review of the Running MVP (US2 + US1):
+- [X] T110 Graduation review of the Running MVP (US2 + US1):
   - Run Playwright e2e and axe locally, plus `scripts/lighthouse-budget.mjs` (perf >= 90, landing LCP <= 2.5 s, JS <= 10 KB gzip, <= 150 KB page weight).
   - Confirm zero privacy-scan findings.
   - Carry out an adversarial self-review.
   - Write the design note `src/sections/running/README.md`.
+  - **Done 2026-10-23**: all suites green locally (Vitest 427, pytest 381 + 1 skipped, Playwright 107 with `SHELL_PREVIEW=1`), the gate checks clean (0 privacy findings), and Lighthouse 100/100 on every built page (landing LCP 1.06 s). The budget script now runs on Windows too. The self-review found that an unreached target could show as "Beaten by 0:00" or "100%" (fixed), and a stale comment on body fat's headline. Design note: contract, failure behaviour, tests and known limits.
 - [ ] T111 OWNER: At the go-live PR review, do two short checks the agent cannot do itself: a screen-reader pass of the progress bar and the bar chart, and a share-preview check of `/running/` in two messaging apps (SC-008). The agent prepares the exact steps.
 - [ ] T112 Go live on the custom domain. Once T004 nameservers are active, add the custom domain `alexanderwebber.com` (+ a `www` → apex redirect) in `wrangler.jsonc` and deploy. Verify HTTPS, `/running/api/freshness` and the Garmin attribution on live pages. **Then prompt the owner to become an intervals.icu supporter** ($4/month; owner decision 2026-10-17: they intend to once the live integration works). Put it in the go-live PR as a checkbox question; note the outcome (and the recurring cost, if adopted) in `PROJECT_MEMORY.md` and plan.md *Recurring costs*.
 

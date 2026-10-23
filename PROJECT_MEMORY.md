@@ -9,23 +9,29 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, late):** Phase 5 has started. #44 merged and published (junior
-  parkruns `dvor`/`huen` 404, Oct 2025 runs show "Venu 2 Plus"). The guided site review is
-  done: all figures agreed with Garmin Connect, and the owner's four notes are built in the
-  `001-review-fixes` PR (newly achieved goals lead, Jun 2025 starts plus the all-time weight
-  line, "sub-3:20" targets, "at current fitness"). **Next: T110 graduation review**, in a new
-  session.
+- **Status (2026-10-23, night):** #45 (review fixes) merged and deployed; the live pages were
+  checked. **T110 is done** in the `001-graduation-review` PR: suites green, Lighthouse 100s, the
+  self-review's fixes (unreached targets never read 100% or "Beaten by 0:00"), the design note,
+  Astro 7.4.2 (Node security floor) and the Playwright CI fix from #45's failed Tests run.
+  **Next: go-live (T004, T111, T112)**, in a new session.
   - **Check first:**
-    - that `001-review-fixes` merged and its deploy finished, then look at `/running/` and
-      `/running/goals/` live (the 5k leads until 31 Oct). Ask about any unticked confirmation.
+    - that `001-graduation-review` merged, **including its Playwright job** (the first run
+      without `--with-deps`; if a library is missing, the fallback is
+      `npx playwright install-deps chromium` with a step timeout). Ask about any unticked
+      confirmation.
     - the 00:17 UTC catch-all on 2026-10-24: its `deploy` job must run even with no data change
-      (T105). Not yet checkable at the end of this session.
+      (T105). Check the run's jobs, and that `/running/` shows 162 days to go.
     - **all** workflows on each PR, including the non-required Quality check, not only the gate.
-    - minutes: 703 used by 20:15 UTC on 2026-10-23. October should end under 1,000. If it's
+    - minutes: 708 used by 21:00 UTC on 2026-10-23. October should end under 1,000. If it's
       close to the limit, use the owner's lever order (2026-10-23 decision).
-  - **T110 notes:** the review fixes already cover the owner's wording/figures pass, so T110 is
-    the automated and adversarial part. On 31 Oct the 5k's "New" window ends: check the landing
-    page falls back to priority order (unit-tested, not yet seen live).
+  - **Go-live order:** walk the owner through T004 (nameservers to Cloudflare; values in the
+    Cloudflare dashboard), wait for it to go active, then T112 (custom domain + `www` redirect in
+    `wrangler.jsonc`, HTTPS, freshness endpoint, attribution, re-read the Garmin brand PDF) and
+    T111 (prepare the owner's screen-reader and two-app share-preview steps for the go-live PR;
+    previews only work once the domain is live). Raise the intervals.icu supporter tier as a
+    checkbox in that PR.
+  - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
+    (unit-tested, not yet seen live).
   - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
     repeat. The export zip in Downloads stays as their backup.
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
@@ -817,11 +823,38 @@ project-specific notes.
     line ("3:43 to go", "3:43 off sub-1:40").
   - **Prediction wording:** "Garmin predicts 3:25:18 at current fitness (23 Oct 2026)",
     replacing "if raced today", which still read as unclear.
-  - **CI:** the Playwright job's browser install stalled on an Ubuntu mirror for 10 minutes on
-    PR #44 (then the re-run was cancelled by the merge). apt now times out slow downloads after
-    30 s and retries, and the step has an 8-minute limit.
+  - **CI:** the Playwright job's `--with-deps` apt install stalled in the font packages on
+    PR #44 (10 minutes) and again on #45, where apt timeouts didn't help. The job now installs
+    Chromium without `--with-deps` (the runner image's Chrome brings the libraries), with a
+    5-minute step limit.
+
+- **2026-10-23** — **T110 graduation review done** (`001-graduation-review` PR). Choices later
+  work builds on:
+  - **Unreached targets cap at 99%.** An unreached goal's progress fraction stops at 0.99
+    (`UNREACHED_MAX`), so the bar, its `aria-valuenow` and the words never say 100% early
+    (93.1 kg from 127.6 kg is 99.7%). A race time that rounds to the target (42:59.6 against
+    sub-43:00) doesn't count, and reads "Under a second to go", not "Beaten by 0:00".
+  - **Pins:** Astro 7.4.2 raises its Node floor to 22.23.4 for the October 2026 Node security
+    releases, so `engines` follows. Also `@astrojs/check` 0.9.12 (still TypeScript `^5 || ^6`, so
+    the 6.0.3 pin stays), wrangler 4.152.0, maplibre-gl 6.15.0 and satori 0.63.2 (still the
+    same `fflate`, so the accepted advisory is unchanged).
+  - **Lighthouse budget runs locally** on Windows now (bins run with `node`, not `npx`).
+  - **Playwright needs `SHELL_PREVIEW=1`** in the build it tests, as `tests.yml` does; a
+    deploy build fails the 28 shell-preview cases.
 
 ## Upstream candidates
+
+- 2026-10-23 — Two Claude sessions shared one checkout. The new session switched branches while
+  the old one was still finishing a follow-up on a merged PR, so the old one committed into the
+  new session's branch (it undid that, and the work was carried over). Agent tip: before
+  committing, check `git rev-parse --abbrev-ref HEAD` is the branch you expect. When a session
+  hands off, it stops touching the folder, and follow-ups go to the new session.
+- 2026-10-23 — `npx playwright test | tail -12` showed only the end of the failure list and the
+  "passed" count, so the agent first read 28 failures as passes. Agent tip: filter a test run's
+  output for its summary lines (`passed|failed|flaky|skipped`), never a bare `tail`.
+- 2026-10-23 — Astro raised its minimum Node version in a patch release (7.4.2, for Node security
+  fixes), which only the release notes said. Agent tip (update checks): read the release notes
+  of core-framework patch releases too, and keep `engines` in step with the framework's floor.
 
 - 2026-10-23 — In the guided review, the owner gave remembered figures ("about 128 kg, 34%,
   Jun 2025"; "133.2 kg in Feb 2023"). The Garmin export had the exact weigh-ins (127.6 kg and
@@ -837,10 +870,11 @@ project-specific notes.
   `astro preview` the agent had started for screenshots was still running on another port.
   Stopping it by PID fixed it. Agent tip (Astro 7): one `astro preview` at a time; stop your own
   before running Playwright.
-- 2026-10-23 — A Playwright job's `playwright install --with-deps` hung for 10 minutes on a
-  stalled Ubuntu apt mirror, with no output and no failure until the job was cancelled. Agent
-  tip (CI): give apt `Acquire::http::Timeout` and `Acquire::Retries` before installing browser
-  deps, and give the step its own `timeout-minutes`.
+- 2026-10-23 — A Playwright job's `playwright install --with-deps` hung in apt's font
+  downloads on two PRs in a row, with no output and no failure until a timeout. apt
+  `Acquire::*::Timeout`/`Retries` didn't stop it. Agent tip (CI): on GitHub's Ubuntu runners,
+  skip `--with-deps` (the image's Chrome already brings Chromium's libraries), and give the
+  install step its own `timeout-minutes` so a stall fails fast.
 
 - 2026-10-23 — The plan carried "import the full Garmin history" from spec time to the eve of
   doing it, and the owner then asked whether it was safe and worth it. It wasn't: it added no
@@ -892,8 +926,10 @@ project-specific notes.
   rendering still wipes the previous `dist/`. Agent tip (Astro): when a failed build must leave
   `dist/` untouched, validate in an integration's `astro:build:start` hook.
 - 2026-10-23 — `scripts/lighthouse-budget.mjs` calls `spawn('npx', ...)`, which fails on Windows
-  with ENOENT (it needs `shell: true` or `npx.cmd`), so the Lighthouse budget runs only in CI.
-  Agent tip (Windows gotchas): spawn `npx` via `shell: true` in cross-platform scripts.
+  with ENOENT, so the Lighthouse budget ran only in CI. `shell: true` would split quoted
+  arguments (Chrome flags) and make `child.kill()` stop the shell rather than the server.
+  Fixed at T110 by running each package's bin file with `process.execPath`. Agent tip (Windows
+  gotchas): in cross-platform Node scripts, run a package's bin with `node`, not `npx`.
 - 2026-10-23 — A keyboard-path test that de-duplicated focus stops by `href` stopped early,
   because the site name and the footer both link to `/`. Agent tip (a11y tests): key focus
   stops on the `href` plus the link text.

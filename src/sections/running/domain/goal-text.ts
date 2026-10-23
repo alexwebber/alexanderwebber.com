@@ -63,10 +63,15 @@ export function deadlineText(daysToDeadline: number): string {
   return `${daysToDeadline} ${daysToDeadline === 1 ? 'day' : 'days'} left`;
 }
 
-/** "3:00 to go" or "Beaten by 0:16" (a race-time goal's gap, FR-039). */
+/**
+ * "3:00 to go", "Under a second to go" (a time that rounds to the target, which doesn't count as
+ * under it) or "Beaten by 0:16" (a race-time goal's gap, FR-039).
+ */
 export function gapText(evaluation: RaceTimeEvaluation): string | undefined {
-  if (evaluation.gap_s === undefined) return undefined;
-  return evaluation.gap_s > 0 ? `${formatDuration(evaluation.gap_s)} to go` : `Beaten by ${formatDuration(-evaluation.gap_s)}`;
+  const gap = evaluation.gap_s;
+  if (gap === undefined) return undefined;
+  if (gap === 0) return 'Under a second to go';
+  return gap > 0 ? `${formatDuration(gap)} to go` : `Beaten by ${formatDuration(-gap)}`;
 }
 
 /**
@@ -113,9 +118,9 @@ export function progressText(evaluation: RaceTimeEvaluation | ValueEvaluation): 
     const fastest = formatDuration(evaluation.fastest!.time_s);
     const gap = evaluation.gap_s!;
     const target = subLabel(evaluation.target_s);
-    return gap > 0
-      ? `Fastest ${fastest}, ${formatDuration(gap)} off ${target} (${percent}% of the target pace)`
-      : `Fastest ${fastest}: ${target} by ${formatDuration(-gap)}`;
+    if (gap < 0) return `Fastest ${fastest}: ${target} by ${formatDuration(-gap)}`;
+    const off = gap === 0 ? 'under a second' : formatDuration(gap);
+    return `Fastest ${fastest}, ${off} off ${target} (${percent}% of the target pace)`;
   }
   const from = formatMetric(evaluation.metric, evaluation.start!, true);
   const to = formatMetric(evaluation.metric, evaluation.target);
