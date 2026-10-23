@@ -666,6 +666,13 @@ project-specific notes.
 
 ## Upstream candidates
 
+- 2026-10-23 — GitHub Actions bills each job as at least a whole minute, so a 2-hourly refresh
+  split into many short jobs used about 55 minutes a day (about 1,700 a month on a private repo,
+  against Free's 2,000). The plan's estimate of 1,200–1,500 had counted run time, not jobs.
+  Also, the runs `timing` API reported 0 billable ms, so measure from job start and end times.
+  Agent tip (CI cost): estimate minutes as jobs per run x runs per day, and fold short steps
+  into one job unless they need different permissions.
+
 - 2026-10-23 — Garmin's push to a sync partner (intervals.icu) silently skipped three Track
   Running activities from one day, while other activities synced. Generalisation (provider
   choice): a partner sync is not a complete copy of the source. Plan a reconciliation against
