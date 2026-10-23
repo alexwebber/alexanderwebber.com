@@ -5,10 +5,11 @@
 // link (only once it exists), and links to the section's other areas. "Last updated" and the stale
 // notice come from SectionLayout.
 //
-// Featured goals (owner pick, 2026-10-23): one column on phones; wider, the first goal spans the
-// full width as the lead card and the rest follow two by two, so an odd count fills the rows.
-// Achieved featured goals stay (in priority order) with the celebratory card; newly achieved ones
-// are highlighted for recent_highlight_days.goal days (FR-042).
+// Featured goals (owner picks, 2026-10-23): one column on phones. Wider, newly achieved goals
+// (FR-042) lead for recent_highlight_days.goal days as full-width celebration cards, then the
+// lead goal (priority 1, Brighton) spans the full width, and the rest follow two by two; a last
+// card left on its own row spans it too. Achieved featured goals then drop back to their
+// priority place with the celebratory card.
 //
 // Evaluated at build time for today in Europe/London; the daily 00:17 UTC deploy keeps the
 // countdown and dates current, and Countdown corrects the day count client-side.
@@ -33,6 +34,10 @@ const data = await loadLanding();
 const settings = await sectionSettings();
 const { focus, week, weekRuns, lastWeekRuns, latest, featured, today } = data;
 const goalsHref = shippedAreas().find((area) => area.key === 'goals')?.href;
+// Which featured cards span both columns on wider screens.
+const leadIndex = featured.findIndex((e) => !e.newlyAchieved);
+const pairedCount = leadIndex < 0 ? 0 : featured.length - leadIndex - 1;
+const wide = featured.map((e, i) => e.newlyAchieved || i === leadIndex || (pairedCount % 2 === 1 && i === featured.length - 1));
 // Under the page heading: every watch behind the runs, efforts and readings shown (FR-077).
 const shownRuns = [...weekRuns, ...lastWeekRuns, ...(focus?.build.runs ?? []), ...(latest ? [latest.run] : [])];
 const attribution = viewAttribution({ runs: shownRuns, goals: featured, scale: settings.garmin_devices.scale, manual: focus?.prediction !== undefined });
@@ -62,8 +67,8 @@ const description = `Alexander Webber's running: ${raceLine}Goals, this week's t
     {
       featured.length > 0 ? (
         <ol class="featured-goals" data-featured-goals>
-          {featured.map((evaluation) => (
-            <li>{evaluation.status === 'achieved' ? <AchievedGoalCard evaluation={evaluation} compact /> : <GoalCard evaluation={evaluation} compact />}</li>
+          {featured.map((evaluation, i) => (
+            <li data-wide={wide[i] ? '' : undefined}>{evaluation.status === 'achieved' ? <AchievedGoalCard evaluation={evaluation} compact /> : <GoalCard evaluation={evaluation} compact />}</li>
           ))}
         </ol>
       ) : (
@@ -116,8 +121,8 @@ const description = `Alexander Webber's running: ${raceLine}Goals, this week's t
       gap: var(--space-4);
     }
 
-    /* The lead goal (priority 1, Brighton) spans the full width. */
-    .featured-goals > li:first-child {
+    /* Celebration cards, the lead goal (priority 1, Brighton) and a lone last card. */
+    .featured-goals > li[data-wide] {
       grid-column: 1 / -1;
     }
   }

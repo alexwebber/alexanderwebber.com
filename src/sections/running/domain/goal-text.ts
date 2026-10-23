@@ -3,6 +3,7 @@
 import { formatDate } from '../../../shared/format/dates.ts';
 import { formatDuration, formatKm } from '../../../shared/format/units.ts';
 import { sameDistance } from './efforts.ts';
+import { subLabel } from './races.ts';
 import type { GoalEvaluation, RaceTimeEvaluation, ValueEvaluation, ValueMetric } from './goals.ts';
 
 const NAMED: [number, string][] = [
@@ -41,9 +42,16 @@ export function metricName(metric: ValueMetric): string {
   return UNITS[metric].name;
 }
 
-/** "Under 43:00 for 10k", "93 kg or less", "52.5 or more", or undefined for a milestone. */
+/**
+ * "Sub-43:00 10k", "Sub-3:20 marathon", "93 kg or less", "52.5 or more", or undefined for a
+ * milestone. Race targets read as runners say them (owner, 2026-10-23): "sub-3:20" means under
+ * 3:20:00, which is how achievement is judged.
+ */
 export function targetText(evaluation: GoalEvaluation): string | undefined {
-  if (evaluation.kind === 'race_time') return `Under ${formatDuration(evaluation.target_s)} for ${distanceLabel(evaluation.distance_m)}`;
+  if (evaluation.kind === 'race_time') {
+    const label = subLabel(evaluation.target_s);
+    return `${label.charAt(0).toUpperCase()}${label.slice(1)} ${distanceLabel(evaluation.distance_m)}`;
+  }
   if (evaluation.kind === 'value') return `${formatMetric(evaluation.metric, evaluation.target)} or ${evaluation.direction === 'at_most' ? 'less' : 'more'}`;
   return undefined;
 }
@@ -72,6 +80,31 @@ export function toGoText(evaluation: ValueEvaluation): string | undefined {
   return `${formatMetric(evaluation.metric, remaining, true)} to go`;
 }
 
+/** A card's short target: "sub-3:20" for a race time, "93 kg" for a value. */
+export function shortTargetText(evaluation: RaceTimeEvaluation | ValueEvaluation): string {
+  return evaluation.kind === 'race_time' ? subLabel(evaluation.target_s) : formatMetric(evaluation.metric, evaluation.target);
+}
+
+/** "127.6 kg on 2 Jun 2025", or "37" for an undated start; undefined without a start. */
+export function startText(evaluation: ValueEvaluation): string | undefined {
+  if (evaluation.start === undefined) return undefined;
+  const value = formatMetric(evaluation.metric, evaluation.start, true);
+  return evaluation.startDate ? `${value} on ${formatDate(evaluation.startDate)}` : value;
+}
+
+/**
+ * The change since the owner's all-time reference reading, from the current value:
+ * "32.1 kg down since 31 Jan 2023 (133.2 kg)". Undefined without both, or with no change.
+ */
+export function allTimeText(evaluation: ValueEvaluation): string | undefined {
+  const { allTimeStart: from, current } = evaluation;
+  if (!from || !current) return undefined;
+  const change = Math.round((current.value - from.value) * 10) / 10;
+  if (change === 0) return undefined;
+  const amount = formatMetric(evaluation.metric, Math.abs(change), true);
+  return `${amount} ${change < 0 ? 'down' : 'up'} since ${formatDate(from.date)} (${formatMetric(evaluation.metric, from.value, true)})`;
+}
+
 /** What the progress bar says, in words (its value text, and the line under it). */
 export function progressText(evaluation: RaceTimeEvaluation | ValueEvaluation): string | undefined {
   if (evaluation.fraction === undefined) return undefined;
@@ -79,10 +112,10 @@ export function progressText(evaluation: RaceTimeEvaluation | ValueEvaluation): 
   if (evaluation.kind === 'race_time') {
     const fastest = formatDuration(evaluation.fastest!.time_s);
     const gap = evaluation.gap_s!;
-    const target = formatDuration(evaluation.target_s);
+    const target = subLabel(evaluation.target_s);
     return gap > 0
-      ? `Fastest ${fastest}, ${formatDuration(gap)} slower than the ${target} target (${percent}% of the target pace)`
-      : `Fastest ${fastest}, ${formatDuration(-gap)} faster than the ${target} target`;
+      ? `Fastest ${fastest}, ${formatDuration(gap)} off ${target} (${percent}% of the target pace)`
+      : `Fastest ${fastest}: ${target} by ${formatDuration(-gap)}`;
   }
   const from = formatMetric(evaluation.metric, evaluation.start!, true);
   const to = formatMetric(evaluation.metric, evaluation.target);

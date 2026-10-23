@@ -41,13 +41,21 @@
     distance: 5k
     time: "20:00"
 
-# Progress starts in October 2025, so importing older Garmin history doesn't move the start.
+# Only data from October 2025 counts toward achievement. Progress runs from the start of the
+# current journey, 2 Jun 2025 (127.6 kg, 33.7% body fat), and the weight card also shows the
+# change since the heaviest weigh-in, 31 Jan 2023 (owner, 2026-10-23; the Garmin export's
+# weigh-ins).
 - id: weight-93
   type: body_composition
   title: Weight 93 kg
   priority: 5
   featured: true
   created: 2025-10-01
+  start_value: 127.6
+  start_date: 2025-06-02
+  all_time_start:
+    value: 133.2
+    date: 2023-01-31
   target:
     metric: weight_kg
     value: 93
@@ -59,6 +67,8 @@
   priority: 6
   featured: true
   created: 2025-10-01
+  start_value: 33.7
+  start_date: 2025-06-02
   target:
     metric: body_fat_pct
     value: 17.5

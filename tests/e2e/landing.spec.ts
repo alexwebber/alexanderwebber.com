@@ -90,18 +90,23 @@ test('US1.1/US1.2: the hero shows the focus race, its date, the days left, its t
   }
   if (focus.target_time) await expect(hero.locator('[data-target]')).toHaveText(`Target: ${targetLabel(focus.target_time)}`);
   await expect(hero.locator('[data-charity]')).toHaveText(`For ${section.focus_race.charity.name}`);
-  // A Garmin prediction always says "if raced today" and carries the date it was read.
+  // A Garmin prediction always says "at current fitness" and carries the date it was read.
   for (const prediction of await hero.locator('[data-prediction]').all()) {
-    await expect(prediction).toContainText(/^Garmin: \d{1,2}:\d{2}(:\d{2})? if raced today \(\d{1,2} [A-Z][a-z]{2} \d{4}\)$/);
+    await expect(prediction).toContainText(/^Garmin predicts \d{1,2}:\d{2}(:\d{2})? at current fitness \(\d{1,2} [A-Z][a-z]{2} \d{4}\)$/);
   }
   // The fundraising place is reserved but shows nothing yet (FR-025).
   await expect(page.getByText(/fundrais|donate/i)).toHaveCount(0);
 });
 
-test('US1.3: featured goals appear in priority order, each with progress or "no data yet"', async ({ page }) => {
+test('US1.3: featured goals appear newly achieved first, then in priority order, each with progress or "no data yet"', async ({ page }) => {
   await open(page);
   const cards = page.locator('[data-featured-goals] [data-goal-id]');
-  expect(await cards.evaluateAll((els) => els.map((el) => el.getAttribute('data-goal-id')))).toEqual(featured);
+  const shown = await cards.evaluateAll((els) => els.map((el) => ({ id: el.getAttribute('data-goal-id')!, fresh: el.querySelector('[data-newly-achieved]') !== null, on: el.getAttribute('data-achieved-on') ?? '' })));
+  const fresh = shown.filter((c) => c.fresh);
+  expect(fresh.map((c) => c.on)).toEqual(fresh.map((c) => c.on).sort().reverse());
+  expect(shown.slice(0, fresh.length).every((c) => c.fresh)).toBe(true);
+  expect(shown.filter((c) => !c.fresh).map((c) => c.id)).toEqual(featured.filter((id) => !fresh.some((c) => c.id === id)));
+  expect(shown.map((c) => c.id).sort()).toEqual([...featured].sort());
   for (const card of await cards.all()) {
     const status = await card.getAttribute('data-status');
     if (status === 'achieved') {
@@ -222,14 +227,24 @@ test.describe('on a phone (SC-001, FR-073)', () => {
   }
 });
 
-test('on a wide screen the lead goal spans the full width and the rest sit two by two', async ({ page }) => {
+test('on a wide screen celebrations and the lead goal span the full width, and the rest sit two by two', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await open(page);
-  const items = await page.locator('[data-featured-goals] > li').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().width)));
+  const list = page.locator('[data-featured-goals]');
+  const full = Math.round((await list.boundingBox())!.width);
+  const items = await list.locator('> li').evaluateAll((els) =>
+    els.map((el) => ({ wide: el.hasAttribute('data-wide'), fresh: el.querySelector('[data-newly-achieved]') !== null, width: Math.round(el.getBoundingClientRect().width) })),
+  );
   test.skip(items.length < 3, 'needs three featured goals');
-  const [lead, ...rest] = items;
-  for (const w of rest) expect(w).toBeLessThan(lead! * 0.6);
-  expect(new Set(rest).size).toBe(1);
+  // Each newly achieved card, then the lead goal, spans the row.
+  const lead = items.findIndex((i) => !i.fresh);
+  for (const [n, item] of items.entries()) if (item.fresh || n === lead) expect(item.wide).toBe(true);
+  for (const item of items) {
+    if (item.wide) expect(item.width).toBeGreaterThan(full * 0.95);
+    else expect(item.width).toBeLessThan(full * 0.6);
+  }
+  // The others fill whole rows: a lone last card spans instead of leaving a gap.
+  expect(items.filter((i) => !i.wide).length % 2).toBe(0);
 });
 
 test('needs no client JS files, only the small inline scripts', async ({ page }) => {

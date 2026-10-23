@@ -1,7 +1,7 @@
 ---
 // A manual Garmin figure with its "as of" date (T153, FR-069), e.g.
-// "Garmin predicted 20:47 (as of 1 Mar 2027)", or with `after`, "Garmin: 3:25:18 if raced today
-// (23 Oct 2026)". The owner reads these in Garmin Connect, so they
+// "Garmin predicted 20:47 (as of 1 Mar 2027)", or with `after`, "Garmin predicts 3:25:18 at current
+// fitness (23 Oct 2026)". The owner reads these in Garmin Connect, so they
 // are only as fresh as the last entry and always carry their date. With no entry it says
 // "not recorded yet" rather than showing a value. Used by goal cards, the hero and the health page.
 import { formatDate } from '../../../shared/format/dates.ts';
@@ -14,8 +14,8 @@ export interface Props {
   /** YYYY-MM-DD the owner read it; required with a value. */
   asOf?: string;
   /**
-   * Words after the value, which also replace "as of" before the date: "if raced today" gives
-   * "Garmin: 3:25:18 if raced today (23 Oct 2026)".
+   * Words after the value, which also replace "as of" before the date: "at current fitness" gives
+   * "Garmin predicts 3:25:18 at current fitness (23 Oct 2026)".
    */
   after?: string;
 }
@@ -43,5 +43,6 @@ if (value !== undefined && asOf === undefined) throw new Error('AsOf: a value ne
 <style>
   .as-of-date {
     color: var(--color-text-secondary);
+    white-space: nowrap;
   }
 </style>

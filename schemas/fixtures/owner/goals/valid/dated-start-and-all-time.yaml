@@ -1,0 +1,11 @@
+- id: weight-93
+  type: body_composition
+  title: Weight 93 kg
+  priority: 1
+  featured: true
+  created: 2025-10-01
+  start_value: 127.6
+  start_date: 2025-06-02
+  all_time_start: { value: 133.2, date: 2023-01-31 }
+  target: { metric: weight_kg, value: 93, direction: at_most }
+- { id: vo2, type: metric, title: VO2 max 55, priority: 2, featured: true, all_time_start: { value: 37, date: 2025-10-01 }, target: { metric: vo2max, value: 55, direction: at_least } }
