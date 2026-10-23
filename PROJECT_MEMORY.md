@@ -9,20 +9,24 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, late):** Phase 4 (US1 Landing, #38) is merged, plus the owner's first
-  site-review fixes: "if raced today" predictions and "in a longer run" efforts (#40), body fat
-  on its 7-day average (#41), the full intervals.icu history (197 runs), and best efforts on
-  timer time (#42, `PROCESSOR_VERSION` 3). A one-day re-import refresh was dispatched at 19:26
-  UTC to reprocess everything at once. **The Garmin export has arrived** (owner, 2026-10-23).
+- **Status (2026-10-23, night):** Phases 1–4 are merged, and the history work is finished. The
+  full Garmin import was dropped (owner decision 2026-10-23). The export audit found nothing
+  missing from 18 Oct 2025 on. Four Oct 2025 treadmill runs were uploaded and published, and
+  SC-009 passed 20/20 against the export. The `001-history-audit` PR hides the two junior
+  parkruns and labels the four uploaded runs "Venu 2 Plus". The 5 Apr half reads 1:43:43 live
+  (checked). **Next: Phase 5.**
   - **Check first:**
-    - that the 5 Apr 2026 half reads about 1:43:42 on the live landing page (the fastest
-      21.1 km inside a 21.13 km run timed at 1:43:51 without pauses).
-    - the first 00:17 UTC catch-all since #38: its `deploy` job must run even with no data
-      change (T105). Check the run.
+    - that the `001-history-audit` PR merged and its refresh published: 8 and 15 Mar 2026 gone
+      from the run list, and the four Oct 2025 runs showing "Venu 2 Plus". If it merged with
+      any unticked confirmation, ask the owner.
+    - the first 00:17 UTC catch-all since #38 (2026-10-24): its `deploy` job must run even with
+      no data change (T105). Check the run.
     - **all** workflows on each PR, including the non-required Quality check, not only the gate.
-    - minutes: 649 used by 19:30 UTC on 2026-10-23 (the backfill and PR checks took about 120
-      that day). October should end under 1,000. If it's close to the limit, use the owner's
-      lever order (2026-10-23 decision).
+    - minutes: 668 used by 19:40 UTC on 2026-10-23 (plus about 15 for the Oct 2025 re-import).
+      October should end under 1,000. If it's close to the limit, use the owner's lever order
+      (2026-10-23 decision).
+  - **Owner's local files:** the export zip is in Downloads (their backup); `C:\temp\runs`
+    (a duplicate copy plus the four extracted FIT files) can be deleted. Remind them once.
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -41,32 +45,13 @@ Update this as decisions get made — treat it as the source of truth alongside
   T003 is dropped.
 - **Still with the owner:**
   - **T004 (nameservers):** the agent walks them through it.
-  - **T150:** the Garmin export **has arrived** (2026-10-23); it's the next session's work (see
-    *Next step*).
   - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
     again in the Cloudflare dashboard.
-- **Next step: Garmin history (T150, then the rest of T085)** in its own session, before
-  Phase 5 (owner agreed 2026-10-23), so the review and go-live run on the full history. The
-  owner needs to be at the keyboard for the import.
-  - **Keep the export out of the repo.** Ask where the zip is; it stays outside the project
-    folder (e.g. Downloads) and is never committed or copied into the repo.
-  - **Import:** walk the owner through *intervals.icu → Settings → Import all Garmin data*
-    (check the current wording on intervals.icu first; it may want the export zip or pull from
-    Garmin itself). Wait for intervals.icu to finish processing.
-  - **Probe:** re-run the coverage check for the earliest date per wellness field (weight, body
-    fat, HRV, VO2 max, resting HR). There are no local credentials (the setup file is deleted),
-    so use a throwaway branch workflow printing aggregates only, as on 2026-10-23
-    (`spike-pause-check`). Record the dates here.
-  - **Backfill:** use `refresh.yml` re-imports (`reimport_from`/`reimport_to`), one window at a
-    time (a queued dispatch can be replaced by the cron's). Size windows to stay under the
-    25-minute fetch limit (about 10 runs a minute: 2025-10 to 2026-04 took 19 minutes). A window
-    that times out loses nothing; split it and re-run. Expect a few hundred Actions minutes.
-  - **Audit:** compare the export's activity list with intervals.icu run by run (the 17 Oct
-    track runs were missing; size the gap), and do T085's SC-009 check (20 random published
-    runs against their raw summaries). Report what's missing, and offer FIT uploads for any
-    gaps (the 17 Oct route).
-  - Then check the goals, PBs and training chart on the live site with the owner.
-- **After that: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session.
+- **Next step: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session. History is
+  complete from 7 Oct 2025 (T150 and T085 done).
+  - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
+    at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
+    window of 17 days took a few minutes.
   - **Start with a guided site review** (owner, PR #38 comment): walk the owner through the
     live site (`https://alexanderwebber.alexanderwebber.workers.dev/running/`, the goals page
     and a run page) on a phone and a desktop, with exact steps. Then run a question round on
@@ -796,8 +781,46 @@ project-specific notes.
     the paused time to within 5 s in 168 runs. A stop with the watch running still counts, and
     races keep their official times. `PROCESSOR_VERSION` 3 makes the next refresh reprocess
     everything.
+- **2026-10-23** — **No full Garmin history import; audit the last year instead** (owner
+  decision, after asking whether the import was safe). The full import would add no PBs (none
+  before 2025) and no goal data (goals ignore data before `created`, 2025-10-01), and the owner's
+  fitness only started in October 2025. It isn't risk-free either: intervals.icu's FAQ lists
+  re-imports as a cause of duplicate activities, a bulk import is hard to undo in the account,
+  and the backfill would cost a few hundred Actions minutes.
+  - **History starts at what intervals.icu holds** (from 2025-10-18). Wellness history stays as
+    it is.
+  - **The export is audited** (T150 rewritten): its activity list is compared with the published
+    runs from 2025-10-01, and missing runs are uploaded as FIT files (the 17 Oct route). The zip
+    stays outside the repo as the owner's backup.
+  - **No older races** to enter by hand (owner).
+  - Spec (History assumption, SC-009) and tasks (T150, T085) amended.
+  - **Audit result** (export of 468 activities, 2016-02-15 to 2026-10-23; 199 runs since
+    2025-10-01): **nothing is missing from 2025-10-18 on**. 195 runs match by date and distance
+    (within 3%). The 4 misses are treadmill runs on 7, 9, 12 and 14 Oct 2025, before
+    intervals.icu's history starts; their FIT files were found in the export by start time,
+    and the owner uploads them (device override Venu 2 Plus, as that month's runs show).
+  - **Junior parkruns hidden:** the two published runs with no matching export run (8 and
+    15 Mar 2026, about 2 km, Sundays just after 9am) are junior parkruns with the owner's son.
+    Garmin logged them as "Other", and intervals.icu typed them as runs. Owner: ignore them, so
+    `run-overrides.yaml` hides them.
 
 ## Upstream candidates
+
+- 2026-10-23 — The plan carried "import the full Garmin history" from spec time to the eve of
+  doing it, and the owner then asked whether it was safe and worth it. It wasn't: it added no
+  PBs or goal data, and a bulk import into the provider account risked duplicates that are hard
+  to undo. The part that mattered (finding runs missing from the last year) needed no import:
+  an offline comparison of the export with the published data. Generalisation (planning): before
+  running a risky, hard-to-reverse bulk step that was planned long ago, re-weigh what it adds
+  against what the owner now cares about, and look for a read-only route to the same benefit.
+- 2026-10-23 — A Garmin export's FIT files (`DI-Connect-Uploaded-Files/UploadedFiles_*.zip`)
+  are named by upload ID, which the activity summaries don't carry. Agent tip (Garmin exports):
+  match a FIT file to an activity by `file_id.time_created` against `startTimeGmt` (within
+  about two minutes), reading only each file's first message from the zip in memory.
+- 2026-10-23 — intervals.icu imported two activities Garmin logged as "Other" (the owner's
+  junior parkruns with his son) as runs. Generalisation (provider choice): a sync partner can
+  re-type activities, so an audit against the source should compare activity types, not only
+  find missing items.
 
 - 2026-10-23 — Most of the owner's first comments on the live site were about meaning, not
   bugs the tests could catch: Garmin predictions read as race-day forecasts, a "fastest" time
