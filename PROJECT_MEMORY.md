@@ -9,13 +9,14 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, evening):** Phase 3 (US2 Goals) is merged (#32, #33). The owner left
-  one #33 box unticked: the achieved 5k is featured after all, so a follow-up PR
-  (`001-feature-5k`) sets `featured_goal_limit: 7` in a new `section.yaml`. Refresh runs are all
-  green; the Cloudflare cron dispatches `refresh.yml` every 2 h.
+- **Status (2026-10-23, afternoon):** Phase 3 (US2 Goals) and the 7-goal follow-up (#34) are
+  merged. The Spec Kit 1.2.3 upgrade is raised as a PR (`speckit-1.2.3`). Refresh runs are
+  green; the one red run (12:41) was a push rejected because PR #31 merged mid-run, as designed.
+  The Cloudflare cron dispatches `refresh.yml` every 2 h.
   - **Check first:**
-    - whether the `001-feature-5k` PR merged.
-    - minutes per day: 487 used by 13:00 on 2026-10-23, and PR #31 merged at 12:38. Expect
+    - whether the `speckit-1.2.3` PR merged. Phase 4 doesn't depend on it, so carry on either
+      way (branch from `origin/main`).
+    - minutes per day: 500 used at 13:23 UTC on 2026-10-23, and PR #31 merged at 12:43. Expect
       about 35–40 a day, down from 55. If it's still close to the limit, use the owner's lever
       order (2026-10-23 decision).
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
@@ -42,12 +43,7 @@ Update this as decisions get made — treat it as the source of truth alongside
     2026-10-23 decision).
   - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
     again in the Cloudflare dashboard.
-- **Next step: upgrade Spec Kit 1.2.1 → 1.2.3** as its own short session, on a branch from
-  `origin/main`, following PLAYBOOK > Upgrading Spec Kit (plus the project's *Upstream
-  candidates* note on the missing steps). The 1.2.2 and 1.2.3 notes have nothing that reaches
-  us (a PowerShell bracketed-path fix, hook and extension housekeeping), but core releases are
-  adopted.
-- **Then: Phase 4 (US1 Landing, from T096)** in its own session. It reuses `goals.ts`,
+- **Next step: Phase 4 (US1 Landing, from T096)** in its own session. It reuses `goals.ts`,
   `loadGoals(today)` (`src/sections/running/data/goals.ts`), `GoalCard` and `AsOf`.
   `section.yaml` already exists (T106's data part); T106 still adds the target-time warning.
   The landing page shows **seven** featured goals (one achieved), so lay the cards out for an
@@ -697,8 +693,19 @@ project-specific notes.
   - **Real data:** 5k achieved 17 Oct 2026 by `2026-10-17-ofka`; half 1:47:21, 10k 46:00,
     weight and body fat 7–8% of the way, VO2 max 52 (80%); Brighton has no marathon effort yet.
 
+- **2026-10-23** — Upgraded Spec Kit 1.2.1 → 1.2.3, following PLAYBOOK > Upgrading Spec Kit
+  plus the project's notes on its missing steps. The process: re-init, reinstall `git` 1.0.1,
+  `house-constitution` 0.1.1 and `house-process` 0.8.0, then restore the constitution,
+  `feature.json`, `git-config.yml` and `extensions.yml` (the hooks were identical, only
+  reordered). What reaches us: `-LiteralPath` in the PowerShell prerequisite and task scripts
+  (bracketed feature paths). The skills came out unchanged.
+
 ## Upstream candidates
 
+- 2026-10-23 — On the 1.2.3 upgrade, a text diff of the regenerated `extensions.yml` showed
+  whole hook blocks as deleted, because only the key order had changed. Strengthen the
+  *Upgrading Spec Kit* note: compare the backup and the new file as parsed YAML (installed
+  list, settings, hooks per event), not by `diff`, before restoring the backup.
 - 2026-10-23 — Astro 7 empties `outDir` before it renders pages, so a data error thrown while
   rendering still wipes the previous `dist/`. Agent tip (Astro): when a failed build must leave
   `dist/` untouched, validate in an integration's `astro:build:start` hook.
