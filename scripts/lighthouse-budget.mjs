@@ -29,6 +29,14 @@ const BUDGET = { performance: 90, landingLcpMs: 2500, jsGzip: 10 * KB, pageGzip:
 // The race page's interactive map loads on click, so it should never be in a load-time trace;
 // if it ever is, it doesn't count against the JS budget (plan.md Constraints).
 const MAP_SCRIPT = /maplibre|race-map/i;
+/** Lighthouse 13's scored performance metrics, as [audit id, short name]. */
+const PERF_METRICS = [
+  ['first-contentful-paint', 'FCP'],
+  ['largest-contentful-paint', 'LCP'],
+  ['total-blocking-time', 'TBT'],
+  ['cumulative-layout-shift', 'CLS'],
+  ['speed-index', 'SI'],
+];
 
 /**
  * A package's CLI as `[node, its bin file]`. Not `npx`: on Windows that's `npx.cmd`, which Node
@@ -139,7 +147,11 @@ async function checkPage(page, url, lhr) {
   const failures = [];
   const origin = new URL(url).origin;
   const perf = Math.round((lhr.categories.performance.score ?? 0) * 100);
-  if (perf < BUDGET.performance) failures.push(`performance ${perf} < ${BUDGET.performance}`);
+  if (perf < BUDGET.performance) {
+    // Which metrics cost the points, so a CI-only drop can be read from the job summary.
+    const metrics = PERF_METRICS.map(([id, name]) => `${name} ${lhr.audits[id].displayValue} (${Math.round((lhr.audits[id].score ?? 0) * 100)})`);
+    failures.push(`performance ${perf} < ${BUDGET.performance}: ${metrics.join(', ')}`);
+  }
 
   const a11y = Math.round((lhr.categories.accessibility.score ?? 0) * 100);
   const a11yFailed = lhr.categories.accessibility.auditRefs
