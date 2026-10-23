@@ -1,0 +1,8 @@
+# Races the owner has entered (schemas/owner/upcoming-races.schema.json).
+# target_time should match the linked goal's target; validation warns if they differ.
+
+- id: brighton-2027
+  name: Brighton Marathon
+  date: 2027-04-04
+  distance: marathon
+  target_time: "3:25:00"

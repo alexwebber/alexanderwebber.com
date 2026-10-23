@@ -564,13 +564,18 @@ matching goal becomes achieved with the right date.
   - Retired goals are never shown.
   - Include `LastUpdated`, a unique title and description, and the OG hub card `/og/running-goals.png`.
   - Register the route in `src/sections/running/integration.ts`.
-- [ ] T092 [US2] Create `data/running/owner/goals.yaml` with the owner-confirmed initial goals:
-  - Brighton sub-3:30 (`linked_race: brighton-2027`, `deadline: 2027-04-04`, priority 1).
-  - 10k under 45:00 and 5k under 20:00.
-  - Body fat 17.5% (`at_most`) and weight 93 kg (`at_most`).
+- [x] T092 [US2] Create `data/running/owner/goals.yaml` with the owner-confirmed initial goals (2026-10-18 answers). Featured, in priority order:
+  1. Brighton sub-3:25 (`linked_race: brighton-2027`, `deadline: 2027-04-04`).
+  2. Half marathon under 1:40.
+  3. 10k under 43:00.
+  4. Weight 93 kg (`at_most`).
+  5. Body fat 17.5% (`at_most`).
+  6. VO2 max 52.5 (`at_least`).
 
-  Also create `data/running/owner/upcoming-races.yaml` with the Brighton Marathon entry (`id: brighton-2027`, `date: 2027-04-04`, `distance: marathon`, `target_time: "3:30:00"`) so that `linked_race` resolves. The VO2 max goal is **left out until the owner supplies a value** (T093). No invented targets (Principle VIII).
-- [ ] T093 [US2] OWNER: Supply the VO2 max target value, and confirm the featured set, priorities and any start values. The agent asks at the US2 PR review and then adds the goal.
+  5k under 20:00 is `featured: false` (priority 7): it was already achieved on 17 Oct 2026, the evaluator finds the effort (no override), and the six active goals fill `featured_goal_limit: 6`.
+
+  Weight, body fat and VO2 max have `created: 2025-10-01`, so progress starts in October 2025. Also create `data/running/owner/upcoming-races.yaml` with the Brighton Marathon entry (`id: brighton-2027`, `date: 2027-04-04`, `distance: marathon`, `target_time: "3:25:00"`) so that `linked_race` resolves. No invented targets (Principle VIII).
+- [x] T093 [US2] OWNER: Supply the VO2 max target value, and confirm the featured set, priorities and any start values. Answered 2026-10-18 (VO2 max 52.5; VO2 max 55 follows once it is achieved).
 - [ ] T153 [P] [US2] Create the manual Garmin figures support (FR-069):
   - `src/sections/running/domain/manual-metrics.ts`: reads `manualMetrics` from the loader, returns the latest entry per list (current training status; current prediction per distance, each with its `as_of`) and the full dated history for trends; "not recorded yet" when absent.
   - `src/sections/running/components/AsOf.astro`: renders a value with "as of <UK date>" (e.g. "as of 1 Mar 2027"), used by goal cards, the hero and the health page.
