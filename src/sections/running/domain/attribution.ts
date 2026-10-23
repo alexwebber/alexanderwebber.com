@@ -53,14 +53,33 @@ export function goalAttribution(evaluation: GoalEvaluation): AttributionProps | 
  * Garmin data.
  */
 export function goalsViewAttribution(evaluations: readonly GoalEvaluation[], scale: string | undefined): AttributionProps | undefined {
-  const cards = evaluations.map((e) => ({ e, a: goalAttribution(e) })).filter(({ a }) => a !== undefined);
-  if (cards.length === 0) return undefined;
-  const efforts = cards
-    .flatMap(({ e }) => {
-      const effort = shownEffort(e);
-      return effort?.run_id ? [effort] : [];
-    })
-    .sort((a, b) => b.date.localeCompare(a.date));
-  const sources = [...efforts.map((e) => ({ device: e.device })), ...(cards.some(({ a }) => a!.scale) && scale ? [{ device: scale }] : [])];
+  return viewAttribution({ goals: evaluations, scale });
+}
+
+export interface ViewSources {
+  /** Runs the view shows (cards, charts, totals). */
+  runs?: readonly Pick<Run, 'date' | 'device'>[];
+  /** Goal cards the view shows. */
+  goals?: readonly GoalEvaluation[];
+  /** section.yaml garmin_devices.scale */
+  scale?: string | undefined;
+  /** The view also shows the owner's manual Garmin figures (plain "Garmin"). */
+  manual?: boolean;
+}
+
+/**
+ * The attribution under a page heading that mixes runs, goal cards and manual Garmin figures (the
+ * landing page): every watch behind the runs and efforts shown, newest first, then the scale when
+ * a weight or body-fat card shows data. Undefined when nothing on the view is Garmin data.
+ */
+export function viewAttribution({ runs = [], goals = [], scale, manual = false }: ViewSources): AttributionProps | undefined {
+  const cards = goals.map((e) => ({ e, a: goalAttribution(e) })).filter(({ a }) => a !== undefined);
+  if (cards.length === 0 && runs.length === 0 && !manual) return undefined;
+  const efforts = cards.flatMap(({ e }) => {
+    const effort = shownEffort(e);
+    return effort?.run_id ? [effort] : [];
+  });
+  const dated = [...runs, ...efforts].sort((a, b) => b.date.localeCompare(a.date));
+  const sources = [...dated.map((d) => ({ device: d.device })), ...(cards.some(({ a }) => a!.scale) && scale ? [{ device: scale }] : [])];
   return { device: runDevices(sources) };
 }

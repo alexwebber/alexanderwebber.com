@@ -61,6 +61,17 @@ export function gapText(evaluation: RaceTimeEvaluation): string | undefined {
   return evaluation.gap_s > 0 ? `${formatDuration(evaluation.gap_s)} to go` : `Beaten by ${formatDuration(-evaluation.gap_s)}`;
 }
 
+/**
+ * How far a value goal still has to go from its current value (US1.4): "10.0 kg to go",
+ * "3.1% to go", "1 to go"; "Target reached" once it is reached; undefined with no data.
+ */
+export function toGoText(evaluation: ValueEvaluation): string | undefined {
+  if (!evaluation.current) return undefined;
+  const remaining = evaluation.direction === 'at_most' ? evaluation.current.value - evaluation.target : evaluation.target - evaluation.current.value;
+  if (remaining <= 0) return 'Target reached';
+  return `${formatMetric(evaluation.metric, remaining, true)} to go`;
+}
+
 /** What the progress bar says, in words (its value text, and the line under it). */
 export function progressText(evaluation: RaceTimeEvaluation | ValueEvaluation): string | undefined {
   if (evaluation.fraction === undefined) return undefined;
