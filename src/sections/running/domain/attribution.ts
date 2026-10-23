@@ -3,6 +3,8 @@
 // newest first. Past MAX_DEVICES the list stops being useful, so it falls back to plain "Garmin",
 // which the guidelines allow when the device isn't known.
 import type { Run } from '../../../shared/storage/index.ts';
+import type { Effort } from './efforts.ts';
+import type { GoalEvaluation } from './goals.ts';
 
 export const MAX_DEVICES = 3;
 
@@ -10,4 +12,55 @@ export const MAX_DEVICES = 3;
 export function runDevices(runs: readonly Pick<Run, 'device'>[]): string[] {
   const devices = [...new Set(runs.flatMap((run) => (run.device ? [run.device] : [])))];
   return devices.length > MAX_DEVICES ? [] : devices;
+}
+
+/** What a view passes to GarminAttribution: watches, or the scale from section.yaml. */
+export interface AttributionProps {
+  device?: string | readonly string[];
+  scale?: boolean;
+}
+
+/** The effort a race-time goal card shows: the achieving effort, else the fastest. */
+export function shownEffort(evaluation: GoalEvaluation): Effort | undefined {
+  if (evaluation.kind !== 'race_time') return undefined;
+  return evaluation.status === 'achieved' ? evaluation.achievement?.effort : evaluation.fastest;
+}
+
+/**
+ * A goal card's Garmin attribution, or undefined when the card shows no Garmin-sourced data:
+ * - race time: the watch that recorded the effort shown; a hand-entered race result isn't Garmin
+ *   data, but an active goal's Garmin prediction is (plain "Garmin");
+ * - weight and body fat: the scale; VO2 max, resting HR and HRV: plain "Garmin";
+ * - milestones and manual achievements: none.
+ */
+export function goalAttribution(evaluation: GoalEvaluation): AttributionProps | undefined {
+  if (evaluation.kind === 'race_time') {
+    const effort = shownEffort(evaluation);
+    if (effort?.run_id) return effort.device ? { device: effort.device } : {};
+    return evaluation.status !== 'achieved' && evaluation.prediction ? {} : undefined;
+  }
+  if (evaluation.kind === 'value') {
+    const shows = evaluation.status === 'achieved' ? evaluation.achievement?.by === 'reading' : evaluation.current !== undefined;
+    if (!shows) return undefined;
+    return evaluation.averaged ? { scale: true } : {};
+  }
+  return undefined;
+}
+
+/**
+ * The attribution under a goals view's heading: every watch behind the efforts shown (newest
+ * first), then the scale when a weight or body-fat card shows data. Undefined when no card shows
+ * Garmin data.
+ */
+export function goalsViewAttribution(evaluations: readonly GoalEvaluation[], scale: string | undefined): AttributionProps | undefined {
+  const cards = evaluations.map((e) => ({ e, a: goalAttribution(e) })).filter(({ a }) => a !== undefined);
+  if (cards.length === 0) return undefined;
+  const efforts = cards
+    .flatMap(({ e }) => {
+      const effort = shownEffort(e);
+      return effort?.run_id ? [effort] : [];
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const sources = [...efforts.map((e) => ({ device: e.device })), ...(cards.some(({ a }) => a!.scale) && scale ? [{ device: scale }] : [])];
+  return { device: runDevices(sources) };
 }
