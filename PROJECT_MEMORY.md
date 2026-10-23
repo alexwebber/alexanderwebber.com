@@ -11,12 +11,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 
 - **Status (2026-10-23, late):** Phase 4 (US1 Landing, #38) is merged, plus the owner's first
   site-review fixes: "if raced today" predictions and "in a longer run" efforts (#40), body fat
-  on its 7-day average (#41), and the full intervals.icu history (197 runs). The timer-time
-  best-effort fix is raised as a PR (`001-pause-free-efforts`).
+  on its 7-day average (#41), the full intervals.icu history (197 runs), and best efforts on
+  timer time (#42, `PROCESSOR_VERSION` 3). A one-day re-import refresh was dispatched at 19:26
+  UTC to reprocess everything at once. **The Garmin export has arrived** (owner, 2026-10-23).
   - **Check first:**
-    - whether `001-pause-free-efforts` merged, and that the next refresh reprocessed everything
-      (`PROCESSOR_VERSION` 3). The 5 Apr 2026 half should then read about 1:43:42, the fastest
-      21.1 km inside a 21.13 km run timed at 1:43:51 without pauses.
+    - that the 5 Apr 2026 half reads about 1:43:42 on the live landing page (the fastest
+      21.1 km inside a 21.13 km run timed at 1:43:51 without pauses).
     - the first 00:17 UTC catch-all since #38: its `deploy` job must run even with no data
       change (T105). Check the run.
     - **all** workflows on each PR, including the non-required Quality check, not only the gate.
@@ -41,13 +41,32 @@ Update this as decisions get made — treat it as the source of truth alongside
   T003 is dropped.
 - **Still with the owner:**
   - **T004 (nameservers):** the agent walks them through it.
-  - **T150:** the Garmin export, still not arrived (2026-10-23). When it does, the agent walks
-    them through *intervals.icu → Settings → Import all Garmin data*, re-runs the probe, runs
-    T085's backfill, and then **audits the export against intervals.icu run by run** (see
-    2026-10-23 decision).
+  - **T150:** the Garmin export **has arrived** (2026-10-23); it's the next session's work (see
+    *Next step*).
   - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
     again in the Cloudflare dashboard.
-- **Next step: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session.
+- **Next step: Garmin history (T150, then the rest of T085)** in its own session, before
+  Phase 5 (owner agreed 2026-10-23), so the review and go-live run on the full history. The
+  owner needs to be at the keyboard for the import.
+  - **Keep the export out of the repo.** Ask where the zip is; it stays outside the project
+    folder (e.g. Downloads) and is never committed or copied into the repo.
+  - **Import:** walk the owner through *intervals.icu → Settings → Import all Garmin data*
+    (check the current wording on intervals.icu first; it may want the export zip or pull from
+    Garmin itself). Wait for intervals.icu to finish processing.
+  - **Probe:** re-run the coverage check for the earliest date per wellness field (weight, body
+    fat, HRV, VO2 max, resting HR). There are no local credentials (the setup file is deleted),
+    so use a throwaway branch workflow printing aggregates only, as on 2026-10-23
+    (`spike-pause-check`). Record the dates here.
+  - **Backfill:** use `refresh.yml` re-imports (`reimport_from`/`reimport_to`), one window at a
+    time (a queued dispatch can be replaced by the cron's). Size windows to stay under the
+    25-minute fetch limit (about 10 runs a minute: 2025-10 to 2026-04 took 19 minutes). A window
+    that times out loses nothing; split it and re-run. Expect a few hundred Actions minutes.
+  - **Audit:** compare the export's activity list with intervals.icu run by run (the 17 Oct
+    track runs were missing; size the gap), and do T085's SC-009 check (20 random published
+    runs against their raw summaries). Report what's missing, and offer FIT uploads for any
+    gaps (the 17 Oct route).
+  - Then check the goals, PBs and training chart on the live site with the owner.
+- **After that: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session.
   - **Start with a guided site review** (owner, PR #38 comment): walk the owner through the
     live site (`https://alexanderwebber.alexanderwebber.workers.dev/running/`, the goals page
     and a run page) on a phone and a desktop, with exact steps. Then run a question round on
