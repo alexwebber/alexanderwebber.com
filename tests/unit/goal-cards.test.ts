@@ -120,7 +120,7 @@ describe('GoalCard', () => {
     expect(h).not.toContain('Garmin predicted');
   });
 
-  it('shows a body-fat goal with the latest reading as headline, judged on the 7-day average, naming the scale', async () => {
+  it('shows a body-fat goal by its 7-day average throughout, naming the scale', async () => {
     setRunningStore(fakeStore({ garmin_devices: { scale: 'Index S2' } }));
     const evaluation: GoalEvaluation = {
       kind: 'value',
@@ -133,13 +133,16 @@ describe('GoalCard', () => {
       averaged: true,
       start: 26,
       current: { date: '2027-03-16', value: 22 },
-      latest: { date: '2027-03-16', value: 21.9 },
+      latest: { date: '2027-03-16', value: 22 },
       fraction: 4 / 8.5,
     };
     const t = await text(GoalCard, { evaluation });
     expect(t).toContain('Source: Garmin Index S2');
     expect(t).toContain('Target 17.5% or less');
-    expect(t).toContain('Body fat 21.9% on 16 Mar 2027');
+    expect(t).toContain('Body fat (7-day average) 22.0% on 16 Mar 2027');
+    const compact = await text(GoalCard, { evaluation, compact: true });
+    expect(compact).toContain('4.5% to go');
+    expect(compact).toContain('Now 22.0% (7-day average)');
     expect(t).toContain('Start 26.0%');
     expect(t).toContain('7-day average 22.0%: 47% of the way from 26.0% to 17.5%');
   });
