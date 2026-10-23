@@ -33,6 +33,14 @@ export function formatDate(date: string): string {
   return `${d} ${MONTHS[m - 1]} ${y}`;
 }
 
+const LONG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/** "4 April 2027", for headlines such as a race date. */
+export function formatLongDate(date: string): string {
+  const [y, m, d] = parts(date);
+  return `${d} ${LONG_MONTHS[m - 1]} ${y}`;
+}
+
 /** "4 Apr" */
 export function formatDayMonth(date: string): string {
   const [, m, d] = parts(date);

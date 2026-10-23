@@ -1,0 +1,161 @@
+---
+// This week's running against last week (T099; FR-023, FR-058, US1.5): run count, distance and
+// moving time for Monday to Sunday (UK time), each with last week's figure beside it, and a pair
+// of bars comparing the two distances. A week with no runs shows zeros cleanly. Treadmill runs
+// count. Garmin attribution names the watches behind the two weeks' runs (FR-077). No client JS.
+import { formatDayMonth } from '../../../shared/format/dates.ts';
+import { formatDuration, formatKm } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { runDevices } from '../domain/attribution.ts';
+import type { WeekSnapshot } from '../domain/weeks.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  week: WeekSnapshot;
+  /** The runs of both weeks, newest first (for the attribution). */
+  runs: readonly Pick<Run, 'device'>[];
+  heading?: 2 | 3 | 4;
+}
+
+const { week, runs, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+const { thisWeek, lastWeek } = week;
+const max = Math.max(thisWeek.distance_m, lastWeek.distance_m);
+const width = (m: number) => (max > 0 ? `${(m / max) * 100}%` : '0%');
+const diff = thisWeek.distance_m - lastWeek.distance_m;
+const comparison =
+  lastWeek.runs === 0 && thisWeek.runs === 0
+    ? 'No runs this week or last week.'
+    : Math.abs(diff) < 50
+      ? 'About the same distance as last week.'
+      : `${formatKm(Math.abs(diff))} ${diff > 0 ? 'more' : 'less'} than last week so far.`;
+const figures = [
+  { label: 'Runs', now: String(thisWeek.runs), then: String(lastWeek.runs) },
+  { label: 'Distance', now: formatKm(thisWeek.distance_m), then: formatKm(lastWeek.distance_m) },
+  { label: 'Time', now: formatDuration(thisWeek.moving_s), then: formatDuration(lastWeek.moving_s) },
+];
+---
+
+<section class="this-week" aria-labelledby="this-week-title" data-this-week data-week-start={thisWeek.start}>
+  <header class="this-week-header">
+    <Heading class="this-week-title" id="this-week-title">This week</Heading>
+    <p class="this-week-dates">{formatDayMonth(thisWeek.start)} to {formatDayMonth(thisWeek.end)}</p>
+    {runs.length > 0 && <GarminAttribution device={runDevices(runs)} />}
+  </header>
+  {thisWeek.runs === 0 && <p class="this-week-none" data-no-runs>No runs yet this week.</p>}
+  <dl class="this-week-figures">
+    {
+      figures.map((f) => (
+        <div data-figure={f.label.toLowerCase()}>
+          <dt>{f.label}</dt>
+          <dd>
+            <strong>{f.now}</strong>{' '}
+            <span class="this-week-then">Last week {f.then}</span>
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+  <div class="this-week-bars" aria-hidden="true">
+    <span class="this-week-bar-label">This week</span>
+    <span class="this-week-bar"><span style={`width: ${width(thisWeek.distance_m)}`}></span></span>
+    <span class="this-week-bar-label">Last week</span>
+    <span class="this-week-bar this-week-bar-last"><span style={`width: ${width(lastWeek.distance_m)}`}></span></span>
+  </div>
+  <p class="this-week-comparison" data-comparison>{comparison}</p>
+</section>
+
+<style>
+  .this-week {
+    height: 100%;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .this-week-header {
+    margin-bottom: var(--space-3);
+  }
+
+  .this-week-title {
+    margin: 0;
+    font-size: var(--step-2);
+    line-height: var(--leading-tight);
+  }
+
+  .this-week-dates,
+  .this-week-none {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+
+  .this-week-none {
+    margin-bottom: var(--space-3);
+  }
+
+  .this-week-figures {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0 0 var(--space-3);
+  }
+
+  .this-week-figures dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .this-week-figures dd {
+    display: grid;
+    margin: 0;
+  }
+
+  .this-week-figures strong {
+    font-size: var(--step-1);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .this-week-then {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .this-week-bars {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-1) var(--space-2);
+    align-items: center;
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
+  }
+
+  .this-week-bar {
+    display: block;
+    height: 0.75rem;
+    border-radius: var(--radius-mark);
+    background: color-mix(in srgb, var(--running-series) 15%, var(--color-surface));
+  }
+
+  .this-week-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-mark);
+    background: var(--running-series);
+  }
+
+  .this-week-bar-last > span {
+    background: var(--color-text-secondary);
+  }
+
+  .this-week-comparison {
+    margin: var(--space-3) 0 0;
+  }
+
+  @media (forced-colors: active) {
+    .this-week-bar > span {
+      background: CanvasText;
+    }
+  }
+</style>

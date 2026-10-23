@@ -1,6 +1,6 @@
 # Build gate on every PR and every push to main (T043; constitution: build gate from day one).
 # Pushes to main also deploy the gated build. The deploy concurrency group is shared with
-# refresh.yml and rebuild-daily.yml, so deploys queue and never overlap.
+# refresh.yml (which also deploys its daily catch-all build), so deploys queue and never overlap.
 name: Gate
 
 on:

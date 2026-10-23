@@ -276,7 +276,9 @@ describe('edge cases', () => {
     const all = evaluate({ goals, runs });
     expect(activeGoals(all).map((e) => e.goal.id)).toEqual(['a', 'b', 'c']);
     expect(achievedGoals(all).map((e) => e.goal.id)).toEqual(['new', 'old']);
-    expect(featuredGoals(all, 6).map((e) => e.goal.id)).toEqual(['a', 'c']);
+    // Featured goals keep their priority order whether achieved or not (the landing page shows both).
+    expect(featuredGoals(all, 6).map((e) => e.goal.id)).toEqual(['a', 'c', 'old', 'new']);
+    expect(featuredGoals(all, 3).map((e) => e.goal.id)).toEqual(['a', 'c', 'old']);
     expect(featuredGoals(all, 1).map((e) => e.goal.id)).toEqual(['a']);
   });
 

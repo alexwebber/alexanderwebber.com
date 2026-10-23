@@ -5,11 +5,15 @@
 // latest Garmin prediction "as of" its date (nothing when there is no entry). With nothing to
 // measure yet it says "No data yet" rather than showing 0%. Garmin attribution sits under the
 // card's heading whenever the card shows Garmin data (T152). No client JS.
+//
+// `compact` (the landing page's featured goals, T101) keeps what FR-022 asks for in less height:
+// how far is left in words ("3:00 to go", "8.6 kg to go"), the current value and the target, the
+// Garmin prediction, the progress bar with its figures, and the time left to the deadline.
 import ProgressBar from '../../../shared/charts/ProgressBar.astro';
 import { formatDate } from '../../../shared/format/dates.ts';
 import { formatDuration } from '../../../shared/format/units.ts';
 import { goalAttribution } from '../domain/attribution.ts';
-import { deadlineText, distanceLabel, formatMetric, gapText, metricName, progressText, targetText } from '../domain/goal-text.ts';
+import { deadlineText, distanceLabel, formatMetric, gapText, metricName, progressText, targetText, toGoText } from '../domain/goal-text.ts';
 import type { GoalEvaluation } from '../domain/goals.ts';
 import { runHref } from '../links.ts';
 import AsOf from './AsOf.astro';
@@ -19,9 +23,11 @@ export interface Props {
   evaluation: GoalEvaluation;
   /** The card title's heading level (3 under a page's h2 sections). */
   heading?: 2 | 3 | 4;
+  /** The landing page's shorter card. */
+  compact?: boolean;
 }
 
-const { evaluation: e, heading = 3 } = Astro.props;
+const { evaluation: e, heading = 3, compact = false } = Astro.props;
 const { goal } = e;
 const Heading = `h${heading}` as const;
 const id = `goal-${goal.id}`;
@@ -31,6 +37,14 @@ const race = e.linkedRace;
 const deadlineIsRaceDay = race && goal.deadline === race.date;
 const progress = e.kind === 'milestone' ? undefined : progressText(e);
 const fastestHref = e.kind === 'race_time' && e.fastest?.run_id ? runHref(e.fastest.run_id) : undefined;
+// Compact: the headline (how far is left) and the line under it (now and the target).
+const headline = e.kind === 'race_time' ? gapText(e) : e.kind === 'value' ? toGoText(e) : undefined;
+// The title names the distance or metric, so the compact target is just the figure.
+const shortTarget = e.kind === 'race_time' ? formatDuration(e.target_s) : e.kind === 'value' ? formatMetric(e.metric, e.target) : undefined;
+const deadlineLine =
+  goal.deadline && e.daysToDeadline !== undefined
+    ? `${deadlineIsRaceDay ? 'Race day' : 'Deadline'} ${formatDate(goal.deadline)} · ${deadlineText(e.daysToDeadline)}`
+    : undefined;
 // " on 9 Oct 2026 (Brighton 10k), 3:00 to go"
 const fastestSuffix =
   e.kind === 'race_time' && e.fastest
@@ -50,7 +64,40 @@ const fastestSuffix =
       </p>
     )
   }
-  {goal.description && <p class="goal-description">{goal.description}</p>}
+  {
+    compact && (
+      <div class="goal-compact" data-compact>
+        {e.kind !== 'milestone' && (
+          <p class="goal-headline" data-headline data-no-data={headline ? undefined : ''}>
+            {headline ?? (e.kind === 'race_time' ? `No ${distanceLabel(e.distance_m)} effort yet` : 'No data yet')}
+          </p>
+        )}
+        {e.kind !== 'milestone' && (
+          <p class="goal-now">
+            {e.kind === 'race_time' && e.fastest && (
+              <span data-fastest>
+                Fastest {fastestHref ? <a href={fastestHref}>{formatDuration(e.fastest.time_s)}</a> : <strong>{formatDuration(e.fastest.time_s)}</strong>} ·{' '}
+              </span>
+            )}
+            {e.kind === 'value' && e.latest && (
+              <span data-current>
+                Now <strong>{formatMetric(e.metric, e.latest.value, true)}</strong>
+                {e.metric === 'weight_kg' ? ' (7-day average)' : ''} ·{' '}
+              </span>
+            )}
+            <span data-target>Target {shortTarget}</span>
+          </p>
+        )}
+        {e.kind === 'race_time' && e.prediction && (
+          <p class="goal-prediction" data-prediction>
+            <AsOf label="Garmin predicts" value={e.prediction.time} asOf={e.prediction.as_of} />
+          </p>
+        )}
+      </div>
+    )
+  }
+  {!compact && goal.description && <p class="goal-description">{goal.description}</p>}
+  {!compact && (
   <dl class="goal-facts">
     {
       target && (
@@ -132,16 +179,18 @@ const fastestSuffix =
       )
     }
   </dl>
+  )}
   {
     e.kind !== 'milestone' &&
       e.fraction !== undefined &&
       progress && (
         <div class="goal-progress">
           <ProgressBar label={`${goal.title}: progress`} fraction={e.fraction} valueText={progress} color="var(--running-series)" />
-          <p class="goal-progress-text">{progress}</p>
+          {!compact && <p class="goal-progress-text">{progress}</p>}
         </div>
       )
   }
+  {compact && deadlineLine && <p class="goal-deadline" data-deadline>{deadlineLine}</p>}
 </article>
 
 <style>
@@ -204,6 +253,34 @@ const fastestSuffix =
 
   .goal-facts dd {
     margin: 0;
+  }
+
+  .goal-headline {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-tight);
+    color: var(--color-accent-strong);
+  }
+
+  .goal-headline[data-no-data] {
+    font-size: var(--step-1);
+    color: var(--color-text-secondary);
+  }
+
+  .goal-now,
+  .goal-prediction {
+    margin: var(--space-1) 0 0;
+  }
+
+  .goal-compact {
+    margin-bottom: var(--space-3);
+  }
+
+  .goal-deadline {
+    margin: var(--space-2) 0 0;
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
   }
 
   .goal-progress :global(.progress) {

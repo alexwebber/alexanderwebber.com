@@ -1,0 +1,118 @@
+---
+// A run's summary card (T099; FR-023, FR-011, FR-058): the date only (never a start time), the
+// title (neutral or the owner's, never the provider's free text), distance, moving time and
+// average pace, the "Treadmill" label for treadmill runs, and a link to the run's page. Garmin
+// attribution names the run's own watch (FR-077). It never has a map. No client JS.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration, formatKm, formatPace } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { runHref } from '../links.ts';
+import GarminAttribution from './GarminAttribution.astro';
+import TreadmillBadge from './TreadmillBadge.astro';
+
+export interface Props {
+  run: Pick<Run, 'id' | 'date' | 'title' | 'distance_m' | 'moving_s' | 'avg_pace_s_per_km' | 'treadmill' | 'device'>;
+  /** The title's heading level. */
+  heading?: 2 | 3 | 4;
+  /** How many runs share its date; above 1 the card says so. */
+  sameDay?: number;
+}
+
+const { run, heading = 3, sameDay = 1 } = Astro.props;
+const Heading = `h${heading}` as const;
+const id = `run-${run.id}`;
+const href = runHref(run.id);
+---
+
+<article class="run-card" aria-labelledby={id} data-run-card data-run-id={run.id}>
+  <header class="run-card-header">
+    <Heading class="run-card-title" id={id}>
+      {href ? <a href={href}>{run.title}</a> : run.title}
+    </Heading>
+    <GarminAttribution device={run.device} />
+  </header>
+  <p class="run-card-meta">
+    <time datetime={run.date}>{formatDate(run.date)}</time>
+    {run.treadmill && (
+      <>
+        {' '}
+        <TreadmillBadge />
+      </>
+    )}
+  </p>
+  <dl class="run-card-figures">
+    <div>
+      <dt>Distance</dt>
+      <dd>{formatKm(run.distance_m)}</dd>
+    </div>
+    <div>
+      <dt>Time</dt>
+      <dd>{formatDuration(run.moving_s)}</dd>
+    </div>
+    <div>
+      <dt>Pace</dt>
+      <dd>{formatPace(run.avg_pace_s_per_km)}</dd>
+    </div>
+  </dl>
+  {sameDay > 1 && <p class="run-card-note">One of {sameDay} runs that day.</p>}
+</article>
+
+<style>
+  .run-card {
+    height: 100%;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .run-card-header {
+    margin-bottom: var(--space-2);
+  }
+
+  .run-card-title {
+    margin: 0;
+    font-size: var(--step-1);
+    line-height: var(--leading-tight);
+  }
+
+  .run-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    margin: 0 0 var(--space-3);
+  }
+
+  .run-card-figures {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .run-card-figures dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .run-card-figures dd {
+    margin: 0;
+    font-size: var(--step-0);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 30rem) {
+    .run-card-figures dd {
+      font-size: var(--step-1);
+    }
+  }
+
+  .run-card-note {
+    margin: var(--space-3) 0 0;
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+</style>

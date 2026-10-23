@@ -602,17 +602,17 @@ featured goal and this week's distance within the first two screens.
 
 ### Implementation for User Story 1
 
-- [ ] T096 [P] [US1] Create `src/sections/running/domain/races.ts`:
+- [x] T096 [P] [US1] Create `src/sections/running/domain/races.ts`:
   - The upcoming-race state machine: `upcoming` (date > today) → `race day` (date = today) → `awaiting result` (date < today, no `result_ref`) → `completed` (`result_ref` set).
   - Days remaining in Europe/London.
   - The focus race resolved from `section.yaml`.
   - Upcoming order: focus race first, then by date.
-- [ ] T097 [P] [US1] Create `src/sections/running/domain/weeks.ts`:
+- [x] T097 [P] [US1] Create `src/sections/running/domain/weeks.ts`:
   - **This-week snapshot** (Monday–Sunday): run count, distance and moving time against the previous week, shown cleanly when there are zero runs.
   - **Training build**: weekly km since `build_start`, plus the longest run in the build.
   - **Treadmill/indoor runs are included** in both the snapshot and the training build (FR-058). T087's PB-eligibility filter is not reused here.
   - **Latest run**.
-- [ ] T098 [P] [US1] Create `src/sections/running/components/Hero.astro`:
+- [x] T098 [P] [US1] Create `src/sections/running/components/Hero.astro`:
   - "Brighton Marathon · 4 April 2027".
   - Days remaining, or "Race day", or "result coming soon", or the result.
   - "Target: sub-3:30", taken from the upcoming race's `target_time`.
@@ -620,32 +620,32 @@ featured goal and this week's distance within the first two screens.
   - "For Martlets hospice" as plain text.
   - A **reserved fundraising slot that renders nothing** (FR-025).
   - A `TrainingBuild` BarChart of weekly km and the longest run (FR-021).
-- [ ] T099 [US1] Create `src/sections/running/components/ThisWeek.astro` and `RunCard.astro`. The run card shows the date only (no time), title, distance, time and pace, the "Treadmill" label for treadmill runs (`TreadmillBadge`, T155), and links to `/running/runs/<id>/`. Depends on T155.
-- [ ] T155 [P] [US1] Create `src/sections/running/components/TreadmillBadge.astro` (FR-058): a text "Treadmill" label (not colour-only, accessible name) shown wherever a run with `treadmill: true` appears — `RunCard` (T099), the minimal and full run page (T102/T121), `RunList` (T115) and race history if a treadmill run is designated a race. Treadmill runs never render `RaceMap` (no `track_ref`, T125). PB/race-time-goal eligibility stays off unless the owner sets `include_in_records: true` in `run-overrides.yaml` (enforced in T087/T129). Tests: a unit case in `tests/unit/goals.test.ts`/`pbs.test.ts` for the override, and an e2e check (T109/T123) that the label shows and no map renders.
-- [ ] T100 [P] [US1] Create `src/sections/running/components/StoryLink.astro` and `SectionLinks.astro`:
+- [x] T099 [US1] Create `src/sections/running/components/ThisWeek.astro` and `RunCard.astro`. The run card shows the date only (no time), title, distance, time and pace, the "Treadmill" label for treadmill runs (`TreadmillBadge`, T155), and links to `/running/runs/<id>/`. Depends on T155.
+- [x] T155 [P] [US1] Create `src/sections/running/components/TreadmillBadge.astro` (FR-058): a text "Treadmill" label (not colour-only, accessible name) shown wherever a run with `treadmill: true` appears — `RunCard` (T099), the minimal and full run page (T102/T121), `RunList` (T115) and race history if a treadmill run is designated a race. Treadmill runs never render `RaceMap` (no `track_ref`, T125). PB/race-time-goal eligibility stays off unless the owner sets `include_in_records: true` in `run-overrides.yaml` (enforced in T087/T129). Tests: a unit case in `tests/unit/goals.test.ts`/`pbs.test.ts` for the override, and an e2e check (T109/T123) that the label shows and no map renders.
+- [x] T100 [P] [US1] Create `src/sections/running/components/StoryLink.astro` and `SectionLinks.astro`:
   - `StoryLink` renders only when `section.yaml` has `story_link`; otherwise there is no link and no placeholder (FR-024).
   - `SectionLinks` lists Goals, Training, Races & PBs and Health, but only areas present in the route registry (FR-027).
-- [ ] T101 [US1] Create `src/sections/running/pages/index.astro` at `/running/`. In order, it shows:
+- [x] T101 [US1] Create `src/sections/running/pages/index.astro` at `/running/`. In order, it shows:
   1. the hero
-  2. featured goals (up to `featured_goal_limit`, in priority order, using `GoalCard`, with newly achieved goals highlighted for 14 days per FR-042)
+  2. featured goals (up to `featured_goal_limit`, in priority order, using `GoalCard`, with newly achieved goals highlighted for 14 days per FR-042). Layout (owner pick, 2026-10-23): one column on phones; on wider screens the first featured goal (Brighton) spans the full width as the lead card and the rest follow in a 2-column grid, so seven goals fill the rows evenly
   3. this week and the latest run
   4. the story link
   5. the section links
 
   It includes `LastUpdated` with the stale notice, and the first two phone screens must answer SC-001. Register the route. Depends on T091 and T096–T100.
-- [ ] T102 [US1] Create a minimal `src/sections/running/pages/runs/[id].astro` with summary figures only (date, title, distance, moving time, pace, avg HR, `TreadmillBadge` where relevant), so the latest-run card links somewhere before US3 lands. It shows **no start time, map or location** and uses the shared OG card. US3 extends this file. Depends on T155.
-- [ ] T103 [US1] Create `src/sections/running/components/Countdown.astro`, an inline script under 1 KB that corrects days remaining client-side in Europe/London. Without JS, the build-time value stays.
-- [ ] T104 [US1] Create the landing OG card `src/sections/running/og/landing.ts` → `/og/running.png`, embedding "N days to Brighton" (FR-072).
-- [ ] T105 [US1] Create `.github/workflows/rebuild-daily.yml`: crons `5 23 * * *` and `5 0 * * *` (UTC) that run gate → deploy (`concurrency: deploy`), so the countdown and OG image follow the UK date.
-- [ ] T106 [US1] ~~Create `data/running/owner/section.yaml`~~ (written early, 2026-10-23: `focus_race: {race_id: brighton-2027, build_start: 2026-09-05, charity: {name: Martlets hospice}}`, `garmin_devices: {scale: Index S2}`, `featured_goal_limit: 7`, other schema defaults, and no `story_link`). Still to do: add a **validate-data warning** in `scripts/validate-data.ts` when the focus race's `target_time` differs from an active, featured `race_time` goal linked to it. This guards US1.2 (3:30 vs 3:20 shown in two places).
-- [ ] T107 [US1] OWNER: Supply the Brighton training-build start date. It is required before the US1 PR merges, and the agent asks for it at that review.
-- [ ] T108 [P] [US1] Create `tests/unit/races.test.ts` and `tests/unit/weeks.test.ts`. They cover:
+- [x] T102 [US1] Create a minimal `src/sections/running/pages/runs/[id].astro` with summary figures only (date, title, distance, moving time, pace, avg HR, `TreadmillBadge` where relevant), so the latest-run card links somewhere before US3 lands. It shows **no start time, map or location** and uses the shared OG card. US3 extends this file. Depends on T155.
+- [x] T103 [US1] Create `src/sections/running/components/Countdown.astro`, an inline script under 1 KB that corrects days remaining client-side in Europe/London. Without JS, the build-time value stays.
+- [x] T104 [US1] Create the landing OG card `src/sections/running/og/landing.ts` → `/og/running.png`, embedding "N days to Brighton" (FR-072).
+- [x] T105 [US1] **Daily rebuild via the refresh's 00:17 UTC catch-all** (owner pick, 2026-10-23, replacing a separate `rebuild-daily.yml`, to save Actions minutes). In `.github/workflows/refresh.yml`, the daily catch-all run (UTC hour `00`, already publishing every day) also **deploys its gated build when no published data changed**, so the countdown and OG image follow the UK date. 00:17 UTC is after UK midnight in both BST and GMT. Expose the catch-all decision as a `fetch` job output, and widen `deploy`'s condition to include it. Keep everything else as it is (`concurrency: deploy`, the gated `dist/` artifact, commit-then-deploy order). Without JS the date can lag by up to about 1h20 in summer; `Countdown` (T103) corrects it client-side.
+- [x] T106 [US1] ~~Create `data/running/owner/section.yaml`~~ (written early, 2026-10-23: `focus_race: {race_id: brighton-2027, build_start: 2026-09-05, charity: {name: Martlets hospice}}`, `garmin_devices: {scale: Index S2}`, `featured_goal_limit: 7`, other schema defaults, and no `story_link`). Still to do: add a **validate-data warning** in `scripts/validate-data.ts` when the focus race's `target_time` differs from an active, featured `race_time` goal linked to it. This guards US1.2 (3:30 vs 3:20 shown in two places).
+- [x] T107 [US1] OWNER: Supply the Brighton training-build start date. Done 2026-10-18: `build_start: 2026-09-05`, when the Garmin Coach plan started (already in `section.yaml`).
+- [x] T108 [P] [US1] Create `tests/unit/races.test.ts` and `tests/unit/weeks.test.ts`. They cover:
   - 182 days from 2026-10-04 to 2027-04-04
   - the state machine for yesterday, today, tomorrow and `result_ref` (quickstart 7d)
   - week boundaries across BST/GMT
   - a zero-run week
   - a treadmill run counted in the this-week snapshot and the training build (FR-058)
-- [ ] T109 [P] [US1] Create `tests/e2e/landing.spec.ts` and `tests/a11y/landing.spec.ts`. At 360 px they cover:
+- [x] T109 [P] [US1] Create `tests/e2e/landing.spec.ts` and `tests/a11y/landing.spec.ts`. At 360 px they cover:
   - acceptance scenarios US1.1–US1.7, including a stale fixture over 12 h showing the notice, and the story link absent or present
   - the "Treadmill" label on a treadmill latest-run card (T155), with no map
   - Garmin attribution present as placed (T152)

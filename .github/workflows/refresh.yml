@@ -14,6 +14,11 @@
 # (src/worker/refresh-trigger.ts). GitHub's `schedule` dropped slots and left 4-hour gaps
 # (2026-10-18), so it is now only a 6-hourly backup: the guard job skips it while the dispatches
 # arrive, and raises an issue when they stop.
+#
+# The 00:17 UTC run is the daily catch-all (T105, owner pick 2026-10-23): it always publishes, and
+# it deploys its gated build even when no published data changed, so the landing page's countdown,
+# its share image and other date-driven text follow the UK date. 00:17 UTC is after UK midnight in
+# BST and GMT. This replaces a separate rebuild-daily workflow, to save Actions minutes.
 name: Refresh
 
 on:
@@ -115,6 +120,7 @@ jobs:
       issues: write
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
+      daily: ${{ steps.decide.outputs.daily }}
     defaults:
       run:
         working-directory: ingest
@@ -164,7 +170,8 @@ jobs:
       # Publishing is skipped only when this run is provably idle: a clean fetch that archived
       # nothing new, after a refresh that succeeded, outside the daily catch-all (the 00:17 UTC
       # slot, which reprocesses after a processor change even on a day with no new data). Anything
-      # unexpected publishes.
+      # unexpected publishes. `daily` marks the catch-all, whose gated build deploys even when no
+      # published data changed (T105).
       - name: Decide whether to publish
         id: decide
         if: ${{ always() }}
@@ -176,10 +183,13 @@ jobs:
           REIMPORT_FROM: ${{ inputs.reimport_from }}
         run: |
           summary="$RUNNER_TEMP/fetch-summary.json"
+          daily=false
+          if [ "$(date -u +%H)" = 00 ]; then daily=true; fi
+          echo "daily=$daily" >> "$GITHUB_OUTPUT"
           if [ "$EVENT" = push ]; then reason='owner files changed'
           elif [ "$FETCH" != success ]; then reason="the fetch step's outcome was $FETCH"
           elif [ -n "$REIMPORT_FROM" ]; then reason='a re-import'
-          elif [ "$(date -u +%H)" = 00 ]; then reason='the daily catch-all'
+          elif [ "$daily" = true ]; then reason='the daily catch-all'
           elif ! idle=$(jq -r '.outcome == "ok" and .activities.fetched == 0 and .wellness.written == 0' "$summary"); then
             reason="the fetch summary couldn't be read"
           elif [ "$idle" != true ]; then reason='the fetch archived new data or was partial'
@@ -335,13 +345,14 @@ jobs:
             exit 1
           fi
 
-  # Deploys the build the gate passed: after a bot commit, or after an owner-file push to main
-  # (whose data the gate just built, even if no published file changed).
+  # Deploys the build the gate passed: after a bot commit; after an owner-file push to main (whose
+  # data the gate just built, even if no published file changed); or from the daily catch-all, so
+  # date-driven pages (the countdown, the landing share image) follow the UK date (T105).
   deploy:
-    needs: [publish, commit]
+    needs: [fetch, publish, commit]
     if: >-
       ${{ !cancelled() && needs.publish.result == 'success' && (needs.commit.result == 'success' ||
-      (github.event_name == 'push' && needs.commit.result == 'skipped')) }}
+      ((github.event_name == 'push' || needs.fetch.outputs.daily == 'true') && needs.commit.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:

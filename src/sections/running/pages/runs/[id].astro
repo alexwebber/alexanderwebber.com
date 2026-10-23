@@ -1,0 +1,125 @@
+---
+// /running/runs/<run-id>/ (T102, minimal; contracts/routes.md): one run's summary figures, so the
+// landing page's latest-run card and goal efforts link somewhere before US3's full run detail.
+// US3 (T121) extends this file with splits, zones, charts and the rest.
+//
+// Privacy (FR-011, FR-013, Principle VI): the date only, never a start time or time of day; no
+// map, route or location; the title is the published one (neutral, or the owner's), never the
+// provider's free text; the URL holds the opaque public run ID only. Treadmill runs carry the
+// "Treadmill" label (FR-058). Every run page shares one generic share image
+// (/og/running-run.png), so no run data goes into an image and the file count stays bounded.
+// Garmin attribution names the run's own watch (FR-077). No client JS beyond the freshness script.
+import type { GetStaticPaths } from 'astro';
+import { formatDate } from '../../../../shared/format/dates.ts';
+import { formatDuration, formatKm, formatPace } from '../../../../shared/format/units.ts';
+import type { Run } from '../../../../shared/storage/index.ts';
+import SectionLayout from '../../components/SectionLayout.astro';
+import TreadmillBadge from '../../components/TreadmillBadge.astro';
+import { runningStore } from '../../data/load.ts';
+
+export const getStaticPaths = (async () => {
+  const runs = await runningStore().listRuns();
+  return runs.map((run) => ({ params: { id: run.id }, props: { run } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  run: Run;
+}
+
+const { run } = Astro.props;
+const date = formatDate(run.date);
+const figures: { label: string; value: string; key: string }[] = [
+  { key: 'date', label: 'Date', value: date },
+  { key: 'distance', label: 'Distance', value: formatKm(run.distance_m, 2) },
+  { key: 'moving-time', label: 'Moving time', value: formatDuration(run.moving_s) },
+  { key: 'pace', label: 'Average pace', value: formatPace(run.avg_pace_s_per_km) },
+  ...(run.hr ? [{ key: 'avg-hr', label: 'Average heart rate', value: `${Math.round(run.hr.avg)} bpm` }] : []),
+];
+const description =
+  `${run.treadmill ? 'A treadmill run' : run.is_race ? 'A race' : 'A run'} by Alexander Webber on ${date}: ` +
+  `${formatKm(run.distance_m)} in ${formatDuration(run.moving_s)} (${formatPace(run.avg_pace_s_per_km)}).`;
+---
+
+<SectionLayout
+  heading={run.title}
+  title={`${run.title}, ${date} · Running · Alexander Webber`}
+  description={description}
+  image="/og/running-run.png"
+  imageAlt="Alexander Webber's running"
+  garmin={{ device: run.device }}
+>
+  <article class="run-summary" aria-label="Run summary" data-run-id={run.id}>
+    {
+      (run.treadmill || run.is_race) && (
+        <p class="run-labels">
+          {run.treadmill && <TreadmillBadge />}
+          {run.treadmill && run.is_race && ' '}
+          {run.is_race && <span class="race-label">Race</span>}
+        </p>
+      )
+    }
+    <dl class="run-figures">
+      {
+        figures.map((f) => (
+          <div data-figure={f.key}>
+            <dt>{f.label}</dt>
+            <dd>{f.key === 'date' ? <time datetime={run.date}>{f.value}</time> : f.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    {run.note && <p class="run-note">{run.note}</p>}
+  </article>
+</SectionLayout>
+
+<style>
+  .run-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+  }
+
+  .race-label {
+    padding: 0 var(--space-2);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-mark);
+    color: var(--color-accent-strong);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+    line-height: 1.6;
+  }
+
+  .run-figures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0 0 var(--space-5);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  @media (min-width: 40rem) {
+    .run-figures {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .run-figures dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .run-figures dd {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .run-note {
+    margin: 0 0 var(--space-5);
+  }
+</style>

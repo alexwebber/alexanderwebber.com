@@ -29,7 +29,8 @@ fully successful point; `process` writes nothing if any validation fails.
   Jobs: `fetch` (always on Actions; Spike 0 confirmed GitHub-hosted runners reach intervals.icu;
   then `alert` as a step that always runs, even on failure) -> `publish` (`process`, run **gate**;
   if the published tree changed, commit as `github-actions[bot]` to `main`) -> `deploy`
-  (`wrangler deploy`, only if gate passed and something changed or owner files changed). There is
+  (`wrangler deploy`, only if gate passed and something changed, owner files changed, or it is the
+  daily catch-all). There is
   no `FETCH_MODE` and no PC fallback.
   **Idle runs skip `publish`** (2026-10-23, Actions minutes; each job bills at least a minute):
   only when the fetch succeeded with nothing new archived, the last refresh succeeded, it is not an
@@ -43,8 +44,13 @@ fully successful point; `process` writes nothing if any validation fails.
   commit/deploy; live site unchanged (FR-007/070). **pytest/Vitest/Playwright are not in the
   gate**: they run locally, at graduation, and as path-filtered PR jobs in `tests.yml` (adopted by
   the owner on 2026-10-04).
-- **`rebuild-daily.yml`** — crons `5 23 * * *` and `5 0 * * *` (UTC): gate -> deploy, so countdown +
-  OG image reflect the UK date.
+- **Daily deploy** (T105, owner pick 2026-10-23; replaces a planned `rebuild-daily.yml`, to save
+  Actions minutes): the `refresh.yml` daily catch-all (the run starting in UTC hour 00, dispatched
+  at 00:17 UTC, after UK midnight in BST and GMT) always publishes, and its `fetch` job outputs
+  `daily: true`, so `deploy` ships the gated build even when no published data changed. The
+  countdown, the landing share image and other date-driven text follow the UK date without a
+  separate workflow. Without JS the date can lag by up to about 1h20 in summer; the countdown
+  script corrects it client-side.
 - **`quality.yml`** — non-blocking Lighthouse 13.5.0 CLI (mobile, via `scripts/lighthouse-budget.mjs`)
   + axe on key pages, PRs + nightly.
 

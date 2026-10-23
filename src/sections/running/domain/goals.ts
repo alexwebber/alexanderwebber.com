@@ -212,9 +212,17 @@ export function achievedGoals(evaluations: readonly GoalEvaluation[]): GoalEvalu
     .sort((a, b) => b.achievement!.date.localeCompare(a.achievement!.date) || byPriority(a, b));
 }
 
-/** The landing page's featured goals (FR-022): featured and not yet achieved, by priority, up to `limit`. */
+/**
+ * The landing page's featured goals (FR-022): every featured goal, by priority, up to `limit`.
+ * Achieved ones stay while the owner keeps them featured (the achieved 5k is featured as a
+ * milestone, owner 2026-10-23), and show as newly achieved for the highlight window (FR-042).
+ * validate-data counts achieved featured goals toward the limit too.
+ */
 export function featuredGoals(evaluations: readonly GoalEvaluation[], limit: number): GoalEvaluation[] {
-  return activeGoals(evaluations).filter((e) => e.goal.featured).slice(0, limit);
+  return evaluations
+    .filter((e) => e.goal.featured)
+    .sort(byPriority)
+    .slice(0, limit);
 }
 
 /** Whether there is anything to show progress from. */

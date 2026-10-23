@@ -9,16 +9,17 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, afternoon):** Phase 3 (US2 Goals) and the 7-goal follow-up (#34) are
-  merged. The Spec Kit 1.2.3 upgrade is raised as a PR (`speckit-1.2.3`). Refresh runs are
-  green; the one red run (12:41) was a push rejected because PR #31 merged mid-run, as designed.
-  The Cloudflare cron dispatches `refresh.yml` every 2 h.
+- **Status (2026-10-23, evening):** Phase 4 (US1 Landing) is raised as a PR (`001-landing`).
+  Spec Kit 1.2.3 (#35) and the Brighton sub-3:20 target (#36) are merged. The Quality-workflow
+  fix (#37, `001-lighthouse-socket`) is raised; Quality had failed on every PR since #33.
   - **Check first:**
-    - whether the `speckit-1.2.3` PR merged. Phase 4 doesn't depend on it, so carry on either
-      way (branch from `origin/main`).
-    - minutes per day: 500 used at 13:23 UTC on 2026-10-23, and PR #31 merged at 12:43. Expect
-      about 35–40 a day, down from 55. If it's still close to the limit, use the owner's lever
-      order (2026-10-23 decision).
+    - whether `001-landing` and #37 merged, and the PR's checkbox answers. Ask about any left
+      unticked before building on them.
+    - the first 00:17 UTC catch-all after the landing PR merges: its `deploy` job must run even
+      with no data change (T105). Check the run.
+    - **all** workflows on each PR, including the non-required Quality check, not only the gate.
+    - minutes: 530 used at about 14:20 UTC on 2026-10-23 (October should end near 850).
+      If it's close to the limit, use the owner's lever order (2026-10-23 decision).
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -43,12 +44,14 @@ Update this as decisions get made — treat it as the source of truth alongside
     2026-10-23 decision).
   - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
     again in the Cloudflare dashboard.
-- **Next step: Phase 4 (US1 Landing, from T096)** in its own session. It reuses `goals.ts`,
-  `loadGoals(today)` (`src/sections/running/data/goals.ts`), `GoalCard` and `AsOf`.
-  `section.yaml` already exists (T106's data part); T106 still adds the target-time warning.
-  The landing page shows **seven** featured goals (one achieved), so lay the cards out for an
-  odd count. Effort times become run links once T102's run pages ship
-  (`src/sections/running/links.ts`).
+- **Next step: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session, once the
+  landing PR merges.
+  - **T110:** the graduation review: Playwright, axe, the Lighthouse budget (CI only on
+    Windows), privacy scans, an adversarial self-review and the design note
+    `src/sections/running/README.md`.
+  - **T111:** prepare the owner's screen-reader and share-preview steps.
+  - **T112:** go-live needs T004's nameservers first; walk the owner through them. Then raise
+    the intervals.icu supporter tier, and re-check the Garmin brand-guidelines PDF.
   - Offer the owner a fresh Garmin training-status and predictions reading at reviews; never
     ask as a chore.
   - **Don't invent values** (Principle VIII).
@@ -703,7 +706,46 @@ project-specific notes.
   reordered). What reaches us: `-LiteralPath` in the PowerShell prerequisite and task scripts
   (bracketed feature paths). The skills came out unchanged.
 
+- **2026-10-23** — **Phase 4 owner picks** (question round before implement):
+  - **Daily rebuild rides the refresh.** T105 drops the separate `rebuild-daily.yml` (two crons,
+    gate + deploy, about 8–10 minutes a day). The 00:17 UTC catch-all refresh, which already
+    publishes daily, also deploys its gated build when no data changed: about 1–2 minutes a day.
+    00:17 UTC is after UK midnight in BST and GMT. Without JS the countdown can lag by up to
+    about 1h20 in summer; the client-side countdown corrects it.
+  - **Landing goal layout:** one column on phones. Wider, the Brighton goal spans the full width
+    as the lead card, and the other six sit in a 2-column grid.
+- **2026-10-23** — **Phase 4 (US1 Landing) built** (`001-landing` PR; implement subagent about
+  360k tokens). Choices later tasks build on; the owner confirms them in the PR:
+  - **Achieved featured goals stay on the landing page** in priority order (celebratory card);
+    "newly achieved" adds a tint and a "New" badge for 14 days. `featuredGoals()` no longer drops
+    achieved goals.
+  - **Compact landing goal cards:** what's left ("3:00 to go"), now vs target, the Garmin
+    prediction, the bar and the deadline. The progress sentence is screen-reader text only. The
+    Goals page cards are unchanged.
+  - **Training build chart** starts at the first published run when data starts after
+    `build_start`, with a note, rather than drawing zero weeks (until T150's history import).
+  - **Latest-run card** shows the longest run of a multi-run day (runs have no start time), with
+    "One of N runs that day".
+  - **Run pages** (`/running/runs/<id>/`, shared `/og/running-run.png`) sit in the landing area of
+    the route registry until US3's Training area takes them. Registry areas gained optional
+    `description` and `inNav`.
+  - **After race day** the hero drops the Garmin prediction and shows the official time, else the
+    linked run's elapsed time.
+  - **T105:** the refresh's `decide` step outputs `daily=true` in UTC hour 00, and `deploy` also
+    runs when that run's commit was skipped. No new jobs.
+  - **T106 warning** ignores retired and hand-achieved goals.
+  - **Inline spacing:** Astro strips line-break whitespace between inline elements, so explicit
+    `{' '}` spaces were added (also fixing "17 Oct 2026New" on the Goals page).
+
 ## Upstream candidates
+
+- 2026-10-23 — Astro's build strips line-break whitespace between inline elements, so
+  `<span>163</span>` and `<span>days</span>` on separate lines rendered "163days". A test helper
+  that strips tags hid it. Agent tip (Astro): add an explicit `{' '}` between inline elements on
+  separate lines, and assert on text read from a real browser.
+- 2026-10-23 — A whole Astro page can be tested with the container API with only `Date` faked
+  (`vi.useFakeTimers({ toFake: ['Date'] })`), which pins "today" without a test hook in
+  production code. Agent tip (testing date-driven pages).
 
 - 2026-10-23 — On the 1.2.3 upgrade, a text diff of the regenerated `extensions.yml` showed
   whole hook blocks as deleted, because only the key order had changed. Strengthen the

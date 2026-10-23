@@ -13,6 +13,10 @@ export interface RunningArea {
   label: string;
   /** Canonical URL of the area's hub page (trailing slash). */
   href: string;
+  /** One line for the landing page's links to the area (SectionLinks). */
+  description?: string;
+  /** false: the area has no entry in the section nav or the landing links. */
+  inNav?: boolean;
   /** Routes the area owns: Astro route pattern -> page entrypoint. */
   routes: { pattern: string; entrypoint: string }[];
 }
@@ -20,9 +24,23 @@ export interface RunningArea {
 /** The route registry, in nav order. Each user story adds its area when it ships. */
 export const runningAreas: readonly RunningArea[] = [
   {
+    key: 'landing',
+    label: 'Overview',
+    href: '/running/',
+    routes: [
+      { pattern: '/running', entrypoint: './src/sections/running/pages/index.astro' },
+      { pattern: '/og/running.png', entrypoint: './src/sections/running/og/landing.ts' },
+      // Minimal run pages (T102), so the latest-run card and goal efforts link somewhere. They
+      // move to the Training area when US3 ships it, and US3 extends the page.
+      { pattern: '/running/runs/[id]', entrypoint: './src/sections/running/pages/runs/[id].astro' },
+      { pattern: '/og/running-run.png', entrypoint: './src/sections/running/og/run.png.ts' },
+    ],
+  },
+  {
     key: 'goals',
     label: 'Goals',
     href: '/running/goals/',
+    description: 'Everything Alex is working towards, and what he has achieved.',
     routes: [
       { pattern: '/running/goals', entrypoint: './src/sections/running/pages/goals.astro' },
       { pattern: '/og/running-goals.png', entrypoint: './src/sections/running/og/goals.png.ts' },

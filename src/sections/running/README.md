@@ -20,6 +20,20 @@ adds the section to the site.
 - `links.ts`: links to another area (e.g. a run page) only once that area has shipped.
 - Goals (US2): `pages/goals.astro` at `/running/goals/`, `components/GoalCard.astro`,
   `AchievedGoalCard.astro` and `AsOf.astro`, and the share image `og/goals.png.ts`.
+- Landing (US1): `pages/index.astro` at `/running/`, fed by `data/landing.ts` (`loadLanding()`).
+  `components/Hero.astro` (focus race, `Countdown.astro`, target, Garmin prediction, charity, a
+  reserved `fundraising` slot that nothing fills yet, and `TrainingBuild.astro`), the featured
+  goals as compact `GoalCard`/`AchievedGoalCard`s (lead card full width on wide screens),
+  `ThisWeek.astro`, `RunCard.astro`, `StoryLink.astro` and `SectionLinks.astro`. Share image:
+  `og/landing.ts` (`/og/running.png`, "N days to Brighton"). Domain: `domain/races.ts` (the
+  upcoming-race state machine, days remaining, target labels) and `domain/weeks.ts` (this week,
+  the training build, the latest run).
+- Run pages: `pages/runs/[id].astro` (minimal until US3) with `TreadmillBadge.astro`, and the one
+  shared share image `og/run.png.ts` (`/og/running-run.png`). Their routes sit in the landing
+  area of the registry until US3's Training area takes them.
+- Dates: pages are built for today in Europe/London. The 00:17 UTC refresh run deploys every day
+  (T105), so countdowns and "New" badges follow the UK date; `Countdown` corrects the day count
+  in the browser.
 - `integration.ts` also validates all Running data when a build starts, so bad owner data stops
   the build before Astro empties `dist/` (US2.7).
 

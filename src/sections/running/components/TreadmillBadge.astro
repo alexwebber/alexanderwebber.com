@@ -1,0 +1,30 @@
+---
+// The "Treadmill" label (T155, FR-058): shown wherever a run with `treadmill: true` appears (the
+// latest-run card, run pages, and later the run list and race history). A treadmill run's distance
+// is the watch's estimate, so it counts toward totals and the training build but not PBs or
+// race-time goals unless the owner includes it, and it never has a map. The label is text, not
+// colour alone, so it reads the same to everyone and to assistive tech. No client JS.
+---
+
+<span class="treadmill-badge" data-treadmill>
+  <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14">
+    <path d="M2 12h12M3 12l2-7h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+  </svg>
+  Treadmill
+</span>
+
+<style>
+  .treadmill-badge {
+    display: inline-flex;
+    gap: var(--space-1);
+    align-items: center;
+    padding: 0 var(--space-2);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-mark);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+</style>

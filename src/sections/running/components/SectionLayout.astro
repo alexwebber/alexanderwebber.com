@@ -30,7 +30,9 @@ export interface Props {
 
 const { heading, description, image, imageAlt, garmin = false, current } = Astro.props;
 const title = Astro.props.title ?? `${heading} · Running · Alexander Webber`;
-const nav = shippedAreas().map((area) => ({ label: area.label, href: area.href }));
+const nav = shippedAreas()
+  .filter((area) => area.inNav !== false)
+  .map((area) => ({ label: area.label, href: area.href }));
 const freshness = await buildFreshness();
 const attribution = garmin === true ? {} : garmin || undefined;
 ---

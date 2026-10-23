@@ -91,8 +91,8 @@ describe('GoalCard', () => {
     expect(h).toMatch(/<h3 class="goal-card-title" id="goal-g">5k under 20 minutes<\/h3>\s*<p class="garmin-attribution"/);
     expect(h).toContain('role="meter"');
     expect(h).toContain('aria-valuenow="98"');
-    // Run pages haven't shipped yet, so the effort isn't a dead link.
-    expect(h).not.toContain('href="/running/runs/');
+    // Run pages ship with the landing page (T102), so the effort links to its run.
+    expect(h).toContain('<a href="/running/runs/2027-03-05-abcd/">20:25</a>');
   });
 
   it('says "No data yet" instead of a 0% bar, and flags a passed deadline', async () => {
