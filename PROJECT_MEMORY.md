@@ -909,6 +909,14 @@ project-specific notes.
   valid`), so logging them from a publish stage would put unpublished data in public CI logs.
   Generalisation (privacy checks): validators in a privacy-sensitive pipeline report path and rule
   only.
+- 2026-10-23 — The Lighthouse budget script ran Lighthouse with `spawnSync` and then `fetch`ed
+  the page's assets. It passed while only one page existed. From the second page on, it failed
+  in CI with "fetch failed: other side closed": the blocked event loop froze undici's keep-alive
+  timers, so fetch reused a socket the local server had closed after 5 s idle. A non-required
+  check failing on every PR went unnoticed until the owner mentioned the emails. Agent tips:
+  don't block the event loop (`spawnSync`) between `fetch` calls in Node scripts; and a red
+  non-required check is still a failure, so check every workflow's runs on each PR, not just
+  the gate.
 
 ## Open questions
 

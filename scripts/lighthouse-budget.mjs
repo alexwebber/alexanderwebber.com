@@ -12,11 +12,14 @@
 // Page types that don't exist yet (not built, or 404 remotely) are skipped and listed. Results go
 // to stdout, and to the job summary when GITHUB_STEP_SUMMARY is set. Non-blocking: quality.yml
 // runs it, the build gate doesn't.
-import { spawn, spawnSync } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { appendFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { promisify } from 'node:util';
 import { gzipSync } from 'node:zlib';
+
+const execFileAsync = promisify(execFile);
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DIST = join(ROOT, 'dist');
@@ -51,7 +54,7 @@ const PAGE_TYPES = [
 
 async function exists(baseUrl, path, local) {
   if (local) return existsSync(join(DIST, path, 'index.html'));
-  const res = await fetch(new URL(path, baseUrl), { method: 'HEAD', redirect: 'follow' });
+  const res = await fetchRetrying(new URL(path, baseUrl), { method: 'HEAD', redirect: 'follow' });
   return res.ok;
 }
 
@@ -75,11 +78,14 @@ async function startPreview() {
   throw new Error(`astro preview did not start on ${url}`);
 }
 
-function runLighthouse(url) {
+// Asynchronous, so the event loop keeps running during the 10-20 s Lighthouse takes. A blocking
+// spawnSync froze fetch's keep-alive timers, so the next page's first fetch reused a socket the
+// preview server had already closed (5 s idle) and failed with "other side closed".
+async function runLighthouse(url) {
   const dir = mkdtempSync(join(tmpdir(), 'lh-'));
   const out = join(dir, 'report.json');
   try {
-    const res = spawnSync(
+    await execFileAsync(
       'npx',
       [
         'lighthouse',
@@ -90,17 +96,29 @@ function runLighthouse(url) {
         '--chrome-flags=--headless=new --no-sandbox',
         '--quiet',
       ],
-      { cwd: ROOT, encoding: 'utf8' },
-    );
-    if (res.status !== 0) throw new Error(`lighthouse failed for ${url}:\n${res.stderr}`);
+      { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * KB * KB },
+    ).catch((err) => {
+      throw new Error(`lighthouse failed for ${url}:\n${err.stderr ?? err.message}`);
+    });
     return JSON.parse(readFileSync(out, 'utf8'));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
 
+/** fetch, retried on a dropped keep-alive socket (a fresh connection then succeeds). */
+async function fetchRetrying(url, init) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      if (err?.cause?.code !== 'UND_ERR_SOCKET' || attempt === 3) throw err;
+    }
+  }
+}
+
 async function gzipBytes(url) {
-  const res = await fetch(url, { headers: { 'accept-encoding': 'identity' } });
+  const res = await fetchRetrying(url, { headers: { 'accept-encoding': 'identity' } });
   return gzipSync(Buffer.from(await res.arrayBuffer())).length;
 }
 
@@ -174,7 +192,7 @@ try {
       continue;
     }
     const url = new URL(path, baseUrl).href;
-    results.push(await checkPage(page, url, runLighthouse(url)));
+    results.push(await checkPage(page, url, await runLighthouse(url)));
   }
 } finally {
   server?.stop();
