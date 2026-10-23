@@ -201,6 +201,16 @@ describe('edge cases', () => {
     expect(one({ goals: [raceTimeGoal('10k', '10k', '43:00')], runs: [raced], races: [race] }).status).toBe('active');
   });
 
+  it('marks an effort from a run more than 5% longer than its distance as "in a longer run"', () => {
+    const tempo = run('2026-09-10-tttt', [tenK(2760)], { distance_m: 10_740 }); // 10k inside a 10.7 km tempo run
+    const tenKRun = run('2026-09-12-kkkk', [tenK(2700)], { distance_m: 10_300 }); // a 10k attempt, GPS 3% long
+    const index = buildEffortIndex([tempo, tenKRun]);
+    expect(effortsAt(index, 10000).map((e) => [e.run_id, e.inLongerRun])).toEqual([
+      ['2026-09-10-tttt', true],
+      ['2026-09-12-kkkk', undefined],
+    ]);
+  });
+
   it('owner overrides: achieved_override wins; status_override keeps a goal active', () => {
     const fast = run('2027-03-02-ffff', [fiveK(1150)]);
     const manual = one({ goals: [raceTimeGoal('5k', '5k', '20:00', { achieved_override: { date: '2026-06-01', note: 'Official chip time at a race not on Garmin' } })], runs: [fast] });

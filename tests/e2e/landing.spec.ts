@@ -90,9 +90,9 @@ test('US1.1/US1.2: the hero shows the focus race, its date, the days left, its t
   }
   if (focus.target_time) await expect(hero.locator('[data-target]')).toHaveText(`Target: ${targetLabel(focus.target_time)}`);
   await expect(hero.locator('[data-charity]')).toHaveText(`For ${section.focus_race.charity.name}`);
-  // A Garmin prediction always carries its as-of date.
+  // A Garmin prediction always says "if raced today" and carries the date it was read.
   for (const prediction of await hero.locator('[data-prediction]').all()) {
-    await expect(prediction).toContainText(/^Garmin predicts \d{1,2}:\d{2}(:\d{2})? \(as of \d{1,2} [A-Z][a-z]{2} \d{4}\)$/);
+    await expect(prediction).toContainText(/^Garmin: \d{1,2}:\d{2}(:\d{2})? if raced today \(\d{1,2} [A-Z][a-z]{2} \d{4}\)$/);
   }
   // The fundraising place is reserved but shows nothing yet (FR-025).
   await expect(page.getByText(/fundrais|donate/i)).toHaveCount(0);

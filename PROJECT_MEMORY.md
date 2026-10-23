@@ -746,8 +746,26 @@ project-specific notes.
   - **T106 warning** ignores retired and hand-achieved goals.
   - **Inline spacing:** Astro strips line-break whitespace between inline elements, so explicit
     `{' '}` spaces were added (also fixing "17 Oct 2026New" on the Goals page).
+- **2026-10-23** — **First look at the live site** (owner feedback, after #38):
+  - **Garmin's predictions are for today**, not forecasts for race day. They now read
+    "Garmin: 3:25:18 if raced today (23 Oct 2026)" in the hero and goal cards (owner's pick of
+    three wordings); the full goal card's label is "Garmin race predictor".
+  - **Efforts inside a longer run are labelled** "(in a longer run)" when the run is more than 5%
+    longer than the effort's distance (`Effort.inLongerRun`). The owner's 46:00 10k came from a
+    10.74 km tempo run, and they've never attempted a fast 10k. 5% clears normal GPS overrun on a
+    real attempt (1–3%).
+  - **History backfilled now, not after T150.** The half showed 1:47:21 because the site only
+    held runs from 3 Oct 2026; the owner's best is 1:43:52 (5 Apr 2026). Two `refresh.yml`
+    re-imports (2025-10-01 to 2026-04-30, then 2026-05-01 to 2026-10-02) pull everything
+    intervals.icu holds. The Garmin export's older history still follows at T150.
 
 ## Upstream candidates
+
+- 2026-10-23 — The site's run history started on the day the refresh first ran, because the
+  full backfill was held back until a later data import, so the owner's real best half (from
+  April) was missing and the page showed a slower one as "fastest". Generalisation (data
+  pipelines): backfill whatever the provider already holds at launch, and add older history
+  when it arrives, so personal-best views aren't silently wrong in the meantime.
 
 - 2026-10-23 — Two phases of pages (the shared shell, the goals page, the landing page) shipped
   with tests and Lighthouse scores in their PRs, but the owner had never looked at the site
