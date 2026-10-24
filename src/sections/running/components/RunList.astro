@@ -1,0 +1,167 @@
+---
+// The run list (T115; FR-046, US3.5, US3.6): runs newest first, grouped by month, each with its
+// date (never a time of day, FR-011), title (neutral or the owner's), distance, moving time and
+// pace, a "Race" badge and the "Treadmill" label (FR-058), linking to the run's page. A CSS-only
+// "All runs / Races only" toggle stands in for routes.md's ?races=1 on the static site: the races
+// list is pre-rendered beside the full one (a page may pass races from other years too). No
+// client JS. Garmin attribution names the watches behind the list (FR-077).
+import Toggle from '../../../shared/charts/Toggle.astro';
+import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration, formatKm, formatPace } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { runDevices } from '../domain/attribution.ts';
+import { groupByMonth } from '../domain/periods.ts';
+import { runHref } from '../links.ts';
+import GarminAttribution from './GarminAttribution.astro';
+import TreadmillBadge from './TreadmillBadge.astro';
+
+export type ListRun = Pick<Run, 'id' | 'date' | 'title' | 'distance_m' | 'moving_s' | 'avg_pace_s_per_km' | 'treadmill' | 'is_race' | 'device' | 'elevation_gain_m'>;
+
+export interface Props {
+  runs: readonly ListRun[];
+  /** The "Races only" view; defaults to the races among `runs`. */
+  races?: readonly ListRun[];
+  /** Says what the races view covers, e.g. "Races from every year". */
+  racesNote?: string;
+  /** The list's heading. */
+  title: string;
+  heading?: 2 | 3;
+  id?: string;
+}
+
+const { runs, title, racesNote, heading = 2, id = 'run-list' } = Astro.props;
+const races = Astro.props.races ?? runs.filter((r) => r.is_race);
+const Heading = `h${heading}` as const;
+const MonthHeading = `h${heading + 1}` as 'h3' | 'h4';
+const LONG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const monthName = (month: string) => `${LONG_MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`;
+const views = [
+  { key: 'all', label: 'All runs', runs, empty: 'No runs yet.' },
+  { key: 'races', label: 'Races only', runs: races, empty: 'No races yet.' },
+];
+const devices = runDevices([...runs].sort((a, b) => b.date.localeCompare(a.date)));
+---
+
+<section class="run-list" aria-labelledby={id} data-run-list>
+  <Heading id={id}>{title}</Heading>
+  {runs.length > 0 && <GarminAttribution device={devices} />}
+  <Toggle legend="Show" options={views.map((v) => ({ key: v.key, label: v.label }))}>
+    {
+      views.map((view) => (
+        <div slot={view.key} data-view={view.key}>
+          {view.key === 'races' && racesNote && races.length > 0 && <p class="list-note">{racesNote}</p>}
+          {view.runs.length === 0 ? (
+            <p class="list-empty">{view.empty}</p>
+          ) : (
+            groupByMonth(view.runs).map((group) => (
+              <section class="month" aria-labelledby={`${id}-${view.key}-${group.month}`} data-month={group.month}>
+                <MonthHeading class="month-title" id={`${id}-${view.key}-${group.month}`}>
+                  {monthName(group.month)}
+                </MonthHeading>
+                <p class="month-totals">
+                  {count(group.totals.runs, view.key === 'races' ? 'race' : 'run')} · {formatKm(group.totals.distance_m)}
+                </p>
+                <ol class="runs">
+                  {group.runs.map((run) => {
+                    const href = runHref(run.id);
+                    return (
+                      <li class:list={['run-row', { 'is-race': run.is_race }]} data-run-id={run.id}>
+                        <p class="run-row-title">
+                          {href ? <a href={href}>{run.title}</a> : run.title}
+                          {run.is_race && (
+                            <>
+                              {' '}
+                              <span class="race-badge">Race</span>
+                            </>
+                          )}
+                          {run.treadmill && (
+                            <>
+                              {' '}
+                              <TreadmillBadge />
+                            </>
+                          )}
+                        </p>
+                        <p class="run-row-figures">
+                          <time datetime={run.date}>{formatDate(run.date)}</time>{' '}
+                          <span>{formatKm(run.distance_m)}</span>{' '}
+                          <span>{formatDuration(run.moving_s)}</span>{' '}
+                          <span>{formatPace(run.avg_pace_s_per_km)}</span>
+                        </p>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </section>
+            ))
+          )}
+        </div>
+      ))
+    }
+  </Toggle>
+</section>
+
+<style>
+  .list-note,
+  .list-empty {
+    color: var(--color-text-secondary);
+  }
+
+  .month {
+    margin-bottom: var(--space-5);
+  }
+
+  .month-title {
+    margin: 0;
+    font-size: var(--step-1);
+  }
+
+  .month-totals {
+    margin: 0 0 var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .runs {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .run-row {
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .run-row p {
+    margin: 0;
+  }
+
+  .run-row-title {
+    font-weight: var(--weight-bold);
+  }
+
+  .run-row-figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-3);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .run-row-figures > * {
+    white-space: nowrap;
+  }
+
+  .race-badge {
+    padding: 0 var(--space-2);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-mark);
+    color: var(--color-accent-strong);
+    font-size: var(--step--1);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+</style>

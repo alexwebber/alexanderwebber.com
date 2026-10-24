@@ -1,0 +1,69 @@
+---
+// Links to each year's run list (T120; contracts/routes.md /running/training/<year>/), newest
+// first, so every run back to the earliest is reachable (US3.5) while each page stays bounded.
+// The page's own year is marked as the current one. No client JS.
+export interface Props {
+  years: readonly number[];
+  current?: number;
+  label?: string;
+}
+
+const { years, current, label = 'Runs by year' } = Astro.props;
+---
+
+{
+  years.length > 0 && (
+    <nav class="year-links" aria-label={label} data-year-links>
+      <p class="year-links-label" aria-hidden="true">
+        {label}
+      </p>
+      <ul>
+        {years.map((year) => (
+          <li>
+            <a href={`/running/training/${year}/`} aria-current={year === current ? 'page' : undefined}>
+              {year}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .year-links {
+    margin: var(--space-5) 0;
+  }
+
+  .year-links-label {
+    margin: 0 0 var(--space-2);
+    font-weight: var(--weight-bold);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: inline-block;
+    min-width: 3rem;
+    min-height: 1.5rem;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  a[aria-current='page'] {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-surface);
+    font-weight: var(--weight-bold);
+  }
+</style>

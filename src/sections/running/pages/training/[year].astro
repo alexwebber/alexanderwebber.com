@@ -1,0 +1,120 @@
+---
+// /running/training/<year>/ (T120, US3; contracts/routes.md): one year's runs, newest first and
+// grouped by month, with the year's totals and a "Races only" view, and links to the other years.
+// One page per year keeps page weight bounded at thousands of runs (SC-011). Every year page
+// shares one generic share image (/og/running-year.png), so no run data goes into an image.
+// Garmin attribution names the watches behind the year's runs (FR-077). No client JS beyond the
+// freshness script.
+import type { GetStaticPaths } from 'astro';
+import { formatDate } from '../../../../shared/format/dates.ts';
+import { formatDuration, formatKm, formatMetres, formatPace } from '../../../../shared/format/units.ts';
+import type { Run } from '../../../../shared/storage/index.ts';
+import RunList from '../../components/RunList.astro';
+import SectionLayout from '../../components/SectionLayout.astro';
+import YearLinks from '../../components/YearLinks.astro';
+import { loadTraining, runsInYear } from '../../data/training.ts';
+import { runDevices } from '../../domain/attribution.ts';
+import { totals } from '../../domain/periods.ts';
+
+export const getStaticPaths = (async () => {
+  const data = await loadTraining();
+  return data.years.map((year) => ({ params: { year: String(year) }, props: { year, runs: runsInYear(data, year), years: data.years } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  year: number;
+  runs: Run[];
+  years: number[];
+}
+
+const { year, runs, years } = Astro.props;
+const t = totals(runs);
+const devices = runDevices(runs);
+const dates = runs.map((r) => r.date).sort();
+const description = `Alexander Webber's runs in ${year}: ${t.runs} ${t.runs === 1 ? 'run' : 'runs'}, ${formatKm(t.distance_m, 0)}, newest first with every run's detail.`;
+---
+
+<SectionLayout
+  heading={`Training in ${year}`}
+  title={`Training in ${year} · Running · Alexander Webber`}
+  description={description}
+  image="/og/running-year.png"
+  imageAlt="Alexander Webber's training log"
+  garmin={{ device: devices }}
+  current="/running/training/"
+>
+  <p class="breadcrumb"><a href="/running/training/">All training</a></p>
+  <dl class="year-figures" aria-label={`${year} totals`} data-year-totals>
+    <div>
+      <dt>Runs</dt>
+      <dd>{t.runs}</dd>
+    </div>
+    <div>
+      <dt>Distance</dt>
+      <dd>{formatKm(t.distance_m, 0)}</dd>
+    </div>
+    <div>
+      <dt>Moving time</dt>
+      <dd>{formatDuration(t.moving_s)}</dd>
+    </div>
+    <div>
+      <dt>Average pace</dt>
+      <dd>{t.avg_pace_s_per_km !== undefined ? formatPace(t.avg_pace_s_per_km) : 'No runs'}</dd>
+    </div>
+    <div>
+      <dt>Elevation gain</dt>
+      <dd>{t.elevation_gain_m !== undefined ? formatMetres(t.elevation_gain_m) : 'Not recorded'}</dd>
+    </div>
+  </dl>
+  {
+    dates.length > 0 && (
+      <p class="year-span">
+        From <time datetime={dates[0]}>{formatDate(dates[0]!)}</time> to <time datetime={dates.at(-1)}>{formatDate(dates.at(-1)!)}</time>.
+      </p>
+    )
+  }
+  <RunList runs={runs} title={`Runs in ${year}`} />
+  <YearLinks years={years} current={year} label="Other years" />
+</SectionLayout>
+
+<style>
+  .breadcrumb {
+    margin: 0 0 var(--space-4);
+  }
+
+  .year-figures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0 0 var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  @media (min-width: 40rem) {
+    .year-figures {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+
+  .year-figures dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .year-figures dd {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .year-span {
+    margin: 0 0 var(--space-5);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+</style>

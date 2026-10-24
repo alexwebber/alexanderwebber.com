@@ -1,0 +1,126 @@
+---
+// Time in heart-rate zones (T117, T159; owner, 2026-10-24): Garmin's own five zones as the watch
+// recorded them, each with its name, bpm range and time, as on Garmin Connect. Bars are HTML
+// widths (no SVG to stretch), each labelled with its time, so nothing relies on colour; the
+// ChartFigure caption says which zone took most time, and the table has every figure (FR-071).
+// Left out when the run has no Garmin zones (FR-048): there is no fallback to other zone models.
+// Garmin attribution names the run's watch (FR-077). No client JS.
+import ChartFigure from '../../../shared/charts/ChartFigure.astro';
+import { formatDuration, formatPercent } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { zoneRows } from '../domain/run-detail.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  run: Run;
+  heading?: 2 | 3;
+}
+
+const { run, heading = 2 } = Astro.props;
+const zones = zoneRows(run);
+const top = zones.reduce((best, z) => (z.seconds > (best?.seconds ?? -1) ? z : best), zones[0]);
+const range = (z: { low_bpm: number; high_bpm: number }) => `${z.low_bpm}–${z.high_bpm} bpm`;
+const percent = (share: number) => formatPercent(share * 100, 0);
+const summary = top
+  ? `Most time in zone ${top.zone} (${top.name}, ${range(top)}): ${formatDuration(top.seconds)}, ${percent(top.share)} of the time in zones.`
+  : '';
+const longest = Math.max(...zones.map((z) => z.share), 0);
+---
+
+{
+  zones.length > 0 && (
+    <div data-hr-zones>
+      <ChartFigure
+        title="Heart-rate zones"
+        heading={heading}
+        summary={summary}
+        table={{
+          columns: ['Zone', 'Heart rate', 'Time', 'Share'],
+          rows: zones.map((z) => [`${z.zone} ${z.name}`, range(z), formatDuration(z.seconds), percent(z.share)]),
+          summary: 'Show the zone figures',
+        }}
+      >
+        <GarminAttribution slot="source" device={run.device} />
+        <ol class="zones">
+          {[...zones].reverse().map((z) => (
+            <li data-zone={z.zone}>
+              <span class="zone-name">
+                <strong>Zone {z.zone}</strong> {z.name}{' '}
+                <span class="zone-range">{range(z)}</span>
+              </span>
+              <span class="zone-bar">
+                <span class="zone-fill" aria-hidden="true" style={`width: calc((100% - 5.5rem) * ${longest > 0 ? Math.round((z.share / longest) * 1000) / 1000 : 0})`} />
+                <span class="zone-time">
+                  {formatDuration(z.seconds)}{' '}
+                  <span class="zone-share">{percent(z.share)}</span>
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </ChartFigure>
+    </div>
+  )
+}
+
+<style>
+  .zones {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+  }
+
+  .zones li {
+    display: grid;
+    grid-template-columns: minmax(7rem, 2fr) 3fr;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .zone-name {
+    line-height: 1.25;
+  }
+
+  .zone-range {
+    display: block;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  .zone-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .zone-fill {
+    flex: 0 0 auto;
+    height: 0.875rem;
+    border-radius: 0 var(--radius-mark) var(--radius-mark) 0;
+    background: var(--running-series);
+  }
+
+  .zone-time {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .zone-share {
+    color: var(--color-text-secondary);
+  }
+
+  [data-hr-zones] :global(.chart-figure) {
+    margin-bottom: var(--space-5);
+  }
+
+  @media (forced-colors: active) {
+    .zone-fill {
+      background: CanvasText;
+    }
+  }
+</style>

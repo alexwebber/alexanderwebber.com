@@ -1,0 +1,203 @@
+---
+// Training totals (T114; FR-045, US3.1): distance and moving time as columns by week, month or
+// year, switched with a CSS-only toggle, with the run count, distance-weighted average pace and
+// elevation gain as supporting figures, plus all-time totals. It opens on the last 26 weeks;
+// months and years cover all history (owner, 2026-10-24). The current period is drawn in the
+// accent colour and labelled. Each chart's caption carries the key figures and its table has every
+// period with every figure (FR-071), so it all reads without the charts and without JS. Treadmill
+// runs count (FR-058). Garmin attribution names the watches behind the totals (FR-077).
+import BarChart from '../../../shared/charts/BarChart.astro';
+import ChartFigure from '../../../shared/charts/ChartFigure.astro';
+import Toggle from '../../../shared/charts/Toggle.astro';
+import { formatDate, formatDayMonth, formatMonth } from '../../../shared/format/dates.ts';
+import { formatDuration, formatKm, formatMetres, formatPace } from '../../../shared/format/units.ts';
+import type { PeriodKind, PeriodTotals, Summary, Totals } from '../domain/periods.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  summary: Summary;
+  /** The watches behind the runs counted (runDevices()). */
+  devices: readonly string[];
+  heading?: 2 | 3;
+}
+
+const { summary, devices, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+const chartHeading = (heading + 1) as 3 | 4;
+const SubHeading = `h${chartHeading}` as const;
+
+const KINDS: { kind: PeriodKind; label: string; noun: string; current: string; all: string }[] = [
+  { kind: 'week', label: 'Weeks', noun: 'week', current: 'This week', all: `The last ${summary.week.length} weeks` },
+  { kind: 'month', label: 'Months', noun: 'month', current: 'This month', all: 'Every month' },
+  { kind: 'year', label: 'Years', noun: 'year', current: 'This year', all: 'Every year' },
+];
+
+const periodName = (p: PeriodTotals) =>
+  p.kind === 'week' ? `Week of ${formatDate(p.start)}` : p.kind === 'month' ? formatMonth(p.start) : p.start.slice(0, 4);
+const axisLabel = (p: PeriodTotals) => (p.kind === 'week' ? formatDayMonth(p.start) : p.kind === 'month' ? formatMonth(p.start) : p.start.slice(0, 4));
+const km = (value: number) => formatKm(value * 1000, Number.isInteger(value) ? 0 : 1);
+const hours = (value: number) => `${Number.isInteger(value) ? value : value.toFixed(1)} h`;
+const runs = (n: number) => `${n} ${n === 1 ? 'run' : 'runs'}`;
+const pace = (t: Totals) => (t.avg_pace_s_per_km !== undefined ? formatPace(t.avg_pace_s_per_km) : 'No runs');
+const elevation = (t: Totals) => (t.elevation_gain_m !== undefined ? formatMetres(t.elevation_gain_m) : t.runs ? 'Not recorded' : '0 m');
+const totalOf = (periods: readonly PeriodTotals[]) =>
+  periods.reduce((sum, p) => ({ runs: sum.runs + p.runs, distance_m: sum.distance_m + p.distance_m, moving_s: sum.moving_s + p.moving_s }), { runs: 0, distance_m: 0, moving_s: 0 });
+
+const panels = KINDS.map((k) => {
+  const periods = summary[k.kind];
+  const latest = periods.at(-1);
+  const total = totalOf(periods);
+  const distanceSummary = `${k.all}: ${formatKm(total.distance_m)} in ${runs(total.runs)}${latest ? `; ${k.current.toLowerCase()} ${formatKm(latest.distance_m)} so far` : ''}.`;
+  const timeSummary = `${k.all}: ${formatDuration(total.moving_s)} of running${latest ? `; ${k.current.toLowerCase()} ${formatDuration(latest.moving_s)} so far` : ''}.`;
+  return {
+    ...k,
+    periods,
+    latest,
+    distanceSummary,
+    timeSummary,
+    // Weeks label every few columns; months and years have room for more.
+    maxLabels: k.kind === 'year' ? 12 : 6,
+    distanceBars: periods.map((p) => ({ label: axisLabel(p), value: Math.round(p.distance_m / 100) / 10, highlight: p === latest, showValue: p === latest })),
+    timeBars: periods.map((p) => ({ label: axisLabel(p), value: Math.round(p.moving_s / 360) / 10, highlight: p === latest, showValue: p === latest })),
+    table: {
+      columns: [k.noun === 'week' ? 'Week starting' : k.noun === 'month' ? 'Month' : 'Year', 'Runs', 'Distance', 'Moving time', 'Average pace', 'Elevation gain'],
+      rows: [...periods].reverse().map((p) => [k.kind === 'week' ? formatDate(p.start) : periodName(p), p.runs, formatKm(p.distance_m), formatDuration(p.moving_s), pace(p), elevation(p)]),
+      summary: `Show every ${k.noun}'s figures`,
+    },
+  };
+});
+const all = summary.allTime;
+const id = 'training-totals';
+---
+
+<section class="period-totals" aria-labelledby={id} data-period-totals>
+  <Heading id={id}>Totals</Heading>
+  {
+    summary.week.length === 0 ? (
+      <p class="totals-empty">No runs yet.</p>
+    ) : (
+      <Toggle legend="Totals by" options={panels.map((p) => ({ key: p.kind, label: p.label }))} showLegend>
+        {panels.map((p) => (
+          <div slot={p.kind} data-period={p.kind}>
+            {p.latest && (
+              <dl class="period-figures" aria-label={p.current} data-current-period>
+                <div>
+                  <dt>{p.current}</dt>
+                  <dd>{runs(p.latest.runs)}</dd>
+                </div>
+                <div>
+                  <dt>Distance</dt>
+                  <dd>{formatKm(p.latest.distance_m)}</dd>
+                </div>
+                <div>
+                  <dt>Moving time</dt>
+                  <dd>{formatDuration(p.latest.moving_s)}</dd>
+                </div>
+                <div>
+                  <dt>Average pace</dt>
+                  <dd>{pace(p.latest)}</dd>
+                </div>
+                <div>
+                  <dt>Elevation gain</dt>
+                  <dd>{elevation(p.latest)}</dd>
+                </div>
+              </dl>
+            )}
+            <ChartFigure title={`Distance by ${p.noun}`} heading={chartHeading} summary={p.distanceSummary} table={p.table}>
+              <GarminAttribution slot="source" device={devices} />
+              <BarChart title={`Distance by ${p.noun}`} desc={p.distanceSummary} bars={p.distanceBars} format={km} color="var(--running-series)" maxLabels={p.maxLabels} />
+            </ChartFigure>
+            <ChartFigure
+              title={`Moving time by ${p.noun}`}
+              heading={chartHeading}
+              summary={p.timeSummary}
+              table={{ columns: [p.table.columns[0]!, 'Moving time'], rows: p.table.rows.map((r) => [r[0]!, r[3]!]), summary: `Show every ${p.noun}'s time` }}
+            >
+              <GarminAttribution slot="source" device={devices} />
+              <BarChart title={`Moving time by ${p.noun}`} desc={p.timeSummary} bars={p.timeBars} format={hours} color="var(--running-series)" maxLabels={p.maxLabels} />
+            </ChartFigure>
+          </div>
+        ))}
+      </Toggle>
+    )
+  }
+  {
+    all.runs > 0 && (
+      <div class="all-time" data-all-time>
+        <SubHeading class="all-time-title">All time</SubHeading>
+        <p class="all-time-since">
+          Since <time datetime={all.first}>{formatDate(all.first!)}</time>
+        </p>
+        <dl class="period-figures">
+          <div>
+            <dt>Runs</dt>
+            <dd>{all.runs}</dd>
+          </div>
+          <div>
+            <dt>Distance</dt>
+            <dd>{formatKm(all.distance_m, 0)}</dd>
+          </div>
+          <div>
+            <dt>Moving time</dt>
+            <dd>{formatDuration(all.moving_s)}</dd>
+          </div>
+          <div>
+            <dt>Average pace</dt>
+            <dd>{pace(all)}</dd>
+          </div>
+          <div>
+            <dt>Elevation gain</dt>
+            <dd>{elevation(all)}</dd>
+          </div>
+        </dl>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .totals-empty {
+    color: var(--color-text-secondary);
+  }
+
+  .period-figures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  @media (min-width: 40rem) {
+    .period-figures {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+
+  .period-figures dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .period-figures dd {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .all-time-title {
+    margin-bottom: 0;
+    font-size: var(--step-1);
+  }
+
+  .all-time-since {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+</style>

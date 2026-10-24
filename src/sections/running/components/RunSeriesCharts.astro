@@ -1,0 +1,93 @@
+---
+// A run's charts (T119, FR-047, FR-013; owner, 2026-10-24): pace, heart rate, elevation, cadence
+// and power across the run, against distance by default, with a CSS-only switch to elapsed time.
+// Never clock time: a published run has no time of day to plot. Each chart is left out when its
+// series wasn't recorded (FR-048), and the whole block when none was. Every chart sits in a
+// ChartFigure with its key message in words and its data as a table: the mean in each kilometre
+// (or each 5 minutes on the time axis), widened for long runs (FR-071). Pace plots with faster
+// higher, against the run's average as a dashed line. Garmin attribution names the run's watch
+// at each chart (FR-077). No client JS.
+import ChartFigure from '../../../shared/charts/ChartFigure.astro';
+import Toggle from '../../../shared/charts/Toggle.astro';
+import XYChart from '../../../shared/charts/XYChart.astro';
+import { formatDuration } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { axisEnd, axisValues, formatAxisTime, seriesCharts, tableRows, timeTicks, type Axis } from '../domain/run-detail.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  run: Run;
+  heading?: 2 | 3;
+}
+
+const { run, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+const chartHeading = (heading + 1) as 3 | 4;
+const charts = seriesCharts(run);
+const id = `charts-${run.id}`;
+const km = (v: number) => `${Number.isInteger(v) ? v : v.toFixed(1)} km`;
+
+const axes: { axis: Axis; label: string; xs: number[]; formatX: (v: number) => string; ticks?: number[]; at: (v: number) => string; column: string }[] = [
+  { axis: 'distance', label: 'Distance', xs: axisValues(run, 'distance'), formatX: km, at: (v) => v.toFixed(Number.isInteger(v) ? 0 : 2), column: 'Km' },
+  {
+    axis: 'time',
+    label: 'Time',
+    xs: axisValues(run, 'time'),
+    formatX: formatAxisTime,
+    ticks: timeTicks(Math.max(0, ...run.series.x_elapsed_s)),
+    at: (v) => formatDuration(v),
+    column: 'Elapsed time',
+  },
+];
+---
+
+{
+  charts.length > 0 && (
+    <section class="run-panel run-charts" aria-labelledby={id} data-run-charts>
+      <Heading id={id}>Through the run</Heading>
+      <Toggle legend="Plot against" options={axes.map((a) => ({ key: a.axis, label: a.label }))} showLegend>
+        {axes.map((a) => (
+          <div slot={a.axis} data-axis={a.axis}>
+            {charts.map((c) => (
+              <div data-series={c.key}>
+                <ChartFigure
+                  title={c.title}
+                  heading={chartHeading}
+                  summary={c.summary}
+                  table={{
+                    columns: [a.column, c.column],
+                    rows: tableRows(a.xs, c.values, a.axis, axisEnd(run, a.axis)).map((r) => [a.at(r.at), c.format(r.value)]),
+                    summary: a.axis === 'distance' ? 'Show the figures per km' : 'Show the figures by time',
+                  }}
+                >
+                  <GarminAttribution slot="source" device={run.device} />
+                  <XYChart
+                    title={`${c.title} against ${a.axis === 'distance' ? 'distance' : 'elapsed time'}`}
+                    desc={c.summary}
+                    points={a.xs.map((x, i) => ({ x, y: c.values[i] ?? null }))}
+                    format={c.format}
+                    formatX={a.formatX}
+                    {...(a.ticks ? { xTicks: a.ticks } : {})}
+                    {...(c.domain ? { domain: c.domain } : {})}
+                    invert={c.invert}
+                    {...(c.average !== undefined ? { reference: { value: c.average, label: `Avg ${c.format(c.average)}` } } : {})}
+                  />
+                </ChartFigure>
+              </div>
+            ))}
+          </div>
+        ))}
+      </Toggle>
+    </section>
+  )
+}
+
+<style>
+  .run-charts :global(.chart-figure) {
+    margin-bottom: var(--space-4);
+  }
+
+  .run-charts :global(.chart-figure-title) {
+    font-size: var(--step-0);
+  }
+</style>

@@ -1,0 +1,48 @@
+---
+// /running/training/ (T120, US3; contracts/routes.md): training totals by week, month and year
+// plus all time, then the latest year's runs (the current year's, once it has any) with a
+// "Races only" view of races from every year, and links to every year's list. Year pages keep
+// each page bounded at thousands of runs (SC-011). Treadmill runs count and are labelled (FR-058).
+// Evaluated at build time for today in Europe/London; the daily deploy keeps "this week" current.
+// Garmin attribution names the watches behind the totals (FR-077). No client JS beyond the
+// freshness script.
+import { ogPath } from '../../../shared/og/render.ts';
+import { formatKm } from '../../../shared/format/units.ts';
+import PeriodTotals from '../components/PeriodTotals.astro';
+import RunList from '../components/RunList.astro';
+import SectionLayout from '../components/SectionLayout.astro';
+import YearLinks from '../components/YearLinks.astro';
+import { loadTraining, runsInYear } from '../data/training.ts';
+
+const PATH = '/running/training/';
+const data = await loadTraining();
+const { summary, years } = data;
+const year = years[0];
+const yearRuns = year === undefined ? [] : runsInYear(data, year);
+const all = summary.allTime;
+const description =
+  all.runs > 0
+    ? `Alexander Webber's training: ${all.runs} runs and ${formatKm(all.distance_m, 0)} since ${all.first?.slice(0, 4)}, by week, month and year, and every run in detail.`
+    : "Alexander Webber's training: totals by week, month and year, and every run in detail.";
+---
+
+<SectionLayout
+  heading="Training"
+  description={description}
+  image={ogPath(PATH)}
+  imageAlt="Alexander Webber's training"
+  garmin={all.runs > 0 ? { device: data.devices } : false}
+>
+  <PeriodTotals summary={summary} devices={data.devices} />
+  {
+    year !== undefined && (
+      <RunList
+        runs={yearRuns}
+        races={data.races}
+        racesNote="Races from every year."
+        title={`Runs in ${year}`}
+      />
+    )
+  }
+  <YearLinks years={years} />
+</SectionLayout>

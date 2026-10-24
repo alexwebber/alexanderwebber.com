@@ -1,0 +1,68 @@
+---
+// Running dynamics and power (T118, FR-047, FR-048): cadence, stride length, power, ground contact
+// time and balance, vertical oscillation and vertical ratio. Each is left out when the watch
+// didn't record it, never shown as 0, and with none at all the panel isn't rendered (US3.4).
+// Garmin attribution names the run's watch at the panel heading (FR-077). No client JS.
+import type { Run } from '../../../shared/storage/index.ts';
+import { dynamicsFigures } from '../domain/run-detail.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  run: Run;
+  heading?: 2 | 3;
+}
+
+const { run, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+const figures = dynamicsFigures(run);
+const id = `dynamics-${run.id}`;
+---
+
+{
+  figures.length > 0 && (
+    <section class="run-panel" aria-labelledby={id} data-run-dynamics>
+      <Heading id={id}>Running dynamics</Heading>
+      <GarminAttribution device={run.device} />
+      <dl class="dynamics">
+        {figures.map((f) => (
+          <div data-figure={f.key}>
+            <dt>{f.label}</dt>
+            <dd>{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
+<style>
+  .dynamics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: var(--space-3) 0 0;
+  }
+
+  @media (min-width: 40rem) {
+    .dynamics {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .dynamics dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  /* "50.3% L / 49.7% R" needs the row on a phone */
+  .dynamics [data-figure='gct-balance'] {
+    grid-column: span 2;
+  }
+
+  .dynamics dd {
+    margin: 0;
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+</style>
