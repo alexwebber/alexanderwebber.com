@@ -9,6 +9,12 @@
 //   node scripts/lighthouse-budget.mjs                        # against astro preview of dist/
 //   node scripts/lighthouse-budget.mjs --base-url=https://... # against a deployed site
 //
+// A page under the performance budget is measured twice more and judged on the median run, because
+// scores on a shared 2-core CI runner are noisy. On PR #46 the first two pages measured lost 1-23
+// points (all of it total blocking time) while the same build scored 100 locally and against
+// production on the same runner; the likeliest cause is the just-started preview server still
+// competing for the CPU.
+//
 // Page types that don't exist yet (not built, or 404 remotely) are skipped and listed. Results go
 // to stdout, and to the job summary when GITHUB_STEP_SUMMARY is set. Non-blocking: quality.yml
 // runs it, the build gate doesn't.
@@ -188,7 +194,7 @@ function report(results, skipped) {
     '|---|---|---|---|---|---|---|---|',
     ...results.map(
       (r) =>
-        `| ${r.type} (\`${new URL(r.url).pathname}\`) | ${r.perf} | ${r.a11y} | ${(r.lcp / 1000).toFixed(2)} s | ` +
+        `| ${r.type} (\`${new URL(r.url).pathname}\`) | ${r.perf}${r.scores ? ` (median of ${r.scores.join(', ')})` : ''} | ${r.a11y} | ${(r.lcp / 1000).toFixed(2)} s | ` +
         `${(r.js / KB).toFixed(1)} KB | ${(r.total / KB).toFixed(1)} KB | ${r.thirdParty} | ` +
         `${r.failures.length === 0 ? 'pass' : `**fail**: ${r.failures.join('; ')}`} |`,
     ),
@@ -217,7 +223,14 @@ try {
       continue;
     }
     const url = new URL(path, baseUrl).href;
-    results.push(await checkPage(page, url, await runLighthouse(url)));
+    let result = await checkPage(page, url, await runLighthouse(url));
+    if (result.perf < BUDGET.performance) {
+      const runs = [result];
+      for (let i = 0; i < 2; i++) runs.push(await checkPage(page, url, await runLighthouse(url)));
+      const scores = runs.map((r) => r.perf);
+      result = { ...runs.toSorted((a, b) => a.perf - b.perf)[1], scores };
+    }
+    results.push(result);
   }
 } finally {
   server?.stop();

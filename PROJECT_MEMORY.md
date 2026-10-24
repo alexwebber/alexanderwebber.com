@@ -843,8 +843,22 @@ project-specific notes.
   - **Lighthouse budget runs locally** on Windows now (bins run with `node`, not `npx`).
   - **Playwright needs `SHELL_PREVIEW=1`** in the build it tests, as `tests.yml` does; a
     deploy build fails the 28 shell-preview cases.
+- **2026-10-24** — **The Lighthouse budget judges a miss on the median of three runs**
+  (`001-landing-perf` PR). After #46, the PR check's landing page scored 87, 77 and 84, all of it
+  total blocking time, with no script files on the page. The same build scored 100 locally (even
+  on Node 22.23.4 and at 12x CPU slowdown) and against production on the same runner. The build
+  output was byte-identical under Astro 7.4.0 and 7.4.2, and the runner image wasn't the cause.
+  Only the first pages measured dipped, so the likeliest cause is the 2-core private-repo runner
+  sharing its CPU with the just-started preview server. A page under budget is now measured twice
+  more, and failures name the metrics behind them.
 
 ## Upstream candidates
+
+- 2026-10-24 — A Lighthouse budget run once per page in CI failed a page that scored 100 locally
+  and in production; only the first pages measured on the 2-core runner dipped. Agent tip (CI
+  performance budgets): judge a miss on the median of three runs (Lighthouse's own advice), print
+  the metric breakdown on failure, and when a score drops, compare the same runner against
+  production before suspecting the code.
 
 - 2026-10-23 — Two Claude sessions shared one checkout. The new session switched branches while
   the old one was still finishing a follow-up on a merged PR, so the old one committed into the
