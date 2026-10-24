@@ -1,0 +1,8 @@
+training_status:
+  - { as_of: 2026-04-02, status: maintaining }
+  - { as_of: 2026-07-14, status: productive, note: After a training block }
+  - { as_of: 2026-10-20, status: peaking }
+race_predictions:
+  - { as_of: 2026-04-02, 5k: "21:40", 10k: "45:10", half: "1:41:30", marathon: "3:38:00" }
+  - { as_of: 2026-07-14, 5k: "20:55", 10k: "43:40", half: "1:37:10", marathon: "3:29:30" }
+  - { as_of: 2026-10-20, 5k: "20:10", 10k: "42:05", half: "1:33:40" }

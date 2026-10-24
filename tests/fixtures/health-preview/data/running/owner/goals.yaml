@@ -1,0 +1,5 @@
+- { id: seaside-sub-3-20, type: race_time, title: Seaside Marathon under 3:20, priority: 1, featured: true, linked_race: seaside-2027, target: { distance: marathon, time: "3:20:00" } }
+- { id: 10k-sub-43, type: race_time, title: 10k under 43 minutes, priority: 2, featured: true, target: { distance: 10k, time: "43:00" } }
+- { id: weight-90, type: body_composition, title: Weight 90 kg, priority: 3, featured: true, created: 2025-04-01, start_value: 112.0, start_date: 2025-03-01, all_time_start: { value: 118.4, date: 2022-01-10 }, target: { metric: weight_kg, value: 90, direction: at_most } }
+- { id: body-fat-18, type: body_composition, title: Body fat 18%, priority: 4, featured: true, created: 2025-04-01, target: { metric: body_fat_pct, value: 18, direction: at_most } }
+- { id: vo2max-56, type: metric, title: VO2 max 56, priority: 5, featured: true, created: 2025-04-01, target: { metric: vo2max, value: 56, direction: at_least } }
