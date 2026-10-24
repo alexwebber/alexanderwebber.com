@@ -62,9 +62,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
   model when the owner is unhappy with an output. A canary costs 2–3.5× the step, and the
   agent can't see the owner's remaining plan usage. So trying each new model once per step type
-  and sampling about 1 in 4 high-value steps happen only if this project opts in. The agent asks
-  for a usage screenshot before big spends (e.g. a canary or `/speckit-implement`). Results,
-  including token cost, are logged in `canaries.md`. The judge is never one of the candidate
+  and sampling about 1 in 4 high-value steps happen only if this project opts in. The owner says
+  when usage is running low; the agent doesn't ask for usage screenshots. Results, including
+  token cost, are logged in `canaries.md`. The judge is never one of the candidate
   models. Norm changes are proposed only once a pattern holds.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
