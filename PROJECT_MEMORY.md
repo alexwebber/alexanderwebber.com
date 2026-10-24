@@ -949,6 +949,14 @@ project-specific notes.
   not Garmin's original, and it drops Garmin-only messages such as `time_in_zone` (216). Use
   `/activity/{id}/file` for the original. Agent tip (intervals.icu): archive the original, and
   check which endpoint a "FIT" download really is before relying on device-specific messages.
+- 2026-10-24 — The common `.visually-hidden:not(:focus):not(:active)` rule (meant for skip
+  links) reveals a hidden radio when its label is clicked, since the radio takes focus. A
+  native radio popped into CSS-only toggles and shifted the options. Locally it went unnoticed
+  (the subagent ran only one Playwright project). On CI's 360 px project with different fonts,
+  the shift moved the next option from under the pointer ("fieldset intercepts pointer events",
+  about 165 retries). Agent tips (UI, testing): always hide `input.visually-hidden`, even when
+  focused; run every Playwright project locally before a PR; when a CI click retries on
+  "intercepts pointer events", look for a layout shift, not slowness.
 - 2026-10-24 — `fitparse` (last release 2020) reads message 216 as `unknown_216` with no fields;
   Garmin's own `garmin-fit-sdk` decodes it. Agent tip (FIT files): use Garmin's SDK for newer
   messages.
