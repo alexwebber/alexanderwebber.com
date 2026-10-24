@@ -917,6 +917,37 @@ project-specific notes.
   - **Best efforts in each run** are shown on its page (an approved addition to FR-047; T160).
   - **Training hub** opens on weekly totals for the last 26 weeks.
 
+- **2026-10-24** — **Phase 6 (US3 Training and run detail) built** (`001-training` branch;
+  implement subagent). Choices later tasks build on; the owner confirms them in the PR:
+  - **Garmin's own HR zones (T159).** Fetch archives the watch's original upload
+    (`/activity/{id}/file`) as `original.fit` (gzip or one-file zip unwrapped; a non-FIT original
+    counts as absent). The normaliser reads the session `time_in_zone` message with
+    `garmin-fit-sdk` 21.218.0: zone *k* spans boundary *k-1* to *k*, time below zone 1 is left out
+    (Garmin Connect's chart starts at zone 1) and time above the top boundary counts in zone 5.
+    No original or no message means no zones; intervals.icu's zone times are never used.
+    Decoding costs about 0.2 s a run, so a full reprocess of 200 runs adds about 40 s.
+    `PROCESSOR_VERSION` 4.
+  - **Bundle layouts.** `fetch.json` now records the adapter's bundle layout (2 = with
+    `original.fit`). A refresh tops up unchanged bundles in its window with just the new parts,
+    and `fetch --missing-only` (refresh.yml input `missing_only`, with `reimport_from`) does it
+    over any window with one call per run, instead of a full re-import.
+  - **Schema transition.** `hr_zones` is now `{zone, name, low_bpm, high_bpm, seconds}` (five
+    entries). The schema keeps the old `{zone, seconds}` shape as a deprecated branch, because
+    `main`'s published runs use it until the first refresh after merge republishes them; remove
+    the branch once no published run has it.
+  - **Training hub** opens on the last 26 weeks (weeks start at the first run when history is
+    shorter); months and years cover all history; distance and moving time are both charted.
+    The list shows the latest year's runs; "Races only" lists races from every year. Year pages
+    hold each year's runs.
+  - **Run page:** summary, then charts (pace, HR, elevation, cadence, power) against distance
+    with a CSS-only switch to elapsed time, zones, splits, best efforts (plausible only), dynamics.
+    Pace, cadence and power charts draw the 2nd–98th percentile range, so stops don't flatten
+    them; tables give per-km (or per-5-minute) means. Cadence reads "spm", never "steps" (the
+    privacy scan treats "<n> steps" on a page as a step count).
+  - **Shared plumbing:** `Toggle.astro` (a positional CSS-only switch for up to four views) and
+    `XYChart.astro` (a numeric x axis), both in `src/shared/charts/`.
+  - **Scale (T124):** 5,000 synthetic runs build in 48 s to 5,032 files; every page scores 100.
+
 ## Upstream candidates
 
 - 2026-10-24 — intervals.icu's `/activity/{id}/fit-file` is a FIT file intervals.icu generates,
@@ -937,6 +968,15 @@ project-specific notes.
   (a branch workflow) for injected scripts, and turn RUM off explicitly in *Speed →
   Observatory* if the site promises no third-party requests. Run production budget checks from
   a non-EU location.
+
+- 2026-10-24 — When an ingest adapter adds a raw part, version the bundle layout in each item's
+  fetch marker and let the fetch stage top up older items with just the new parts. A full
+  re-import of history would have re-fetched five parts per run; the top-up is one call per run
+  (about 7 minutes for 200 runs instead of an hour of Actions minutes). Agent tip (pipelines).
+- 2026-10-24 — Git Bash: with `MSYS_NO_PATHCONV=1` (needed to pass `/running/...` URL paths to
+  node), a `/c/Users/...` argument reaches node unconverted and resolves to `C:\c\Users\...`,
+  so a script wrote its output into a stray `C:\c\` tree. Pass Windows-style `C:/...` paths
+  whenever path conversion is off. Agent tip (Windows).
 
 ## Open questions
 

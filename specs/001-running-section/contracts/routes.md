@@ -7,9 +7,9 @@ Section integration injects these routes (Running owns them; site home only link
 | `/` | Site home | - | Leads to `/running/` until CV/Blog exist |
 | `/running/` | Landing: focus-race hero, featured goals, this week, latest run, section links, reserved fundraising slot | US1 | Daily rebuild; hero follows the upcoming-race state (upcoming / race day / awaiting result / completed); story link only when `story_link` is set in `section.yaml` |
 | `/running/goals/` | Active goals + achieved list | US2 | |
-| `/running/training/` | Period totals (week/month/year/all) + run list (`?races=1` filter via pre-rendered races list) | US3 | Grouped by month; paged by year for 5,000 runs |
+| `/running/training/` | Period totals (week/month/year/all) + run list (`?races=1` filter via pre-rendered races list) | US3 | Opens on the last 26 weeks; months and years cover all history (owner, 2026-10-24). The list is the latest year's runs, grouped by month, with a CSS-only "Races only" view of races from every year; paged by year for 5,000 runs. Share image `/og/running-training.png` |
 | `/running/training/<year>/` | Run list for a year | US3 | Keeps page weight bounded |
-| `/running/runs/<run-id>/` | Run detail | US3 | `<run-id>` = opaque `YYYY-MM-DD-xxxx`; **no provider (intervals.icu/Garmin) ID**, start time, map or location anywhere in URL or HTML; treadmill runs labelled |
+| `/running/runs/<run-id>/` | Run detail: summary, charts against distance or elapsed time (CSS-only switch), Garmin HR zones, splits, best efforts in the run, running dynamics | US3 | `<run-id>` = opaque `YYYY-MM-DD-xxxx`; **no provider (intervals.icu/Garmin) ID**, start time, map or location anywhere in URL or HTML; treadmill runs labelled |
 | `/running/races/` | Race history, PB table, upcoming races | US4 | |
 | `/running/races/<slug>/` | Race detail: result, map (static SVG + click-to-load), run detail, photos | US4 | `<slug>` = owner slug, else the run ID (`YYYY-MM-DD-xxxx`) |
 | `/running/health/` | VO2 max, fitness/fatigue/form (intervals.icu model), Garmin training status + predictions ("as of" owner entries), RHR, HRV, weight avg, body fat, lab markers | US5 | Range toggle 3 months/1 year/all |
