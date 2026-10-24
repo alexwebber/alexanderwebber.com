@@ -85,35 +85,30 @@
   "hr_zones": [
     {
       "zone": 1,
-      "name": "Warm Up",
       "low_bpm": 96,
       "high_bpm": 115,
       "seconds": 60
     },
     {
       "zone": 2,
-      "name": "Easy",
       "low_bpm": 115,
       "high_bpm": 134,
       "seconds": 4000
     },
     {
       "zone": 3,
-      "name": "Aerobic",
       "low_bpm": 134,
       "high_bpm": 153,
       "seconds": 0
     },
     {
       "zone": 4,
-      "name": "Threshold",
       "low_bpm": 153,
       "high_bpm": 172,
       "seconds": 0
     },
     {
       "zone": 5,
-      "name": "Maximum",
       "low_bpm": 172,
       "high_bpm": 191,
       "seconds": 0

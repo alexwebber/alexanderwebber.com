@@ -5,7 +5,7 @@
   "type": "road",
   "treadmill": false,
   "is_race": false,
-  "title": "Run \u00b7 8.2 km",
+  "title": "Run · 8.2 km",
   "distance_m": 8234.5,
   "moving_s": 2580,
   "elapsed_s": 2650,
@@ -47,27 +47,27 @@
   "hr_zones": [
     {
       "zone": 1,
-      "name": "Warm Up",
+      "low_bpm": 88,
       "seconds": 60
     },
     {
       "zone": 2,
-      "name": "Easy",
+      "low_bpm": 105,
       "seconds": 60
     },
     {
       "zone": 3,
-      "name": "Aerobic",
+      "low_bpm": 122,
       "seconds": 60
     },
     {
       "zone": 4,
-      "name": "Threshold",
+      "low_bpm": 139,
       "seconds": 60
     },
     {
       "zone": 5,
-      "name": "Maximum",
+      "low_bpm": 156,
       "seconds": 60
     }
   ]

@@ -381,10 +381,7 @@ def test_an_original_fit_topped_up_later_adds_garmin_zones(run, published, fille
     again = run(now=LATER)
     assert again.runs.written == 1 and again.runs.unchanged == 5
     zones = runs(published)[run_id]["hr_zones"]
-    assert [(z["zone"], z["name"], z["low_bpm"], z["high_bpm"]) for z in zones][2] == (
-        3,
-        "Aerobic",
-        123,
-        140,
-    )
+    assert [(z["zone"], z["low_bpm"], z["high_bpm"]) for z in zones][2] == (3, 123, 140)
+    # No "name" key: scan-privacy reserves it for provider titles, so the site names zones itself.
+    assert all("name" not in z for z in zones)
     assert [z["seconds"] for z in zones] == [2, 44, 1393, 1532, 0]

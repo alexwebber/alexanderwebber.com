@@ -943,7 +943,21 @@ project-specific notes.
     `XYChart.astro` (a numeric x axis), both in `src/shared/charts/`.
   - **Scale (T124):** 5,000 synthetic runs build in 48 s to 5,032 files; every page scores 100.
 
+- **2026-10-24** — **Zone names aren't published** (`001-zone-names` PR). After #52 merged,
+  the first publish with Garmin zones failed the gate: `scan-privacy` rejects any `name` key in
+  a published run (reserved for provider titles), and each zone carried `name: "Warm Up"`. The
+  gate held, so nothing bad deployed. Published zones are now `{zone, low_bpm, high_bpm,
+  seconds}`, the site names zones from their number, and `PROCESSOR_VERSION` is 5. The backfill
+  (`reimport_from=2025-10-01`, `missing_only`) hit the 25-minute fetch limit after topping up
+  about 151 runs; a second run tops up the rest (finished ones are skipped).
+
 ## Upstream candidates
+
+- 2026-10-24 — A new published field passed every local check, but its first real publish
+  failed the gate's privacy scan (a `name` key). Locally, the published data still had the old
+  shape, so the scan never saw the new field. Agent tip (pipelines): when a change adds fields to
+  published data, put a sample of the new shape into a real data file temporarily and run the
+  full gate (validate, build, scan-privacy) before the PR.
 
 - 2026-10-24 — intervals.icu's `/activity/{id}/fit-file` is a FIT file intervals.icu generates,
   not Garmin's original, and it drops Garmin-only messages such as `time_in_zone` (216). Use

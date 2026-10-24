@@ -96,18 +96,19 @@ def test_out_of_range_values_are_left_out_rather_than_failing():
     assert run["dynamics"] == {"gct_ms": 240.0}
 
 
-def test_garmin_zones_publish_their_name_range_and_whole_seconds():
+def test_garmin_zones_publish_their_range_and_whole_seconds_but_no_name():
     run = valid(
         sanitise_run(activity(hr_zones=garmin_zones((2.4, 44.0, 1392.998, 1531.8, 0))), run_id=RUN)
     )
     assert run["hr_zones"][2] == {
         "zone": 3,
-        "name": "Aerobic",
         "low_bpm": 123,
         "high_bpm": 140,
         "seconds": 1393,
     }
     assert [z["seconds"] for z in run["hr_zones"]] == [2, 44, 1393, 1532, 0]
+    # scan-privacy rejects any "name" key in a published run; the site names zones by number.
+    assert all("name" not in z for z in run["hr_zones"])
 
 
 def test_one_out_of_range_zone_leaves_the_breakdown_out():

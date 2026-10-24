@@ -14,11 +14,11 @@ beforeAll(async () => {
 });
 
 const ZONES = [
-  { zone: 1, name: 'Warm Up', low_bpm: 88, high_bpm: 105, seconds: 2 },
-  { zone: 2, name: 'Easy', low_bpm: 105, high_bpm: 123, seconds: 44 },
-  { zone: 3, name: 'Aerobic', low_bpm: 123, high_bpm: 140, seconds: 1393 },
-  { zone: 4, name: 'Threshold', low_bpm: 140, high_bpm: 158, seconds: 1532 },
-  { zone: 5, name: 'Maximum', low_bpm: 158, high_bpm: 175, seconds: 0 },
+  { zone: 1, low_bpm: 88, high_bpm: 105, seconds: 2 },
+  { zone: 2, low_bpm: 105, high_bpm: 123, seconds: 44 },
+  { zone: 3, low_bpm: 123, high_bpm: 140, seconds: 1393 },
+  { zone: 4, low_bpm: 140, high_bpm: 158, seconds: 1532 },
+  { zone: 5, low_bpm: 158, high_bpm: 175, seconds: 0 },
 ];
 
 /** A 10.07 km run like the 23 Oct 2026 check run, with every panel's data. */
@@ -88,7 +88,9 @@ describe('run detail domain', () => {
   });
 
   it("shows Garmin's five zones only, never the old intervals.icu shape", () => {
-    expect(zoneRows(fullRun()).map((z) => [z.zone, z.name, z.low_bpm, z.high_bpm, z.seconds])).toEqual(ZONES.map((z) => [z.zone, z.name, z.low_bpm, z.high_bpm, z.seconds]));
+    expect(zoneRows(fullRun()).map((z) => [z.zone, z.name, z.low_bpm, z.high_bpm, z.seconds])).toEqual(
+      ZONES.map((z, i) => [z.zone, ['Warm Up', 'Easy', 'Aerobic', 'Threshold', 'Maximum'][i], z.low_bpm, z.high_bpm, z.seconds]),
+    );
     expect(zoneRows(fullRun()).reduce((sum, z) => sum + z.share, 0)).toBeCloseTo(1, 9);
     const legacy = [1, 2, 3, 4, 5, 6, 7].map((zone) => ({ zone, seconds: 100 }));
     expect(zoneRows(fullRun({ hr_zones: legacy }))).toEqual([]);
