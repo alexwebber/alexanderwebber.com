@@ -9,20 +9,13 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, morning):** #47 merged and deployed (all workflows green). T004 is done:
-  the Cloudflare zone is active with its certificate, the www → root redirect rule is deployed
-  and Always Use HTTPS is on. **Open for the owner: the go-live PR** (`001-go-live`, T112, with
-  T111's steps and the intervals.icu supporter question in its body). **Next: Phase 6 (US3
-  Training stats and run detail)**, in a new session.
+- **Status (2026-10-24, morning):** **the site is live on alexanderwebber.com** (#48), and
+  Phase 5 is complete (T110–T112, T004). **Open for the owner: the `001-go-live-done` docs PR**
+  (T111/T112 ticked, the intervals.icu supporter cost). **Next: Phase 6 (US3 Training stats and
+  run detail)**, in a new session.
   - **Check first:**
-    - that the go-live PR merged and its deploy job is green. If the deploy failed on
-      permissions, add Zone · DNS · Edit to the "Edit Cloudflare Workers" token (the API
-      reference says Workers Scripts Write is enough, so it shouldn't).
-    - live checks, if this session didn't already do them: `https://alexanderwebber.com/running/`
-      is 200, `https://www.alexanderwebber.com/running/?x=1` is a 301 to the apex with `?x=1`,
-      `http://` upgrades to `https://`, `/running/api/freshness` answers, and the attribution
-      shows. Then tick T111 (once the owner reports their checks) and T112 in tasks.md, and
-      record the supporter answer (plan.md *Recurring costs* if adopted).
+    - that the docs PR merged. It changes no pages, so there's nothing to view.
+    - that the nightly Quality run (now against `https://alexanderwebber.com/`) is green.
     - T105's no-change path: still unseen (the 00:17 UTC run on 24 Oct had new data). Find a
       00:xx UTC refresh run whose `commit` job printed "Nothing to commit." (grep the log
       without the script's `[36;1m` lines) and check its `deploy` job ran. If none ever does,
@@ -864,6 +857,15 @@ project-specific notes.
     it isn't indexed as a second copy.
   - **Garmin brand PDF read in full** (it downloads fine locally): still V 6.30.2025 and one page.
     It matches the excerpts the attribution was built from, and the live pages follow it.
+- **2026-10-24** — **Live on alexanderwebber.com** (#48 merged). The existing token attached
+  both custom domains (no DNS permission needed). Live checks passed: apex 200, `www` 301 to the
+  apex with the query string, `http://` to HTTPS, freshness endpoint, Garmin attribution. The
+  owner's screen-reader and share-preview checks (T111) were fine.
+  - **intervals.icu supporter:** the owner subscribed, **£9 every 3 months** (about £36 a year),
+    now in plan.md *Recurring costs*. It's support for the service; the site doesn't depend on
+    supporter features.
+  - **Phase 5 is complete** (T110–T112): the Running MVP (goals and landing) has graduated and
+    is live.
 
 ## Upstream candidates
 
@@ -1184,10 +1186,6 @@ project-specific notes.
   Prefer running self-contained slices (spikes, scaffold, review passes) as cloud sessions
   until the credits are used or expire. `remote` subagent isolation fell back to local on
   2026-10-17, so it doesn't spend them.
-- intervals.icu's $4/month supporter tier adds nothing the site needs (its extras are Strava
-  imports, plan building and UI features), so the owner stays on the free tier for now. At
-  go-live (T112) the agent raises it again. The owner intends to become a supporter once the
-  live integration works (decided 2026-10-17).
 - JustGiving integration details (public API access/terms vs page scraping, what's displayable)
   → research in the fundraising spec.
 - VO2 max target value and Brighton training-build start date → owner supplies when goals are

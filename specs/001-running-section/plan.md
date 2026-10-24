@@ -103,8 +103,8 @@ Spike 1 verifies the limit. This holds only because **training runs share one ge
 GitHub Actions free minutes (private repo: ~2,000 min/month — the 2-hourly job is ~2-4 min
 => ~1,000-1,400 min/month; **verify**; public repo would be unlimited); domain renewal at
 Namecheap (existing); OpenFreeMap tiles free (optional GitHub Sponsors donation is the owner's
-call); intervals.icu free tier (the $4/month supporter tier adds nothing the site needs; the
-owner intends to become a supporter once the live integration works, raised at go-live, T112).
+call); **intervals.icu supporter, £9 every 3 months (about £36 a year)**, adopted by the owner at
+go-live (2026-10-24, T112) to support the service; it adds nothing the site depends on.
 No paid service is required. Worst case if free limits are exceeded: Workers Paid $5/month, R2
 cents. Raw FIT files archived per run stay well inside R2's 10 GB free tier at 5,000 runs.
 
@@ -133,7 +133,7 @@ file-count limit (Spike 1). The TypeScript pin is settled (6.0.3).
 | SEO & social previews | PASS | Per-page title/description, OG images via satori+sharp (unique for landing, hub pages and each race; one shared card for training runs/year lists), sitemap (`@astrojs/sitemap` 3.7.4) |
 | Graceful degradation | PASS | See V; interactive map/charts are enhancements |
 | Visualisations first | PASS | Hero countdown, progress bars, SVG charts lead pages |
-| Tech constraints | PASS | Astro on Cloudflare; Python ingest via the intervals.icu API (technology constraints per constitution v1.0.1 (2026-10-17)); GitHub Actions scheduling; costs noted ($0; intervals.icu supporter tier optional, revisited at go-live) |
+| Tech constraints | PASS | Astro on Cloudflare; Python ingest via the intervals.icu API (technology constraints per constitution v1.0.1 (2026-10-17)); GitHub Actions scheduling; costs noted ($0 for the site; the owner's intervals.icu supporter subscription, £9 a quarter, since go-live) |
 | Build gate from day one | PASS | `gate` job = **site build** (`astro check` + `astro build`) + **data-schema validation** (published + owner, incl. referential checks), with the privacy scan, image scan and section-boundary check as validation steps; must pass before bot commit and before deploy; deploy is a gated job, not Cloudflare's auto-build. Test suites are **not** in the gate |
 | Broader CI deferred | PASS | pytest/Vitest/Playwright suites run locally and at graduation, plus path-filtered PR test jobs (`tests.yml`, owner-adopted 2026-10-04 as a partial BACKLOG "Broader CI" revisit); full lint on every change stays deferred |
 
