@@ -9,24 +9,26 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, early):** #46 (T110) merged and deployed. The 00:17 UTC run on 24 Oct
-  deployed (countdown 162 days), but it had new data, so T105's no-change deploy path is still
-  unseen live. **Open for the owner: #47** (landing performance: `Countdown` does nothing on the
-  build's own day, and Lighthouse misses are judged on a median of three). **Next: go-live (T004,
-  T111, T112)**, in a new session.
+- **Status (2026-10-24, morning):** #47 merged and deployed (all workflows green). T004 is done:
+  the Cloudflare zone is active with its certificate, the www → root redirect rule is deployed
+  and Always Use HTTPS is on. **Open for the owner: the go-live PR** (`001-go-live`, T112, with
+  T111's steps and the intervals.icu supporter question in its body). **Next: Phase 6 (US3
+  Training stats and run detail)**, in a new session.
   - **Check first:**
-    - that #47 merged and deployed, with **all** its workflows green (Quality too). Ask about
-      any unticked confirmation.
-    - T105's no-change path: find a 00:xx UTC refresh run whose `commit` job printed "Nothing to
-      commit." and check its `deploy` job ran. If none ever does, that's fine; say so once.
-    - minutes: 761 used by 01:45 UTC on 2026-10-24. October should end under 1,000. If it's
-      close to the limit, use the owner's lever order (2026-10-23 decision).
-  - **Go-live order:** walk the owner through T004 (nameservers to Cloudflare; values in the
-    Cloudflare dashboard), wait for it to go active, then T112 (custom domain + `www` redirect in
-    `wrangler.jsonc`, HTTPS, freshness endpoint, attribution, re-read the Garmin brand PDF) and
-    T111 (prepare the owner's screen-reader and two-app share-preview steps for the go-live PR;
-    previews only work once the domain is live). Raise the intervals.icu supporter tier as a
-    checkbox in that PR.
+    - that the go-live PR merged and its deploy job is green. If the deploy failed on
+      permissions, add Zone · DNS · Edit to the "Edit Cloudflare Workers" token (the API
+      reference says Workers Scripts Write is enough, so it shouldn't).
+    - live checks, if this session didn't already do them: `https://alexanderwebber.com/running/`
+      is 200, `https://www.alexanderwebber.com/running/?x=1` is a 301 to the apex with `?x=1`,
+      `http://` upgrades to `https://`, `/running/api/freshness` answers, and the attribution
+      shows. Then tick T111 (once the owner reports their checks) and T112 in tasks.md, and
+      record the supporter answer (plan.md *Recurring costs* if adopted).
+    - T105's no-change path: still unseen (the 00:17 UTC run on 24 Oct had new data). Find a
+      00:xx UTC refresh run whose `commit` job printed "Nothing to commit." (grep the log
+      without the script's `[36;1m` lines) and check its `deploy` job ran. If none ever does,
+      that's fine; say so once.
+    - minutes: 789 used by 07:00 UTC on 2026-10-24. October should end around 1,150–1,250. If
+      it's close to the limit, use the owner's lever order (2026-10-23 decision).
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
   - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
@@ -45,24 +47,17 @@ Update this as decisions get made — treat it as the source of truth alongside
     before PR #31. Billing check 2026-10-23: everything is $0. Cloudflare R2 and Workers are far
     inside their free tiers, and Workers is on the Free plan.
 - **Owner setup done:** T001 (R2 + `R2_*`), T002 (Cloudflare token and account), the
-  intervals.icu key, the `alexanderwebber` workers.dev subdomain, and the `gh` `user` scope.
-  T003 is dropped.
-- **Still with the owner:**
-  - **T004 (nameservers):** the agent walks them through it.
-  - **Setup values file:** `C:\temp\2.txt` is already deleted. T004's nameservers can be read
-    again in the Cloudflare dashboard.
-- **Next step: Phase 5 (MVP graduation and go-live, T110–T112)** in its own session. History is
-  complete from 7 Oct 2025 (T150 and T085 done).
+  intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
+  T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
+  quickstart.md §0.
+- **Next step: Phase 6 (US3 Training stats and run detail, tasks.md)** in its own session,
+  starting with a short guided look at the live domain and a question round on what the owner
+  wants from the Training pages. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
-  - **Guided site review: done** (2026-10-23; see the decisions log). Seven landing goals stay.
-  - **T110:** the graduation review: Playwright, axe, the Lighthouse budget (CI only on
-    Windows), privacy scans, an adversarial self-review and the design note
-    `src/sections/running/README.md`.
-  - **T111:** prepare the owner's screen-reader and share-preview steps.
-  - **T112:** go-live needs T004's nameservers first; walk the owner through them. Then raise
-    the intervals.icu supporter tier, and re-check the Garmin brand-guidelines PDF.
+  - **Run pages** currently sit in the landing area of the route registry; US3's Training area
+    takes them (decisions log, Phase 4).
   - Offer the owner a fresh Garmin training-status and predictions reading at reviews; never
     ask as a chore.
   - **Don't invent values** (Principle VIII).
@@ -860,9 +855,9 @@ project-specific notes.
   - **AI crawlers allowed** (owner pick): search, agent and training bots are all "Allow", with
     Bot Preference Sync on. Everything on the site is public by design, and being known to AI
     models can help the CV and blog be found. It can be changed any time in the zone.
-  - **`www` → apex** is a zone Redirect Rule ("www to root", 301, query string kept), set in the
-    dashboard. Cloudflare's docs recommend it, because a Worker custom domain only answers on its
-    exact hostname. `www` is also a custom domain, so it still serves the site if the rule is
+  - **`www` → apex** is the zone's "Redirect from WWW to root" template rule (301, query string
+    kept), set in the dashboard. Cloudflare's docs recommend a redirect rule, because a Worker
+    custom domain only answers on its exact hostname. `www` is also a custom domain, so it still serves the site if the rule is
     ever lost. *Always Use HTTPS* is on. These dashboard-only settings are listed in
     quickstart.md §0.
   - **workers.dev stays up** as a fallback address. Every page's canonical URL is the domain, so
@@ -877,8 +872,9 @@ project-specific notes.
   needed carrying over and DNSSEC was off. Then it confirmed the change at the TLD server
   (`nslookup -type=NS <domain> a.gtld-servers.net`), not a public resolver, which keeps the old
   answer for up to 48 h. Cloudflare's current flow is *Add a domain → Connect a domain* (not
-  Transfer). A CI token made from the Workers template may lack the zone permissions a custom
-  domain needs (Workers Routes and DNS Edit), so check it before the merge deploys. Agent tip
+  Transfer). Search results said a Worker custom domain also needs DNS Edit on the CI token, but
+  the API reference lists only Workers Scripts Write; check the endpoint's own permissions
+  before widening a token. Agent tip
   (go-live): do those read-only checks before the owner touches the registrar, and walk them
   through it screen by screen.
 

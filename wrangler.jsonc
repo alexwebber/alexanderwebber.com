@@ -10,7 +10,7 @@
     "binding": "ASSETS"
   },
   // The live site. Deploy creates both hostnames' DNS records. www is redirected to the apex by
-  // the zone's "www to root" Redirect Rule (dashboard), which runs before the Worker; the custom
+  // the zone's "Redirect from WWW to root" rule (dashboard), which runs before the Worker; the custom
   // domain keeps www serving the site if that rule is ever lost.
   "routes": [
     { "pattern": "alexanderwebber.com", "custom_domain": true },

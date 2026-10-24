@@ -17,10 +17,11 @@ plan.md; the agent runs them (owner only supplies the few account actions flagge
   - Done (2026-10-24): the `alexanderwebber.com` nameservers moved from Namecheap to Cloudflare
     (`nikon`/`pam.ns.cloudflare.com`; the zone is on the Free plan, AI crawlers allowed, DNSSEC
     off). The domain stays registered at Namecheap. Dashboard-only settings on the zone (not in
-    git): the Redirect Rule "www to root" (`https://www.alexanderwebber.com/*` → 301
-    `https://alexanderwebber.com/${1}`, query string kept) and *SSL/TLS → Always Use HTTPS*.
-    `CLOUDFLARE_API_TOKEN` also has Zone · Workers Routes · Edit and Zone · DNS · Edit on the
-    zone, because `wrangler deploy` creates the custom domains' DNS records.
+    git): the Redirect Rule "Redirect from WWW to root [Template]" (`https://www.*` → 301
+    `https://${1}`, query string kept) and *SSL/TLS → Always Use HTTPS*.
+    `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template, All zones) needed no change:
+    attaching a custom domain needs only Workers Scripts Write, and Cloudflare creates the DNS
+    records itself.
   - The Garmin data export was audited instead of imported (T150, 2026-10-23).
   - Nothing is committed. There are no Garmin credentials or tokens anywhere.
 
