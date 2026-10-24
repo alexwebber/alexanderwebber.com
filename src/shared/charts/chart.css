@@ -78,6 +78,21 @@
   stroke-linecap: round;
 }
 
+/* Daily readings under an average line: faint, small, round (zero-length round-capped segments
+   with non-scaling strokes, so they stay circles on the stretched plot). */
+.chart-dots {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.4;
+}
+
+/* A shaded range, e.g. a baseline: a wash of the series hue, never a solid block. */
+.chart-band {
+  opacity: 0.12;
+  stroke: none;
+}
+
 .chart-x {
   position: relative;
   grid-column: 2;
@@ -154,6 +169,29 @@
   transform: translate(calc(-100% - 8px), -50%);
 }
 
+/* A reference marker (e.g. a lab result): a diamond in the reference ink, so it never reads as a
+   series' own dot. */
+.chart-marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  transform: rotate(45deg);
+  background: var(--chart-reference);
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.chart-marker::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+.chart-marker-label {
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
 .chart-legend {
   grid-column: 2;
   grid-row: 3;
@@ -176,12 +214,106 @@
   background: var(--key-color);
 }
 
+.chart-legend li.is-dots::before {
+  width: 6px;
+  height: 6px;
+  margin-inline: 5px calc(var(--space-2) + 5px);
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.chart-legend li.is-band::before {
+  height: 0.75rem;
+  opacity: 0.25;
+}
+
 @media (forced-colors: active) {
-  .chart-line {
+  .chart-line,
+  .chart-dots {
     stroke: CanvasText;
   }
 
-  .chart-dot {
+  .chart-dot,
+  .chart-marker {
     background: CanvasText;
   }
+}
+
+/* ChartFigure (T074): the card a chart sits in, its caption and its data table. Global rather than
+   scoped, so the table's many cells don't each carry a scoped-style attribute. */
+.chart-figure {
+  margin: 0 0 var(--space-6);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+@media (min-width: 40rem) {
+  .chart-figure {
+    padding: var(--space-4);
+  }
+}
+
+.chart-figure figcaption {
+  margin-bottom: var(--space-3);
+}
+
+.chart-figure-title {
+  margin: 0;
+  font-size: var(--step-1);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.chart-figure-source {
+  margin-top: var(--space-1);
+  font-size: var(--step--1);
+  color: var(--color-text-secondary);
+}
+
+.chart-figure-summary {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.chart-figure-data summary {
+  min-height: 1.5rem;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.chart-figure .table-scroll {
+  max-height: 24rem;
+  margin-top: var(--space-2);
+  overflow: auto;
+}
+
+.chart-figure table {
+  width: 100%;
+  margin: 0;
+  font-size: var(--step--1);
+}
+
+.chart-figure th,
+.chart-figure td {
+  padding: var(--space-1) var(--space-3) var(--space-1) 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.chart-figure th:first-child {
+  text-align: left;
+}
+
+.chart-figure thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.chart-figure tbody th {
+  font-weight: normal;
 }

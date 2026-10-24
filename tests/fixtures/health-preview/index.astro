@@ -1,0 +1,13 @@
+---
+// /health-preview/ (SHELL_PREVIEW=1 only): the health page over synthetic data, through the real
+// HealthPage, for tests/e2e/health.spec.ts and tests/a11y/health.spec.ts: lab markers and
+// comparisons, the race-prediction trend, the training-status history and an HRV baseline band,
+// none of which the owner's data has yet.
+import HealthPage from '../../../src/sections/running/components/HealthPage.astro';
+import { loadHealth } from '../../../src/sections/running/data/health.ts';
+import { PREVIEW_TODAY, previewStore } from './store.ts';
+
+const data = await loadHealth(PREVIEW_TODAY, previewStore);
+---
+
+<HealthPage data={data} image="/og/running-health.png" title="Health preview (synthetic data)" />

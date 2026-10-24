@@ -1,0 +1,110 @@
+---
+// Fitness, fatigue and form (T156; FR-060): intervals.icu's model, labelled as such, never as
+// Garmin's training load. Fitness (CTL) and fatigue (ATL) share one chart (same units); form
+// (fitness minus fatigue, derived at build) has its own below, so no chart needs two y scales.
+// Fitness and fatigue converge at the right edge, so their latest values sit in the legend
+// rather than as colliding end labels. The chart starts 42 days after intervals.icu's history
+// does, with a note why (owner, 2026-10-24). Attribution: "Derived in part from Garmin
+// device-sourced data" (FR-077, Garmin's wording for derived data).
+import ChartFigure from '../../../shared/charts/ChartFigure.astro';
+import LineChart from '../../../shared/charts/LineChart.astro';
+import RangeToggle from '../../../shared/charts/RangeToggle.astro';
+import { formatDate } from '../../../shared/format/dates.ts';
+import { FITNESS_MODEL_LABEL, chartRanges, fitnessNote, inRange, latest, startingFrom, type FitnessPoint } from '../domain/health.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  points: readonly FitnessPoint[];
+  start: { historyStart: string; chartStart: string } | undefined;
+  today: string;
+}
+
+const { points: all, start, today } = Astro.props;
+const points = startingFrom(all, start?.chartStart);
+const ranges = chartRanges(points[0]?.date, today);
+const one = (v: number) => new Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v).replace('-', '−');
+const whole = (v: number) => String(Math.round(v)).replace('-', '−');
+const now = latest(points);
+const WORDS = { '3m': 'last 3 months', '1y': 'last year', all: 'all time' } as const;
+const fitness = points.map((p) => ({ date: p.date, value: p.fitness }));
+const fatigue = points.map((p) => ({ date: p.date, value: p.fatigue }));
+const form = points.map((p) => ({ date: p.date, value: p.form }));
+const summary = now
+  ? `Fitness ${one(now.fitness)}, fatigue ${one(now.fatigue)} and form ${one(now.form)} on ${formatDate(now.date)}.`
+  : 'No data yet.';
+
+function desc(series: { date: string; value: number }[], name: string, from: string, to: string): string {
+  const shown = inRange(series, from, to);
+  const first = shown[0];
+  const last = shown.at(-1);
+  return first && last ? `${name} from ${one(first.value)} on ${formatDate(first.date)} to ${one(last.value)} on ${formatDate(last.date)}.` : 'No data in this range.';
+}
+---
+
+<ChartFigure
+  title="Fitness, fatigue and form"
+  heading={2}
+  id="fitness-figure"
+  summary={summary}
+  table={{ columns: ['Date', 'Fitness', 'Fatigue', 'Form'], rows: [...points].reverse().map((p) => [formatDate(p.date), one(p.fitness), one(p.fatigue), one(p.form)]) }}
+>
+  <GarminAttribution slot="source" derived />
+  <p class="fitness-model" data-fitness-model>
+    Fitness (CTL), fatigue (ATL) and form (fitness minus fatigue) from training load, in {FITNESS_MODEL_LABEL}.
+  </p>
+  {
+    ranges.length === 0 ? (
+      <p data-metric-empty>No data yet.</p>
+    ) : (
+      <RangeToggle legend="Fitness chart range" ranges={ranges.map((r) => r.key)} id="fitness-range">
+        {ranges.map((r) => (
+          <div slot={r.key} data-fitness-range={r.key}>
+            <LineChart
+              id={`fitness-${r.key}`}
+              title={`Fitness and fatigue, ${WORDS[r.key]}`}
+              desc={`${desc(fitness, 'Fitness', r.from, r.to)} ${desc(fatigue, 'Fatigue', r.from, r.to)}`}
+              series={[
+                { label: 'Fitness', points: fitness, color: 'var(--series-1)' },
+                { label: 'Fatigue', points: fatigue, color: 'var(--series-2)' },
+              ]}
+              format={whole}
+              endLabels={false}
+              from={r.from}
+              to={r.to}
+            />
+            <p class="fitness-form-title" aria-hidden="true">Form</p>
+            <LineChart
+              id={`form-${r.key}`}
+              title={`Form, ${WORDS[r.key]}`}
+              desc={desc(form, 'Form', r.from, r.to)}
+              series={[{ label: 'Form', points: form, color: 'var(--series-3)' }]}
+              format={whole}
+              target={{ value: 0, label: 'Form 0' }}
+              from={r.from}
+              to={r.to}
+            />
+          </div>
+        ))}
+      </RangeToggle>
+    )
+  }
+  {start && <p class="fitness-note" data-fitness-note>{fitnessNote(start)}</p>}
+</ChartFigure>
+
+<style>
+  .fitness-model,
+  .fitness-note {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-secondary);
+  }
+
+  .fitness-form-title {
+    margin: var(--space-3) 0 var(--space-1);
+    font-weight: var(--weight-bold);
+  }
+
+  [data-fitness-range] :global(.line-chart:last-child) {
+    --chart-height: 8rem;
+    --chart-height-wide: 10rem;
+  }
+</style>

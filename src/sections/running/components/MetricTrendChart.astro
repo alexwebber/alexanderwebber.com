@@ -1,0 +1,95 @@
+---
+// One health metric's trend (T139; FR-060–FR-063, FR-065, FR-068, FR-071): a ChartFigure holding a
+// RangeToggle of LineCharts (3 months, 1 year, all time; opens on 1 year), with the target line,
+// labelled lab markers ("DEXA scan", "Lab test") and the data table. Build-time only, no chart JS.
+//
+// Slots: "lead" = headline figures above the chart (the "now" value, the change since the start);
+// default = anything under the chart (notes, LabComparison); "source" = Garmin attribution at the
+// chart's title (FR-077).
+import ChartFigure, { type ChartTable } from '../../../shared/charts/ChartFigure.astro';
+import LineChart, { type BandPoint, type LineSeries } from '../../../shared/charts/LineChart.astro';
+import RangeToggle from '../../../shared/charts/RangeToggle.astro';
+import { formatDate } from '../../../shared/format/dates.ts';
+import { chartRanges, describeTrend, inRange, type DatedValue } from '../domain/health.ts';
+
+export interface Props {
+  title: string;
+  /** The key message in words (ChartFigure summary). */
+  summary?: string;
+  heading?: 2 | 3;
+  /** Stable id stem for the figure, range control and charts. */
+  id: string;
+  /** Full history, oldest first; ranges are cut from it. */
+  series: readonly LineSeries[];
+  /** Which series the text alternative describes (default: the last, e.g. the average line). */
+  describe?: number;
+  format: (value: number) => string;
+  target?: { value: number; label: string };
+  markers?: readonly { date: string; value: number; label: string }[];
+  band?: { label: string; points: readonly BandPoint[] };
+  endLabels?: boolean;
+  /** Europe/London today: every range ends here. */
+  today: string;
+  table?: ChartTable;
+  /** Words when there is nothing to chart yet. */
+  empty?: string;
+}
+
+const { title, summary, heading = 2, id, series, format, target, markers = [], band, endLabels = true, today, table, empty = 'No readings yet.' } = Astro.props;
+const first = series
+  .flatMap((s) => s.points.filter((p) => p.value !== null).map((p) => p.date))
+  .concat(markers.map((m) => m.date))
+  .sort()[0];
+const ranges = chartRanges(first, today);
+const primary = series[Astro.props.describe ?? series.length - 1];
+const RANGE_WORDS = { '3m': 'last 3 months', '1y': 'last year', all: 'all time' } as const;
+
+function desc(from: string, to: string): string {
+  const points = inRange((primary?.points ?? []).filter((p): p is DatedValue => p.value !== null), from, to);
+  const parts = [describeTrend(points, format)];
+  if (target) parts.push(`${target.label}.`);
+  const labs = markers.filter((m) => m.date >= from && m.date <= to);
+  if (labs.length) parts.push(labs.map((m) => `${m.label} ${format(m.value)} on ${formatDate(m.date)}`).join('; ') + '.');
+  return parts.join(' ');
+}
+---
+
+<ChartFigure title={title} summary={summary} heading={heading} table={table} id={`${id}-figure`}>
+  <slot name="source" slot="source" />
+  {Astro.slots.has('lead') && <div class="metric-lead"><slot name="lead" /></div>}
+  {
+    ranges.length === 0 ? (
+      <p class="metric-empty" data-metric-empty>{empty}</p>
+    ) : (
+      <RangeToggle legend={`${title} chart range`} ranges={ranges.map((r) => r.key)} id={`${id}-range`}>
+        {ranges.map((r) => (
+          <LineChart
+            slot={r.key}
+            id={`${id}-${r.key}`}
+            title={`${title}, ${RANGE_WORDS[r.key]}`}
+            desc={desc(r.from, r.to)}
+            series={series}
+            format={format}
+            target={target}
+            markers={markers}
+            band={band}
+            endLabels={endLabels}
+            from={r.from}
+            to={r.to}
+          />
+        ))}
+      </RangeToggle>
+    )
+  }
+  <slot />
+</ChartFigure>
+
+<style>
+  .metric-lead {
+    margin-bottom: var(--space-3);
+  }
+
+  .metric-empty {
+    color: var(--color-text-secondary);
+  }
+</style>

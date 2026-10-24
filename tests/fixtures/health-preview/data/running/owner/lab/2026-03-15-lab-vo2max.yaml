@@ -1,0 +1,4 @@
+date: 2026-03-15
+type: lab_vo2max
+provider: Example Sports Lab
+values: { vo2max: 51.0 }

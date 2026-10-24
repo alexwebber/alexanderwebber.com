@@ -1,0 +1,13 @@
+---
+// /running/health/ (T141, US5; contracts/routes.md): weight, body fat, VO2 max, Garmin's race
+// predictions and training status, fitness/fatigue/form, resting HR and HRV, with targets and lab
+// markers. Evaluated at build time for today in Europe/London. See HealthPage.astro. No client JS
+// beyond the freshness script.
+import { ogPath } from '../../../shared/og/render.ts';
+import HealthPage from '../components/HealthPage.astro';
+import { loadHealth } from '../data/health.ts';
+
+const data = await loadHealth();
+---
+
+<HealthPage data={data} image={ogPath('/running/health/')} />

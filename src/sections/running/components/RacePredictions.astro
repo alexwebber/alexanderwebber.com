@@ -1,0 +1,136 @@
+---
+// Garmin's race predictions beside their goals (T140; FR-060, FR-069, US5.1; owner 2026-10-24):
+// all four distances, each with the owner's latest entry "as of" its date (AsOf), the race-time
+// goal at that distance ("Goal sub-3:20", or "achieved" with its date) and, where the goal links
+// a race, that race and its date (Brighton for the marathon). Garmin's predictor is for current
+// fitness, not a race-day forecast. Once there are two or more dated entries, each distance with
+// two or more gets its trend chart (one chart per distance: the times differ too much for one
+// axis). Plain "Garmin" attribution: the owner reads these in Garmin Connect (FR-077).
+import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
+import type { PredictionRow } from '../domain/health.ts';
+import AsOf from './AsOf.astro';
+import GarminAttribution from './GarminAttribution.astro';
+import MetricTrendChart from './MetricTrendChart.astro';
+
+export interface Props {
+  rows: readonly PredictionRow[];
+  /** Dated entries (any distance); the trend shows from two. */
+  entries: number;
+  today: string;
+}
+
+const { rows, entries, today } = Astro.props;
+const trends = entries >= 2 ? rows.filter((row) => row.history.length >= 2) : [];
+const recorded = rows.some((row) => row.latest);
+---
+
+<section class="race-predictions" data-race-predictions aria-labelledby="race-predictions-heading">
+  <h2 id="race-predictions-heading">Garmin race predictions</h2>
+  {recorded && <GarminAttribution />}
+  <p class="race-predictions-intro">What Garmin predicts at current fitness, as Alex read it in Garmin Connect on the date shown.</p>
+  <ul class="prediction-list">
+    {
+      rows.map((row) => (
+        <li class="prediction" data-prediction-distance={row.distance}>
+          <p class="prediction-distance">{row.label}</p>
+          <p class="prediction-time" data-prediction-time>
+            <AsOf value={row.latest?.time} asOf={row.latest?.as_of} />
+          </p>
+          {row.goal && (
+            <p class="prediction-goal" data-prediction-goal>
+              Goal <span class="nowrap">{row.goal.target}</span>
+              {row.goal.achieved && (
+                <>
+                  {', '}
+                  <span class="prediction-achieved" data-achieved>
+                    achieved{row.goal.achievedOn && <> <time datetime={row.goal.achievedOn}>{formatDate(row.goal.achievedOn)}</time></>}
+                  </span>
+                </>
+              )}
+            </p>
+          )}
+          {row.race && (
+            <p class="prediction-race" data-prediction-race>
+              {row.race.name}, <time datetime={row.race.date}>{formatDate(row.race.date)}</time>
+            </p>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+  {
+    trends.map((row) => {
+      const points = row.history.map((p) => ({ date: p.as_of, value: p.seconds }));
+      return (
+        <MetricTrendChart
+          title={`${row.label} prediction`}
+          heading={3}
+          id={`prediction-${row.distance}`}
+          summary={`${row.history.length} entries, latest ${row.latest!.time} (as of ${formatDate(row.latest!.as_of)}). Lower is faster.`}
+          series={[{ label: `${row.label} prediction`, points, color: 'var(--running-series)' }]}
+          format={formatDuration}
+          today={today}
+          table={{ columns: ['As of', 'Prediction'], rows: [...row.history].reverse().map((p) => [formatDate(p.as_of), p.time]) }}
+        >
+          <GarminAttribution slot="source" />
+        </MetricTrendChart>
+      );
+    })
+  }
+</section>
+
+<style>
+  .race-predictions-intro {
+    color: var(--color-text-secondary);
+  }
+
+  .prediction-list {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 40rem) {
+    .prediction-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .prediction {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .prediction p {
+    margin: 0;
+  }
+
+  .prediction-distance {
+    font-weight: var(--weight-bold);
+  }
+
+  .prediction-time {
+    font-size: var(--step-1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .prediction-goal,
+  .prediction-race {
+    color: var(--color-text-secondary);
+  }
+
+  .prediction-achieved {
+    color: var(--color-good-text);
+    font-weight: var(--weight-bold);
+  }
+
+  .nowrap,
+  time {
+    white-space: nowrap;
+  }
+</style>

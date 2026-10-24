@@ -9,17 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, late):** **Phase 7 (US4 Races and PBs) is live** (#55 merged and
-  deployed, all 11 confirmations ticked). The owner reviewed `/running/races/` on phone and
-  desktop: all good, and the Brighton card stays without Garmin's prediction (the landing hero
-  and goal already show it).
-  - **Next: Phase 8 (US5 Health, tasks.md)**, starting with a question round on the health
-    metrics before implement.
+- **Status (2026-10-24, night):** **Phase 8 (US5 Health) is built: PR #57** (implement
+  subagent about 315k tokens). Phase 7 is live and reviewed.
+  - **Next session:**
+    1. Check whether #57 merged and its deploy finished.
+    2. Ask the owner any of its 8 confirmations left unticked (one asks about a body fat
+       "down since" line, one about a BACKLOG item on bounding the health tables).
+    3. Run the guided review of `/running/health/` on phone and desktop, then a question round.
+    4. Then Phase 9 (Polish).
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
   - **Planned order** (owner, 2026-10-24):
-    1. ~~Phase 6~~, ~~Phase 7~~, then Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), then Phase 9 (Polish), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
@@ -27,8 +29,6 @@ Update this as decisions get made — treat it as the source of truth alongside
     around 1,400–1,500 with Phase 8's PR checks.
   - **T105's no-change path** was never seen: every 00:17 refresh so far committed new data.
     That's fine, and the owner has been told; stop looking for it.
-  - **Phase 8 touches Astro and charts:** read the matching sections of sdd-playbook's
-    `AGENT_TIPS.md` first.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
   - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
@@ -50,8 +50,8 @@ Update this as decisions get made — treat it as the source of truth alongside
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
   quickstart.md §0.
-- **Next step: Phase 8 (US5 Health, tasks.md)** in its own session, starting with a question
-  round on health metrics. History is complete from 7 Oct 2025 (T150 and T085 done).
+- **Next step: review Phase 8 live (PR #57), then Phase 9 (Polish, tasks.md)** in its own
+  session. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
@@ -1006,7 +1006,84 @@ project-specific notes.
     100, including a race page with a map (1.6 KB gzip JS, 27.2 KB total, no third-party
     requests).
 
+- **2026-10-24** — **Phase 8 owner picks** (question round before implement; tasks.md amended):
+  - **Body first:** weight and body fat lead the Health page, then VO2 max, predictions and
+    training status, then fitness/fatigue/form, resting HR and HRV.
+  - **Fitness starts 42 days in** (18 Nov 2025), with a note. intervals.icu's history starts on
+    7 Oct 2025, so fitness (a 42-day average) climbs from 0 at first, an artefact of where the
+    data starts.
+  - **Weight header:** the 2025 journey start leads ("26.5 kg down since 2 Jun 2025"), and the
+    2023 heaviest weigh-in follows as a quieter line, as on the Goals page card (owner: 2025 is
+    the effective start of this push).
+  - **Daily metrics** (body fat, resting HR, HRV) are faint dots under a 7-day average line;
+    "now" is the 7-day average. Weight stays the average only.
+  - **Race predictions sit beside their goals**; their trend appears at two entries.
+  - **Charts open on 1 year.**
+  - **HRV note** names the watches: HRV starts on 1 Dec 2025, the day the Venu X1 replaced the
+    Venu 2 Plus (seen in the runs' `device`).
+
+- **2026-10-24** — **Phase 8 (US5 Health) built** (`001-health` branch; implement subagent).
+  Choices later tasks build on; the owner confirms them in the PR:
+  - **Page:** `/running/health/` joins the Running nav ("Health") and the landing links. Its body
+    is `HealthPage.astro` over `loadHealth(today, store)`; `loadGoals` takes a store too, so the
+    test-only preview evaluates goals over its own data.
+  - **Ranges:** 3 months (91 days), 1 year (365 days) and all time, ending today. A range never
+    starts before its data, and one that would repeat a shorter range is left out (today HRV and
+    fitness offer 3 months and 1 year only).
+  - **Daily metrics:** readings are faint dots (one SVG path of round-capped zero-length
+    segments) under the trailing 7-day mean from `composition.ts`, the same mean the body-fat goal
+    uses. Resting HR's and HRV's averages are shown to one decimal ("43.1 bpm").
+  - **Targets** come from the evaluated goals: the open goal with the highest priority, else the
+    latest achieved one. Each headline says "Target 93 kg: 8.1 kg to go", reusing the goal cards'
+    wording; the weight header reuses the Goals card's "down since" wording (`changeSinceText`).
+  - **Lab results** are diamond markers labelled "DEXA scan" or "Lab test", with a line per result:
+    lab value, the Garmin reading nearest within 7 days (earlier one on a tie), and "Difference
+    (lab minus Garmin)". Weight compares with the 7-day average (no single weigh-in is published),
+    body fat with the recorded reading. Body fat's difference reads "percentage points".
+  - **HRV note** is derived: the last run before the first HRV reading and the first run on or
+    after it (within 7 days) are on different watches; otherwise just the date. No baseline band,
+    because intervals.icu supplies none; `LineChart` can draw one where a series has it.
+  - **Fitness, fatigue and form:** fitness and fatigue share a chart (latest values in the legend,
+    because their end labels collide), and form has its own chart below with a dashed zero line.
+    Both start 42 days after the first fitness point, with the note. No words judge form (no
+    "fresh"/"tired"), since that would be an invented reading of intervals.icu's zones.
+  - **Race predictions:** four cards (5k, 10k, half, marathon) with the latest entry "as of",
+    "Goal sub-3:20" (or "Goal sub-20:00, achieved 17 Oct 2026") and the goal's linked race. Each
+    distance gets its own trend chart once there are two dated entries (one axis can't hold 19
+    minutes and 3 hours).
+  - **Training status:** the latest entry "as of", then earlier entries newest first.
+  - **Attribution:** plain "Source: Garmin" under the page heading, because the page mixes the
+    scale, watch wellness and manual figures; each chart names its own source.
+  - **Share image** `/og/running-health.png` has generic words and no figures, like Training's.
+  - **Shared plumbing:** `LineChart` gained `marks: 'dots'`, `band`, `endLabels: false` and diamond
+    reference markers. ChartFigure's styles moved to the global `chart.css`, so table cells no
+    longer each carry Astro's scoped-style attribute (the health page went from 420 KB to 253 KB
+    of HTML).
+  - **Page weight:** 54.1 KB gzip today (Lighthouse 100/100, LCP 1.21 s), about 40 KB more per
+    year of data, because the tables hold every reading. It meets the 150 KB budget for about two
+    more years; bound the tables (e.g. weekly rows past a year) before then. Raised as a backlog
+    question in the PR.
+  - **Health preview (tests only):** `SHELL_PREVIEW=1` adds `/health-preview/` over
+    `tests/fixtures/health-preview/` (synthetic series, two DEXA scans, a lab VO2 max of 51.0 where
+    Garmin said 54, three dated prediction and status entries, an HRV baseline band).
+  - **Exclusions (FR-067)** are already removed by the processor before publishing, so the site
+    does nothing more.
+  - **Tests:** Vitest 520, Playwright 207 passed (1 skipped, both projects), pytest 416 passed
+    (1 skipped), ruff and `astro check` clean, full gate green.
+
 ## Upstream candidates
+
+- 2026-10-24 — Astro adds its scoped-style attribute (`data-astro-cid-…`) to every element of a
+  component that has a `<style>` block, so a data table of ~1,800 rows carried it on every cell:
+  40% of the health page's HTML. Put styles for heavily repeated markup in a global stylesheet
+  under a class prefix. Agent tip (Astro).
+- 2026-10-24 — Dots on a stretched SVG (`preserveAspectRatio="none"`): draw each as a zero-length
+  segment (`M x y h0`) with round caps and `vector-effect: non-scaling-stroke`, all in one path.
+  They stay round at any aspect ratio, and hundreds of readings cost one element, not one HTML
+  span each. Agent tip (UI, charts).
+- 2026-10-24 — Playwright's `webServer` (`npm run preview`) failed to start when the tests were
+  run from the agent's Git Bash tool on Windows (exit code 3221226505), while the same command from
+  PowerShell worked. Run Playwright from PowerShell on Windows. Agent tip (Windows).
 
 - 2026-10-24 — maplibre-gl 6 loads its worker from `./maplibre-gl-worker.mjs` beside its own
   module, which a bundler moves. Import the worker and stylesheet with Vite's `?url`, call
