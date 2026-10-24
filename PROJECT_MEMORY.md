@@ -9,15 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, evening):** **Phase 6 (US3 Training) is live** (#52, fix #53).
-  - **Zones:** all 199 runs show Garmin's zones; the 23 Oct run matches Garmin Connect (Z3
-    23:13, Z4 25:32).
-  - **Cleanup:** the old zone shape was dropped in the `001-zones-cleanup` PR. Check it merged.
-  - **Owner review of the live Training pages:** given at the end of the Phase 6 session. Ask
-    for any feedback the owner hasn't given yet before starting Phase 7.
-  - **Next: Phase 7 (US4 Races and PBs).**
+- **Status (2026-10-24, night):** **Phase 7 (US4 Races and PBs) is built**, in the
+  `001-races` PR. Phase 6 is live and its cleanup (#54) merged; the owner had no more Training
+  feedback.
+  - **First:** check the PR merged and its `main` gate deployed, then ask about any PR
+    checkboxes left unticked. Start with a short guided look at the live
+    `/running/races/` (Brighton countdown, PB table, empty history) and the "Races" menu item on
+    phone and desktop, then a question round on what the owner saw.
+  - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
+    `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
+    Brighton's page after race day.
+  - **Next: Phase 8 (US5 Health).**
   - **Planned order** (owner, 2026-10-24):
-    1. ~~Phase 6~~ (built), then Phase 7 (US4 Races and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    1. ~~Phase 6~~, ~~Phase 7~~ (built), then Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
@@ -25,7 +29,7 @@ Update this as decisions get made — treat it as the source of truth alongside
     `commit` job printed "Nothing to commit." and check its `deploy` ran. If none ever does,
     that's fine; say so once. Minutes: 824 used by about 11:00 UTC on 2026-10-24; October should
     end around 1,200, plus about 15 for the zone backfill.
-  - **Phase 7 touches Astro and maps:** read the matching sections of sdd-playbook's
+  - **Phase 8 touches Astro and charts:** read the matching sections of sdd-playbook's
     `AGENT_TIPS.md` first.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
@@ -48,9 +52,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
   quickstart.md §0.
-- **Next step: Phase 7 (US4 Races and PBs, tasks.md)** in its own session, once Phase 6's
-  post-merge steps are done, starting with a short guided look at the live Training pages and a
-  question round on races and PBs. History is complete from 7 Oct 2025 (T150 and T085 done).
+- **Next step: Phase 8 (US5 Health, tasks.md)** in its own session, once Phase 7's
+  post-merge steps are done, starting with the guided look at the live races page and a
+  question round on health metrics. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
@@ -958,7 +962,7 @@ project-specific notes.
     page works on the day.
 
 - **2026-10-24** — **Phase 7 (US4 Races and PBs) built** (`001-races` branch; implement
-  subagent). There are no real races yet, so live only `/running/races/` shows anything. Choices
+  subagent about 457k tokens). There are no real races yet, so live only `/running/races/` shows anything. Choices
   later tasks build on; the owner confirms them in the PR:
   - **Race tracks (T125)** are written only for a race that isn't a treadmill or indoor run and
     whose `race.yaml` doesn't hide its map. Douglas–Peucker runs in local metres until the track
