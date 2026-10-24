@@ -6,7 +6,7 @@ loader and share images, and uses only `src/shared/` (layout, design system, cha
 adds the section to the site.
 
 This is the section's graduation design note (T110, for the MVP: Goals and the landing page;
-extended for Training and run detail, US3, and Races and PBs, US4).
+extended for Training and run detail, US3, Races and PBs, US4, and Health, US5).
 The contracts it builds on are [routes](../../../specs/001-running-section/contracts/routes.md),
 [data files](../../../specs/001-running-section/contracts/data-files.md) and
 [pipeline](../../../specs/001-running-section/contracts/pipeline.md) (freshness endpoint). The
@@ -16,12 +16,13 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
 
 - **Input:** only the store (`RunningStore` over `data/running/`): published runs and health
   series, the owner's YAML (goals, upcoming races, races, run overrides, manual Garmin metrics,
-  `section.yaml`) and `refresh.json`. No page calls a third-party API (Principle III).
+  lab results, `section.yaml`) and `refresh.json`. No page calls a third-party API (Principle III).
 - **Output:** static pages and share images, built for one Europe/London "today". The pages
   are `/running/`, `/running/goals/`, `/running/training/`, `/running/training/<year>/`,
-  `/running/runs/<id>/`, `/running/races/` and `/running/races/<slug>/` (plus each mapped race's
-  `route.json`); the share images are `/og/running.png`, `/og/running-goals.png`,
-  `/og/running-training.png`, `/og/running-races.png`, one per race
+  `/running/runs/<id>/`, `/running/races/`, `/running/races/<slug>/` (plus each mapped race's
+  `route.json`) and `/running/health/`; the share images are `/og/running.png`,
+  `/og/running-goals.png`, `/og/running-training.png`, `/og/running-races.png`,
+  `/og/running-health.png`, one per race
   (`/og/running-races-<slug>.png`), and the shared `/og/running-year.png` and
   `/og/running-run.png`.
 - **Figures mean what the owner's Garmin Connect means** (owner review, 2026-10-23):
@@ -33,6 +34,10 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   - **Heart-rate zones** are Garmin's own five, read from the watch's original FIT file, with
     Garmin's names and bpm ranges (owner, 2026-10-24). Time below zone 1 is left out, as on
     Garmin Connect's chart; time above the top boundary counts in zone 5.
+  - **Health headlines** for body fat, resting HR and HRV are 7-day averages, labelled so; each
+    reading is a faint dot under the average line. Weight is only ever its 7-day average.
+  - **Fitness, fatigue and form** are intervals.icu's model, never called Garmin's training load,
+    and their chart starts 42 days after intervals.icu's history does.
   - **Training totals** count treadmill runs; average pace is distance-weighted; a period's
     elevation is the sum of the runs that recorded it, else "Not recorded".
 - **Goal logic is pure** (`domain/`): every function takes "today" as an argument, so tests pin
@@ -60,13 +65,17 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
 
 - **Vitest** (`tests/unit/`, `tests/contract/`): goal evaluation and card text (`goals.test.ts`,
   `goal-cards.test.ts`), races, weeks, periods, manual metrics, attribution, the landing,
-  training and run pages rendered with only `Date` faked (`landing.test.ts`, `training.test.ts`,
-  `run-detail.test.ts`), data validation and the schemas.
+  training, run and health pages rendered with only `Date` faked (`landing.test.ts`,
+  `training.test.ts`, `run-detail.test.ts`, `health.test.ts`), data validation and the schemas.
 - **Playwright** (`tests/e2e/`, `tests/a11y/`): each page at 360 px and on desktop, axe (WCAG 2.2
   AA) in light and dark, heading order, and the keyboard path through every link and control.
 - **Lighthouse** (`scripts/lighthouse-budget.mjs`, also local on Windows): at graduation every
   built page scored 100 for performance and accessibility on mobile. The landing LCP was
-  1.06 s, the largest page 11.2 KB gzip, with no script files and no third-party requests.
+  1.06 s, the largest page 11.2 KB gzip, with no script files and no third-party requests. The
+  health page (2026-10-24) scored 100 and 100, LCP 1.21 s, 54.1 KB gzip: its data tables hold
+  every reading and the all-time charts every point, so it is the heaviest page and grows by
+  roughly 40 KB gzip per year of data. It meets the 150 KB budget for about two more years; before
+  then the tables (or the all-time charts) need bounding, e.g. weekly rows past a year.
 - **Gate:** the site build, `validate-data`, `check-boundaries`, `scan-images` and
   `scan-privacy`, on every push and every bot commit.
 
@@ -123,6 +132,21 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   build-time SVG (`domain/race-map.ts`) with MapLibre and OpenFreeMap tiles loaded only on a click
   (the one JS-budget exception); photos come from `data/photos.ts` through `astro:assets`.
   Share images `og/races.png.ts` and `og/race.ts`.
+- Health (US5): `pages/health.astro` at `/running/health/`, a thin wrapper round
+  `HealthPage.astro`, fed by `data/health.ts` (`loadHealth(today, store)`) over
+  `domain/health.ts` (ranges, daily readings and their 7-day average, targets from the goals, lab
+  comparisons within 7 days, the HRV start note, fitness/fatigue/form). Charts are
+  `MetricTrendChart` (shared `LineChart` + `RangeToggle`, opening on 1 year, with target lines and
+  diamond lab markers), `FitnessChart` (fitness and fatigue, then form on its own axis) and
+  `HrvChart`; `MetricNow` holds each headline, `LabComparison` the lab-against-Garmin lines,
+  `RacePredictions` the four distances beside their goals (a trend per distance once there are two
+  dated entries) and `TrainingStatus` the latest status and its history. Share image
+  `og/health.png.ts` (generic words, no figures). Owner exclusions are removed by the processor,
+  before publishing.
+- **Health preview (tests only):** with `SHELL_PREVIEW=1`, `/health-preview/` renders the same
+  `HealthPage` over `tests/fixtures/health-preview/` (synthetic series, lab results, several dated
+  manual entries and an HRV baseline band; `generate.ts` writes them), because the owner has no lab
+  results yet and only one dated entry of each manual figure.
 - **Race preview (tests only):** with `SHELL_PREVIEW=1`, `/race-preview/` renders the same
   `RacesPage` and `RacePage` over the synthetic races in `tests/fixtures/race-preview/`
   (`generate.ts` writes them), so race pages, maps and photos are tested before there is a real
@@ -189,5 +213,10 @@ go-live (T112, 2026-10-24) and matches what follows; nothing changed.
   OpenFreeMap/OpenMapTiles/OpenStreetMap attribution.
 - **Manual figures:** the owner's manual Garmin figures (training status, race predictions) are
   attributed the same way.
+- **Health:** plain "Source: Garmin" under the heading, because the page mixes the scale, the
+  watch's wellness and the manual figures; each chart then names its own source (the scale for
+  weight and body fat, plain "Garmin" for VO2 max, resting HR and HRV, and "Derived in part from
+  Garmin device-sourced data" for fitness/fatigue/form). The lab comparisons name the device side
+  the same way.
 
 The story e2e specs (T095, T109, T123, T137, T144) assert it on each page.

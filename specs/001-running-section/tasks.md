@@ -847,17 +847,21 @@ stress or Body Battery data appears anywhere.
 - **HRV note:** "HRV readings start on 1 Dec 2025, when the Venu X1 replaced the Venu 2 Plus."
   Derive the date from the data and the watches from the runs' `device`, never hard-code them.
 
-- [ ] T138 [P] [US5] Create `src/sections/running/domain/health.ts`:
+- [X] T138 [P] [US5] Create `src/sections/running/domain/health.ts`:
   - range slicing for 3 months, 1 year and all time
   - current values
   - target markers from goals (FR-063)
   - lab comparison against the nearest Garmin reading **within ±7 days**, as `{lab, device, diff}` (FR-065)
   - an HRV start-date note
   - training-status labels and race-prediction history from `manual-metrics.ts` (T153), each point dated by `as_of`
-- [ ] T139 [P] [US5] Create `src/sections/running/components/MetricTrendChart.astro` (a `LineChart` with `RangeToggle`, a target line and labelled "Lab test" / "DEXA scan" markers) and `LabComparison.astro` (device value, lab value and difference).
-- [ ] T140 [P] [US5] Create `src/sections/running/components/RacePredictions.astro` (all four distances, latest entry with `AsOf`, plus a trend of the dated entries), `HrvChart.astro` (rMSSD; the baseline band only where baseline data exists, which intervals.icu does not supply; starting at the first point with a short note, never zeros) and `TrainingStatus.astro` (latest status with `AsOf`, plus the dated history; "not recorded yet" when empty).
-- [ ] T156 [P] [US5] Create `src/sections/running/components/FitnessChart.astro` and its domain helper in `src/sections/running/domain/health.ts` (FR-060): fitness (`fitness_ctl`), fatigue (`fatigue_atl`) and form (= fitness − fatigue, derived at build) as a `LineChart` with `RangeToggle`, text alternative and table; clearly **labelled as intervals.icu's fitness/fatigue model, not Garmin's training load**. Unit test the form derivation and the label in `tests/unit/health.test.ts`.
-- [ ] T141 [US5] Create `src/sections/running/pages/health.astro` at `/running/health/`. It shows:
+  - **Done 2026-10-24**: plus `data/health.ts` (`loadHealth(today, store)`); `loadGoals` now takes a store too. Owner exclusions are already removed by the processor (FR-067).
+- [X] T139 [P] [US5] Create `src/sections/running/components/MetricTrendChart.astro` (a `LineChart` with `RangeToggle`, a target line and labelled "Lab test" / "DEXA scan" markers) and `LabComparison.astro` (device value, lab value and difference).
+  - **Done 2026-10-24**: the shared `LineChart` gained faint-dot series, a band, legend end values and diamond reference markers; `MetricNow.astro` holds the headline figures.
+- [X] T140 [P] [US5] Create `src/sections/running/components/RacePredictions.astro` (all four distances, latest entry with `AsOf`, plus a trend of the dated entries), `HrvChart.astro` (rMSSD; the baseline band only where baseline data exists, which intervals.icu does not supply; starting at the first point with a short note, never zeros) and `TrainingStatus.astro` (latest status with `AsOf`, plus the dated history; "not recorded yet" when empty).
+  - **Done 2026-10-24**: one trend chart per distance (the times differ too much for one axis), each once it has two dated entries.
+- [X] T156 [P] [US5] Create `src/sections/running/components/FitnessChart.astro` and its domain helper in `src/sections/running/domain/health.ts` (FR-060): fitness (`fitness_ctl`), fatigue (`fatigue_atl`) and form (= fitness − fatigue, derived at build) as a `LineChart` with `RangeToggle`, text alternative and table; clearly **labelled as intervals.icu's fitness/fatigue model, not Garmin's training load**. Unit test the form derivation and the label in `tests/unit/health.test.ts`.
+  - **Done 2026-10-24**: form has its own chart under fitness and fatigue, which show their latest values in the legend.
+- [X] T141 [US5] Create `src/sections/running/pages/health.astro` at `/running/health/`. It shows:
   - VO2 max, fitness/fatigue/form (T156), training status and race predictions ("as of" owner entries), resting HR and HRV
   - **weight as the 7-day average only**, labelled as such
   - body fat as recorded readings with a trend line and the 17.5% target
@@ -865,9 +869,12 @@ stress or Body Battery data appears anywhere.
   - `LastUpdated`
 
   Register the route and add the OG hub card `/og/running-health.png`.
+  - **Done 2026-10-24**: the body is `HealthPage.astro`, shared with the test-only `/health-preview/` (SHELL_PREVIEW=1).
 - [ ] T142 [US5] OWNER: When lab tests happen (DEXA, lab VO2 max), share the results. The agent writes `data/running/owner/lab/<date>-<type>.yaml` via a PR. This does not block US5, which is verified with fixtures.
-- [ ] T143 [P] [US5] Create `tests/unit/health.test.ts`, covering US5.4 (lab 51.0 vs Garmin 54 gives a difference of −3.0), US5.5 (two DEXA points), range slicing, US5.7 (HRV start), form = ctl − atl, and manual training-status/prediction history ordered by `as_of`.
-- [ ] T144 [P] [US5] Create `tests/e2e/health.spec.ts` and `tests/a11y/health.spec.ts`. They cover acceptance scenarios US5.1–US5.7 (incl. "as of" dates and the intervals.icu model label), that no individual daily weights appear anywhere, that **no sleep, stress, Body Battery, steps or SpO2 data appears on any page**, Garmin attribution present, and zero axe violations.
+- [X] T143 [P] [US5] Create `tests/unit/health.test.ts`, covering US5.4 (lab 51.0 vs Garmin 54 gives a difference of −3.0), US5.5 (two DEXA points), range slicing, US5.7 (HRV start), form = ctl − atl, and manual training-status/prediction history ordered by `as_of`.
+  - **Done 2026-10-24**: 27 tests, including the page rendered over a fake store.
+- [X] T144 [P] [US5] Create `tests/e2e/health.spec.ts` and `tests/a11y/health.spec.ts`. They cover acceptance scenarios US5.1–US5.7 (incl. "as of" dates and the intervals.icu model label), that no individual daily weights appear anywhere, that **no sleep, stress, Body Battery, steps or SpO2 data appears on any page**, Garmin attribution present, and zero axe violations.
+  - **Done 2026-10-24**: the real page plus `/health-preview/` (synthetic lab results, prediction and status history, an HRV band, `tests/fixtures/health-preview/`).
 
 **Checkpoint**: All five stories work on their own.
 

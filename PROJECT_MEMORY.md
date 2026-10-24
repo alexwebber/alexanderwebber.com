@@ -1022,7 +1022,68 @@ project-specific notes.
   - **HRV note** names the watches: HRV starts on 1 Dec 2025, the day the Venu X1 replaced the
     Venu 2 Plus (seen in the runs' `device`).
 
+- **2026-10-24** — **Phase 8 (US5 Health) built** (`001-health` branch; implement subagent).
+  Choices later tasks build on; the owner confirms them in the PR:
+  - **Page:** `/running/health/` joins the Running nav ("Health") and the landing links. Its body
+    is `HealthPage.astro` over `loadHealth(today, store)`; `loadGoals` takes a store too, so the
+    test-only preview evaluates goals over its own data.
+  - **Ranges:** 3 months (91 days), 1 year (365 days) and all time, ending today. A range never
+    starts before its data, and one that would repeat a shorter range is left out (today HRV and
+    fitness offer 3 months and 1 year only).
+  - **Daily metrics:** readings are faint dots (one SVG path of round-capped zero-length
+    segments) under the trailing 7-day mean from `composition.ts`, the same mean the body-fat goal
+    uses. Resting HR's and HRV's averages are shown to one decimal ("43.1 bpm").
+  - **Targets** come from the evaluated goals: the open goal with the highest priority, else the
+    latest achieved one. Each headline says "Target 93 kg: 8.1 kg to go", reusing the goal cards'
+    wording; the weight header reuses the Goals card's "down since" wording (`changeSinceText`).
+  - **Lab results** are diamond markers labelled "DEXA scan" or "Lab test", with a line per result:
+    lab value, the Garmin reading nearest within 7 days (earlier one on a tie), and "Difference
+    (lab minus Garmin)". Weight compares with the 7-day average (no single weigh-in is published),
+    body fat with the recorded reading. Body fat's difference reads "percentage points".
+  - **HRV note** is derived: the last run before the first HRV reading and the first run on or
+    after it (within 7 days) are on different watches; otherwise just the date. No baseline band,
+    because intervals.icu supplies none; `LineChart` can draw one where a series has it.
+  - **Fitness, fatigue and form:** fitness and fatigue share a chart (latest values in the legend,
+    because their end labels collide), and form has its own chart below with a dashed zero line.
+    Both start 42 days after the first fitness point, with the note. No words judge form (no
+    "fresh"/"tired"), since that would be an invented reading of intervals.icu's zones.
+  - **Race predictions:** four cards (5k, 10k, half, marathon) with the latest entry "as of",
+    "Goal sub-3:20" (or "Goal sub-20:00, achieved 17 Oct 2026") and the goal's linked race. Each
+    distance gets its own trend chart once there are two dated entries (one axis can't hold 19
+    minutes and 3 hours).
+  - **Training status:** the latest entry "as of", then earlier entries newest first.
+  - **Attribution:** plain "Source: Garmin" under the page heading, because the page mixes the
+    scale, watch wellness and manual figures; each chart names its own source.
+  - **Share image** `/og/running-health.png` has generic words and no figures, like Training's.
+  - **Shared plumbing:** `LineChart` gained `marks: 'dots'`, `band`, `endLabels: false` and diamond
+    reference markers. ChartFigure's styles moved to the global `chart.css`, so table cells no
+    longer each carry Astro's scoped-style attribute (the health page went from 420 KB to 253 KB
+    of HTML).
+  - **Page weight:** 54.1 KB gzip today (Lighthouse 100/100, LCP 1.21 s), about 40 KB more per
+    year of data, because the tables hold every reading. It meets the 150 KB budget for about two
+    more years; bound the tables (e.g. weekly rows past a year) before then. Raised as a backlog
+    question in the PR.
+  - **Health preview (tests only):** `SHELL_PREVIEW=1` adds `/health-preview/` over
+    `tests/fixtures/health-preview/` (synthetic series, two DEXA scans, a lab VO2 max of 51.0 where
+    Garmin said 54, three dated prediction and status entries, an HRV baseline band).
+  - **Exclusions (FR-067)** are already removed by the processor before publishing, so the site
+    does nothing more.
+  - **Tests:** Vitest 520, Playwright 207 passed (1 skipped, both projects), pytest 416 passed
+    (1 skipped), ruff and `astro check` clean, full gate green.
+
 ## Upstream candidates
+
+- 2026-10-24 — Astro adds its scoped-style attribute (`data-astro-cid-…`) to every element of a
+  component that has a `<style>` block, so a data table of ~1,800 rows carried it on every cell:
+  40% of the health page's HTML. Put styles for heavily repeated markup in a global stylesheet
+  under a class prefix. Agent tip (Astro).
+- 2026-10-24 — Dots on a stretched SVG (`preserveAspectRatio="none"`): draw each as a zero-length
+  segment (`M x y h0`) with round caps and `vector-effect: non-scaling-stroke`, all in one path.
+  They stay round at any aspect ratio, and hundreds of readings cost one element, not one HTML
+  span each. Agent tip (UI, charts).
+- 2026-10-24 — Playwright's `webServer` (`npm run preview`) failed to start when the tests were
+  run from the agent's Git Bash tool on Windows (exit code 3221226505), while the same command from
+  PowerShell worked. Run Playwright from PowerShell on Windows. Agent tip (Windows).
 
 - 2026-10-24 — maplibre-gl 6 loads its worker from `./maplibre-gl-worker.mjs` beside its own
   module, which a bundler moves. Import the worker and stylesheet with Vite's `?url`, call
