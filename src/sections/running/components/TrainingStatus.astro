@@ -1,0 +1,64 @@
+---
+// Garmin training status (T140; FR-060, FR-069, US5.1): the owner's latest entry "as of" its date,
+// with its note, then the earlier dated entries, newest first (the trend of a status is its
+// history). "Not recorded yet" when there is no entry. Plain "Garmin" attribution (FR-077).
+import { formatDate } from '../../../shared/format/dates.ts';
+import type { CurrentTrainingStatus } from '../domain/manual-metrics.ts';
+import AsOf from './AsOf.astro';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  /** Oldest first; the last is current. */
+  history: readonly CurrentTrainingStatus[];
+}
+
+const { history } = Astro.props;
+const current = history.at(-1);
+const earlier = history.slice(0, -1).reverse();
+---
+
+<section class="training-status" data-training-status aria-labelledby="training-status-heading">
+  <h2 id="training-status-heading">Garmin training status</h2>
+  {current && <GarminAttribution />}
+  <p class="training-status-now" data-training-status-now>
+    <AsOf value={current?.label} asOf={current?.as_of} />
+  </p>
+  {current?.note && <p class="training-status-note">{current.note}</p>}
+  {
+    earlier.length > 0 && (
+      <>
+        <h3>Earlier readings</h3>
+        <ul class="training-status-history" data-training-status-history>
+          {earlier.map((entry) => (
+            <li>
+              <time datetime={entry.as_of}>{formatDate(entry.as_of)}</time>: {entry.label}
+              {entry.note && <> ({entry.note})</>}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</section>
+
+<style>
+  .training-status {
+    margin-bottom: var(--space-6);
+  }
+
+  .training-status-now {
+    font-size: var(--step-1);
+  }
+
+  .training-status-note {
+    color: var(--color-text-secondary);
+  }
+
+  .training-status-history {
+    padding-left: var(--space-5);
+  }
+
+  time {
+    white-space: nowrap;
+  }
+</style>

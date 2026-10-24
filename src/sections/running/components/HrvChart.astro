@@ -1,0 +1,61 @@
+---
+// HRV (T140; FR-060, US5.7): rMSSD, each reading a faint dot under its 7-day average line, with the
+// headline on the 7-day average (owner, 2026-10-24). The chart starts at the first reading with a
+// note ("HRV readings start on 1 Dec 2025, when the Venu X1 replaced the Venu 2 Plus.", derived
+// from the data and the runs' watches), never zeros before it. A baseline band is drawn only where
+// the published series carries one; intervals.icu supplies none, so today there is no band, and
+// none is invented. Plain "Garmin" attribution (watch wellness has no per-day device, FR-077).
+import { formatDate } from '../../../shared/format/dates.ts';
+import type { BandPoint } from '../../../shared/charts/LineChart.astro';
+import { hrvNote, latest, type DailyMetric, type HrvStart } from '../domain/health.ts';
+import type { ValueEvaluation } from '../domain/goals.ts';
+import { formatMetric, toGoText } from '../domain/goal-text.ts';
+import { targetLine } from '../domain/health.ts';
+import GarminAttribution from './GarminAttribution.astro';
+import MetricNow from './MetricNow.astro';
+import MetricTrendChart from './MetricTrendChart.astro';
+
+export interface Props {
+  hrv: DailyMetric;
+  baseline: readonly BandPoint[];
+  start: HrvStart | undefined;
+  goal?: ValueEvaluation;
+  today: string;
+}
+
+const { hrv, baseline, start, goal, today } = Astro.props;
+const ms = (v: number) => formatMetric('hrv', Math.round(v));
+const msExact = (v: number) => formatMetric('hrv', v);
+const now = latest(hrv.average);
+const average = new Map(hrv.average.map((p) => [p.date, p.value]));
+const togo = goal && toGoText(goal);
+---
+
+<MetricTrendChart
+  title="HRV"
+  id="hrv"
+  summary="Heart rate variability (rMSSD) measured overnight by the watch."
+  series={[
+    { label: 'Daily readings', points: hrv.readings, marks: 'dots', color: 'var(--running-series)' },
+    { label: '7-day average', points: hrv.average, color: 'var(--running-series)' },
+  ]}
+  format={ms}
+  target={targetLine(goal)}
+  band={baseline.length > 0 ? { label: 'Baseline', points: baseline } : undefined}
+  today={today}
+  table={{
+    columns: ['Date', 'HRV', '7-day average'],
+    rows: [...hrv.readings].reverse().map((p) => [formatDate(p.date), msExact(p.value), average.has(p.date) ? msExact(average.get(p.date)!) : '']),
+  }}
+>
+  <GarminAttribution slot="source" />
+  <MetricNow slot="lead" value={now && msExact(now.value)} basis="7-day average" date={now?.date} target={goal ? `Target ${formatMetric('hrv', goal.target)}${togo ? `: ${togo}` : ''}` : undefined} />
+  {start && <p class="metric-note" data-hrv-note>{hrvNote(start)}</p>}
+</MetricTrendChart>
+
+<style>
+  .metric-note {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-secondary);
+  }
+</style>

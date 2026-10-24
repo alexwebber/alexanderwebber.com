@@ -109,10 +109,26 @@ export function startText(evaluation: ValueEvaluation): string | undefined {
 export function allTimeText(evaluation: ValueEvaluation): string | undefined {
   const { allTimeStart: from, current } = evaluation;
   if (!from || !current) return undefined;
-  const change = Math.round((current.value - from.value) * 10) / 10;
+  return changeSinceText(evaluation.metric, from, current.value);
+}
+
+/**
+ * The change since the goal's dated start, from the current value: "26.5 kg down since 2 Jun 2025
+ * (127.6 kg)" (the health page's weight header, owner 2026-10-24). Undefined for an undated start,
+ * with no data, or with no change.
+ */
+export function startChangeText(evaluation: ValueEvaluation): string | undefined {
+  const { start, startDate, current } = evaluation;
+  if (start === undefined || !startDate || !current) return undefined;
+  return changeSinceText(evaluation.metric, { date: startDate, value: start }, current.value);
+}
+
+/** "<amount> down|up since <date> (<from value>)", or undefined with no change (to one decimal). */
+export function changeSinceText(metric: ValueMetric, from: { date: string; value: number }, now: number): string | undefined {
+  const change = Math.round((now - from.value) * 10) / 10;
   if (change === 0) return undefined;
-  const amount = formatMetric(evaluation.metric, Math.abs(change), true);
-  return `${amount} ${change < 0 ? 'down' : 'up'} since ${formatDate(from.date)} (${formatMetric(evaluation.metric, from.value, true)})`;
+  const amount = formatMetric(metric, Math.abs(change), true);
+  return `${amount} ${change < 0 ? 'down' : 'up'} since ${formatDate(from.date)} (${formatMetric(metric, from.value, true)})`;
 }
 
 /** What the progress bar says, in words (its value text, and the line under it). */

@@ -1,0 +1,157 @@
+---
+// The health page body (T141; contracts/routes.md /running/health/, US5.1–US5.7, FR-060–FR-069,
+// FR-077), in the owner's order (2026-10-24), body first: weight, body fat, then VO2 max, Garmin's
+// race predictions and training status, then fitness/fatigue/form, resting HR and HRV. Shared by
+// the real page and the test-only health preview, which passes synthetic data (with lab results).
+//
+// - Weight is its 7-day average only (FR-061): never a daily reading, anywhere. Its header leads
+//   with the change since the goal's start, then the quieter change since the all-time reference,
+//   worded as on the Goals page card.
+// - Body fat, resting HR and HRV: each reading a faint dot under the 7-day average line; the
+//   headline is the 7-day average, labelled so (like the goal cards).
+// - Targets come from the goals (FR-063); lab results are labelled markers with a comparison
+//   against the nearest Garmin reading within 7 days (FR-065).
+// - Garmin attribution: plain "Garmin" under the heading (the page mixes the scale, the watch's
+//   wellness and the owner's manual figures); each chart names its own source at its title.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { sectionSettings } from '../data/load.ts';
+import type { HealthData } from '../data/health.ts';
+import { allTimeText, formatMetric, startChangeText, toGoText } from '../domain/goal-text.ts';
+import type { ValueEvaluation, ValueMetric } from '../domain/goals.ts';
+import { compareLab, labPoints, latest, targetLine, type DatedValue, type LabMetric } from '../domain/health.ts';
+import FitnessChart from './FitnessChart.astro';
+import GarminAttribution from './GarminAttribution.astro';
+import HrvChart from './HrvChart.astro';
+import LabComparison from './LabComparison.astro';
+import MetricNow from './MetricNow.astro';
+import MetricTrendChart from './MetricTrendChart.astro';
+import RacePredictions from './RacePredictions.astro';
+import SectionLayout from './SectionLayout.astro';
+import TrainingStatus from './TrainingStatus.astro';
+
+export interface Props {
+  data: HealthData;
+  /** Share image path. */
+  image: string;
+  title?: string;
+}
+
+const { data, image, title } = Astro.props;
+const { today, goals } = data;
+const scale = (await sectionSettings()).garmin_devices.scale;
+const scaleName = scale ? `Garmin ${scale}` : 'Garmin';
+
+const chartFormat = (metric: ValueMetric) => (v: number) => formatMetric(metric, v);
+const reading = (metric: ValueMetric) => (v: number) => formatMetric(metric, v, true);
+const targetText = (goal: ValueEvaluation | undefined) => {
+  if (!goal) return undefined;
+  const togo = toGoText(goal);
+  return `Target ${formatMetric(goal.metric, goal.target)}${togo ? `: ${togo}` : ''}`;
+};
+const markers = (metric: LabMetric) => labPoints(data.lab, metric).map((p) => ({ date: p.date, value: p.value, label: p.label }));
+const comparisons = (metric: LabMetric, readings: readonly DatedValue[]) => labPoints(data.lab, metric).map((p) => compareLab(p, readings));
+const byDate = (points: readonly DatedValue[]) => new Map(points.map((p) => [p.date, p.value]));
+
+const weightNow = latest(data.weight);
+const weightLines = goals.weight ? [startChangeText(goals.weight), allTimeText(goals.weight)].filter((l): l is string => Boolean(l)) : [];
+const bodyFatNow = latest(data.bodyFat.average);
+const bodyFatAvg = byDate(data.bodyFat.average);
+const vo2Now = latest(data.vo2max);
+const rhrNow = latest(data.restingHr.average);
+const rhrAvg = byDate(data.restingHr.average);
+
+const showsGarmin = data.weight.length + data.bodyFat.readings.length + data.vo2max.length + data.restingHr.readings.length + data.hrv.readings.length + data.fitness.length > 0 || data.trainingStatus.length > 0 || data.predictions.some((r) => r.latest);
+const description = weightNow
+  ? `Alexander Webber's health and fitness: weight ${formatMetric('weight_kg', weightNow.value, true)} (7-day average), body fat, VO2 max, Garmin's race predictions, fitness and heart rate.`
+  : "Alexander Webber's health and fitness: weight, body fat, VO2 max, Garmin's race predictions, fitness and heart rate.";
+---
+
+<SectionLayout heading="Health" title={title} description={description} image={image} imageAlt="Alexander Webber's health and fitness" garmin={showsGarmin}>
+  <div class="health-page">
+    <MetricTrendChart
+      title="Weight"
+      id="weight"
+      summary="A 7-day average of the scale's weigh-ins; single weigh-ins are never shown."
+      series={[{ label: 'Weight (7-day average)', points: data.weight, color: 'var(--running-series)' }]}
+      format={chartFormat('weight_kg')}
+      target={targetLine(goals.weight)}
+      markers={markers('weight_kg')}
+      today={today}
+      table={{ columns: ['Date', 'Weight (7-day average)'], rows: [...data.weight].reverse().map((p) => [formatDate(p.date), reading('weight_kg')(p.value)]) }}
+    >
+      <GarminAttribution slot="source" scale />
+      <MetricNow slot="lead" lines={weightLines} value={weightNow && reading('weight_kg')(weightNow.value)} basis="7-day average" date={weightNow?.date} target={targetText(goals.weight)} />
+      <LabComparison comparisons={comparisons('weight_kg', data.weight)} metric="weight_kg" device={`${scaleName} (7-day average)`} />
+    </MetricTrendChart>
+
+    <MetricTrendChart
+      title="Body fat"
+      id="body-fat"
+      summary="Each reading from the scale as a dot, with the 7-day average as the line."
+      series={[
+        { label: 'Readings', points: data.bodyFat.readings, marks: 'dots', color: 'var(--running-series)' },
+        { label: '7-day average', points: data.bodyFat.average, color: 'var(--running-series)' },
+      ]}
+      format={chartFormat('body_fat_pct')}
+      target={targetLine(goals.bodyFat)}
+      markers={markers('body_fat_pct')}
+      today={today}
+      table={{
+        columns: ['Date', 'Body fat', '7-day average'],
+        rows: [...data.bodyFat.readings].reverse().map((p) => [formatDate(p.date), reading('body_fat_pct')(p.value), bodyFatAvg.has(p.date) ? reading('body_fat_pct')(bodyFatAvg.get(p.date)!) : '']),
+      }}
+    >
+      <GarminAttribution slot="source" scale />
+      <MetricNow slot="lead" value={bodyFatNow && reading('body_fat_pct')(bodyFatNow.value)} basis="7-day average" date={bodyFatNow?.date} target={targetText(goals.bodyFat)} />
+      <LabComparison comparisons={comparisons('body_fat_pct', data.bodyFat.readings)} metric="body_fat_pct" device={scaleName} />
+    </MetricTrendChart>
+
+    <MetricTrendChart
+      title="VO2 max"
+      id="vo2max"
+      summary="Garmin's estimate from runs, in ml/kg/min, as recorded."
+      series={[{ label: 'VO2 max', points: data.vo2max, color: 'var(--running-series)' }]}
+      format={chartFormat('vo2max')}
+      target={targetLine(goals.vo2max)}
+      markers={markers('vo2max')}
+      today={today}
+      table={{ columns: ['Date', 'VO2 max'], rows: [...data.vo2max].reverse().map((p) => [formatDate(p.date), reading('vo2max')(p.value)]) }}
+    >
+      <GarminAttribution slot="source" />
+      <MetricNow slot="lead" value={vo2Now && reading('vo2max')(vo2Now.value)} date={vo2Now?.date} target={targetText(goals.vo2max)} />
+      <LabComparison comparisons={comparisons('vo2max', data.vo2max)} metric="vo2max" device="Garmin" />
+    </MetricTrendChart>
+
+    <RacePredictions rows={data.predictions} entries={data.predictionEntries} today={today} />
+    <TrainingStatus history={data.trainingStatus} />
+    <FitnessChart points={data.fitness} start={data.fitnessStart} today={today} />
+
+    <MetricTrendChart
+      title="Resting heart rate"
+      id="resting-hr"
+      summary="Each day's resting heart rate from the watch as a dot, with the 7-day average as the line."
+      series={[
+        { label: 'Daily readings', points: data.restingHr.readings, marks: 'dots', color: 'var(--running-series)' },
+        { label: '7-day average', points: data.restingHr.average, color: 'var(--running-series)' },
+      ]}
+      format={(v: number) => formatMetric('resting_hr', Math.round(v))}
+      target={targetLine(goals.restingHr)}
+      today={today}
+      table={{
+        columns: ['Date', 'Resting heart rate', '7-day average'],
+        rows: [...data.restingHr.readings].reverse().map((p) => [formatDate(p.date), reading('resting_hr')(p.value), rhrAvg.has(p.date) ? reading('resting_hr')(rhrAvg.get(p.date)!) : '']),
+      }}
+    >
+      <GarminAttribution slot="source" />
+      <MetricNow slot="lead" value={rhrNow && reading('resting_hr')(rhrNow.value)} basis="7-day average" date={rhrNow?.date} target={targetText(goals.restingHr)} />
+    </MetricTrendChart>
+
+    <HrvChart hrv={data.hrv} baseline={data.hrvBaseline} start={data.hrvStart} goal={goals.hrv} today={today} />
+  </div>
+</SectionLayout>
+
+<style>
+  .health-page > :global(section) {
+    margin-bottom: var(--space-6);
+  }
+</style>

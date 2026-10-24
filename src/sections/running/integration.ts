@@ -70,6 +70,16 @@ export const runningAreas: readonly RunningArea[] = [
       { pattern: '/og/running-races-[slug].png', entrypoint: './src/sections/running/og/race.ts' },
     ],
   },
+  {
+    key: 'health',
+    label: 'Health',
+    href: '/running/health/',
+    description: "Weight, body fat, VO2 max, Garmin's race predictions, fitness and heart rate.",
+    routes: [
+      { pattern: '/running/health', entrypoint: './src/sections/running/pages/health.astro' },
+      { pattern: '/og/running-health.png', entrypoint: './src/sections/running/og/health.png.ts' },
+    ],
+  },
 ];
 
 /** Shipped areas in nav order; the section nav and landing links read this. */

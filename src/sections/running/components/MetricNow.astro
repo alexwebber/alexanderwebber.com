@@ -1,0 +1,80 @@
+---
+// A health metric's headline (T141): the current figure, what it is ("(7-day average)" for the
+// averaged metrics, as the goal cards say, owner 2026-10-24) and its date, then the target with
+// what is left to go. Optional lines follow (the weight header's change since the start).
+import { formatDate } from '../../../shared/format/dates.ts';
+
+export interface Props {
+  /** The figure as displayed, e.g. "101.1 kg"; undefined: no data yet. */
+  value?: string;
+  /** e.g. "7-day average" */
+  basis?: string;
+  date?: string;
+  /** e.g. "Target 93 kg: 8.1 kg to go" */
+  target?: string;
+  /** Lines under the figure, strongest first; later ones are quieter. */
+  lines?: readonly string[];
+}
+
+const { value, basis, date, target, lines = [] } = Astro.props;
+---
+
+<div class="metric-now" data-metric-now>
+  {
+    lines.map((line, i) => (
+      <p class:list={['metric-line', { 'is-quiet': i > 0 }]} data-metric-line>
+        {line}
+      </p>
+    ))
+  }
+  {
+    value !== undefined ? (
+      <p class="metric-figure">
+        <span class="metric-label">Now</span> <strong data-metric-value>{value}</strong>
+        {basis && <> <span class="metric-basis">({basis})</span></>}
+        {date && <> <span class="metric-date">· <time datetime={date}>{formatDate(date)}</time></span></>}
+      </p>
+    ) : (
+      <p class="metric-figure">No data yet.</p>
+    )
+  }
+  {target && <p class="metric-target" data-metric-target>{target}</p>}
+</div>
+
+<style>
+  .metric-now p {
+    margin: 0;
+  }
+
+  .metric-line {
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+  }
+
+  .metric-line.is-quiet {
+    font-size: var(--step-0);
+    font-weight: normal;
+    color: var(--color-text-secondary);
+  }
+
+  .metric-figure {
+    margin-top: var(--space-2) !important;
+  }
+
+  .metric-figure strong {
+    font-size: var(--step-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-label,
+  .metric-basis,
+  .metric-date,
+  .metric-target {
+    color: var(--color-text-secondary);
+  }
+
+  .metric-basis,
+  time {
+    white-space: nowrap;
+  }
+</style>

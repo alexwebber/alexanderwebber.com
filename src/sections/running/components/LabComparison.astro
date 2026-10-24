@@ -1,0 +1,67 @@
+---
+// Lab results against the Garmin reading nearest in time (T139; FR-065, US5.4, US5.5): for each
+// lab entry, the lab value, the Garmin value within 7 days either side, and the difference (lab
+// minus Garmin), in words. With no Garmin reading in the window it says so rather than comparing
+// with something further away. Nothing renders without lab results.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { LAB_WINDOW_DAYS, type LabComparison } from '../domain/health.ts';
+import type { ValueMetric } from '../domain/goals.ts';
+
+export interface Props {
+  comparisons: readonly LabComparison[];
+  metric: ValueMetric;
+  /** The device side's name, e.g. "Garmin Index S2 (7-day average)" or "Garmin". */
+  device: string;
+}
+
+const { comparisons, metric, device } = Astro.props;
+const UNIT: Record<ValueMetric, string> = { weight_kg: ' kg', body_fat_pct: '%', vo2max: '', resting_hr: ' bpm', hrv: ' ms' };
+const DIFF_UNIT: Record<ValueMetric, string> = { weight_kg: ' kg', body_fat_pct: ' percentage points', vo2max: '', resting_hr: ' bpm', hrv: ' ms' };
+const one = (v: number) => new Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(Math.abs(v));
+const value = (v: number) => `${v < 0 ? '−' : ''}${one(v)}${UNIT[metric]}`;
+const diff = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${one(v)}${DIFF_UNIT[metric]}`;
+---
+
+{
+  comparisons.length > 0 && (
+    <div class="lab-comparison" data-lab-comparison>
+      <p class="lab-comparison-title">Lab results against Garmin</p>
+      <ul>
+        {comparisons.map((c) => (
+          <li data-lab-type={c.lab.type} data-lab-date={c.lab.date}>
+            <strong>{c.lab.label}</strong>, <time datetime={c.lab.date}>{formatDate(c.lab.date)}</time> ({c.lab.provider}): <span data-lab-value>{value(c.lab.value)}</span>.{' '}
+            {c.device && c.diff !== undefined ? (
+              <>
+                {device}, <time datetime={c.device.date}>{formatDate(c.device.date)}</time>: <span data-device-value>{value(c.device.value)}</span>. Difference (lab minus Garmin): <span data-lab-diff>{diff(c.diff)}</span>.
+              </>
+            ) : (
+              <>No Garmin reading within {LAB_WINDOW_DAYS} days to compare.</>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .lab-comparison {
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .lab-comparison-title {
+    margin: 0 0 var(--space-1);
+    font-weight: var(--weight-bold);
+  }
+
+  ul {
+    margin: 0;
+    padding-left: var(--space-5);
+  }
+
+  time {
+    white-space: nowrap;
+  }
+</style>
