@@ -54,6 +54,7 @@ const byDate = (points: readonly DatedValue[]) => new Map(points.map((p) => [p.d
 
 const weightNow = latest(data.weight);
 const weightLines = goals.weight ? [startChangeText(goals.weight), allTimeText(goals.weight)].filter((l): l is string => Boolean(l)) : [];
+const bodyFatLines = goals.bodyFat ? [startChangeText(goals.bodyFat)].filter((l): l is string => Boolean(l)) : [];
 const bodyFatNow = latest(data.bodyFat.average);
 const bodyFatAvg = byDate(data.bodyFat.average);
 const vo2Now = latest(data.vo2max);
@@ -102,7 +103,7 @@ const description = weightNow
       }}
     >
       <GarminAttribution slot="source" scale />
-      <MetricNow slot="lead" value={bodyFatNow && reading('body_fat_pct')(bodyFatNow.value)} basis="7-day average" date={bodyFatNow?.date} target={targetText(goals.bodyFat)} />
+      <MetricNow slot="lead" lines={bodyFatLines} value={bodyFatNow && reading('body_fat_pct')(bodyFatNow.value)} basis="7-day average" date={bodyFatNow?.date} target={targetText(goals.bodyFat)} />
       <LabComparison comparisons={comparisons('body_fat_pct', data.bodyFat.readings)} metric="body_fat_pct" device={scaleName} />
     </MetricTrendChart>
 

@@ -263,7 +263,7 @@ const SERIES: Partial<Record<HealthMetric, { date: string; value: number }[]>> =
 const GOALS = [
   { id: 'brighton-sub-3-20', type: 'race_time', title: 'Brighton', priority: 1, featured: true, linked_race: 'brighton-2027', target: { distance: 'marathon', time: '3:20:00' } },
   { id: 'weight-93', type: 'body_composition', title: 'Weight 93 kg', priority: 5, featured: true, created: '2025-10-01', start_value: 127.6, start_date: '2025-06-02', all_time_start: { value: 133.2, date: '2023-01-31' }, target: { metric: 'weight_kg', value: 93, direction: 'at_most' } },
-  { id: 'body-fat-17-5', type: 'body_composition', title: 'Body fat 17.5%', priority: 6, featured: true, created: '2025-10-01', target: { metric: 'body_fat_pct', value: 17.5, direction: 'at_most' } },
+  { id: 'body-fat-17-5', type: 'body_composition', title: 'Body fat 17.5%', priority: 6, featured: true, created: '2025-10-01', start_value: 33.7, start_date: '2025-06-02', target: { metric: 'body_fat_pct', value: 17.5, direction: 'at_most' } },
   { id: 'vo2max-52-5', type: 'metric', title: 'VO2 max 52.5', priority: 7, featured: true, created: '2025-10-01', target: { metric: 'vo2max', value: 52.5, direction: 'at_least' } },
 ] as unknown as Goal[];
 const RUNS = [runFixture('2025-11-28-abcd', { device: 'Venu 2 Plus' }), runFixture('2025-12-01-efgh', { device: 'Venu X1' })] as unknown as Run[];
@@ -326,6 +326,11 @@ describe('the health page', () => {
   it('leads weight with the change since the start, then the all-time line, then the 7-day average (FR-061)', async () => {
     const t = text(await render());
     expect(t).toContain('26.5 kg down since 2 Jun 2025 (127.6 kg) 32.1 kg down since 31 Jan 2023 (133.2 kg) Now 101.1 kg (7-day average) · 24 Oct 2026 Target 93 kg: 8.1 kg to go');
+  });
+
+  it('leads body fat with the change since the start, from the 7-day average (owner, PR #57)', async () => {
+    const t = text(await render());
+    expect(t).toMatch(/[\d.]+% down since 2 Jun 2025 \(33\.7%\) Now 26\.\d% \(7-day average\)/);
   });
 
   it('labels the averaged headlines, marks the targets, and opens every chart on 1 year (FR-063, FR-068)', async () => {

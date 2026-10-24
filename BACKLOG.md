@@ -58,3 +58,7 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 - **Report Spec Kit 1.1.0 Windows issue upstream?** — PowerShell scripts prefer `python3` even
   when it's the Microsoft Store stub, and need PyYAML installed. Worked around locally
   (disabled app execution aliases, `pip install --user pyyaml`).
+- **Bound the Health page's data tables** (owner, PR #57). Each chart's "Show data" table holds
+  every reading, so `/running/health/` grows about 40 KB gzip a year (54 KB in Oct 2026) and
+  reaches the 150 KB page budget in about two years. Plan: keep daily rows for the last year
+  and weekly means before that. Revisit by autumn 2027, or sooner if the page passes 100 KB.
