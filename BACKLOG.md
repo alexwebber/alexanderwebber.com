@@ -18,6 +18,8 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   recurring opens no issue, and `/running/api/freshness` still reads as fresh. Plan: record the
   publish outcome in R2 (e.g. `state/publish-status.json`) and have `alert` include it.
   Owner agreed on 2026-10-17 (PR #23); deferred because it's a separate slice from Phase 2g.
+  It happened on 2026-10-24: a zone backfill's publish failed the gate (a `name` key, fixed
+  in #53), and no issue opened. The agent was watching that run, so it was caught.
 - **Running gear (shoe rotation).** The owner rotates shoes for different kinds of run and
   thinks per-shoe mileage and which shoe each run used could be interesting. intervals.icu syncs
   Garmin gear, so the adapter could carry it. It's a new published category, so it needs the
@@ -36,6 +38,17 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   in R2 lists. The sanitiser never reads `external_id`, and the log scrubber removes long
   numeric IDs, so this is defence in depth only. Option: record the external IDs in a private
   state file the gate also checks.
+- **Faster FIT zone reading on a full reprocess** (2026-10-24). Reading Garmin's zones decodes
+  each whole original FIT file with `garmin-fit-sdk` (pure Python), about 3.4 s a run on CI, so a
+  `PROCESSOR_VERSION` bump reprocesses ~200 runs in about 11 minutes (and grows with history).
+  Normal refreshes only touch new runs, so it's cheap day to day. Options: cache the zones by the
+  FIT file's hash in R2, or stop decoding after the session's `time_in_zone` message. Deferred:
+  it costs minutes only on a processor bump.
+- **Why do archived runs get re-fetched in full?** (2026-10-24). The zone backfill
+  (`missing_only`) re-fetched 44 of 201 activities in full, because their list row's hash had
+  changed, and rewrote 356 of 383 wellness days. Something in intervals.icu's rows (probably
+  recomputed fields) changes after the fact. Check which fields change, and leave volatile ones
+  out of the row hash if they don't affect what's published. Deferred: correct, just slower.
 - **Fundraising spec (Running)** — Martlets via JustGiving for Brighton Marathon: total vs
   target, donate link, cached with last-known fallback. Next spec after Running; the Running
   landing page reserves a slot beside the Brighton hero.
