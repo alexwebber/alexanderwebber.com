@@ -4,8 +4,8 @@
 // pin dates without a clock.
 //
 // - Ranges (FR-068): 3 months, 1 year and all time, back from today. A range never starts before
-//   the data (or a chart's own start, e.g. fitness after its warm-up), and a range that would show
-//   the same days as a shorter one is left out. Charts open on 1 year (owner, 2026-10-24).
+//   the data (or a chart's own start, e.g. fitness after its warm-up), and a range that would add
+//   less than a month over a shorter one is left out. Charts open on 1 year (owner, 2026-10-24).
 // - Daily metrics (body fat, resting HR, HRV): each reading as a faint dot under its trailing
 //   7-day average (composition.ts's trailingMean, the same mean the body-fat goal is judged on).
 //   The headline "now" is the latest 7-day average (owner, 2026-10-24). Weight is published only
@@ -46,9 +46,16 @@ export interface ChartRange {
 }
 
 /**
+ * Days a longer range must add over the shorter one before it is offered; less than this and it
+ * would look the same (owner, 2026-10-24: "All time" was 3–9 days longer than "1 year").
+ */
+export const RANGE_MIN_EXTRA_DAYS = 30;
+
+/**
  * The ranges a chart offers for data starting on `first`, ending today. Each starts no earlier
- * than `first`; "1 year" is offered only when the data reaches back past 3 months, and "All time"
- * only when it reaches back past a year. No data: no ranges.
+ * than `first`; "1 year" is offered only when the data reaches back at least a month past
+ * 3 months, and "All time" only when it reaches back at least a month past a year. No data: no
+ * ranges.
  */
 export function chartRanges(first: string | undefined, today: string): ChartRange[] {
   if (!first) return [];
@@ -56,9 +63,10 @@ export function chartRanges(first: string | undefined, today: string): ChartRang
     const from = addDays(today, -days);
     return first > from ? first : from;
   };
+  const reachesPast = (days: number) => first <= addDays(today, -(days + RANGE_MIN_EXTRA_DAYS));
   const ranges: ChartRange[] = [{ key: '3m', from: start(RANGE_DAYS['3m']), to: today }];
-  if (first < addDays(today, -RANGE_DAYS['3m'])) ranges.push({ key: '1y', from: start(RANGE_DAYS['1y']), to: today });
-  if (first < addDays(today, -RANGE_DAYS['1y'])) ranges.push({ key: 'all', from: first, to: today });
+  if (reachesPast(RANGE_DAYS['3m'])) ranges.push({ key: '1y', from: start(RANGE_DAYS['1y']), to: today });
+  if (reachesPast(RANGE_DAYS['1y'])) ranges.push({ key: 'all', from: first, to: today });
   return ranges;
 }
 

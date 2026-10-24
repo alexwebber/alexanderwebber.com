@@ -52,6 +52,17 @@ describe('ranges (FR-068)', () => {
     expect(chartRanges(undefined, '2026-10-24')).toEqual([]);
   });
 
+  it('offers a longer range only once it adds at least a month', () => {
+    // Today's weight: data from 21 Oct 2025, so "all time" would add 3 days over "1 year".
+    expect(chartRanges('2025-10-21', '2026-10-24').map((r) => r.key)).toEqual(['3m', '1y']);
+    // 30 days past the year (24 Sep 2025) is enough; 29 is not.
+    expect(chartRanges('2025-09-24', '2026-10-24').map((r) => r.key)).toEqual(['3m', '1y', 'all']);
+    expect(chartRanges('2025-09-25', '2026-10-24').map((r) => r.key)).toEqual(['3m', '1y']);
+    // The same margin applies to "1 year" over "3 months" (3 months back is 25 Jul 2026).
+    expect(chartRanges('2026-06-25', '2026-10-24').map((r) => r.key)).toEqual(['3m', '1y']);
+    expect(chartRanges('2026-06-26', '2026-10-24').map((r) => r.key)).toEqual(['3m']);
+  });
+
   it('slices points to a range and to a chart start', () => {
     const points = ['2026-01-01', '2026-02-01', '2026-03-01'].map((date, i) => ({ date, value: i }));
     expect(inRange(points, '2026-01-15', '2026-02-28').map((p) => p.date)).toEqual(['2026-02-01']);

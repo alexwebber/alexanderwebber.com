@@ -9,14 +9,14 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, night):** **Phase 8 (US5 Health) is built: PR #57** (implement
-  subagent about 315k tokens). Phase 7 is live and reviewed.
+- **Status (2026-10-24, late night):** **Phase 8 (US5 Health) is live and reviewed** (#57,
+  #58). The review's one change, hiding "All time" until it adds a month, is the
+  `001-health-alltime` PR.
   - **Next session:**
-    1. #57 merged on 2026-10-24, and its confirmations are answered (decisions log). Check
-       that the `001-health-followups` PR (body fat "down since" line) merged and deployed.
-    2. Remember that the lab wording is decided at the first lab result.
-    3. Run the guided review of `/running/health/` on phone and desktop, then a question round.
-    4. Then Phase 9 (Polish).
+    1. Check that the `001-health-alltime` PR merged and deployed (the live Health page then
+       offers only 3 months and 1 year until 16–20 Nov 2026).
+    2. **Phase 9 (Polish, tasks.md)**, in its own session(s).
+    3. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
@@ -50,8 +50,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
   quickstart.md §0.
-- **Next step: review Phase 8 live (PR #57), then Phase 9 (Polish, tasks.md)** in its own
-  session. History is complete from 7 Oct 2025 (T150 and T085 done).
+- **Next step: Phase 9 (Polish, tasks.md)** in its own session. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
@@ -1083,6 +1082,12 @@ project-specific notes.
   - **The other five were ticked:** the attribution placement, one-decimal 7-day average
     headlines, per-distance prediction trends, the fitness/fatigue and form charts, and the
     generic share image.
+- **2026-10-24** — **Phase 8 guided review** (owner, on phone and desktop). Every figure agreed
+  with Garmin Connect, and the layout is fine as it is. No fresh Garmin reading this time.
+  - **A longer range needs to add at least a month** (owner pick; `001-health-alltime` PR).
+    "All time" was only 3–9 days longer than "1 year" on every chart, because the data starts
+    on 17–21 Oct 2025. `RANGE_MIN_EXTRA_DAYS` (30) applies to "1 year" over "3 months" too, for
+    consistency. "All time" returns by itself on 16–20 Nov 2026, depending on the chart.
 
 ## Upstream candidates
 
