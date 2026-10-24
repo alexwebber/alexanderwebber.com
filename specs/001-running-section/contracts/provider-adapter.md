@@ -14,9 +14,14 @@ class ActivityProvider(Protocol):
     def list_activities(self, oldest: date, newest: date) -> Iterable[ActivityRef]
         # running activities only (FR-009): Run, TrailRun, VirtualRun; refs carry id +
         # start_date_local + a hash of the list row (change detection) + the row itself
+    bundle_layout: int
+        # goes up when the adapter adds a part (intervals: 2 = original.fit added)
     def fetch_activity(self, ref: ActivityRef) -> RawBundle
         # opaque raw payload parts keyed by archive file name (summary.json, detail.json,
-        # streams.json, time-at-hr.json, activity.fit); HR time and FIT are optional (404)
+        # streams.json, time-at-hr.json, activity.fit, original.fit); HR time and both FIT
+        # files are optional (404)
+    def fetch_new_parts(self, ref: ActivityRef, layout: int) -> RawBundle
+        # only the parts added since an older layout, to top up an archived bundle
     def normalise_activity(self, bundle: RawBundle) -> NormalisedActivity   # PURE, no I/O
 
 class HealthProvider(Protocol):
@@ -40,15 +45,21 @@ class Provider(ActivityProvider, HealthProvider):
   intervals.icu returns 403 with an HTML challenge page for Python's default `Python-urllib/x.y`.
 - **Endpoints** (OpenAPI 3: `https://intervals.icu/api/v1/docs`):
   - `GET /athlete/0/activities?oldest=&newest=` — list (filtered to running types).
-  - `GET /activity/{id}?intervals=true` — detail (HR zone times `icu_hr_zone_times`, running
+  - `GET /activity/{id}?intervals=true` — detail (running
     dynamics `average_stance_time`/`_balance`, `average_vertical_oscillation`/`_ratio`,
     `average_stride`, `device_watts`, `icu_training_load`, `race`, `type`, `trainer`).
   - `GET /activity/{id}/streams.json` — `time`, `distance`, `velocity_smooth`, `heartrate`,
     `cadence`, `altitude`, `watts`, dynamics streams (incl. `stance_time_balance`), `latlng`.
     Ground-contact balance comes from the summary field when present, else is derived from the
     `stance_time_balance` stream.
-  - `GET /activity/{id}/time-at-hr` — HR zone breakdown.
-  - `GET /activity/{id}/fit-file` — FIT file, archived verbatim (not parsed).
+  - `GET /activity/{id}/time-at-hr` — intervals.icu's HR breakdown, archived only.
+  - `GET /activity/{id}/fit-file` — intervals.icu's generated FIT file, archived verbatim (not
+    parsed). It lacks Garmin's `time_in_zone` message (216).
+  - `GET /activity/{id}/file` — the watch's original upload, archived as `original.fit` once
+    unwrapped (gzip or a one-file zip); a non-FIT original (TCX, GPX) is treated like a 404. The
+    normaliser reads only its session-level `time_in_zone` message (Garmin FIT SDK
+    `garmin-fit-sdk`) for Garmin's five HR zones: names, bpm ranges and time in each. No
+    original or no message means no zones; intervals.icu's `icu_hr_zone_times` are not used.
   - `GET /athlete/0/wellness?oldest=&newest=` — per-day `weight`, `bodyFat`, `restingHR`, `hrv`
     (rMSSD), `vo2max`, `ctl`, `atl`.
 - **Type mapping**: `Run` -> `road`, `TrailRun` -> `trail`, `VirtualRun` -> `indoor` with
@@ -100,7 +111,9 @@ ID.
 
 `NormalisedActivity` / `NormalisedHealthReading` fields per [data-model.md](../data-model.md) §2.
 Contract tests (per provider, against synthetic fixtures shaped from the Spike 0 payloads) assert:
-required fields present; units normalised (metres, seconds, kg, bpm); `type` mapped to
+required fields present; Garmin HR zones decoded from a synthetic original FIT file built in-test
+(check values from the 23 Oct 2026 run; no real recording is ever a fixture) and absent without one;
+units normalised (metres, seconds, kg, bpm); `type` mapped to
 `road|track|trail|indoor` and `VirtualRun` -> `treadmill: true`; non-run activities rejected;
 missing optional metrics are `None` (never 0); per-km splits computed from streams; timestamps
 converted to Europe/London; non-approved wellness keys absent from archived and normalised output;

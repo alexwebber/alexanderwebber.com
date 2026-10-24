@@ -18,8 +18,14 @@ reprocessing the archive (Rule 1). Units come out as metres, seconds, kg and bpm
 - ``device`` is the Garmin model from ``device_name`` (``Garmin Venu X1`` -> ``Venu X1``), for the
   Garmin attribution. Any other or unusual value is ``None``, so nothing but a plain model name
   can reach a published file.
+- ``hr_zones`` are Garmin's own five zones, read from the watch's original FIT file
+  (``original.fit``): the session-level ``time_in_zone`` message, decoded with Garmin's FIT SDK.
+  See ``garmin_hr_zones`` for how its seven times map to the five zones. With no original, or no
+  such message, there are no zones: intervals.icu's own zone times (``icu_hr_zone_times``) are
+  never used, so the site shows the zones Garmin Connect shows or none (owner, 2026-10-24).
 """
 
+import itertools
 import json
 import math
 import re
@@ -27,6 +33,8 @@ from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
+
+from garmin_fit_sdk import Decoder, Stream
 
 from awingest.providers.base import (
     Dynamics,
@@ -303,14 +311,65 @@ def _power(record: Mapping[str, Any], streams: dict) -> float | None:
     return average
 
 
-def _hr_zones(record: Mapping[str, Any]) -> tuple[HrZone, ...]:
-    times = record.get("icu_hr_zone_times")
-    if not isinstance(times, list):
+# Garmin's names for its five heart-rate zones, as Garmin Connect shows them.
+GARMIN_ZONE_NAMES = ("Warm Up", "Easy", "Aerobic", "Threshold", "Maximum")
+ORIGINAL = "original.fit"
+
+
+def _session_time_in_zone(fit: bytes) -> Mapping[str, Any] | None:
+    try:
+        messages, errors = Decoder(Stream.from_byte_array(bytearray(fit))).read(
+            convert_datetimes_to_dates=False, expand_components=False, merge_heart_rates=False
+        )
+    except Exception:  # noqa: BLE001 - an unreadable optional part means no zones, not a failure
+        return None
+    if errors:
+        return None
+    for message in messages.get("time_in_zone_mesgs", []):
+        if isinstance(message, dict) and message.get("reference_mesg") == "session":
+            return message
+    return None
+
+
+def garmin_hr_zones(fit: bytes | None) -> tuple[HrZone, ...]:
+    """Garmin's five heart-rate zones from the watch's FIT file, or ``()`` when it has none.
+
+    The session's ``time_in_zone`` message holds six ``hr_zone_high_boundary`` values (the top
+    of "below zone 1", then of zones 1 to 5) and seven ``time_in_hr_zone`` times: below zone 1,
+    zones 1 to 5, and above zone 5's top. Zone *k* runs from boundary *k-1* to boundary *k*, as
+    Garmin Connect shows it (23 Oct 2026 check: zone 3 123–140 bpm, 1,393 s). Time below zone 1
+    is left out, because Garmin Connect's zone chart starts at zone 1; time above the top
+    boundary (the max HR setting, so normally none) counts in zone 5, the open-ended top zone.
+    Anything malformed gives no zones rather than half of them.
+    """
+    message = _session_time_in_zone(fit) if fit else None
+    if message is None:
         return ()
-    values = [_non_negative(seconds) for seconds in times]
-    if any(v is None for v in values):
-        return ()  # a malformed breakdown is left out rather than half-shown
-    return tuple(HrZone(zone=i + 1, seconds=v) for i, v in enumerate(values))
+    bounds = message.get("hr_zone_high_boundary")
+    times = message.get("time_in_hr_zone")
+    zones = len(GARMIN_ZONE_NAMES)
+    if not isinstance(bounds, list) or not isinstance(times, list):
+        return ()
+    if len(bounds) != zones + 1 or len(times) != zones + 2:
+        return ()
+    highs = [_positive(b) for b in bounds]
+    seconds = [_non_negative(t) for t in times]
+    if None in highs or None in seconds or any(a >= b for a, b in itertools.pairwise(highs)):
+        return ()
+    in_zone = seconds[1 : zones + 1]
+    in_zone[-1] += seconds[-1]
+    if not any(in_zone):
+        return ()  # no heart rate recorded
+    return tuple(
+        HrZone(
+            zone=k + 1,
+            name=GARMIN_ZONE_NAMES[k],
+            low_bpm=highs[k],
+            high_bpm=highs[k + 1],
+            seconds=in_zone[k],
+        )
+        for k in range(zones)
+    )
 
 
 def _text(value: Any) -> str | None:
@@ -364,7 +423,7 @@ def normalise_activity(bundle: RawBundle) -> NormalisedActivity:
         title_raw=_text(record.get("name")),
         description_raw=_text(record.get("description")),
         splits=km_splits(points),
-        hr_zones=_hr_zones(record),
+        hr_zones=garmin_hr_zones(parts.get(ORIGINAL)),
         samples=points,
     )
 

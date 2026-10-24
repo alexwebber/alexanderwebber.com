@@ -60,7 +60,8 @@ from awingest.state import FETCH_STATUS, StateDoc, parse_utc, utc_iso
 # Bump when unchanged inputs would now publish differently (see the module docstring).
 # 2: runs carry the Garmin ``device`` (FR-077 attribution).
 # 3: best efforts use timer time, leaving watch pauses out (owner, 2026-10-23).
-PROCESSOR_VERSION = 3
+# 4: HR zones are Garmin's own five, from the original FIT file (T159, owner, 2026-10-24).
+PROCESSOR_VERSION = 4
 MARKER = "fetch.json"
 PUBLISHED = Path("data/running/published")
 OWNER = Path("data/running/owner")

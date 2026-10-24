@@ -107,7 +107,8 @@ class ActivityRef:
 @dataclass(frozen=True)
 class RawBundle:
     """An activity's raw parts as received, keyed by archive file name (e.g. ``detail.json``,
-    ``streams.json``, ``activity.fit``). The fetch stage writes each under the activity's prefix."""
+    ``streams.json``, ``activity.fit``, ``original.fit``). The fetch stage writes each under the
+    activity's prefix."""
 
     ref: ActivityRef
     parts: Mapping[str, bytes] = field(repr=False)
@@ -151,7 +152,13 @@ class Split:
 
 @dataclass(frozen=True)
 class HrZone:
+    """One of the watch's own heart-rate zones: its number and name, its bpm range (``low_bpm``
+    up to ``high_bpm``) and the time spent in it."""
+
     zone: int
+    name: str
+    low_bpm: float
+    high_bpm: float
     seconds: float
 
 
@@ -238,6 +245,9 @@ class NormalisedHealthReading:
 
 class ActivityProvider(Protocol):
     name: str
+    # The bundle layout this adapter fetches. It goes up when the adapter adds a part, so the
+    # fetch stage can top up bundles archived under an older layout (``fetch_new_parts``).
+    bundle_layout: int
 
     def list_activities(self, oldest: date, newest: date) -> Iterable[ActivityRef]:
         """Running activities only (FR-009) started between ``oldest`` and ``newest``."""
@@ -245,6 +255,11 @@ class ActivityProvider(Protocol):
 
     def fetch_activity(self, ref: ActivityRef) -> RawBundle:
         """The activity's raw parts, keyed by name."""
+        ...
+
+    def fetch_new_parts(self, ref: ActivityRef, layout: int) -> RawBundle:
+        """Only the parts added to the bundle since ``layout`` (an older ``bundle_layout``),
+        for an activity archived before they existed. Optional parts may be absent."""
         ...
 
     def normalise_activity(self, bundle: RawBundle) -> NormalisedActivity:

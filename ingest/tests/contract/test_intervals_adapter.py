@@ -3,13 +3,16 @@ fixtures in ``tests/fixtures/intervals/`` served by ``FakeIntervalsApi``."""
 
 import base64
 import dataclasses
+import gzip
 import io
 import json
 import math
 import re
+import zipfile
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
+from builders import garmin_fit
 from conftest import TEST_KEY
 
 from awingest.archive.local import LocalArchive
@@ -27,6 +30,8 @@ from awingest.providers.base import (
     UnsupportedActivity,
 )
 from awingest.providers.intervals.client import USER_AGENT, IntervalsClient
+from awingest.providers.intervals.endpoints import unwrap_fit
+from awingest.providers.intervals.normalise import garmin_hr_zones
 from awingest.state import CURSOR, FETCH_STATUS
 
 ALL = (date(2025, 1, 1), date(2026, 12, 31))
@@ -93,9 +98,16 @@ def test_calls_are_paced_at_least_a_second_apart(provider, api, clock):
 
 def test_fetch_activity_returns_every_part_and_skips_missing_optional_ones(provider, api):
     parts = {name: sorted(b.parts) for name, b in bundles(provider, api).items()}
-    full = ["activity.fit", "detail.json", "streams.json", "summary.json", "time-at-hr.json"]
+    full = [
+        "activity.fit",
+        "detail.json",
+        "original.fit",
+        "streams.json",
+        "summary.json",
+        "time-at-hr.json",
+    ]
     assert parts["run-dynamics"] == full
-    # run-basic has no HR time or FIT file (404s), so the bundle simply lacks them.
+    # run-basic has no HR time or FIT files (404s), so the bundle simply lacks them.
     assert parts["run-basic"] == ["detail.json", "streams.json", "summary.json"]
 
 
@@ -112,7 +124,12 @@ def test_required_fields_and_units(runs):
     assert run.elevation_gain_m == 41.0 and run.elevation_loss_m == 39.5
     assert run.training_load == 64.0
     assert run.training_effect is None
-    assert [(z.zone, z.seconds) for z in run.hr_zones][:3] == [(1, 300.0), (2, 900.0), (3, 1200.0)]
+    # Garmin's own zones from the original FIT file (the 23 Oct 2026 check values).
+    assert [(z.zone, z.name, z.low_bpm, z.high_bpm) for z in run.hr_zones][2:4] == [
+        (3, "Aerobic", 123.0, 140.0),
+        (4, "Threshold", 140.0, 158.0),
+    ]
+    assert [round(z.seconds) for z in run.hr_zones] == [2, 44, 1393, 1532, 0]
 
 
 @pytest.mark.parametrize(
@@ -200,7 +217,8 @@ def test_missing_optional_metrics_are_none_never_zero(runs):
     assert basic.avg_stride_m is None  # arrived as null
     assert basic.avg_power_w is None  # no device power
     assert basic.dynamics is None
-    assert basic.hr_zones  # present values are still kept
+    # No original FIT file, so no zones: intervals.icu's own zone times are never a fallback.
+    assert basic.hr_zones == ()
     treadmill = runs["treadmill"]
     assert treadmill.elevation_gain_m is None and treadmill.elevation_loss_m is None
     assert all(s.elev_m is None for s in treadmill.samples)
@@ -478,16 +496,85 @@ def test_unchanged_rows_are_not_refetched_and_changed_ones_are(provider, api, tm
     assert b"SENTINEL renamed" in archive.get("raw/intervals/activities/i90000001/detail.json")
 
 
-def test_a_malformed_stream_or_zone_list_is_left_out_not_fatal(provider, api):
+def test_a_malformed_stream_or_original_is_left_out_not_fatal(provider, api):
     bundle = bundles(provider, api)["run-dynamics"]
-    detail = json.loads(bundle.parts["detail.json"]) | {"icu_hr_zone_times": [300, None, 10]}
     streams = json.loads(bundle.parts["streams.json"]) + [{"type": "torque", "data": None}]
     parts = dict(bundle.parts) | {
-        "detail.json": json.dumps(detail).encode(),
         "streams.json": json.dumps(streams).encode(),
+        "original.fit": bundle.parts["original.fit"][:-9] + b"truncated",
     }
     run = provider.normalise_activity(RawBundle(ref=bundle.ref, parts=parts))
     assert run.hr_zones == () and run.splits
+
+
+# --- Garmin's HR zones (T159) ---
+
+
+def zones_of(fit: bytes) -> list[tuple]:
+    return [(z.zone, z.name, z.low_bpm, z.high_bpm, z.seconds) for z in garmin_hr_zones(fit)]
+
+
+def test_garmin_zones_match_garmin_connect():
+    # The 23 Oct 2026 10.07 km run: zone k runs from boundary k-1 to boundary k.
+    assert zones_of(garmin_fit()) == [
+        (1, "Warm Up", 88.0, 105.0, 2.001),
+        (2, "Easy", 105.0, 123.0, 44.006),
+        (3, "Aerobic", 123.0, 140.0, 1392.998),
+        (4, "Threshold", 140.0, 158.0, 1531.799),
+        (5, "Maximum", 158.0, 175.0, 0.0),
+    ]
+
+
+def test_time_below_zone_1_is_left_out_and_above_the_top_counts_in_zone_5():
+    zones = zones_of(garmin_fit(times=[300, 10, 20, 30, 40, 50, 6]))
+    assert [z[4] for z in zones] == [10, 20, 30, 40, 56]
+
+
+def test_intervals_icu_zone_times_are_never_a_fallback(provider, api):
+    bundle = bundles(provider, api)["run-dynamics"]
+    assert json.loads(bundle.parts["detail.json"])["icu_hr_zone_times"]
+    parts = {k: v for k, v in bundle.parts.items() if k != "original.fit"}
+    assert provider.normalise_activity(RawBundle(ref=bundle.ref, parts=parts)).hr_zones == ()
+
+
+@pytest.mark.parametrize(
+    "fit",
+    [
+        garmin_fit(reference="lap"),  # only lap-level zones
+        garmin_fit(bounds=None),
+        garmin_fit(times=None),
+        garmin_fit(bounds=[88, 105, 123, 140, 158]),  # four zones
+        garmin_fit(times=[0, 1, 2, 3, 4, 5]),
+        garmin_fit(bounds=[88, 123, 105, 140, 158, 175]),  # not increasing
+        garmin_fit(times=[5, 0, 0, 0, 0, 0, 0]),  # nothing in any zone: no heart rate
+        b"<TrainingCenterDatabase/>",
+        b"",
+    ],
+)
+def test_no_or_malformed_garmin_zones_give_none(fit):
+    assert garmin_hr_zones(fit) == ()
+
+
+def test_the_original_is_unwrapped_and_only_a_fit_file_is_kept():
+    fit = garmin_fit()
+    zipped = io.BytesIO()
+    with zipfile.ZipFile(zipped, "w") as archive:
+        archive.writestr("activity.fit", fit)
+    assert unwrap_fit(fit) == fit
+    assert unwrap_fit(gzip.compress(fit)) == fit
+    assert unwrap_fit(zipped.getvalue()) == fit
+    assert unwrap_fit(gzip.compress(b"<gpx></gpx>")) is None
+    assert unwrap_fit(b"<?xml version='1.0'?><TrainingCenterDatabase/>") is None
+    assert unwrap_fit(b"\x1f\x8bnot really gzip") is None
+
+
+def test_a_gzipped_original_is_archived_unwrapped(provider, api):
+    rows = {api.names[r["id"]]: r["id"] for r in api.rows if r["id"] in api.names}
+    api.originals[rows["run-dynamics"]] = gzip.compress(garmin_fit())
+    api.originals[rows["race"]] = b"<?xml version='1.0'?><gpx/>"
+    got = bundles(provider, api)
+    assert got["run-dynamics"].parts["original.fit"] == garmin_fit()
+    assert "original.fit" not in got["race"].parts
 
 
 def test_cadence_is_steps_per_minute(runs):

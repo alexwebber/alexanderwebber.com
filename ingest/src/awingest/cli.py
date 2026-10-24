@@ -68,6 +68,12 @@ def _parser() -> argparse.ArgumentParser:
     fetch.add_argument("--reimport-from", type=_date)
     fetch.add_argument("--reimport-to", type=_date)
     fetch.add_argument("--health-only", action="store_true")
+    fetch.add_argument(
+        "--missing-only",
+        action="store_true",
+        help="with --reimport-from: fetch only new or changed activities and parts missing from "
+        "archived ones (e.g. after the adapter adds a part), not everything in the window",
+    )
     with_archive(fetch)
 
     backfill = commands.add_parser("backfill", help="whole history, paced and resumable")
@@ -118,6 +124,9 @@ def main(argv: list[str] | None = None) -> int:
     if window[1] and (not window[0] or window[0] > window[1]):
         log.error("bad_arguments", message="--reimport-to needs an earlier --reimport-from")
         return 2
+    if args.command == "fetch" and args.missing_only and not window[0]:
+        log.error("bad_arguments", message="--missing-only needs --reimport-from")
+        return 2
     try:
         archive = _archive(args)
     except ArchiveError as exc:
@@ -154,6 +163,7 @@ def main(argv: list[str] | None = None) -> int:
             reimport_from=args.reimport_from,
             reimport_to=args.reimport_to,
             health_only=args.health_only,
+            missing_only=args.missing_only,
         )
     else:
         result = run_backfill(provider, archive, log=log, start=args.start, resume=args.resume)

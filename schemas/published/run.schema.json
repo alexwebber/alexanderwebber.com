@@ -91,16 +91,28 @@
       }
     },
     "hr_zones": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["zone", "seconds"],
-        "properties": {
-          "zone": { "type": "integer", "minimum": 1, "maximum": 10 },
-          "seconds": { "$ref": "../defs.schema.json#/$defs/seconds" }
+      "description": "Garmin's own five heart-rate zones from the watch's original FIT file (time_in_zone, session level): each zone's number, Garmin name, bpm range and time in it. Omitted when the watch recorded none. The legacy branch accepts intervals.icu's zone times published before processor version 4; remove it once every run is republished.",
+      "anyOf": [
+        {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/$defs/garminHrZone" }
+        },
+        {
+          "deprecated": true,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["zone", "seconds"],
+            "properties": {
+              "zone": { "type": "integer", "minimum": 1, "maximum": 10 },
+              "seconds": { "$ref": "../defs.schema.json#/$defs/seconds" }
+            }
+          }
         }
-      }
+      ]
     },
     "series": {
       "description": "Chart series, downsampled to at most 600 points. The x-axis is distance or elapsed time, never clock time. No coordinates. null marks a gap.",
@@ -154,6 +166,18 @@
   },
   "$defs": {
     "bpm": { "type": "number", "exclusiveMinimum": 0, "maximum": 260 },
+    "garminHrZone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["zone", "name", "low_bpm", "high_bpm", "seconds"],
+      "properties": {
+        "zone": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "name": { "enum": ["Warm Up", "Easy", "Aerobic", "Threshold", "Maximum"] },
+        "low_bpm": { "$ref": "#/$defs/bpm" },
+        "high_bpm": { "$ref": "#/$defs/bpm" },
+        "seconds": { "$ref": "../defs.schema.json#/$defs/seconds" }
+      }
+    },
     "axis": {
       "type": "array",
       "maxItems": 600,

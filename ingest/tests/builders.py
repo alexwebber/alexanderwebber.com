@@ -1,9 +1,61 @@
-"""Builders for normalised activities with synthetic streams (processor tests)."""
+"""Builders for normalised activities with synthetic streams (processor tests), and synthetic
+FIT files (no position data; never a real recording)."""
 
+from collections.abc import Sequence
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from garmin_fit_sdk import Encoder, Profile
+
 from awingest.providers.base import Dynamics, HrZone, NormalisedActivity, Sample, Split
+
+# The 23 Oct 2026 check values (T159): Garmin's boundaries and session time in each zone.
+GARMIN_BOUNDS = (88, 105, 123, 140, 158, 175)
+GARMIN_TIMES = (13.502, 2.001, 44.006, 1392.998, 1531.799, 0.0, 0.0)
+
+
+def garmin_fit(
+    bounds: Sequence[int] | None = GARMIN_BOUNDS,
+    times: Sequence[float] | None = GARMIN_TIMES,
+    *,
+    reference: str = "session",
+    laps: int = 1,
+) -> bytes:
+    """A minimal FIT activity file: a file_id, then ``time_in_zone`` messages for each lap and
+    for the session (``reference``), as a Garmin watch writes them. ``None`` leaves a field out."""
+    mesg = Profile["mesg_num"]
+    encoder = Encoder()
+    encoder.on_mesg(
+        mesg["FILE_ID"],
+        {"type": "activity", "manufacturer": "garmin", "time_created": 1_100_000_000},
+    )
+    zone: dict = {"hr_calc_type": "percent_max_hr", "max_heart_rate": 175}
+    if bounds is not None:
+        zone["hr_zone_high_boundary"] = list(bounds)
+    if times is not None:
+        zone["time_in_hr_zone"] = list(times)
+    for i in range(laps):
+        lap = {"reference_mesg": "lap", "reference_index": i, "time_in_hr_zone": [1.0] * 7}
+        encoder.on_mesg(mesg["TIME_IN_ZONE"], lap | {"hr_zone_high_boundary": list(GARMIN_BOUNDS)})
+    encoder.on_mesg(
+        mesg["TIME_IN_ZONE"], {"reference_mesg": reference, "reference_index": 0} | zone
+    )
+    return encoder.close()
+
+
+def garmin_zones(seconds: Sequence[float] = (600, 1800, 0, 0, 0)) -> tuple[HrZone, ...]:
+    names = ("Warm Up", "Easy", "Aerobic", "Threshold", "Maximum")
+    return tuple(
+        HrZone(
+            zone=k + 1,
+            name=names[k],
+            low_bpm=GARMIN_BOUNDS[k],
+            high_bpm=GARMIN_BOUNDS[k + 1],
+            seconds=seconds[k],
+        )
+        for k in range(5)
+    )
+
 
 LONDON = ZoneInfo("Europe/London")
 
@@ -58,7 +110,7 @@ def activity(
         "title_raw": "SENTINEL Hastings Running",
         "description_raw": "SENTINEL loop past the pier",
         "splits": (Split(km=1, distance_m=1000, time_s=300, avg_hr=150, elev_delta_m=2.0),),
-        "hr_zones": (HrZone(zone=1, seconds=600), HrZone(zone=2, seconds=1800)),
+        "hr_zones": garmin_zones(),
         "samples": points,
     }
     return NormalisedActivity(**(values | fields))

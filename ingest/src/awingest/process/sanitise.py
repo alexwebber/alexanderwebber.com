@@ -21,6 +21,7 @@ new provider field can't reach a published file by accident. The published schem
   owner's ``run-overrides`` ``is_race`` if set; else a ``race.yaml`` linked by ``run_id`` makes
   the run a race (unless it says ``designate: not_race``); else the intervals.icu ``race`` flag,
   which Garmin sync doesn't set (FR-050).
+- **HR zones** are the watch's own (Garmin's five, with names and bpm ranges), from the adapter.
 - A value outside the published range (e.g. a heart rate over 260) is treated as not recorded and
   left out (FR-048), rather than failing the whole publish.
 
@@ -41,7 +42,7 @@ from awingest.providers.base import NormalisedActivity, Sample
 SCHEMA_VERSION = 1
 MAX_SERIES_POINTS = 600
 MAX_BPM = 260
-MAX_HR_ZONES = 10
+MAX_HR_ZONES = 5  # Garmin's five zones
 STOPPED_MPS = 0.5  # slower than this (over 33 min/km) is standing still: no pace
 
 
@@ -161,6 +162,27 @@ def _dynamics(activity: NormalisedActivity) -> dict[str, Any] | None:
     return out or None
 
 
+def _hr_zones(activity: NormalisedActivity) -> list[dict[str, Any]]:
+    """The watch's zones, all or none: one out-of-range zone leaves the breakdown out."""
+    zones = []
+    for z in activity.hr_zones:
+        low, high = _in_range(z.low_bpm, 0, MAX_BPM), _in_range(z.high_bpm, 0, MAX_BPM)
+        if not 1 <= z.zone <= MAX_HR_ZONES or low is None or high is None or low >= high:
+            return []
+        if not math.isfinite(z.seconds) or z.seconds < 0:
+            return []
+        zones.append(
+            {
+                "zone": z.zone,
+                "name": z.name,
+                "low_bpm": _num(low, 0),
+                "high_bpm": _num(high, 0),
+                "seconds": _num(z.seconds, 0),
+            }
+        )
+    return zones
+
+
 def _best_pace(efforts: Sequence[BestEffort], average: float) -> float:
     """The fastest kilometre (the 1 km best effort) if it is plausible, else the average."""
     km = next((e for e in efforts if e.distance_m == 1000 and e.plausible), None)
@@ -246,11 +268,7 @@ def sanitise_run(
             "aerobic": _num(effect.aerobic, 1),
             "anaerobic": _num(effect.anaerobic, 1),
         }
-    zones = [
-        {"zone": z.zone, "seconds": _num(z.seconds, 0)}
-        for z in activity.hr_zones
-        if 1 <= z.zone <= MAX_HR_ZONES and z.seconds >= 0
-    ]
+    zones = _hr_zones(activity)
     if zones:
         run["hr_zones"] = zones
     if override.exclude_from_records:

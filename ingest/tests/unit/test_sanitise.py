@@ -7,7 +7,7 @@ from dataclasses import replace
 from datetime import datetime, timedelta
 
 import pytest
-from builders import LONDON, activity
+from builders import LONDON, activity, garmin_zones
 
 from awingest.process.overrides import RaceLink, RunOverride
 from awingest.process.sanitise import MAX_SERIES_POINTS, Unpublishable, sanitise_run, series
@@ -94,6 +94,26 @@ def test_out_of_range_values_are_left_out_rather_than_failing():
     run = valid(sanitise_run(odd, run_id=RUN))
     assert "hr" not in run
     assert run["dynamics"] == {"gct_ms": 240.0}
+
+
+def test_garmin_zones_publish_their_name_range_and_whole_seconds():
+    run = valid(
+        sanitise_run(activity(hr_zones=garmin_zones((2.4, 44.0, 1392.998, 1531.8, 0))), run_id=RUN)
+    )
+    assert run["hr_zones"][2] == {
+        "zone": 3,
+        "name": "Aerobic",
+        "low_bpm": 123,
+        "high_bpm": 140,
+        "seconds": 1393,
+    }
+    assert [z["seconds"] for z in run["hr_zones"]] == [2, 44, 1393, 1532, 0]
+
+
+def test_one_out_of_range_zone_leaves_the_breakdown_out():
+    zones = list(garmin_zones())
+    zones[4] = replace(zones[4], high_bpm=300.0)
+    assert "hr_zones" not in valid(sanitise_run(activity(hr_zones=tuple(zones)), run_id=RUN))
 
 
 def test_treadmill_and_owner_flags_are_mirrored():

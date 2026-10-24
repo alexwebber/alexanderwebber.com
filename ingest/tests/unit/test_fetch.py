@@ -58,6 +58,7 @@ def test_raw_parts_and_the_marker_are_archived(provider, archive):
             "activity.fit",
             "detail.json",
             "fetch.json",
+            "original.fit",
             "streams.json",
             "summary.json",
             "time-at-hr.json",
@@ -67,11 +68,63 @@ def test_raw_parts_and_the_marker_are_archived(provider, archive):
     assert marker["parts"] == [
         "activity.fit",
         "detail.json",
+        "original.fit",
         "streams.json",
         "summary.json",
         "time-at-hr.json",
     ]
     assert len(marker["row_hash"]) == 64
+    assert marker["layout"] == 2
+
+
+def _as_layout_1(archive, prefix):
+    """Make an archived bundle look as the layout-1 adapter left it (no original FIT file)."""
+    archive.delete(prefix + "original.fit")
+    marker = read(archive, prefix + "fetch.json")
+    del marker["layout"]
+    marker["parts"].remove("original.fit")
+    archive.put(prefix + "fetch.json", json.dumps(marker, sort_keys=True).encode())
+
+
+def test_an_older_bundle_gets_only_its_new_parts(provider, api, archive):
+    prefix = "raw/intervals/activities/i90000001/"
+    run_fetch(provider, archive, log=log(), now=NOW)
+    _as_layout_1(archive, prefix)
+    detail = archive.get(prefix + "detail.json")
+    api.requests.clear()
+    result = run_fetch(provider, archive, log=log(), now=NOW)
+    assert (result.activities.topped_up, result.activities.fetched) == (1, 0)
+    assert [p for p in api.paths() if p.startswith("/activity/")] == ["/activity/i90000001/file"]
+    assert archive.get(prefix + "original.fit") and archive.get(prefix + "detail.json") == detail
+    marker = read(archive, prefix + "fetch.json")
+    assert marker["layout"] == 2 and "original.fit" in marker["parts"]
+    # Topped up once: the next run has nothing to do.
+    api.requests.clear()
+    again = run_fetch(provider, archive, log=log(), now=NOW)
+    assert again.activities.unchanged == 1 and not again.activities.topped_up
+    assert not [p for p in api.paths() if p.startswith("/activity/")]
+
+
+def test_a_top_up_without_an_original_still_marks_the_bundle_current(provider, api, archive):
+    prefix = "raw/intervals/activities/i90000001/"
+    run_fetch(provider, archive, log=log(), now=NOW)
+    _as_layout_1(archive, prefix)
+    del api.originals["i90000001"]  # 404
+    result = run_fetch(provider, archive, log=log(), now=NOW)
+    assert result.activities.topped_up == 1 and not archive.exists(prefix + "original.fit")
+    marker = read(archive, prefix + "fetch.json")
+    assert marker["layout"] == 2 and "original.fit" not in marker["parts"]
+
+
+def test_a_failed_top_up_is_partial_and_retried(provider, api, archive):
+    prefix = "raw/intervals/activities/i90000001/"
+    run_fetch(provider, archive, log=log(), now=NOW)
+    _as_layout_1(archive, prefix)
+    api.fail("/file", "503", times=3)
+    result = run_fetch(provider, archive, log=log(), now=NOW)
+    assert (result.outcome, result.activities.failed) == ("partial", 1)
+    assert "layout" not in read(archive, prefix + "fetch.json")
+    assert run_fetch(provider, archive, log=log(), now=NOW).activities.topped_up == 1
 
 
 def test_one_failing_activity_is_partial_and_holds_the_activity_cursor(provider, api, archive):
@@ -160,6 +213,20 @@ def test_reimport_refetches_everything_and_leaves_cursors(provider, api, archive
     assert again.activities.fetched == 3  # run-basic, trainer-run, treadmill
     # A window that ends before today doesn't count as a fresh refresh.
     assert read(archive, FETCH_STATUS)["intervals"]["last_success_at"] == "2026-10-17T11:00:00Z"
+
+
+def test_missing_only_tops_up_a_window_without_refetching_it(provider, api, archive):
+    run_fetch(provider, archive, log=log(), now=NOW, reimport_from=date(2026, 1, 1))
+    for aid in ("i90000001", "i90000003"):
+        _as_layout_1(archive, f"raw/intervals/activities/{aid}/")
+    api.requests.clear()
+    result = run_fetch(
+        provider, archive, log=log(), now=NOW, reimport_from=date(2026, 1, 1), missing_only=True
+    )
+    assert result.activities.fetched == 0 and result.activities.topped_up == 2
+    fetched = sorted(p for p in api.paths() if p.startswith("/activity/"))
+    assert fetched == ["/activity/i90000001/file", "/activity/i90000003/file"]
+    assert not archive.exists(CURSOR)
 
 
 def test_health_only_skips_activities(provider, api, archive):
