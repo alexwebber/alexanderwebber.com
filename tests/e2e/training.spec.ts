@@ -44,6 +44,9 @@ test('US3.1: opens on weeks; months and years switch in without JS', async ({ br
   await expect(totals.getByRole('heading', { name: 'Distance by week' })).toBeVisible();
   await expect(totals.getByRole('heading', { name: 'Distance by month' })).toBeHidden();
   await totals.getByText('Months', { exact: true }).click();
+  // The clicked option's radio takes focus but stays hidden, so the options don't shift.
+  const radio = await totals.locator('fieldset.toggle input[value="month"]').boundingBox();
+  expect(radio!.width).toBeLessThanOrEqual(1);
   await expect(totals.getByRole('heading', { name: 'Distance by month' })).toBeVisible();
   await expect(totals.getByRole('heading', { name: 'Moving time by month' })).toBeVisible();
   await expect(totals.getByRole('heading', { name: 'Distance by week' })).toBeHidden();
