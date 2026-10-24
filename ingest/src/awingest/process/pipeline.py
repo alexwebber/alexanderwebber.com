@@ -13,6 +13,10 @@ the adapter's pure ``normalise_*`` functions.
 - **IDs**: new activities get a public run ID from the append-only map (``run_ids.py``), which is
   saved before the published tree is committed, so a published ID is always on record.
 - **Hidden runs** are recorded in the manifest as hidden and their file is removed (FR-017).
+- **Race tracks** (``race_track.py``) are written beside a race's run file, with its
+  ``track_ref``, and removed with it, or when the run stops being a race or its map is hidden. A
+  track is part of its run's output, so the run's ``input_hash`` (which includes its
+  ``race.yaml``) covers it.
 - **All or nothing**: an owner file or a published document failing validation stops the run
   before the published tree is touched (exit 20). One activity the adapter can't normalise is
   logged and skipped (outcome ``partial``); its last good file stays.
@@ -31,7 +35,7 @@ from typing import Any, Protocol
 from awingest.archive.base import ArchiveError, ObjectInfo, RawArchive
 from awingest.errors import IngestError
 from awingest.logging import Logger
-from awingest.process import health
+from awingest.process import health, race_track
 from awingest.process.overrides import OwnerInputs, load_owner
 from awingest.process.run_ids import RunIdMap
 from awingest.process.sanitise import Unpublishable, sanitise_run
@@ -203,6 +207,7 @@ def _drop(ctx: _Context, run_id: str | None) -> None:
     """Unpublish a run that is no longer publishable (e.g. its type stopped being a run)."""
     if run_id is not None and run_id in ctx.new.runs:
         ctx.writer.remove(run_path(run_id))
+        ctx.writer.remove(race_track.track_path(run_id))
         del ctx.new.runs[run_id]
         ctx.result.runs.removed += 1
 
@@ -248,22 +253,33 @@ def process_activity(ctx: _Context, prefix: str, provider_id: str, objects: dict
     override = ctx.owner.override(run_id)
     if override.hide:
         ctx.writer.remove(path)
+        ctx.writer.remove(race_track.track_path(run_id))
         ctx.new.runs[run_id] = {"input_hash": entry_hash, "hidden": True}
         counts.hidden += 1
         return
+    race = ctx.owner.races.get(run_id)
     try:
         doc = sanitise_run(
             activity,
             run_id=run_id,
             run_date=date.fromisoformat(run_id[:10]),
             override=override,
-            race=ctx.owner.races.get(run_id),
+            race=race,
             goal_distances=ctx.owner.goal_distances,
         )
     except Unpublishable:
         counts.skipped += 1
         _drop(ctx, run_id)
         return
+    track = None
+    if race_track.wants_track(activity, is_race=doc["is_race"], race=race):
+        trim_ends_m = race.trim_ends_m if race else 0
+        track = race_track.build_track(activity, run_id=run_id, trim_ends_m=trim_ends_m)
+    if track is None:
+        ctx.writer.remove(race_track.track_path(run_id))
+    else:
+        ctx.writer.write_json(race_track.track_path(run_id), track, "published/race-track")
+        doc["track_ref"] = race_track.track_ref(run_id)
     ctx.writer.write_json(path, doc, "published/run")  # PublishInvalid stops the whole run
     ctx.new.runs[run_id] = {"input_hash": entry_hash, "path": path}
     counts.written += 1
