@@ -12,9 +12,9 @@ Update this as decisions get made — treat it as the source of truth alongside
 - **Status (2026-10-24, night):** **Phase 8 (US5 Health) is built: PR #57** (implement
   subagent about 315k tokens). Phase 7 is live and reviewed.
   - **Next session:**
-    1. Check whether #57 merged and its deploy finished.
-    2. Ask the owner any of its 8 confirmations left unticked (one asks about a body fat
-       "down since" line, one about a BACKLOG item on bounding the health tables).
+    1. #57 merged on 2026-10-24, and its confirmations are answered (decisions log). Check
+       that the `001-health-followups` PR (body fat "down since" line) merged and deployed.
+    2. Remember that the lab wording is decided at the first lab result.
     3. Run the guided review of `/running/health/` on phone and desktop, then a question round.
     4. Then Phase 9 (Polish).
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
@@ -1071,7 +1071,25 @@ project-specific notes.
   - **Tests:** Vitest 520, Playwright 207 passed (1 skipped, both projects), pytest 416 passed
     (1 skipped), ruff and `astro check` clean, full gate green.
 
+- **2026-10-24** — Owner answered PR #57's confirmations (7 of 8 ticked):
+  - **Body fat gets a "down since" line** ("7.5% down since 2 Jun 2025 (33.7%)", from the
+    7-day average), like weight's (`001-health-followups` PR).
+  - **Bounding the health tables** went to BACKLOG.
+  - **Lab comparison wording is decided at the first lab result** (owner pick, after the
+    agent explained it). The box was unticked because no lab tests exist yet. When the owner
+    sends a DEXA or lab VO2 max result (T142), offer the plainer wording first: "Lab test
+    (Clinic, 15 Mar 2026): 51.0. Your Garmin said 54 that day, 3.0 higher than the lab." The
+    built wording is the alternative.
+  - **The other five were ticked:** the attribution placement, one-decimal 7-day average
+    headlines, per-distance prediction trends, the fitness/fatigue and form charts, and the
+    generic share image.
+
 ## Upstream candidates
+
+- 2026-10-24 — A PR checkbox about a feature with no data yet (lab tests) left the owner
+  confused, because the PR didn't say the feature was for later. Playbook lesson (PR
+  confirmations): when a confirmation covers something not visible yet, say so in the box
+  ("for when you send your first lab result") and give an example of what it will look like.
 
 - 2026-10-24 — Astro adds its scoped-style attribute (`data-astro-cid-…`) to every element of a
   component that has a `<style>` block, so a data table of ~1,800 rows carried it on every cell:
