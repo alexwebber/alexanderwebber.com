@@ -763,7 +763,7 @@ race page shows its map and photos.
 - [ ] T130 [P] [US4] Create `src/sections/running/components/PBTable.astro`, `RaceHistory.astro` and `UpcomingRaces.astro`. Upcoming races show the focus race first, then by date, each with days remaining, target time and link. Completed races leave the list (FR-056).
 - [ ] T131 [P] [US4] Create `src/sections/running/components/RaceMap.astro`:
   - **Static baseline**: a build-time SVG route with km markers and a km-axis elevation profile, with zero third-party requests.
-  - **Interactive enhancement**: a "Load interactive map" button lazy-imports maplibre-gl 6.14.0 with OpenFreeMap tiles **only on click**, with attribution. It is the only JS-budget exception.
+  - **Interactive enhancement**: a "Load interactive map" button lazy-imports maplibre-gl (6.15.0, the current pin) with OpenFreeMap tiles **only on click**, with attribution. It is the only JS-budget exception.
   - **Absence**: renders nothing when there is no track.
 - [ ] T132 [P] [US4] Create `src/sections/running/components/PhotoGallery.astro`: `astro:assets` AVIF/WebP, lazy loading, with the `description` as alt text and an optional caption (FR-055).
 - [ ] T133 [US4] Create `src/sections/running/pages/races.astro` at `/running/races/` (history, PB table, upcoming races) and `src/sections/running/pages/races/[slug].astro`. Each race page shows:
@@ -774,9 +774,18 @@ race page shows its map and photos.
   - a per-race OG card from `src/sections/running/og/race.ts`
 
   Register the routes, and link race runs in the run list and run pages to their race pages.
-- [ ] T134 [US4] OWNER: Supply pre-Garmin race results (date, name, distance, official time), official chip times and positions for Garmin-recorded races, and race photos with descriptions, and confirm the agent's candidate race list (T157). The agent asks at the US4 PR review.
-- [ ] T157 [US4] Draft the candidate race list (Garmin sync never sets intervals.icu's `race` flag, FR-050; RESULTS.md). The agent scans the private raw R2 data (raw activity names, distance/pace patterns such as near-standard distances run near PB pace, and race-day dates the owner recalls) and drafts candidates keyed by opaque public run ID with date, distance and time. Raw names are shown to the owner only in the conversation, never in git or a PR body. The owner confirms or rejects each at the US4 PR review (with T134); confirmed races feed T135.
-- [ ] T135 [US4] From the owner's input (T134) and the confirmed candidate list (T157), write `data/running/owner/races/<slug>/race.yaml` entries, record each confirmed race's designation (`designate: race` in its `race.yaml` when it has race details, else `run-overrides.yaml` `is_race: true`), and run `scripts/add-race-photo.ts` for each photo. Raise a PR. `validate-data` must pass, including the duplicate-race check.
+- [X] T134 [US4] OWNER: Supply pre-Garmin race results (date, name, distance, official time), official chip times and positions for Garmin-recorded races, and race photos with descriptions, and confirm the agent's candidate race list (T157). The agent asks at the US4 PR review.
+  - **Done 2026-10-24** (asked before implement): there are no races yet, before or since Garmin, so there are no results, chip times or photos. Brighton Marathon (4 Apr 2027) is the first race.
+- [X] T157 [US4] Draft the candidate race list (Garmin sync never sets intervals.icu's `race` flag, FR-050; RESULTS.md). The agent scans the private raw R2 data (raw activity names, distance/pace patterns such as near-standard distances run near PB pace, and race-day dates the owner recalls) and drafts candidates keyed by opaque public run ID with date, distance and time. Raw names are shown to the owner only in the conversation, never in git or a PR body. The owner confirms or rejects each at the US4 PR review (with T134); confirmed races feed T135.
+  - **Done 2026-10-24**: 201 raw runs scanned, 23 race-like by name, pace or a Saturday-9am 5k. The owner rejected the three plausible ones (a half on 5 Apr 2026, the 17 Oct 2026 track 5k, a 5k on 27 Feb 2026); the rest are named training sessions.
+- [X] T135 [US4] From the owner's input (T134) and the confirmed candidate list (T157), write `data/running/owner/races/<slug>/race.yaml` entries, record each confirmed race's designation (`designate: race` in its `race.yaml` when it has race details, else `run-overrides.yaml` `is_race: true`), and run `scripts/add-race-photo.ts` for each photo. Raise a PR. `validate-data` must pass, including the duplicate-race check.
+  - **Nothing to write (2026-10-24)**: no confirmed races. Brighton's `race.yaml` is written after race day.
+- **Owner picks (2026-10-24), before implement:**
+  - **Solo time trials aren't races.** Efforts like the 17 Oct track 5k and the planned 26 Dec half count as fastest efforts in the PB table and goals only, with no race page and no map.
+  - **PB distances:** 5k, 10k, half and marathon only. The marathon row reads as not yet run, pointing at Brighton, until there is a marathon effort.
+  - **Races page with no races:** the Brighton countdown (upcoming races) first, then the PB table, then the empty history: "No races yet: Brighton Marathon on 4 Apr 2027 will be the first."
+  - **"Races" joins the Running menu now**, beside Goals and Training.
+  - **Race pages, maps and photos are built now**, tested on synthetic races (fixtures and the test-only preview), so Brighton's page works on the day. Live, only the races page and PB table show anything until then.
 - [ ] T136 [P] [US4] Create `tests/unit/pbs.test.ts` and `tests/unit/race-history.test.ts`. They cover:
   - US4.2 (PB table)
   - US4.3 (official 1:41:07 beats the device's 1:41:15)

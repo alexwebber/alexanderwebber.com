@@ -942,6 +942,20 @@ project-specific notes.
   seconds}`, the site names zones from their number, and `PROCESSOR_VERSION` is 5. The backfill
   (`reimport_from=2025-10-01`, `missing_only`) hit the 25-minute fetch limit after topping up
   about 151 runs; a second run tops up the rest (finished ones are skipped).
+- **2026-10-24** — **Phase 6 post-merge checks:** the cleanup PR (#54) merged and deployed, and
+  all 199 published runs carry Garmin's zones. The owner had nothing more on the Training pages.
+- **2026-10-24** — **Phase 7 owner picks** (question round before implement; tasks.md amended):
+  - **No races yet.** T157's scan of 201 raw runs found three plausible candidates (a half on
+    5 Apr 2026, the 17 Oct track 5k, a 5k on 27 Feb 2026), and the owner rejected all three.
+    With no older races either (2026-10-23), Brighton is the first race. T134, T157 and T135 are
+    done with nothing to write.
+  - **Solo time trials aren't races:** they count in the PB table and goals as efforts, with no
+    race page or map.
+  - **PB table:** 5k, 10k, half and marathon.
+  - **Races page:** Brighton countdown, then PBs, then "No races yet: Brighton Marathon on
+    4 Apr 2027 will be the first." "Races" joins the Running menu now.
+  - **All of Phase 7 is built now** (race pages, maps, photos) on synthetic races, so Brighton's
+    page works on the day.
 
 ## Upstream candidates
 
