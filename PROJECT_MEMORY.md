@@ -10,11 +10,20 @@ Update this as decisions get made — treat it as the source of truth alongside
      A new session reads this first; the owner only needs to type "continue". -->
 
 - **Status (2026-10-24, morning):** **the site is live on alexanderwebber.com** (#48), and
-  Phase 5 is complete (T110–T112, T004). **Open for the owner: the `001-go-live-done` docs PR**
-  (T111/T112 ticked, the intervals.icu supporter cost). **Next: Phase 6 (US3 Training stats and
-  run detail)**, in a new session.
+  Phase 5 is complete (T110–T112, T004; recorded in #49). **Next: a lesson harvest**, then Phase 6.
+  - **Planned order** (owner, 2026-10-24):
+    1. **Harvest lessons upstream** (next session): run
+       `/speckit-house-process-harvest-lessons` in the **main conversation** (it needs the
+       owner's picks partway through; it's not a subagent step). About 50 *Upstream candidates*
+       have built up since the 2026-10-04 harvest. It ends with sdd-playbook PR(s); afterwards
+       reinstall house-process from the playbook's `main` if its version changed, and clear the
+       harvested entries here.
+    2. **Phase 6: US3 Training stats and run detail**, then Phase 7 (US4 Races and PBs),
+       Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    3. **Harvest lessons again** once Phase 9 is done, before starting the next spec
+       (fundraising, journey story or CV & Blog).
   - **Check first:**
-    - that the docs PR merged. It changes no pages, so there's nothing to view.
+    - that the `001-schedule-harvests` PR merged (docs only).
     - that the nightly Quality run (now against `https://alexanderwebber.com/`) is green.
     - T105's no-change path: still unseen (the 00:17 UTC run on 24 Oct had new data). Find a
       00:xx UTC refresh run whose `commit` job printed "Nothing to commit." (grep the log
