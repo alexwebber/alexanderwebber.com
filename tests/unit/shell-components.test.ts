@@ -93,6 +93,45 @@ describe('LineChart', () => {
     const html = await render(LineChart, { title: 'W', desc: 'd', series: [{ label: 'A', points: weight }] });
     expect(html).not.toContain('<script');
   });
+
+  it('draws a dot series as one path of round dots, with no end label of its own (T139)', async () => {
+    const html = await render(LineChart, {
+      title: 'Body fat',
+      desc: 'd',
+      series: [
+        { label: 'Readings', points: weight, marks: 'dots' },
+        { label: '7-day average', points: weight },
+      ],
+      format: kg,
+    });
+    const d = /class="chart-dots" d="([^"]+)"/.exec(html)![1]!;
+    expect(d.match(/h0/g)).toHaveLength(3); // the null is no dot
+    expect(html.match(/class="chart-dot-label"/g)).toHaveLength(1);
+    expect(html).toContain('class="is-dots"');
+  });
+
+  it('shades a band only on days that have one', async () => {
+    const band = { label: 'Baseline', points: [{ date: '2026-06-01', low: 98, high: 100 }, { date: '2026-06-02', low: 98, high: 100 }, { date: '2026-10-12', low: 97, high: 99 }] };
+    const html = await render(LineChart, { title: 'HRV', desc: 'd', series: [{ label: 'A', points: weight }], band });
+    const d = /class="chart-band" d="([^"]+)"/.exec(html)![1]!;
+    expect(d.match(/Z/g)).toHaveLength(2);
+    expect(html).toContain('Baseline');
+    const none = await render(LineChart, { title: 'HRV', desc: 'd', series: [{ label: 'A', points: weight }], band: { label: 'Baseline', points: [] } });
+    expect(none).not.toContain('chart-band');
+  });
+
+  it('moves end values into the legend when end labels are off (converging lines)', async () => {
+    const html = await render(LineChart, { title: 'F', desc: 'd', series: [{ label: 'Fitness', points: weight }, { label: 'Fatigue', points: weight }], format: kg, endLabels: false });
+    expect(html).not.toContain('class="chart-dot-label"');
+    expect(html).toContain('>Fitness 97.8 kg<');
+    expect(html).toContain('>Fatigue 97.8 kg<');
+  });
+
+  it('draws reference markers as labelled diamonds, distinct from series dots', async () => {
+    const html = await render(LineChart, { title: 'W', desc: 'd', series: [{ label: 'A', points: weight }], format: kg, markers: [{ date: '2026-06-02', value: 99, label: 'DEXA scan' }] });
+    expect(html).toContain('class="chart-marker"');
+    expect(html).toContain('title="DEXA scan: 99 kg, 2 Jun 2026"');
+  });
 });
 
 describe('BarChart', () => {

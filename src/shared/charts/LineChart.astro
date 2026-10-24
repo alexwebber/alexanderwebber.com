@@ -2,8 +2,21 @@
 // A build-time line chart over dates (T074): one to four series, an optional target line and
 // labelled reference markers (e.g. lab results against Garmin estimates). No client JS. The SVG
 // carries the text alternative (<title> and <desc>, FR-071); ChartFigure adds the data table.
-// Each series ends in a dot with its value as a direct label; dots and markers show their value
-// and date on hover via the native tooltip.
+// Each line series ends in a dot with its value as a direct label; dots and markers show their
+// value and date on hover via the native tooltip.
+//
+// Extended for the health trends (T139):
+// - a series can be drawn as faint dots instead of a line (`marks: 'dots'`), so daily readings
+//   sit under their 7-day average line. The dots are one SVG path of zero-length round-capped
+//   segments with non-scaling strokes, so they stay round on the stretched plot and cost one
+//   element, not one per reading. A dot series gets no end label: the line above it carries it.
+// - `band`: a shaded range between two values per day (HRV's baseline, only where the data has
+//   one; intervals.icu supplies none, so nothing invents one).
+// - `endLabels: false`: for series that converge at the right edge (fitness and fatigue), the
+//   end values move into the legend instead of colliding labels (dataviz: fall back to the
+//   legend rather than nudging labels away from their lines).
+// - reference markers are diamonds in the reference ink, so a lab result never reads as a
+//   series' own dot.
 import { formatDate } from '../format/dates.ts';
 import { chartId } from './ids.ts';
 import { PLOT, dayNumber, linePath, linearScale, monthTicks, niceTicks, percent } from './scales.ts';
@@ -21,6 +34,14 @@ export interface LineSeries {
   points: readonly LinePoint[];
   /** CSS colour; defaults to the categorical slot for the series' position. */
   color?: string;
+  /** 'dots': each point as a faint dot (daily readings under an average line). Default 'line'. */
+  marks?: 'line' | 'dots';
+}
+
+export interface BandPoint {
+  date: string;
+  low: number;
+  high: number;
 }
 
 export interface Props {
@@ -35,6 +56,10 @@ export interface Props {
   target?: { value: number; label: string };
   /** Labelled reference points. */
   markers?: readonly { date: string; value: number; label: string }[];
+  /** A shaded range (e.g. a baseline), drawn only on days that have one. */
+  band?: { label: string; points: readonly BandPoint[]; color?: string };
+  /** false: no direct end labels; each line's latest value goes in the legend instead. */
+  endLabels?: boolean;
   /** Date range shown; defaults to the data's first and last dates. */
   from?: string;
   to?: string;
@@ -43,36 +68,79 @@ export interface Props {
   id?: string;
 }
 
-const { title, desc, series, format = String, target, markers = [], zero = false } = Astro.props;
+const { title, desc, series, format = String, target, markers = [], band, endLabels = true, zero = false } = Astro.props;
 const id = chartId('line', Astro.props.id);
 
-const dates = series.flatMap((s) => s.points.map((p) => p.date)).concat(markers.map((m) => m.date)).sort();
+const dates = series
+  .flatMap((s) => s.points.map((p) => p.date))
+  .concat(markers.map((m) => m.date), band ? band.points.map((p) => p.date) : [])
+  .sort();
 const from = Astro.props.from ?? dates[0] ?? '1970-01-01';
 const to = Astro.props.to ?? dates.at(-1) ?? from;
 const inRange = (date: string) => date >= from && date <= to;
 
 const shown = series.map((s, i) => ({
   ...s,
+  marks: s.marks ?? 'line',
   color: s.color ?? `var(--series-${(i % 8) + 1})`,
   points: s.points.filter((p) => inRange(p.date)),
 }));
 const shownMarkers = markers.filter((m) => inRange(m.date));
+const shownBand = band ? band.points.filter((p) => inRange(p.date) && Number.isFinite(p.low) && Number.isFinite(p.high)) : [];
 
 const values = shown
   .flatMap((s) => s.points.map((p) => p.value))
   .filter((v): v is number => v !== null && Number.isFinite(v))
-  .concat(shownMarkers.map((m) => m.value), target ? [target.value] : []);
+  .concat(
+    shownMarkers.map((m) => m.value),
+    target ? [target.value] : [],
+    shownBand.flatMap((p) => [p.low, p.high]),
+  );
 const ticks = niceTicks(values.length ? Math.min(...values) : 0, values.length ? Math.max(...values) : 1, { zero });
 
 const x = linearScale([dayNumber(from), dayNumber(to)], [0, PLOT]);
 const y = linearScale(ticks.domain, [PLOT, 0]);
 const xPos = (date: string) => percent(x(dayNumber(date)));
 const yPos = (value: number) => percent(y(value));
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Zero-length round-capped segments: one dot per finite point. */
+function dotsPath(points: readonly LinePoint[]): string {
+  return points
+    .filter((p) => p.value !== null && Number.isFinite(p.value))
+    .map((p) => `M${r2(x(dayNumber(p.date)))} ${r2(y(p.value as number))}h0`)
+    .join('');
+}
+
+/** The band as filled areas, one per run of consecutive days with a range. */
+function bandPath(points: readonly BandPoint[]): string {
+  const runs: BandPoint[][] = [];
+  let prev: number | undefined;
+  for (const p of points) {
+    const day = dayNumber(p.date);
+    if (prev === undefined || day - prev > 1) runs.push([]);
+    runs.at(-1)!.push(p);
+    prev = day;
+  }
+  return runs
+    .map((run) => {
+      const top = run.map((p) => `${r2(x(dayNumber(p.date)))} ${r2(y(p.high))}`);
+      const bottom = [...run].reverse().map((p) => `${r2(x(dayNumber(p.date)))} ${r2(y(p.low))}`);
+      return `M${top.join('L')}L${bottom.join('L')}Z`;
+    })
+    .join('');
+}
 
 const ends = shown.flatMap((s) => {
+  if (s.marks === 'dots') return [];
   const last = s.points.findLast((p) => p.value !== null && Number.isFinite(p.value));
   return last ? [{ series: s, date: last.date, value: last.value as number }] : [];
 });
+const endValue = new Map(ends.map((e) => [e.series.label, e.value]));
+const legend = [
+  ...shown.map((s) => ({ label: !endLabels && endValue.has(s.label) ? `${s.label} ${format(endValue.get(s.label)!)}` : s.label, color: s.color, dots: s.marks === 'dots' })),
+  ...(band && shownBand.length > 0 ? [{ label: band.label, color: band.color ?? shown[0]?.color ?? 'var(--series-1)', dots: false, band: true }] : []),
+];
 ---
 
 <div class="chart line-chart">
@@ -86,10 +154,15 @@ const ends = shown.flatMap((s) => {
       <g class="chart-grid">
         {ticks.values.map((v) => <line x1="0" x2={PLOT} y1={y(v)} y2={y(v)} vector-effect="non-scaling-stroke" />)}
       </g>
+      {shownBand.length > 0 && <path class="chart-band" d={bandPath(shownBand)} fill={band!.color ?? shown[0]?.color ?? 'var(--series-1)'} />}
       {
-        shown.map((s) => (
-          <path class="chart-line" d={linePath(s.points.map((p) => ({ x: dayNumber(p.date), y: p.value })), x, y)} stroke={s.color} vector-effect="non-scaling-stroke" />
-        ))
+        shown.map((s) =>
+          s.marks === 'dots' ? (
+            <path class="chart-dots" d={dotsPath(s.points)} stroke={s.color} vector-effect="non-scaling-stroke" />
+          ) : (
+            <path class="chart-line" d={linePath(s.points.map((p) => ({ x: dayNumber(p.date), y: p.value })), x, y)} stroke={s.color} vector-effect="non-scaling-stroke" />
+          ),
+        )
       }
     </svg>
     <div aria-hidden="true">
@@ -101,27 +174,29 @@ const ends = shown.flatMap((s) => {
         )
       }
       {
+        ends.map((e) => (
+          <>
+            <span class="chart-dot" style={`left: ${xPos(e.date)}; top: ${yPos(e.value)}; --dot-color: ${e.series.color}`} title={`${e.series.label}: ${format(e.value)}, ${formatDate(e.date)}`} />
+            {endLabels && (
+              <span class="chart-dot-label" style={`left: ${xPos(e.date)}; top: ${yPos(e.value)}`}>
+                {format(e.value)}
+              </span>
+            )}
+          </>
+        ))
+      }
+      {
         shownMarkers.map((m) => {
           const left = x(dayNumber(m.date)) > PLOT * 0.7;
           return (
             <>
-              <span class="chart-dot" style={`left: ${xPos(m.date)}; top: ${yPos(m.value)}`} title={`${m.label}: ${format(m.value)}, ${formatDate(m.date)}`} />
-              <span class:list={['chart-dot-label', { 'is-left': left }]} style={`left: ${xPos(m.date)}; top: ${yPos(m.value)}`}>
+              <span class="chart-marker" style={`left: ${xPos(m.date)}; top: ${yPos(m.value)}`} title={`${m.label}: ${format(m.value)}, ${formatDate(m.date)}`} />
+              <span class:list={['chart-dot-label', 'chart-marker-label', { 'is-left': left }]} style={`left: ${xPos(m.date)}; top: ${yPos(m.value)}`}>
                 {m.label}
               </span>
             </>
           );
         })
-      }
-      {
-        ends.map((e) => (
-          <>
-            <span class="chart-dot" style={`left: ${xPos(e.date)}; top: ${yPos(e.value)}; --dot-color: ${e.series.color}`} title={`${e.series.label}: ${format(e.value)}, ${formatDate(e.date)}`} />
-            <span class="chart-dot-label" style={`left: ${xPos(e.date)}; top: ${yPos(e.value)}`}>
-              {format(e.value)}
-            </span>
-          </>
-        ))
       }
     </div>
   </div>
@@ -129,10 +204,12 @@ const ends = shown.flatMap((s) => {
     {monthTicks(from, to).map((t, i, all) => <span class:list={{ minor: i > 0 && i < all.length - 1 }} style={`left: ${xPos(t.date)}`}>{t.label}</span>)}
   </div>
   {
-    shown.length > 1 && (
+    (legend.length > 1 || !endLabels) && (
       <ul class="chart-legend" aria-hidden="true">
-        {shown.map((s) => (
-          <li style={`--key-color: ${s.color}`}>{s.label}</li>
+        {legend.map((item) => (
+          <li class:list={{ 'is-dots': item.dots, 'is-band': 'band' in item }} style={`--key-color: ${item.color}`}>
+            {item.label}
+          </li>
         ))}
       </ul>
     )
