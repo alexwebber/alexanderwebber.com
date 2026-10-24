@@ -11,3 +11,8 @@ function served(prefix: string): boolean {
 export function runHref(runId: string): string | undefined {
   return served('/running/runs/') ? `/running/runs/${runId}/` : undefined;
 }
+
+/** A race's page (contracts/routes.md), or undefined until race pages ship (US4). */
+export function raceHref(slug: string): string | undefined {
+  return served('/running/races/') ? `/running/races/${slug}/` : undefined;
+}

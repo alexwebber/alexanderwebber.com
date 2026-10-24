@@ -1,0 +1,185 @@
+---
+// A race's page body (T133; contracts/routes.md /running/races/<slug>/, FR-054, US4.3–US4.5):
+// - the result: finish time (the official time where the owner recorded one, FR-051, with the
+//   watch's time beside it; else the watch's, labelled so), date, distance, position, a link to
+//   the official results and the owner's note;
+// - the route (RaceMap: static SVG, then MapLibre on click), when the race has a published track;
+// - the full run detail from US3 (summary, charts, Garmin HR zones, splits, best efforts,
+//   dynamics), when a recorded run is linked;
+// - the photos (PhotoGallery).
+// Shared by the real race pages and the test-only race preview. Garmin attribution names the
+// race's watch under the heading when a recorded run is shown (FR-077). Client JS: the map's
+// loader only, and only on pages with a map.
+import { formatDate, formatLongDate } from '../../../shared/format/dates.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
+import type { RaceTrack } from '../../../shared/storage/index.ts';
+import type { GalleryPhoto } from '../data/photos.ts';
+import { capitalise, distanceLabel } from '../domain/goal-text.ts';
+import type { RaceHistoryEntry } from '../domain/races.ts';
+import { seriesCharts } from '../domain/run-detail.ts';
+import { runHref } from '../links.ts';
+import HrZones from './HrZones.astro';
+import PhotoGallery from './PhotoGallery.astro';
+import RaceMap from './RaceMap.astro';
+import RunBestEfforts from './RunBestEfforts.astro';
+import RunDynamics from './RunDynamics.astro';
+import RunSeriesCharts from './RunSeriesCharts.astro';
+import RunSummary from './RunSummary.astro';
+import SectionLayout from './SectionLayout.astro';
+import SplitsTable from './SplitsTable.astro';
+import TreadmillBadge from './TreadmillBadge.astro';
+
+export interface Props {
+  race: RaceHistoryEntry;
+  track?: RaceTrack;
+  photos: readonly GalleryPhoto[];
+  /** The interactive map's route file. */
+  routeSrc: string;
+  /** Share image path. */
+  image: string;
+  /** The races page, for the breadcrumb. */
+  racesHref: string;
+  runLink?: (runId: string) => string | undefined;
+}
+
+const { race, track, photos, routeSrc, image, racesHref, runLink = runHref } = Astro.props;
+const run = race.run;
+const date = formatDate(race.date);
+const distance = capitalise(distanceLabel(race.distance_m));
+const runUrl = run && runLink(run.id);
+// The run's own elevation chart is the course profile, so the map leaves its copy out.
+const runChartsElevation = run ? seriesCharts(run).some((c) => c.key === 'elev') : false;
+const time = race.time_s !== undefined ? formatDuration(race.time_s) : undefined;
+const description = `${race.name}, ${date}: ${distance}${time ? ` in ${time}` : ''}${race.position ? `, position ${race.position}` : ''}. A race by Alexander Webber.`;
+---
+
+<SectionLayout heading={race.name} title={`${race.name}, ${date} · Races · Alexander Webber`} description={description} image={image} imageAlt={`${race.name}: Alexander Webber's result`} garmin={run ? { device: run.device } : false} current="/running/races/">
+  <p class="breadcrumb"><a href={racesHref}>All races</a></p>
+  <article class="race-detail" aria-label="Race detail" data-race-page data-race-slug={race.slug}>
+    {
+      run?.treadmill && (
+        <p class="run-labels">
+          <TreadmillBadge />
+        </p>
+      )
+    }
+    <section class="run-panel race-result" aria-labelledby="race-result" data-race-result>
+      <h2 id="race-result">Result</h2>
+      <dl class="result-facts">
+        {
+          time && (
+            <div data-fact="time">
+              <dt>{race.official ? 'Official time' : 'Finish time'}</dt>
+              <dd>
+                <strong class="result-time">{time}</strong>
+                {race.official && race.device_time_s !== undefined && Math.round(race.device_time_s) !== race.time_s && (
+                  <span class="result-aside" data-device-time>
+                    {' '}
+                    (watch: {formatDuration(race.device_time_s)})
+                  </span>
+                )}
+                {!race.official && run && <span class="result-aside"> (watch time)</span>}
+              </dd>
+            </div>
+          )
+        }
+        <div data-fact="date">
+          <dt>Date</dt>
+          <dd>
+            <time datetime={race.date}>{formatLongDate(race.date)}</time>
+          </dd>
+        </div>
+        <div data-fact="distance">
+          <dt>Distance</dt>
+          <dd>{distance}</dd>
+        </div>
+        {
+          race.position !== undefined && (
+            <div data-fact="position">
+              <dt>Position</dt>
+              <dd>{race.position}</dd>
+            </div>
+          )
+        }
+      </dl>
+      {race.note && <p class="race-note" data-race-note>{race.note}</p>}
+      {
+        (race.results_url || runUrl) && (
+          <p class="race-links">
+            {race.results_url && <a href={race.results_url}>Official results</a>}
+            {race.results_url && runUrl && ' · '}
+            {runUrl && <a href={runUrl}>This run in the training log</a>}
+          </p>
+        )
+      }
+      {!run && <p class="race-source">Entered by hand, so there is no recorded run to show.</p>}
+    </section>
+    <RaceMap track={track} routeSrc={routeSrc} name={race.name} device={run?.device} profile={!runChartsElevation} />
+    {
+      run && (
+        <>
+          <RunSummary run={run} />
+          <RunSeriesCharts run={run} />
+          <HrZones run={run} />
+          <SplitsTable run={run} />
+          <RunBestEfforts run={run} />
+          <RunDynamics run={run} />
+        </>
+      )
+    }
+    <PhotoGallery photos={photos} />
+  </article>
+</SectionLayout>
+
+<style>
+  .breadcrumb {
+    margin: 0 0 var(--space-4);
+  }
+
+  .run-labels {
+    margin: 0 0 var(--space-4);
+  }
+
+  .result-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: var(--space-3) 0 0;
+  }
+
+  .result-facts div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .result-facts dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .result-facts dd {
+    margin: 0;
+    font-weight: var(--weight-bold);
+  }
+
+  .result-time {
+    font-size: var(--step-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .result-aside {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+    font-weight: normal;
+    white-space: nowrap;
+  }
+
+  .race-note,
+  .race-links,
+  .race-source {
+    margin: var(--space-3) 0 0;
+  }
+
+  .race-source {
+    color: var(--color-text-secondary);
+  }
+</style>

@@ -1,0 +1,11 @@
+---
+// /race-preview/ (SHELL_PREVIEW=1 only): the races page over synthetic races, through the real
+// RacesPage, for tests/e2e/races.spec.ts and tests/a11y/races.spec.ts.
+import RacesPage from '../../../src/sections/running/components/RacesPage.astro';
+import { loadRaces } from '../../../src/sections/running/data/races.ts';
+import { noRunPage, PREVIEW_TODAY, previewRaceHref, previewStore } from './store.ts';
+
+const data = await loadRaces(PREVIEW_TODAY, previewStore);
+---
+
+<RacesPage data={data} image="/og/running-races.png" title="Race preview (synthetic data)" raceLink={previewRaceHref} runLink={noRunPage} />

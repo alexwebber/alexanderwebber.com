@@ -1,0 +1,310 @@
+---
+// A race's route (T131; FR-014, FR-054, research R6). Race pages only: no other page has a map.
+// - Static baseline, built at build time with no JS and no third party: the route as an SVG with
+//   start, finish and km markers (labels are HTML placed by percentage, so they read at 320px),
+//   then the course profile against km (XYChart) with its data in a table, unless the page
+//   already charts the run's elevation against distance (`profile={false}`).
+// - Interactive enhancement: a "Load interactive map" button, shown only when JS runs, that on
+//   click fetches the route file (/running/races/<slug>/route.json, same origin), lazy-imports
+//   maplibre-gl and loads OpenFreeMap tiles. Nothing third-party is requested before the click,
+//   and the map script is the only JS-budget exception (plan.md). OpenFreeMap/OpenStreetMap
+//   attribution shows in the map and in the note under the button. If anything fails, the
+//   static map stays and a message says so (FR-074).
+// - Absent: with no track (no GPS, a treadmill run, a hidden map, a hand-entered race) it
+//   renders nothing.
+// The GPS comes from the watch, so Garmin attribution names it at the heading (FR-077).
+import ChartFigure from '../../../shared/charts/ChartFigure.astro';
+import XYChart from '../../../shared/charts/XYChart.astro';
+import { formatKm, formatMetres } from '../../../shared/format/units.ts';
+import type { RaceTrack } from '../../../shared/storage/index.ts';
+import { elevationByKm, elevationProfile, staticMap } from '../domain/race-map.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  track: RaceTrack | undefined;
+  /** The route file the interactive map fetches on click. */
+  routeSrc: string;
+  /** The race's name, for the map's text alternative. */
+  name: string;
+  /** The watch that recorded the route (Garmin attribution). */
+  device?: string;
+  /** Show the course profile (default); off when the page charts the run's elevation already. */
+  profile?: boolean;
+  heading?: 2 | 3;
+}
+
+const { track, routeSrc, name, device, profile: showProfile = true, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+const map = track && staticMap(track);
+const profile = track ? elevationProfile(track) : [];
+const hasProfile = showProfile && profile.filter((p) => p.y !== null).length >= 2;
+const byKm = track ? elevationByKm(track) : [];
+const elevs = profile.flatMap((p) => (p.y === null ? [] : [p.y]));
+const km = (v: number) => `${Number.isInteger(v) ? v : v.toFixed(1)} km`;
+---
+
+{
+  map && (
+    <section class="run-panel race-map" aria-labelledby="race-map-title" data-race-map data-route-src={routeSrc}>
+      <Heading id="race-map-title">Route</Heading>
+      <GarminAttribution device={device} />
+      <figure class="map-figure">
+        <div class="map-static" data-map-static style={`aspect-ratio: ${map.width} / ${map.height}`}>
+          <svg viewBox={`0 0 ${map.width} ${map.height}`} role="img" aria-labelledby="race-map-svg-title" aria-describedby="race-map-svg-desc">
+            <title id="race-map-svg-title">Route of {name}</title>
+            <desc id="race-map-svg-desc">
+              The course, {formatKm(map.distance_m)} from the start (S) to the finish (F), with a marker every {map.step_km} km.
+            </desc>
+            <path class="map-route-casing" d={map.path} />
+            <path class="map-route" d={map.path} />
+            {map.markers.map((m) => <circle class="map-km" cx={m.x} cy={m.y} r="9" />)}
+          </svg>
+          <span class="map-label map-label-end map-label-start" style={`left: ${map.start.left}%; top: ${map.start.top}%`} aria-hidden="true">S</span>
+          <span class="map-label map-label-end map-label-finish" style={`left: ${map.finish.left}%; top: ${map.finish.top}%`} aria-hidden="true">F</span>
+          {
+            map.markers.map((m) => (
+              <span class="map-label" style={`left: ${m.left}%; top: ${m.top}%`} aria-hidden="true" data-km-marker={m.km}>
+                {m.km}
+              </span>
+            ))
+          }
+        </div>
+        <div class="map-canvas" data-map-canvas hidden aria-label={`Interactive map of the ${name} route`} role="region"></div>
+        <figcaption class="map-caption" data-map-caption>
+          {formatKm(map.distance_m)} course. S marks the start, F the finish, and the numbers each {map.step_km === 1 ? 'kilometre' : `${map.step_km} km`}.
+        </figcaption>
+      </figure>
+      <div class="map-enhance">
+        <button type="button" class="map-load" data-map-load hidden>
+          Load interactive map
+        </button>
+        <p class="map-status" data-map-status role="status"></p>
+        <p class="map-note">
+          The interactive map loads tiles from{' '}
+          <a href="https://openfreemap.org/">OpenFreeMap</a> (© <a href="https://openmaptiles.org/">OpenMapTiles</a>, data ©{' '}
+          <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors) only when you ask for it.
+        </p>
+      </div>
+      {
+        hasProfile && (
+          <ChartFigure
+            title="Course profile"
+            heading={(heading + 1) as 3 | 4}
+            summary={`Elevation along the course, from ${formatMetres(Math.min(...elevs))} to ${formatMetres(Math.max(...elevs))}.`}
+            table={{ columns: ['Km', 'Elevation'], rows: byKm.map((r) => [r.km, formatMetres(r.elev_m)]), summary: 'Show the elevation per km' }}
+          >
+            <GarminAttribution slot="source" device={device} />
+            <XYChart title={`Course profile of ${name}`} desc="Elevation in metres against distance in km." points={profile} format={formatMetres} formatX={km} color="var(--running-series)" />
+          </ChartFigure>
+        )
+      }
+    </section>
+  )
+}
+
+<script>
+  // Runs only on race pages with a map. Until the click, nothing beyond this small module loads:
+  // the worker and stylesheet are URLs of same-origin build assets, and maplibre-gl and the route
+  // file are imported or fetched on demand.
+  import cssUrl from 'maplibre-gl/dist/maplibre-gl.css?url';
+  import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+
+  const STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+  const ROUTE_COLOUR = '#c2410c';
+
+  interface Route {
+    coordinates: [number, number][];
+    bounds: [[number, number], [number, number]];
+  }
+
+  for (const panel of document.querySelectorAll<HTMLElement>('[data-race-map]')) {
+    const button = panel.querySelector<HTMLButtonElement>('[data-map-load]');
+    const status = panel.querySelector<HTMLElement>('[data-map-status]');
+    const canvas = panel.querySelector<HTMLElement>('[data-map-canvas]');
+    if (!button || !status || !canvas) continue;
+    const fail = () => {
+      canvas.hidden = true;
+      button.disabled = false;
+      panel.dataset.mapState = 'failed';
+      status.textContent = "The interactive map couldn't load. The route above is the full course.";
+    };
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      status.textContent = 'Loading the map…';
+      try {
+        if (!document.querySelector('link[data-maplibre-css]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = cssUrl;
+          link.dataset.maplibreCss = '';
+          document.head.append(link);
+        }
+        const [maplibre, route] = await Promise.all([
+          import('maplibre-gl'),
+          fetch(panel.dataset.routeSrc!).then((r) => {
+            if (!r.ok) throw new Error(`route ${r.status}`);
+            return r.json() as Promise<Route>;
+          }),
+        ]);
+        maplibre.setWorkerUrl(workerUrl);
+        canvas.hidden = false;
+        const map = new maplibre.Map({
+          container: canvas,
+          style: STYLE,
+          bounds: route.bounds,
+          fitBoundsOptions: { padding: 32 },
+          attributionControl: { compact: false },
+          cooperativeGestures: true,
+        });
+        map.addControl(new maplibre.NavigationControl({ showCompass: false }));
+        map.on('load', () => {
+          map.addSource('route', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: route.coordinates } } });
+          map.addLayer({ id: 'route', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ROUTE_COLOUR, 'line-width': 4 } });
+          for (const el of panel.querySelectorAll<HTMLElement>('[data-map-static], [data-map-caption]')) el.hidden = true;
+          button.hidden = true;
+          panel.dataset.mapState = 'loaded';
+          status.textContent = 'Map loaded. On a phone, move it with two fingers.';
+        });
+        // A style server that can't be reached: keep the static map. (A missing tile later
+        // only leaves a blank square.)
+        map.on('error', () => {
+          if (panel.dataset.mapState === 'loading' && !map.isStyleLoaded()) {
+            map.remove();
+            fail();
+          }
+        });
+        panel.dataset.mapState = 'loading';
+      } catch {
+        fail();
+      }
+    });
+  }
+</script>
+
+<style>
+  .map-figure {
+    margin: var(--space-3) 0 0;
+  }
+
+  .map-static {
+    position: relative;
+    width: 100%;
+    max-width: 40rem;
+    border-radius: var(--radius);
+    background: var(--color-page);
+  }
+
+  .map-static[hidden] {
+    display: none;
+  }
+
+  .map-static svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-route,
+  .map-route-casing {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .map-route-casing {
+    stroke: var(--color-surface);
+    stroke-width: 12;
+  }
+
+  .map-route {
+    stroke: var(--running-series);
+    stroke-width: 6;
+  }
+
+  .map-km {
+    fill: var(--color-surface);
+    stroke: var(--color-text);
+    stroke-width: 3;
+  }
+
+  .map-label {
+    position: absolute;
+    transform: translate(-50%, -150%);
+    padding: 0 0.3em;
+    border-radius: var(--radius-mark);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+
+  .map-label-end {
+    transform: translate(-50%, -50%);
+    padding: 0 0.45em;
+  }
+
+  .map-label-start {
+    background: var(--color-good-text);
+    color: var(--color-surface);
+  }
+
+  .map-label-finish {
+    background: var(--color-text);
+    color: var(--color-surface);
+  }
+
+  .map-canvas {
+    width: 100%;
+    height: min(70vh, 28rem);
+    border-radius: var(--radius);
+  }
+
+  .map-canvas[hidden] {
+    display: none;
+  }
+
+  .map-caption[hidden] {
+    display: none;
+  }
+
+  .map-caption,
+  .map-note,
+  .map-status {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .map-status:empty {
+    display: none;
+  }
+
+  .map-enhance {
+    margin-bottom: var(--space-4);
+  }
+
+  .map-load {
+    margin-top: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-accent-strong);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-accent-strong);
+    font: inherit;
+    font-weight: var(--weight-bold);
+    cursor: pointer;
+  }
+
+  .map-load[hidden] {
+    display: none;
+  }
+
+  .map-load:disabled {
+    cursor: progress;
+    opacity: 0.7;
+  }
+</style>

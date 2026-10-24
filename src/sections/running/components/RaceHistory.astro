@@ -1,0 +1,129 @@
+---
+// The race history (T130; FR-052, US4.1, US4.3, US4.7): every race once, newest first, with its
+// date, name (linking to its race page), distance and finish time: the official time where the
+// owner recorded one (FR-051), else the watch's, labelled so. Hand-entered races sit alongside
+// recorded ones. A race holding a PB carries a "PB" badge ("New PB" while recent). With no races
+// yet it says where the history will start ("No races yet: Brighton Marathon on 4 Apr 2027 will
+// be the first."). Garmin attribution names the watches behind recorded races (FR-077). No
+// client JS.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
+import type { UpcomingRace } from '../../../shared/storage/index.ts';
+import { runDevices } from '../domain/attribution.ts';
+import { capitalise, distanceLabel } from '../domain/goal-text.ts';
+import type { RaceHistoryEntry } from '../domain/races.ts';
+import { raceHref } from '../links.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  races: readonly RaceHistoryEntry[];
+  /** Slug -> newly set, for races holding a PB. */
+  pbSlugs?: ReadonlyMap<string, boolean>;
+  /** The next upcoming race, named while the history is empty. */
+  next?: UpcomingRace;
+  heading?: 2 | 3;
+  id?: string;
+  /** Race page links; the test-only preview points them at its own pages. */
+  raceLink?: (slug: string) => string | undefined;
+}
+
+const { races, pbSlugs = new Map(), next, heading = 2, id = 'race-history', raceLink = raceHref } = Astro.props;
+const Heading = `h${heading}` as const;
+const devices = runDevices(races.flatMap((r) => (r.run ? [r.run] : [])));
+---
+
+<section class="race-history" aria-labelledby={id} data-race-history>
+  <Heading id={id}>Race history</Heading>
+  {races.some((r) => r.run) && <GarminAttribution device={devices} />}
+  {
+    races.length === 0 ? (
+      <p class="history-empty" data-history-empty>
+        {next ? `No races yet: ${next.name} on ${formatDate(next.date)} will be the first.` : 'No races yet.'}
+      </p>
+    ) : (
+      <ol class="history-list">
+        {races.map((race) => {
+          const href = raceLink(race.slug);
+          const pb = pbSlugs.get(race.slug);
+          return (
+            <li class="history-race" data-race-slug={race.slug} data-source={race.run ? 'recorded' : 'hand-entered'}>
+              <p class="history-name">
+                {href ? <a href={href}>{race.name}</a> : race.name}
+                {pb !== undefined && (
+                  <>
+                    {' '}
+                    <span class="pb-badge" data-pb-badge>
+                      {pb ? 'New PB' : 'PB'}
+                    </span>
+                  </>
+                )}
+              </p>
+              <p class="history-figures">
+                <time datetime={race.date}>{formatDate(race.date)}</time>{' '}
+                <span>{capitalise(distanceLabel(race.distance_m))}</span>{' '}
+                {race.time_s !== undefined && (
+                  <span data-race-time>
+                    <strong>{formatDuration(race.time_s)}</strong>
+                    {!race.official && race.run && ' (watch time)'}
+                  </span>
+                )}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+    )
+  }
+</section>
+
+<style>
+  .history-empty {
+    color: var(--color-text-secondary);
+  }
+
+  .history-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .history-race {
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .history-race p {
+    margin: 0;
+  }
+
+  .history-name {
+    font-weight: var(--weight-bold);
+  }
+
+  .history-figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-3);
+    color: var(--color-text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .history-figures > * {
+    white-space: nowrap;
+  }
+
+  .history-figures strong {
+    color: var(--color-text);
+  }
+
+  .pb-badge {
+    padding: 0 var(--space-2);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-mark);
+    color: var(--color-accent-strong);
+    font-size: var(--step--1);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+</style>

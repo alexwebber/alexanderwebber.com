@@ -18,16 +18,17 @@ import { totals } from '../../domain/periods.ts';
 
 export const getStaticPaths = (async () => {
   const data = await loadTraining();
-  return data.years.map((year) => ({ params: { year: String(year) }, props: { year, runs: runsInYear(data, year), years: data.years } }));
+  return data.years.map((year) => ({ params: { year: String(year) }, props: { year, runs: runsInYear(data, year), years: data.years, raceSlugs: data.raceSlugs } }));
 }) satisfies GetStaticPaths;
 
 interface Props {
   year: number;
   runs: Run[];
   years: number[];
+  raceSlugs: ReadonlyMap<string, string>;
 }
 
-const { year, runs, years } = Astro.props;
+const { year, runs, years, raceSlugs } = Astro.props;
 const t = totals(runs);
 const devices = runDevices(runs);
 const dates = runs.map((r) => r.date).sort();
@@ -73,7 +74,7 @@ const description = `Alexander Webber's runs in ${year}: ${t.runs} ${t.runs === 
       </p>
     )
   }
-  <RunList runs={runs} title={`Runs in ${year}`} />
+  <RunList runs={runs} title={`Runs in ${year}`} raceSlugs={raceSlugs} />
   <YearLinks years={years} current={year} label="Other years" />
 </SectionLayout>
 

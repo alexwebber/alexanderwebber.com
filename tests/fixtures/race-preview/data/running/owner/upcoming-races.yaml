@@ -1,0 +1,3 @@
+- { id: hilltop-10k, name: Hilltop 10k, date: 2026-12-06, distance: 10k, target_time: "43:00" }
+- { id: seaside-2027, name: Seaside Marathon, date: 2027-04-04, distance: marathon, target_time: "3:20:00", url: "https://example.org/seaside" }
+- { id: harbour-10k, name: Harbour 10k, date: 2026-10-18, distance: 10k, result_ref: harbour-10k-2026 }

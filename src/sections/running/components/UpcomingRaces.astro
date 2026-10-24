@@ -1,0 +1,112 @@
+---
+// Upcoming races (T130; FR-056, US4.6): the focus race first, then by date, each with its date,
+// distance, days remaining (Countdown, corrected for the visitor's day by its tiny inline script),
+// target time and a link to the race's own site. Races awaiting a result stay with "Result coming
+// soon"; completed ones (result_ref set) have already left the list. No Garmin data, so no
+// attribution.
+import { formatLongDate } from '../../../shared/format/dates.ts';
+import type { UpcomingView } from '../data/races.ts';
+import { capitalise, distanceLabel } from '../domain/goal-text.ts';
+import { raceDistance } from '../domain/races.ts';
+import Countdown from './Countdown.astro';
+
+export interface Props {
+  races: readonly UpcomingView[];
+  heading?: 2 | 3;
+  id?: string;
+}
+
+const { races, heading = 2, id = 'upcoming-races' } = Astro.props;
+const Heading = `h${heading}` as const;
+const RaceHeading = `h${heading + 1}` as 'h3' | 'h4';
+---
+
+<section class="upcoming" aria-labelledby={id} data-upcoming-races>
+  <Heading id={id}>Upcoming races</Heading>
+  {
+    races.length === 0 ? (
+      <p class="upcoming-empty">No races entered yet.</p>
+    ) : (
+      <ol class="upcoming-list">
+        {races.map(({ race, days, target, focus }) => {
+          const distance = raceDistance(race);
+          return (
+            <li class:list={['upcoming-race', { focus }]} data-upcoming-race={race.id}>
+              {focus && <p class="upcoming-eyebrow">Focus race</p>}
+              <RaceHeading class="upcoming-name">{race.url ? <a href={race.url}>{race.name}</a> : race.name}</RaceHeading>
+              <p class="upcoming-facts">
+                <time datetime={race.date}>{formatLongDate(race.date)}</time>
+                {distance !== undefined && (
+                  <>
+                    {' · '}
+                    <span>{capitalise(distanceLabel(distance))}</span>
+                  </>
+                )}
+                {target && (
+                  <>
+                    {' · '}
+                    <span data-target>
+                      Target: <strong>{target}</strong>
+                    </span>
+                  </>
+                )}
+              </p>
+              <Countdown date={race.date} days={days} compact />
+            </li>
+          );
+        })}
+      </ol>
+    )
+  }
+</section>
+
+<style>
+  .upcoming-list {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .upcoming-race {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .upcoming-race.focus {
+    border-color: var(--color-accent-strong);
+  }
+
+  .upcoming-race p {
+    margin: 0;
+  }
+
+  .upcoming-eyebrow {
+    color: var(--color-accent-strong);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .upcoming-name {
+    margin: 0;
+    font-size: var(--step-1);
+  }
+
+  .upcoming-race .upcoming-facts {
+    margin-bottom: var(--space-2);
+    color: var(--color-text-secondary);
+  }
+
+  .upcoming-facts > * {
+    white-space: nowrap;
+  }
+
+  .upcoming-empty {
+    color: var(--color-text-secondary);
+  }
+</style>

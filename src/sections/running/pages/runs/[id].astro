@@ -11,8 +11,8 @@
 // (neutral, or the owner's), never the provider's free text; the URL holds the opaque public run
 // ID only. Treadmill runs carry the "Treadmill" label (FR-058). Every run page shares one generic
 // share image (/og/running-run.png), so no run data goes into an image and the file count stays
-// bounded. Garmin attribution names the run's own watch (FR-077). No client JS beyond the
-// freshness script.
+// bounded. Garmin attribution names the run's own watch (FR-077). A race's "Race" label links to
+// its race page (US4), which adds the map and photos. No client JS beyond the freshness script.
 import type { GetStaticPaths } from 'astro';
 import { formatDate } from '../../../../shared/format/dates.ts';
 import { formatDuration, formatKm, formatPace } from '../../../../shared/format/units.ts';
@@ -26,17 +26,25 @@ import SectionLayout from '../../components/SectionLayout.astro';
 import SplitsTable from '../../components/SplitsTable.astro';
 import TreadmillBadge from '../../components/TreadmillBadge.astro';
 import { runningStore } from '../../data/load.ts';
+import { loadRaces } from '../../data/races.ts';
+import { raceHref } from '../../links.ts';
 
 export const getStaticPaths = (async () => {
-  const runs = await runningStore().listRuns();
-  return runs.map((run) => ({ params: { id: run.id }, props: { run } }));
+  const [runs, { slugByRun }] = await Promise.all([runningStore().listRuns(), loadRaces()]);
+  return runs.map((run) => {
+    const slug = slugByRun.get(run.id);
+    return { params: { id: run.id }, props: { run, ...(slug !== undefined ? { raceSlug: slug } : {}) } };
+  });
 }) satisfies GetStaticPaths;
 
 interface Props {
   run: Run;
+  /** The race page's slug, for a race (US4). */
+  raceSlug?: string;
 }
 
-const { run } = Astro.props;
+const { run, raceSlug } = Astro.props;
+const raceUrl = raceSlug === undefined ? undefined : raceHref(raceSlug);
 const date = formatDate(run.date);
 const year = run.date.slice(0, 4);
 const description =
@@ -60,7 +68,14 @@ const description =
         <p class="run-labels">
           {run.treadmill && <TreadmillBadge />}
           {run.treadmill && run.is_race && ' '}
-          {run.is_race && <span class="race-label">Race</span>}
+          {run.is_race &&
+            (raceUrl ? (
+              <a class="race-label" href={raceUrl} data-race-link>
+                Race: see the race page
+              </a>
+            ) : (
+              <span class="race-label">Race</span>
+            ))}
         </p>
       )
     }

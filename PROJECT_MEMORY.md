@@ -9,15 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, evening):** **Phase 6 (US3 Training) is live** (#52, fix #53).
-  - **Zones:** all 199 runs show Garmin's zones; the 23 Oct run matches Garmin Connect (Z3
-    23:13, Z4 25:32).
-  - **Cleanup:** the old zone shape was dropped in the `001-zones-cleanup` PR. Check it merged.
-  - **Owner review of the live Training pages:** given at the end of the Phase 6 session. Ask
-    for any feedback the owner hasn't given yet before starting Phase 7.
-  - **Next: Phase 7 (US4 Races and PBs).**
+- **Status (2026-10-24, night):** **Phase 7 (US4 Races and PBs) is built**, in the
+  `001-races` PR. Phase 6 is live and its cleanup (#54) merged; the owner had no more Training
+  feedback.
+  - **First:** check the PR merged and its `main` gate deployed, then ask about any PR
+    checkboxes left unticked. Start with a short guided look at the live
+    `/running/races/` (Brighton countdown, PB table, empty history) and the "Races" menu item on
+    phone and desktop, then a question round on what the owner saw.
+  - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
+    `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
+    Brighton's page after race day.
+  - **Next: Phase 8 (US5 Health).**
   - **Planned order** (owner, 2026-10-24):
-    1. ~~Phase 6~~ (built), then Phase 7 (US4 Races and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    1. ~~Phase 6~~, ~~Phase 7~~ (built), then Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
@@ -25,7 +29,7 @@ Update this as decisions get made — treat it as the source of truth alongside
     `commit` job printed "Nothing to commit." and check its `deploy` ran. If none ever does,
     that's fine; say so once. Minutes: 824 used by about 11:00 UTC on 2026-10-24; October should
     end around 1,200, plus about 15 for the zone backfill.
-  - **Phase 7 touches Astro and maps:** read the matching sections of sdd-playbook's
+  - **Phase 8 touches Astro and charts:** read the matching sections of sdd-playbook's
     `AGENT_TIPS.md` first.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
@@ -48,9 +52,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
   quickstart.md §0.
-- **Next step: Phase 7 (US4 Races and PBs, tasks.md)** in its own session, once Phase 6's
-  post-merge steps are done, starting with a short guided look at the live Training pages and a
-  question round on races and PBs. History is complete from 7 Oct 2025 (T150 and T085 done).
+- **Next step: Phase 8 (US5 Health, tasks.md)** in its own session, once Phase 7's
+  post-merge steps are done, starting with the guided look at the live races page and a
+  question round on health metrics. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
@@ -942,8 +946,85 @@ project-specific notes.
   seconds}`, the site names zones from their number, and `PROCESSOR_VERSION` is 5. The backfill
   (`reimport_from=2025-10-01`, `missing_only`) hit the 25-minute fetch limit after topping up
   about 151 runs; a second run tops up the rest (finished ones are skipped).
+- **2026-10-24** — **Phase 6 post-merge checks:** the cleanup PR (#54) merged and deployed, and
+  all 199 published runs carry Garmin's zones. The owner had nothing more on the Training pages.
+- **2026-10-24** — **Phase 7 owner picks** (question round before implement; tasks.md amended):
+  - **No races yet.** T157's scan of 201 raw runs found three plausible candidates (a half on
+    5 Apr 2026, the 17 Oct track 5k, a 5k on 27 Feb 2026), and the owner rejected all three.
+    With no older races either (2026-10-23), Brighton is the first race. T134, T157 and T135 are
+    done with nothing to write.
+  - **Solo time trials aren't races:** they count in the PB table and goals as efforts, with no
+    race page or map.
+  - **PB table:** 5k, 10k, half and marathon.
+  - **Races page:** Brighton countdown, then PBs, then "No races yet: Brighton Marathon on
+    4 Apr 2027 will be the first." "Races" joins the Running menu now.
+  - **All of Phase 7 is built now** (race pages, maps, photos) on synthetic races, so Brighton's
+    page works on the day.
+
+- **2026-10-24** — **Phase 7 (US4 Races and PBs) built** (`001-races` branch; implement
+  subagent about 457k tokens). There are no real races yet, so live only `/running/races/` shows anything. Choices
+  later tasks build on; the owner confirms them in the PR:
+  - **Race tracks (T125)** are written only for a race that isn't a treadmill or indoor run and
+    whose `race.yaml` doesn't hide its map. Douglas–Peucker runs in local metres until the track
+    fits 1,000 points. Points keep the race's own distances after `trim_ends_m`. Hiding or
+    dropping a run, `hide_map`, or un-designating it removes the track. **`PROCESSOR_VERSION`
+    stays 5**: no published run is a race, so no existing output changes, and a future
+    designation changes that run's owner hash, which reprocesses it.
+  - **Photos live beside `race.yaml`**, not in a `photos/` folder as T127 said, because the
+    Phase 2 schema, loader, validator and research R7 already put them there.
+    `scripts/add-race-photo.ts` strips all metadata, applies the orientation and caps the long
+    edge at 2,400 px. The gallery makes AVIF, WebP and JPEG at 640 and 1280 px (6 files a photo).
+  - **Race history** uses the published `is_race`. A `race.yaml` joins a run only by `run_id`;
+    one whose run isn't published (yet) shows nothing. A race without an official time shows the
+    run's elapsed time, labelled "(watch time)", as the landing hero does.
+  - **PB table**: 5k, 10k, half and marathon always, plus any other named distance once raced
+    (FR-053). The race column takes official times first; the any-run column reuses the goals'
+    Best Effort index (same eligibility, timer time, "(in a longer run)"), shows only an effort
+    faster to the second, and leaves out a race run's own stretch at its race distance. A race
+    run with no `race.yaml` counts at the named distance within 5% of its length. "New" marks a
+    best set within `recent_highlight_days.pb` (14). An empty row reads "Not run yet: <next race
+    over the distance> on <date> will be the first."
+  - **Live today** the PB table shows 5k 19:44 (New, 17 Oct), 10k 46:00 (in a longer run), half
+    1:43:43 (timer time, as the goals page shows) and the marathon row pointing at Brighton.
+  - **Race map (T131)**: a build-time SVG with S/F and km labels (every 1, 2 or 5 km), the page
+    holding projected figures only. Coordinates go to `/running/races/<slug>/route.json`, fetched
+    on click with maplibre-gl and OpenFreeMap's `liberty` style; the button appears only with JS.
+    The course profile is left out when the run detail already charts elevation (the same chart).
+  - **Race pages** show the result (official time with the watch's beside it), the map, the full
+    US3 run detail and the photos. Share images: `/og/running-races.png` and one per race
+    (`/og/running-races-<slug>.png`, Garmin attribution only for a watch time).
+  - **Links**: "Races" joins the section nav; run lists' "Race" badge and run pages' "Race"
+    label link to the race page.
+  - **Race preview (tests only)**: `SHELL_PREVIEW=1` adds `/race-preview/`, rendering the real
+    `RacesPage`/`RacePage` over synthetic races in `tests/fixtures/race-preview/` (routes in open
+    sea, generated photos, made-up names and times, `generate.ts`). `JsonFileStore` and
+    `validateData` gained an optional schema root so the fixture tree validates against the
+    repo's schemas.
+  - **Fixed on the way**: `run-detail.spec.ts` still expected published zone names after #53, so
+    it failed on `main` too.
+  - **Tests**: pytest 416 passed (1 skipped), Vitest 489, Playwright 177 passed (1 skipped,
+    both projects), ruff and `astro check` clean. The full gate (validate-data, scan-images,
+    check-boundaries, build, scan-privacy) passed with a synthetic race, track and photos
+    temporarily in the real data tree, then removed. Lighthouse (mobile, local): every page type
+    100, including a race page with a map (1.6 KB gzip JS, 27.2 KB total, no third-party
+    requests).
 
 ## Upstream candidates
+
+- 2026-10-24 — maplibre-gl 6 loads its worker from `./maplibre-gl-worker.mjs` beside its own
+  module, which a bundler moves. Import the worker and stylesheet with Vite's `?url`, call
+  `setWorkerUrl()`, and lazy-import the library on click; the page then loads only a ~1.6 KB
+  gzip loader. Agent tip (Astro, maps).
+- 2026-10-24 — sharp's file cache keeps images open on Windows, so a Vitest temp folder couldn't
+  be deleted (EPERM). Call `sharp.cache(false)` in tests that write images to temp folders.
+  Agent tip (Windows).
+- 2026-10-24 — A test-only preview route over synthetic fixture data, rendering the same page
+  components as the real pages, let race pages, maps and photos be built and tested end to end
+  before any real race existed, without putting invented data in the real tree (Principle
+  VIII). Playbook lesson (testing features whose data doesn't exist yet).
+- 2026-10-24 — The agent's Bash tool turned `\\n` in a quoted heredoc into `\n`, so Python
+  string edits written in it got real newlines and broke a test file. Use the Edit tool for
+  edits whose text holds backslashes. Agent tip (shell).
 
 - 2026-10-24 — A new published field passed every local check, but its first real publish
   failed the gate's privacy scan (a `name` key). Locally, the published data still had the old

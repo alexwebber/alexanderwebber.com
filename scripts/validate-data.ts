@@ -30,11 +30,13 @@ export const PROVIDER_ID_PATTERNS: [RegExp, string][] = [
 export interface ValidateOptions {
   /** Europe/London date used for "not in the future" checks. Defaults to today. */
   today?: string;
+  /** Where schemas/ is, when not under `root` (a fixture data tree). */
+  schemaRoot?: string;
 }
 
 export function validateData(root: string, options: ValidateOptions = {}): DataIssue[] {
   const today = options.today ?? londonToday();
-  const { data, issues } = loadRunningData(root);
+  const { data, issues } = loadRunningData(root, options.schemaRoot);
   const error = (file: string, entry: string, field: string, message: string) =>
     issues.push({ file, entry, field, message, severity: 'error' });
   const warning = (file: string, entry: string, field: string, message: string) =>

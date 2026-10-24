@@ -1,0 +1,27 @@
+---
+// /running/races/<slug>/ (T133, US4; contracts/routes.md, FR-054): one race's result, route map,
+// full run detail and photos. <slug> is the owner's race.yaml slug, else the run ID. Each race has
+// its own share image (/og/running-races-<slug>.png). See RacePage.astro.
+import type { GetStaticPaths } from 'astro';
+import { ogPath } from '../../../../shared/og/render.ts';
+import RacePage from '../../components/RacePage.astro';
+import { galleryPhotos } from '../../data/photos.ts';
+import { loadRaces } from '../../data/races.ts';
+import type { RaceHistoryEntry } from '../../domain/races.ts';
+import type { RaceTrack } from '../../../../shared/storage/index.ts';
+
+export const getStaticPaths = (async () => {
+  const { history, tracks } = await loadRaces();
+  return history.map((race) => ({ params: { slug: race.slug }, props: { race, track: tracks.get(race.slug) } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  race: RaceHistoryEntry;
+  track?: RaceTrack;
+}
+
+const { race, track } = Astro.props;
+const path = `/running/races/${race.slug}/`;
+---
+
+<RacePage race={race} track={track} photos={galleryPhotos(race.entry)} routeSrc={`${path}route.json`} image={ogPath(path)} racesHref="/running/races/" />

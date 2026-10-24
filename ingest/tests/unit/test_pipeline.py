@@ -95,10 +95,15 @@ def test_a_first_run_publishes_every_run_and_series(run, published, repo, filled
 
 def test_nothing_private_reaches_the_published_tree_or_the_log(run, published):
     run()
-    for name, data in tree(published).items():
+    files = tree(published)
+    assert [f for f in files if f.startswith("race-tracks/")]  # the flagged race has one
+    for name, data in files.items():
         text = data.decode()
+        # Race tracks are the only published coordinates (FR-014); the rest of a race is private.
+        allowed = ("51.12", "-0.76") if name.startswith("race-tracks/") else ()
         for sentinel in SENTINELS:
-            assert sentinel not in text, (name, sentinel)
+            if sentinel not in allowed:
+                assert sentinel not in text, (name, sentinel)
     for sentinel in ("SENTINEL", "i9000000", "51.12"):
         assert sentinel not in run.log
 
@@ -114,9 +119,58 @@ def test_training_runs_get_neutral_titles_and_the_flagged_race_is_a_race(
          "Trail run · 12.3 km", "Indoor run · 4.0 km"]
     )  # fmt: skip
     race = by_id[run_id_for(filled_archive, "i90000004")]
-    assert race["is_race"] is True and "track_ref" not in race
+    assert race["is_race"] is True and race["track_ref"] == f"race-tracks/{race['id']}"
     treadmill = by_id[run_id_for(filled_archive, "i90000003")]
     assert treadmill["treadmill"] is True and "elev" not in treadmill["series"]
+    tracks = sorted(published.glob("race-tracks/*.json"))
+    assert [p.stem for p in tracks] == [race["id"]]  # training and treadmill runs never get one
+    assert all("track_ref" not in r for r in by_id.values() if r["id"] != race["id"])
+
+
+def test_hide_map_and_un_designation_remove_a_race_track(run, published, repo, filled_archive):
+    run()
+    race = run_id_for(filled_archive, "i90000004")
+    track = published / f"race-tracks/{race}.json"
+    assert track.exists()
+    write_owner(
+        repo,
+        "races/spring-half/race.yaml",
+        f"slug: spring-half\nrun_id: {race}\ndate: 2026-04-05\ndistance: half\nhide_map: true\n",
+    )
+    run(now=LATER)
+    assert not track.exists() and "track_ref" not in runs(published)[race]
+    assert check_published(published, SchemaSet(repo / "schemas")) == []
+
+    write_owner(
+        repo,
+        "races/spring-half/race.yaml",
+        f"slug: spring-half\nrun_id: {race}\ndate: 2026-04-05\ndistance: half\ntrim_ends_m: 300\n",
+    )
+    run(now=LATER)
+    points = json.loads(track.read_bytes())["points"]
+    assert points[0][2] >= 300 and runs(published)[race]["track_ref"] == f"race-tracks/{race}"
+
+    write_owner(repo, "run-overrides.yaml", f"- {{ id: {race}, is_race: false }}\n")
+    run(now=LATER)
+    assert not track.exists() and runs(published)[race]["is_race"] is False
+
+
+def test_a_treadmill_run_designated_a_race_gets_no_track(run, published, repo, filled_archive):
+    run()
+    treadmill = run_id_for(filled_archive, "i90000003")
+    write_owner(repo, "run-overrides.yaml", f"- {{ id: {treadmill}, is_race: true }}\n")
+    run(now=LATER)
+    assert runs(published)[treadmill]["is_race"] is True
+    assert not (published / f"race-tracks/{treadmill}.json").exists()
+
+
+def test_hiding_a_race_removes_its_track(run, published, repo, filled_archive):
+    run()
+    race = run_id_for(filled_archive, "i90000004")
+    write_owner(repo, "run-overrides.yaml", f"- {{ id: {race}, hide: true }}\n")
+    run(now=LATER)
+    assert not (published / f"race-tracks/{race}.json").exists()
+    assert check_published(published, SchemaSet(repo / "schemas")) == []
 
 
 def test_a_second_run_with_no_changes_changes_nothing(run, published):

@@ -1,0 +1,187 @@
+---
+// The personal-best table (T130; FR-053, US4.2, US4.3, US4.7): one row per distance (pbs.ts), with
+// the fastest race result (the official time where there is one, with the race and its date) and,
+// where faster, the fastest effort from any run, labelled "in a longer run" when it was a stretch
+// of one. A best set within the highlight window carries a "New" badge. A distance with nothing
+// yet says so, pointing at the next race over it (Brighton for the marathon). Garmin attribution
+// names the watches behind the times shown (FR-077); hand-entered results aren't Garmin data. A
+// real table, so it reads row by row with a screen reader; no client JS.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
+import { runDevices } from '../domain/attribution.ts';
+import { capitalise, distanceLabel } from '../domain/goal-text.ts';
+import type { PbRow } from '../domain/pbs.ts';
+import { raceHref, runHref } from '../links.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  rows: readonly PbRow[];
+  heading?: 2 | 3;
+  id?: string;
+  /** Race page links; the test-only preview points them at its own pages. */
+  raceLink?: (slug: string) => string | undefined;
+  runLink?: (runId: string) => string | undefined;
+}
+
+const { rows, heading = 2, id = 'personal-bests', raceLink = raceHref, runLink = runHref } = Astro.props;
+const Heading = `h${heading}` as const;
+const sources = rows
+  .flatMap((row) => [
+    ...(row.race?.entry.run ? [{ date: row.race.entry.date, device: row.race.entry.run.device }] : []),
+    ...(row.effort ? [{ date: row.effort.date, device: row.effort.device }] : []),
+  ])
+  .sort((a, b) => b.date.localeCompare(a.date));
+const devices = runDevices(sources);
+---
+
+<section class="pbs" aria-labelledby={id} data-pb-table>
+  <Heading id={id}>Personal bests</Heading>
+  {sources.length > 0 && <GarminAttribution device={devices} />}
+  <table class="pb-table">
+    <caption class="visually-hidden">Personal bests: the fastest race result and the fastest effort from any run, by distance</caption>
+    <thead>
+      <tr>
+        <th scope="col">Distance</th>
+        <th scope="col">Race</th>
+        <th scope="col">Fastest in any run</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => {
+          const label = capitalise(distanceLabel(row.distance_m));
+          const race = row.race;
+          const effort = row.effort;
+          const recentRace = row.recent && race && !effort;
+          const raceUrl = race && raceLink(race.entry.slug);
+          const runUrl = effort?.run_id ? runLink(effort.run_id) : undefined;
+          return (
+            <tr data-pb-distance={row.distance_m} data-recent={row.recent ? '' : undefined}>
+              <th scope="row">{label}</th>
+              {!race && !effort ? (
+                <td colspan="2" class="pb-none" data-pb-none>
+                  Not run yet
+                  {row.upcoming && (
+                    <>
+                      {': '}
+                      {row.upcoming.name} on <span class="nowrap">{formatDate(row.upcoming.date)}</span> will be the first.
+                    </>
+                  )}
+                </td>
+              ) : (
+                <>
+                  <td data-pb-race>
+                    {race ? (
+                      <>
+                        <span class="pb-time">{formatDuration(race.time_s)}</span>
+                        {recentRace && (
+                          <>
+                            {' '}
+                            <span class="pb-new" data-pb-new>
+                              New
+                            </span>
+                          </>
+                        )}
+                        <span class="pb-detail">
+                          {raceUrl ? <a href={raceUrl}>{race.entry.name}</a> : race.entry.name}
+                          {', '}
+                          <span class="nowrap">{formatDate(race.entry.date)}</span>
+                          {!race.entry.official && race.entry.run && ' (watch time)'}
+                        </span>
+                      </>
+                    ) : (
+                      <span class="pb-muted">No race yet</span>
+                    )}
+                  </td>
+                  <td data-pb-effort>
+                    {effort ? (
+                      <>
+                        <span class="pb-time">{formatDuration(effort.time_s)}</span>
+                        {row.recent && (
+                          <>
+                            {' '}
+                            <span class="pb-new" data-pb-new>
+                              New
+                            </span>
+                          </>
+                        )}
+                        <span class="pb-detail">
+                          {runUrl ? <a href={runUrl}>{formatDate(effort.date)}</a> : <span class="nowrap">{formatDate(effort.date)}</span>}
+                          {effort.inLongerRun && <span data-in-longer-run> (in a longer run)</span>}
+                        </span>
+                      </>
+                    ) : (
+                      <span class="pb-muted">{race ? 'Race is fastest' : '–'}</span>
+                    )}
+                  </td>
+                </>
+              )}
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+</section>
+
+<style>
+  .pb-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+
+  .pb-table th,
+  .pb-table td {
+    padding: var(--space-2) var(--space-2) var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .pb-table thead th {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .pb-table thead th:first-child {
+    width: 30%;
+  }
+
+  .pb-time {
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pb-detail {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .pb-muted,
+  .pb-none {
+    color: var(--color-text-secondary);
+  }
+
+  .pb-new {
+    padding: 0 var(--space-2);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-mark);
+    color: var(--color-accent-strong);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  tr[data-recent] th {
+    color: var(--color-accent-strong);
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+</style>

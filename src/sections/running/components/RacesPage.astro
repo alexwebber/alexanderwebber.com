@@ -1,0 +1,58 @@
+---
+// The races page body (T133; contracts/routes.md /running/races/, US4.1, US4.2, US4.6, US4.7), in
+// the owner's order (2026-10-24): upcoming races with the Brighton countdown first, then the PB
+// table, then the race history, newest first ("No races yet: ..." until the first race). Shared
+// by the real page and the test-only race preview, which passes synthetic data and its own links.
+// Garmin attribution under the heading names the watches behind the times shown (FR-077). The
+// countdown's inline script is the only client JS.
+import { formatDate } from '../../../shared/format/dates.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
+import type { RacesData } from '../data/races.ts';
+import { runDevices } from '../domain/attribution.ts';
+import { distanceLabel } from '../domain/goal-text.ts';
+import { raceHref, runHref } from '../links.ts';
+import PBTable from './PBTable.astro';
+import RaceHistory from './RaceHistory.astro';
+import SectionLayout from './SectionLayout.astro';
+import UpcomingRaces from './UpcomingRaces.astro';
+
+export interface Props {
+  data: RacesData;
+  /** Share image path. */
+  image: string;
+  title?: string;
+  raceLink?: (slug: string) => string | undefined;
+  runLink?: (runId: string) => string | undefined;
+}
+
+const { data, image, title, raceLink = raceHref, runLink = runHref } = Astro.props;
+const { history, pbs, upcoming } = data;
+const sources = [
+  ...pbs.flatMap((row) => [...(row.race?.entry.run ? [row.race.entry.run] : []), ...(row.effort?.run_id ? [{ date: row.effort.date, device: row.effort.device }] : [])]),
+  ...history.flatMap((race) => (race.run ? [race.run] : [])),
+].sort((a, b) => b.date.localeCompare(a.date));
+const next = upcoming[0];
+const bests = pbs
+  .filter((row) => row.best)
+  .slice(0, 2)
+  .map((row) => `${distanceLabel(row.distance_m)} ${formatDuration(row.best!.time_s)}`);
+const description = [
+  history.length > 0 ? `Alexander Webber's ${history.length} race${history.length === 1 ? '' : 's'} and personal bests` : "Alexander Webber's races and personal bests",
+  bests.length > 0 ? `: ${bests.join(', ')}.` : '.',
+  next ? ` Next up: ${next.race.name} on ${formatDate(next.race.date)}.` : '',
+].join('');
+---
+
+<SectionLayout heading="Races" title={title} description={description} image={image} imageAlt="Alexander Webber's races and personal bests" garmin={sources.length > 0 ? { device: runDevices(sources) } : false}>
+  <div class="races-page">
+    <UpcomingRaces races={upcoming} />
+    <PBTable rows={pbs} raceLink={raceLink} runLink={runLink} />
+    <RaceHistory races={history} pbSlugs={data.pbSlugs} next={next?.race} raceLink={raceLink} />
+  </div>
+</SectionLayout>
+
+<style>
+  .races-page > :global(section) {
+    margin-bottom: var(--space-6);
+  }
+</style>

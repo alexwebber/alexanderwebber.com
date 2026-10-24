@@ -19,6 +19,11 @@ export function distanceLabel(distanceM: number): string {
   return NAMED.find(([m]) => sameDistance(m, distanceM))?.[1] ?? formatKm(distanceM);
 }
 
+/** "Half marathon" from "half marathon": a label at the start of a line or cell. */
+export function capitalise(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 const UNITS: Record<ValueMetric, { suffix: string; name: string }> = {
   weight_kg: { suffix: ' kg', name: 'Weight' },
   body_fat_pct: { suffix: '%', name: 'Body fat' },

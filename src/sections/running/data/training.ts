@@ -6,6 +6,7 @@ import type { Run } from '../../../shared/storage/index.ts';
 import { runDevices } from '../domain/attribution.ts';
 import { runYears, trainingSummary, type Summary } from '../domain/periods.ts';
 import { runningStore } from './load.ts';
+import { loadRaces } from './races.ts';
 
 export interface TrainingData {
   today: string;
@@ -18,6 +19,8 @@ export interface TrainingData {
   races: Run[];
   /** The watches behind all the runs, newest first (FR-077). */
   devices: string[];
+  /** Race run ID -> its race page slug (US4), so the run list links races to their pages. */
+  raceSlugs: ReadonlyMap<string, string>;
 }
 
 const cache = new Map<string, Promise<TrainingData>>();
@@ -45,6 +48,7 @@ async function load(today: string): Promise<TrainingData> {
     years: runYears(runs),
     races: runs.filter((r) => r.is_race),
     devices: runDevices(runs),
+    raceSlugs: (await loadRaces(today)).slugByRun,
   };
 }
 

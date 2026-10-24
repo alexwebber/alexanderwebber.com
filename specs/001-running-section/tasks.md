@@ -652,7 +652,8 @@ featured goal and this week's distance within the first two screens.
   - the "Treadmill" label on a treadmill latest-run card (T155), with no map
   - Garmin attribution present as placed (T152)
   - no-JS rendering (FR-074)
-  - zero axe violations and a working keyboard path
+  - zero axe violations
+  - **Done 2026-10-24**: 15 e2e and 5 a11y tests, on both Playwright projects, over the real `/running/races/` and the race preview. Tiles are answered by the test (`page.route`), so no real third-party request is made; MapLibre does start in headless Chromium. Also fixed `run-detail.spec.ts`, which still expected zone names after #53 dropped them, so it failed on `main` too. and a working keyboard path
 
 **Checkpoint**: US2 + US1 together form the MVP: the landing hub plus goals, rendering from real
 data.
@@ -737,36 +738,44 @@ race page shows its map and photos.
 
 ### Implementation for User Story 4
 
-- [ ] T125 [P] [US4] Create `ingest/src/awingest/process/race_track.py`:
+- [X] T125 [P] [US4] Create `ingest/src/awingest/process/race_track.py`:
   - **When**: only when `is_race` is true, the run is not `treadmill` (FR-058), and the map is not hidden.
   - **Simplification**: Douglas–Peucker to `<= ~1,000 points`.
   - **Trim and bbox**: applies `trim_ends_m` (default 0) and computes the bbox.
   - **Output**: writes `race-tracks/<run-id>.json` via `PublishedWriter` and sets the run's `track_ref`.
   - **Removal**: removes the track when `hide_map` is set or the run is designated `not_race`.
   - **Hook-up**: wire it into `process/pipeline.py`. The override hash includes `race.yaml`.
-- [ ] T126 [P] [US4] Create `ingest/tests/unit/test_race_track.py`. It checks that:
+  - **Done 2026-10-24**: `wants_track()` also refuses `indoor` runs. Douglas–Peucker runs in local metres from 0.5 m, doubling until the track fits 1,000 points (a 1 Hz marathon of 13,000 points fits). Points keep the race's own distances after trimming, so km markers line up. The run hash already covered `race.yaml` (`RaceLink` holds `hide_map` and `trim_ends_m`). Hiding or dropping a run removes its track too. `PROCESSOR_VERSION` stays 5: no published run is a race, so no existing output changes, and a future designation changes that run's owner hash anyway.
+- [X] T126 [P] [US4] Create `ingest/tests/unit/test_race_track.py`. It checks that:
   - training runs never get a track
   - treadmill runs never get a track, even when designated a race
   - `hide_map` removes the track
   - trimming works
   - tracks have `<= 1000` points and are schema-valid
-- [ ] T127 [P] [US4] Create `scripts/add-race-photo.ts`, which uses sharp to **strip all metadata**, apply EXIF orientation and cap the long edge at 2,400 px. It writes the photo into `data/running/owner/races/<slug>/photos/` and appends a `photos` entry. A description is required.
-- [ ] T128 [P] [US4] Extend `src/sections/running/domain/races.ts` with the race history:
+  - **Done 2026-10-24**: 9 unit tests (synthetic routes in open sea), plus 3 new pipeline tests and 2 updated ones (the fixture race now gets a track, the only published coordinates; `hide_map`, `trim_ends_m`, un-designation, hiding, and a treadmill run designated a race).
+- [X] T127 [P] [US4] Create `scripts/add-race-photo.ts`, which uses sharp to **strip all metadata**, apply EXIF orientation and cap the long edge at 2,400 px. It writes the photo into `data/running/owner/races/<slug>/photos/` and appends a `photos` entry. A description is required.
+  - **Done 2026-10-24**: photos go **beside** `race.yaml`, not in a `photos/` folder, because the Phase 2 schema (`file` has no `/`), loader and validator, and research R7, already put them there. JPEG, WebP and AVIF keep their format; anything else becomes JPEG. The written file is re-checked for metadata before `race.yaml` changes. Tested in `tests/unit/add-race-photo.test.ts` (GPS EXIF and orientation 6 in, nothing out).
+- [X] T128 [P] [US4] Extend `src/sections/running/domain/races.ts` with the race history:
   - It combines provider-flagged (intervals.icu `race`) or owner-designated runs with hand entries, joined **only on an explicit `run_id`** (no fuzzy merge).
   - Official details win (FR-051).
   - The slug is the owner `slug`, else the run ID.
   - Each race appears once, newest first.
-- [ ] T129 [P] [US4] Create `src/sections/running/domain/pbs.ts`. For each standard distance (5k, 10k, half, marathon + any other raced distance):
+  - **Done 2026-10-24**: `raceHistory()` uses the published `is_race` (the processor's resolution of the flag, `race.yaml` and overrides). A `race.yaml` whose run isn't published yet, or isn't a race any more, shows nothing. A race run without `race.yaml` counts in the PB table at the named distance within 5% of its length. Device time is the run's elapsed time, as on the landing hero.
+- [X] T129 [P] [US4] Create `src/sections/running/domain/pbs.ts`. For each standard distance (5k, 10k, half, marathon + any other raced distance):
   - the fastest race result (official time beats device time; hand-entered results included)
   - the fastest eligible any-run effort, where it is faster (FR-053); treadmill efforts only with the owner's `include_in_records` (FR-057)
   - a "recent" highlight within `recent_highlight_days.pb` days (US4.7)
-- [ ] T130 [P] [US4] Create `src/sections/running/components/PBTable.astro`, `RaceHistory.astro` and `UpcomingRaces.astro`. Upcoming races show the focus race first, then by date, each with days remaining, target time and link. Completed races leave the list (FR-056).
-- [ ] T131 [P] [US4] Create `src/sections/running/components/RaceMap.astro`:
+  - **Done 2026-10-24**: the four standard rows always show, plus any other named distance raced. The effort column reuses the goals' Best Effort index, and leaves out a race run's own stretch at its race distance. A device race time doesn't count when that run's effort at the distance is implausible. `recent` is the row's best within the window; `racePbSlugs()` feeds the history's "PB"/"New PB" badges. An empty row names the next upcoming race over the distance.
+- [X] T130 [P] [US4] Create `src/sections/running/components/PBTable.astro`, `RaceHistory.astro` and `UpcomingRaces.astro`. Upcoming races show the focus race first, then by date, each with days remaining, target time and link. Completed races leave the list (FR-056).
+  - **Done 2026-10-24**: `Countdown` gained a `compact` variant. The PB table is a real three-column table. Run lists' "Race" badge links to the race page.
+- [X] T131 [P] [US4] Create `src/sections/running/components/RaceMap.astro`:
   - **Static baseline**: a build-time SVG route with km markers and a km-axis elevation profile, with zero third-party requests.
-  - **Interactive enhancement**: a "Load interactive map" button lazy-imports maplibre-gl 6.14.0 with OpenFreeMap tiles **only on click**, with attribution. It is the only JS-budget exception.
+  - **Interactive enhancement**: a "Load interactive map" button lazy-imports maplibre-gl (6.15.0, the current pin) with OpenFreeMap tiles **only on click**, with attribution. It is the only JS-budget exception.
   - **Absence**: renders nothing when there is no track.
-- [ ] T132 [P] [US4] Create `src/sections/running/components/PhotoGallery.astro`: `astro:assets` AVIF/WebP, lazy loading, with the `description` as alt text and an optional caption (FR-055).
-- [ ] T133 [US4] Create `src/sections/running/pages/races.astro` at `/running/races/` (history, PB table, upcoming races) and `src/sections/running/pages/races/[slug].astro`. Each race page shows:
+  - **Done 2026-10-24**: S/F and km labels are HTML placed by percentage over the SVG (every 1 km up to 12 km, 2 km up to 25 km, 5 km beyond). The page holds projected figures only; coordinates go to `/running/races/<slug>/route.json`, fetched on click. The worker and stylesheet are same-origin `?url` assets, and the button appears only when JS runs. If the style server fails, the static map stays with a message. The course profile is left out when the run detail already charts elevation against distance (the same chart). Style: OpenFreeMap `liberty`.
+- [X] T132 [P] [US4] Create `src/sections/running/components/PhotoGallery.astro`: `astro:assets` AVIF/WebP, lazy loading, with the `description` as alt text and an optional caption (FR-055).
+  - **Done 2026-10-24**: `<Picture>` with AVIF, WebP and a JPEG fallback at 640 and 1280 px (6 files a photo, so 100 photos stay at ~600 variants). Files come from `data/photos.ts` (`import.meta.glob` over the race folders).
+- [X] T133 [US4] Create `src/sections/running/pages/races.astro` at `/running/races/` (history, PB table, upcoming races) and `src/sections/running/pages/races/[slug].astro`. Each race page shows:
   - the official time, position, results link and note
   - `RaceMap`
   - the full run detail via the US3 components when there is a `run_id`
@@ -774,15 +783,26 @@ race page shows its map and photos.
   - a per-race OG card from `src/sections/running/og/race.ts`
 
   Register the routes, and link race runs in the run list and run pages to their race pages.
-- [ ] T134 [US4] OWNER: Supply pre-Garmin race results (date, name, distance, official time), official chip times and positions for Garmin-recorded races, and race photos with descriptions, and confirm the agent's candidate race list (T157). The agent asks at the US4 PR review.
-- [ ] T157 [US4] Draft the candidate race list (Garmin sync never sets intervals.icu's `race` flag, FR-050; RESULTS.md). The agent scans the private raw R2 data (raw activity names, distance/pace patterns such as near-standard distances run near PB pace, and race-day dates the owner recalls) and drafts candidates keyed by opaque public run ID with date, distance and time. Raw names are shown to the owner only in the conversation, never in git or a PR body. The owner confirms or rejects each at the US4 PR review (with T134); confirmed races feed T135.
-- [ ] T135 [US4] From the owner's input (T134) and the confirmed candidate list (T157), write `data/running/owner/races/<slug>/race.yaml` entries, record each confirmed race's designation (`designate: race` in its `race.yaml` when it has race details, else `run-overrides.yaml` `is_race: true`), and run `scripts/add-race-photo.ts` for each photo. Raise a PR. `validate-data` must pass, including the duplicate-race check.
-- [ ] T136 [P] [US4] Create `tests/unit/pbs.test.ts` and `tests/unit/race-history.test.ts`. They cover:
+  - **Done 2026-10-24**: the pages are thin wrappers round `RacesPage.astro` and `RacePage.astro`, which the test-only race preview (`/race-preview/`, `SHELL_PREVIEW=1`, synthetic data in `tests/fixtures/race-preview/`) renders too. Share images: `/og/running-races.png` (next race and race count, no Garmin figures) and `/og/running-races-<slug>.png` (Garmin attribution only for a watch time). Run pages' "Race" label and run lists' "Race" badge link to the race page. "Races" is in the section nav.
+- [X] T134 [US4] OWNER: Supply pre-Garmin race results (date, name, distance, official time), official chip times and positions for Garmin-recorded races, and race photos with descriptions, and confirm the agent's candidate race list (T157). The agent asks at the US4 PR review.
+  - **Done 2026-10-24** (asked before implement): there are no races yet, before or since Garmin, so there are no results, chip times or photos. Brighton Marathon (4 Apr 2027) is the first race.
+- [X] T157 [US4] Draft the candidate race list (Garmin sync never sets intervals.icu's `race` flag, FR-050; RESULTS.md). The agent scans the private raw R2 data (raw activity names, distance/pace patterns such as near-standard distances run near PB pace, and race-day dates the owner recalls) and drafts candidates keyed by opaque public run ID with date, distance and time. Raw names are shown to the owner only in the conversation, never in git or a PR body. The owner confirms or rejects each at the US4 PR review (with T134); confirmed races feed T135.
+  - **Done 2026-10-24**: 201 raw runs scanned, 23 race-like by name, pace or a Saturday-9am 5k. The owner rejected the three plausible ones (a half on 5 Apr 2026, the 17 Oct 2026 track 5k, a 5k on 27 Feb 2026); the rest are named training sessions.
+- [X] T135 [US4] From the owner's input (T134) and the confirmed candidate list (T157), write `data/running/owner/races/<slug>/race.yaml` entries, record each confirmed race's designation (`designate: race` in its `race.yaml` when it has race details, else `run-overrides.yaml` `is_race: true`), and run `scripts/add-race-photo.ts` for each photo. Raise a PR. `validate-data` must pass, including the duplicate-race check.
+  - **Nothing to write (2026-10-24)**: no confirmed races. Brighton's `race.yaml` is written after race day.
+- **Owner picks (2026-10-24), before implement:**
+  - **Solo time trials aren't races.** Efforts like the 17 Oct track 5k and the planned 26 Dec half count as fastest efforts in the PB table and goals only, with no race page and no map.
+  - **PB distances:** 5k, 10k, half and marathon only. The marathon row reads as not yet run, pointing at Brighton, until there is a marathon effort.
+  - **Races page with no races:** the Brighton countdown (upcoming races) first, then the PB table, then the empty history: "No races yet: Brighton Marathon on 4 Apr 2027 will be the first."
+  - **"Races" joins the Running menu now**, beside Goals and Training.
+  - **Race pages, maps and photos are built now**, tested on synthetic races (fixtures and the test-only preview), so Brighton's page works on the day. Live, only the races page and PB table show anything until then.
+- [X] T136 [P] [US4] Create `tests/unit/pbs.test.ts` and `tests/unit/race-history.test.ts`. They cover:
   - US4.2 (PB table)
   - US4.3 (official 1:41:07 beats the device's 1:41:15)
   - the duplicate-race validation error, and a single entry once `run_id` is added
   - US4.7 (recent highlight)
-- [ ] T137 [P] [US4] Create `tests/e2e/races.spec.ts` and `tests/a11y/races.spec.ts`. They cover:
+  - **Done 2026-10-24**: 12 PB tests and 7 race-history tests, plus `tests/unit/race-pages.test.ts` (10: the real page's no-races wording, race pages, map geometry, share cards).
+- [X] T137 [P] [US4] Create `tests/e2e/races.spec.ts` and `tests/a11y/races.spec.ts`. They cover:
   - acceptance scenarios US4.1–US4.7
   - no EXIF in `dist/` images
   - the static map without JS

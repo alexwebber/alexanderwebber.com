@@ -166,9 +166,12 @@ function schemasFor(root: string): SchemaSet {
   return set;
 }
 
-/** Loads everything under `<root>/data/running/`. Absent files are simply absent (no data yet). */
-export function loadRunningData(root: string): LoadResult {
-  const schemas = schemasFor(root);
+/**
+ * Loads everything under `<root>/data/running/`. Absent files are simply absent (no data yet).
+ * The schemas come from `<schemaRoot>/schemas/` (default: the same root).
+ */
+export function loadRunningData(root: string, schemaRoot: string = root): LoadResult {
+  const schemas = schemasFor(schemaRoot);
   const issues: DataIssue[] = [];
   const data: RunningData = {
     runs: [],
