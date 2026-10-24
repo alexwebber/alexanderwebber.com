@@ -91,28 +91,11 @@
       }
     },
     "hr_zones": {
-      "description": "Garmin's own five heart-rate zones from the watch's original FIT file (time_in_zone, session level): each zone's number, bpm range and time in it (the site names zones from their number; a published run never carries a \"name\" key, which the privacy scan reserves for provider titles). Omitted when the watch recorded none. The legacy branch accepts intervals.icu's zone times published before processor version 4; remove it once every run is republished.",
-      "anyOf": [
-        {
-          "type": "array",
-          "minItems": 5,
-          "maxItems": 5,
-          "items": { "$ref": "#/$defs/garminHrZone" }
-        },
-        {
-          "deprecated": true,
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["zone", "seconds"],
-            "properties": {
-              "zone": { "type": "integer", "minimum": 1, "maximum": 10 },
-              "seconds": { "$ref": "../defs.schema.json#/$defs/seconds" }
-            }
-          }
-        }
-      ]
+      "description": "Garmin's own five heart-rate zones from the watch's original FIT file (time_in_zone, session level): each zone's number, bpm range and time in it (the site names zones from their number; a published run never carries a \"name\" key, which the privacy scan reserves for provider titles). Omitted when the watch recorded none.",
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/garminHrZone" }
     },
     "series": {
       "description": "Chart series, downsampled to at most 600 points. The x-axis is distance or elapsed time, never clock time. No coordinates. null marks a gap.",

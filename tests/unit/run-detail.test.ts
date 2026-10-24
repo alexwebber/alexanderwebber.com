@@ -87,13 +87,11 @@ describe('run detail domain', () => {
     expect(rows.at(-1)!.partial).toBe(true);
   });
 
-  it("shows Garmin's five zones only, never the old intervals.icu shape", () => {
+  it("shows Garmin's five zones, named from their number", () => {
     expect(zoneRows(fullRun()).map((z) => [z.zone, z.name, z.low_bpm, z.high_bpm, z.seconds])).toEqual(
       ZONES.map((z, i) => [z.zone, ['Warm Up', 'Easy', 'Aerobic', 'Threshold', 'Maximum'][i], z.low_bpm, z.high_bpm, z.seconds]),
     );
     expect(zoneRows(fullRun()).reduce((sum, z) => sum + z.share, 0)).toBeCloseTo(1, 9);
-    const legacy = [1, 2, 3, 4, 5, 6, 7].map((zone) => ({ zone, seconds: 100 }));
-    expect(zoneRows(fullRun({ hr_zones: legacy }))).toEqual([]);
     expect(zoneRows(bareRun())).toEqual([]);
   });
 
