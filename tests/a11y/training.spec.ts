@@ -35,6 +35,8 @@ async function eachToggle(page: Page, check: () => Promise<void>) {
 
 for (const colorScheme of ['light', 'dark'] as const) {
   test(`the hub passes axe in ${colorScheme} mode, in every view and with the tables open`, async ({ page }) => {
+    // About eight full-page axe runs: ~10 s locally, past the 30 s default on the 2-core CI runner.
+    test.slow();
     await page.emulateMedia({ colorScheme });
     await page.goto('/running/training/');
     expect(await axe(page)).toEqual([]);
