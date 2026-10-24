@@ -853,8 +853,34 @@ project-specific notes.
   shared `londonMidnight()`), so it only works in the hour or so after UK midnight before the
   daily deploy, or on an old build. On the 2-core runner the page sat near the 90 line, so it
   failed after #46 on noise alone.
+- **2026-10-24** — **Go-live set-up** (T004 done, T112 built in the `001-go-live` PR):
+  - **Nameservers:** the domain is a Cloudflare zone (Free plan) and stays registered at
+    Namecheap (Cloudflare's "Transfer a domain" isn't wanted). It had no records, no email and no
+    DNSSEC, so nothing was carried over.
+  - **AI crawlers allowed** (owner pick): search, agent and training bots are all "Allow", with
+    Bot Preference Sync on. Everything on the site is public by design, and being known to AI
+    models can help the CV and blog be found. It can be changed any time in the zone.
+  - **`www` → apex** is a zone Redirect Rule ("www to root", 301, query string kept), set in the
+    dashboard. Cloudflare's docs recommend it, because a Worker custom domain only answers on its
+    exact hostname. `www` is also a custom domain, so it still serves the site if the rule is
+    ever lost. *Always Use HTTPS* is on. These dashboard-only settings are listed in
+    quickstart.md §0.
+  - **workers.dev stays up** as a fallback address. Every page's canonical URL is the domain, so
+    it isn't indexed as a second copy.
+  - **Garmin brand PDF read in full** (it downloads fine locally): still V 6.30.2025 and one page.
+    It matches the excerpts the attribution was built from, and the live pages follow it.
 
 ## Upstream candidates
+
+- 2026-10-24 — Moving a domain's nameservers to Cloudflare went smoothly, because the agent first
+  read the domain's records (A, MX, TXT, `www`) and the registry's DS record, so it knew nothing
+  needed carrying over and DNSSEC was off. Then it confirmed the change at the TLD server
+  (`nslookup -type=NS <domain> a.gtld-servers.net`), not a public resolver, which keeps the old
+  answer for up to 48 h. Cloudflare's current flow is *Add a domain → Connect a domain* (not
+  Transfer). A CI token made from the Workers template may lack the zone permissions a custom
+  domain needs (Workers Routes and DNS Edit), so check it before the merge deploys. Agent tip
+  (go-live): do those read-only checks before the owner touches the registrar, and walk them
+  through it screen by screen.
 
 - 2026-10-24 — A Lighthouse budget run once per page in CI failed the landing page (all of it
   blocking time) while it scored 100 locally and against production on the same runner. Agent

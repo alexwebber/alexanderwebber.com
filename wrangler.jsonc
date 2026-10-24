@@ -9,6 +9,16 @@
     "directory": "./dist",
     "binding": "ASSETS"
   },
+  // The live site. Deploy creates both hostnames' DNS records. www is redirected to the apex by
+  // the zone's "www to root" Redirect Rule (dashboard), which runs before the Worker; the custom
+  // domain keeps www serving the site if that rule is ever lost.
+  "routes": [
+    { "pattern": "alexanderwebber.com", "custom_domain": true },
+    { "pattern": "www.alexanderwebber.com", "custom_domain": true }
+  ],
+  // Kept as a fallback address. Every page's canonical URL is the custom domain, so search
+  // engines don't index it as a second copy.
+  "workers_dev": true,
   // Dispatches refresh.yml on main every 2 hours (src/worker/refresh-trigger.ts). The token is
   // the secret GITHUB_DISPATCH_TOKEN (`npx wrangler secret put`), never a var.
   "triggers": {
