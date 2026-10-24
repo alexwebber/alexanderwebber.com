@@ -9,20 +9,17 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-23, night):** #45 (review fixes) merged and deployed; the live pages were
-  checked. **T110 is done** in the `001-graduation-review` PR: suites green, Lighthouse 100s, the
-  self-review's fixes (unreached targets never read 100% or "Beaten by 0:00"), the design note,
-  Astro 7.4.2 (Node security floor) and the Playwright CI fix from #45's failed Tests run.
-  **Next: go-live (T004, T111, T112)**, in a new session.
+- **Status (2026-10-24, early):** #46 (T110) merged and deployed. The 00:17 UTC run on 24 Oct
+  deployed (countdown 162 days), but it had new data, so T105's no-change deploy path is still
+  unseen live. **Open for the owner: #47** (landing performance: `Countdown` does nothing on the
+  build's own day, and Lighthouse misses are judged on a median of three). **Next: go-live (T004,
+  T111, T112)**, in a new session.
   - **Check first:**
-    - that `001-graduation-review` merged, **including its Playwright job** (the first run
-      without `--with-deps`; if a library is missing, the fallback is
-      `npx playwright install-deps chromium` with a step timeout). Ask about any unticked
-      confirmation.
-    - the 00:17 UTC catch-all on 2026-10-24: its `deploy` job must run even with no data change
-      (T105). Check the run's jobs, and that `/running/` shows 162 days to go.
-    - **all** workflows on each PR, including the non-required Quality check, not only the gate.
-    - minutes: 708 used by 21:00 UTC on 2026-10-23. October should end under 1,000. If it's
+    - that #47 merged and deployed, with **all** its workflows green (Quality too). Ask about
+      any unticked confirmation.
+    - T105's no-change path: find a 00:xx UTC refresh run whose `commit` job printed "Nothing to
+      commit." and check its `deploy` job ran. If none ever does, that's fine; say so once.
+    - minutes: 761 used by 01:45 UTC on 2026-10-24. October should end under 1,000. If it's
       close to the limit, use the owner's lever order (2026-10-23 decision).
   - **Go-live order:** walk the owner through T004 (nameservers to Cloudflare; values in the
     Cloudflare dashboard), wait for it to go active, then T112 (custom domain + `www` redirect in
@@ -848,17 +845,25 @@ project-specific notes.
   total blocking time, with no script files on the page. The same build scored 100 locally (even
   on Node 22.23.4 and at 12x CPU slowdown) and against production on the same runner. The build
   output was byte-identical under Astro 7.4.0 and 7.4.2, and the runner image wasn't the cause.
-  Only the first pages measured dipped, so the likeliest cause is the 2-core private-repo runner
-  sharing its CPU with the just-started preview server. A page under budget is now measured twice
-  more, and failures name the metrics behind them.
+  A page under budget is now measured twice more (median decides), and failures name the
+  metrics behind them. The real cost was the landing page's `Countdown` script: it set up `Intl`
+  with a time zone and rewrote the day count on every load, forcing a relayout after first paint
+  (about half the page's blocking time at 16x CPU slowdown). It now does nothing while the
+  visitor's clock is inside the build's own UK day (`data-day-from`/`data-day-to`, from the new
+  shared `londonMidnight()`), so it only works in the hour or so after UK midnight before the
+  daily deploy, or on an old build. On the 2-core runner the page sat near the 90 line, so it
+  failed after #46 on noise alone.
 
 ## Upstream candidates
 
-- 2026-10-24 — A Lighthouse budget run once per page in CI failed a page that scored 100 locally
-  and in production; only the first pages measured on the 2-core runner dipped. Agent tip (CI
-  performance budgets): judge a miss on the median of three runs (Lighthouse's own advice), print
-  the metric breakdown on failure, and when a score drops, compare the same runner against
-  production before suspecting the code.
+- 2026-10-24 — A Lighthouse budget run once per page in CI failed the landing page (all of it
+  blocking time) while it scored 100 locally and against production on the same runner. Agent
+  tips (CI performance budgets): print the metric breakdown on failure; judge a miss on the
+  median of three runs; reproduce locally with `--throttling.cpuSlowdownMultiplier` and compare
+  long-task start times with first paint. Here the cost was a tiny inline script rewriting
+  build-time text on every load (`Intl` time-zone set-up plus a forced relayout). Agent tip
+  (static sites): give a client-side "correct the build's value" script the span its build value
+  is valid for, and have it do nothing inside it.
 
 - 2026-10-23 — Two Claude sessions shared one checkout. The new session switched branches while
   the old one was still finishing a follow-up on a merged PR, so the old one committed into the
