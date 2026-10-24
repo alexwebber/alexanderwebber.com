@@ -1006,6 +1006,22 @@ project-specific notes.
     100, including a race page with a map (1.6 KB gzip JS, 27.2 KB total, no third-party
     requests).
 
+- **2026-10-24** — **Phase 8 owner picks** (question round before implement; tasks.md amended):
+  - **Body first:** weight and body fat lead the Health page, then VO2 max, predictions and
+    training status, then fitness/fatigue/form, resting HR and HRV.
+  - **Fitness starts 42 days in** (18 Nov 2025), with a note. intervals.icu's history starts on
+    7 Oct 2025, so fitness (a 42-day average) climbs from 0 at first, an artefact of where the
+    data starts.
+  - **Weight header:** the 2025 journey start leads ("26.5 kg down since 2 Jun 2025"), and the
+    2023 heaviest weigh-in follows as a quieter line, as on the Goals page card (owner: 2025 is
+    the effective start of this push).
+  - **Daily metrics** (body fat, resting HR, HRV) are faint dots under a 7-day average line;
+    "now" is the 7-day average. Weight stays the average only.
+  - **Race predictions sit beside their goals**; their trend appears at two entries.
+  - **Charts open on 1 year.**
+  - **HRV note** names the watches: HRV starts on 1 Dec 2025, the day the Venu X1 replaced the
+    Venu 2 Plus (seen in the runs' `device`).
+
 ## Upstream candidates
 
 - 2026-10-24 — maplibre-gl 6 loads its worker from `./maplibre-gl-worker.mjs` beside its own

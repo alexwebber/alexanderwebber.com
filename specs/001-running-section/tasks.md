@@ -826,6 +826,27 @@ stress or Body Battery data appears anywhere.
 
 ### Implementation for User Story 5
 
+**Owner picks (2026-10-24, before implement)** — these refine the tasks below:
+
+- **Order: body first.** Weight, then body fat, then VO2 max, race predictions and training
+  status, then fitness/fatigue/form, resting HR and HRV.
+- **Fitness/fatigue/form start 42 days after the first fitness point** (18 Nov 2025 today),
+  with a short note: intervals.icu's history starts on 7 Oct 2025, so fitness climbs from zero
+  for its first 42 days because of where the data starts, not because of training.
+- **Weight header:** "26.5 kg down since 2 Jun 2025 (127.6 kg)" leads, from the weight goal's
+  `start_value`/`start_date`. "32.1 kg down since 31 Jan 2023 (133.2 kg)" follows as a quieter
+  line, from `all_time_start`. Both match the Goals page card, and the line starts where the
+  daily history does.
+- **Daily metrics** (body fat, resting HR, HRV): each reading is a faint dot with a 7-day
+  average line on top. Headline "now" figures use the 7-day average, labelled as such, to match
+  the goal cards. Weight stays 7-day average only (FR-061): no dots.
+- **Race predictions sit beside their goals:** each distance shows the prediction, the matching
+  goal ("goal sub-3:20", "achieved" for the 5k) and, for the marathon, Brighton and its date.
+  Their trend chart appears once there are two dated entries.
+- **Charts open on 1 year** (3 months, 1 year and all time).
+- **HRV note:** "HRV readings start on 1 Dec 2025, when the Venu X1 replaced the Venu 2 Plus."
+  Derive the date from the data and the watches from the runs' `device`, never hard-code them.
+
 - [ ] T138 [P] [US5] Create `src/sections/running/domain/health.ts`:
   - range slicing for 3 months, 1 year and all time
   - current values
