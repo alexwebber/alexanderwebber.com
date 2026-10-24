@@ -19,9 +19,13 @@ from Published + Owner and are never stored.
 
 ```text
 raw/intervals/activities/<activityId>/{summary,detail,streams,time-at-hr}.json   # as received
-raw/intervals/activities/<activityId>/activity.fit  # FIT file, verbatim backup (not parsed)
+raw/intervals/activities/<activityId>/activity.fit  # intervals.icu's generated FIT file, verbatim backup (not parsed)
+raw/intervals/activities/<activityId>/original.fit  # the watch's original FIT file (/file; gzip/zip unwrapped;
+                                                    #   absent for a 404 or a non-FIT upload). Parsed only for
+                                                    #   Garmin's HR zones (time_in_zone, session level), T159
 raw/intervals/activities/<activityId>/fetch.json    # fetch-stage marker, written after all parts:
-                                                    #   list-row hash + part names (change detection)
+                                                    #   list-row hash + part names + bundle layout (2 = with
+                                                    #   original.fit; older bundles are topped up)
 raw/intervals/wellness/<yyyy-mm-dd>.json            # one day; APPROVED keys only: weight, bodyFat,
                                                     #   restingHR, hrv, vo2max, ctl, atl (+ id/date)
 state/run-ids.json                                  # {<intervalsActivityId>: "<YYYY-MM-DD-xxxx>"} APPEND-ONLY;
@@ -63,8 +67,11 @@ works only on these. Full-fidelity (still private).
   stream), vert_osc_mm, vert_ratio_pct}`, `training_effect` (always `None`:
   not exposed by the API), `device` (the Garmin model from `device_name`, e.g. `Garmin Venu X1` ->
   `Venu X1`; `None` for a non-Garmin or unusual value), `title_raw` / `description_raw` (free text; private), `splits[]`
-  (per-km, computed from the `distance`/`time` streams), `hr_zones[]` (`icu_hr_zone_times` /
-  `time-at-hr`), `samples[]` (t_s, dist_m, speed_mps, hr, cadence, power, elev_m, lat, lon — lat/lon
+  (per-km, computed from the `distance`/`time` streams), `hr_zones[]` (Garmin's own five zones
+  `{zone, name, low_bpm, high_bpm, seconds}` from `original.fit`'s session `time_in_zone` message,
+  decoded with `garmin-fit-sdk`; zone *k* spans boundary *k-1* to *k* of `hr_zone_high_boundary`;
+  time below zone 1 is left out and time above the top boundary counts in zone 5; empty when there
+  is no original or no such message, never intervals.icu's `icu_hr_zone_times`), `samples[]` (t_s, dist_m, speed_mps, hr, cadence, power, elev_m, lat, lon — lat/lon
   from the `latlng` stream).
 - **NormalisedHealthReading**: `metric` (`weight_kg`, `body_fat_pct`, `resting_hr`, `hrv`,
   `vo2max`, `fitness_ctl`, `fatigue_atl`), `date`, `value` (+ `extra`, unused by intervals.icu: it
@@ -108,7 +115,7 @@ recorded in R2 `state/run-ids.json`. **Provider activity IDs (intervals.icu IDs,
 | `dynamics` | object? | gct, balance, vertical oscillation, vertical ratio; omitted when absent |
 | `training_effect` | `{aerobic,anaerobic}`? | Absent with intervals.icu (not exposed); kept optional for a future source |
 | `splits` | `[{km, time_s, pace_s_per_km, hr?, elev_delta_m?}]` | Per-km |
-| `hr_zones` | `[{zone, seconds}]`? | |
+| `hr_zones` | `[{zone, name, low_bpm, high_bpm, seconds}]`? | Garmin's five zones as the watch recorded them (Zone 1 Warm Up, 2 Easy, 3 Aerobic, 4 Threshold, 5 Maximum), with bpm ranges and whole seconds; omitted when the watch's original file has none (owner, 2026-10-24, T159). The schema still accepts the old intervals.icu `{zone, seconds}` shape until every run is republished |
 | `series` | `{x_dist_m[], x_elapsed_s[], pace[], hr?[], elev?[], cadence?[], power?[]}` | **Downsampled to <= 600 points**; x-axis is distance/elapsed, never clock time (FR-013). No lat/lon. |
 | `best_efforts` | `[{distance_m, label, time_s, plausible}]` | Computed in processor; `plausible:false` efforts kept for audit but ignored downstream (FR-057) |
 | `flags` | `{excluded_from_records?, include_indoor_in_records?}` | Mirrors owner override (`include_indoor_in_records` = the owner marked this treadmill/indoor run PB- and goal-eligible) so published JSON is self-explanatory; evaluation also re-applies owner file at build. Name mapping: owner `run-overrides.yaml` `include_in_records` -> published `include_indoor_in_records` (T062); both schemas' `description`s state it |

@@ -9,6 +9,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pytest
+from builders import garmin_fit
 
 from awingest.providers.intervals import IntervalsProvider
 from awingest.providers.intervals.client import IntervalsClient, Response
@@ -42,6 +43,13 @@ class FakeIntervalsApi:
             row["id"]: path.parent.name
             for path in INTERVALS_FIXTURES.glob("activities/*/detail.json")
             for row in [_load(str(path.relative_to(INTERVALS_FIXTURES)))]
+        }
+        # The watch's original file (``/activity/{id}/file``), by provider ID: a synthetic Garmin
+        # FIT for every activity with HR time; edit to serve something else (or del for a 404).
+        self.originals: dict[str, bytes] = {
+            aid: garmin_fit()
+            for aid, name in self.names.items()
+            if (INTERVALS_FIXTURES / "activities" / name / "time-at-hr.json").exists()
         }
         self._failures: list[tuple[str, Response, list[int]]] = []
 
@@ -93,6 +101,9 @@ class FakeIntervalsApi:
             if match.group(2) == "/fit-file" and (folder / "time-at-hr.json").exists():
                 fit = (INTERVALS_FIXTURES / "activity.fit").read_bytes()
                 return 200, {"content-type": "application/octet-stream"}, fit
+            if match.group(2) == "/file" and match.group(1) in self.originals:
+                original = self.originals[match.group(1)]
+                return 200, {"content-type": "application/octet-stream"}, original
         return 404, ok, b'{"status":404,"error":"Not Found"}'
 
 

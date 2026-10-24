@@ -131,6 +131,10 @@ share-preview check of each page type in two messaging apps (SC-008; training ru
 
 - Manual refresh: `gh workflow run refresh.yml` (optionally `-f reimport_from=2027-03-01
   -f reimport_to=2027-03-14`); site updated within ~10 min (SC-002 allows 30).
+- After the adapter adds an archived part (e.g. `original.fit`, T159): `gh workflow run
+  refresh.yml -f reimport_from=2025-10-01 -f missing_only=true` fetches only the missing parts of
+  every archived run in the window (one call per run, about 2 s each), instead of re-fetching
+  everything. Normal refreshes top up their own 14-day window by themselves.
 - Add a goal/race/lab result, or a new Garmin training status / race prediction reading
   (`manual-metrics.yaml`, dated `as_of`): edit the YAML under `data/running/owner/` (agent does it
   on request, opens a PR); merge -> `refresh.yml` runs on the push and deploys.

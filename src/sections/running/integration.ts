@@ -30,10 +30,6 @@ export const runningAreas: readonly RunningArea[] = [
     routes: [
       { pattern: '/running', entrypoint: './src/sections/running/pages/index.astro' },
       { pattern: '/og/running.png', entrypoint: './src/sections/running/og/landing.ts' },
-      // Minimal run pages (T102), so the latest-run card and goal efforts link somewhere. They
-      // move to the Training area when US3 ships it, and US3 extends the page.
-      { pattern: '/running/runs/[id]', entrypoint: './src/sections/running/pages/runs/[id].astro' },
-      { pattern: '/og/running-run.png', entrypoint: './src/sections/running/og/run.png.ts' },
     ],
   },
   {
@@ -44,6 +40,21 @@ export const runningAreas: readonly RunningArea[] = [
     routes: [
       { pattern: '/running/goals', entrypoint: './src/sections/running/pages/goals.astro' },
       { pattern: '/og/running-goals.png', entrypoint: './src/sections/running/og/goals.png.ts' },
+    ],
+  },
+  {
+    key: 'training',
+    label: 'Training',
+    href: '/running/training/',
+    description: 'Weekly, monthly and yearly totals, and every run in detail.',
+    routes: [
+      { pattern: '/running/training', entrypoint: './src/sections/running/pages/training.astro' },
+      { pattern: '/running/training/[year]', entrypoint: './src/sections/running/pages/training/[year].astro' },
+      // Run pages (US1's minimal page, T102, extended by T121) belong to Training since US3.
+      { pattern: '/running/runs/[id]', entrypoint: './src/sections/running/pages/runs/[id].astro' },
+      { pattern: '/og/running-training.png', entrypoint: './src/sections/running/og/training.png.ts' },
+      { pattern: '/og/running-year.png', entrypoint: './src/sections/running/og/year.png.ts' },
+      { pattern: '/og/running-run.png', entrypoint: './src/sections/running/og/run.png.ts' },
     ],
   },
 ];

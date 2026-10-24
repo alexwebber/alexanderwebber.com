@@ -1,0 +1,122 @@
+---
+// Per-km splits (T117, FR-047): time, pace, average heart rate and elevation change for each
+// kilometre, the last one partial when the run doesn't end on a kilometre (its row names the
+// distance it ends at). Heart rate and elevation columns appear only when recorded (FR-048), and
+// with no splits the panel isn't rendered. The table scrolls inside a focusable box at 320px.
+// Garmin attribution names the run's watch (FR-077). No client JS.
+import { formatDuration } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { splitRows } from '../domain/run-detail.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  run: Run;
+  heading?: 2 | 3;
+}
+
+const { run, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+const rows = splitRows(run);
+const hasHr = rows.some((r) => r.hr !== undefined);
+const hasElev = rows.some((r) => r.elev_delta_m !== undefined);
+const fastest = rows.filter((r) => !r.partial).reduce<number | undefined>((best, r) => (best === undefined || r.pace_s_per_km < best ? r.pace_s_per_km : best), undefined);
+const id = `splits-${run.id}`;
+const elev = (m: number) => `${Math.round(m) > 0 ? '+' : Math.round(m) < 0 ? '−' : ''}${Math.abs(Math.round(m))}`;
+---
+
+{
+  rows.length > 0 && (
+    <section class="run-panel" aria-labelledby={id} data-splits>
+      <Heading id={id}>Splits</Heading>
+      <GarminAttribution device={run.device} />
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Splits table">
+        <table>
+          <caption class="visually-hidden">Per-kilometre splits</caption>
+          <thead>
+            <tr>
+              <th scope="col">Km</th>
+              <th scope="col">Time</th>
+              <th scope="col">
+                Pace <span class="unit">/km</span>
+              </th>
+              {hasHr && (
+                <th scope="col">
+                  <abbr title="Average heart rate">HR</abbr> <span class="unit">bpm</span>
+                </th>
+              )}
+              {hasElev && (
+                <th scope="col">
+                  <abbr title="Elevation change">Elev.</abbr> <span class="unit">m</span>
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr class:list={{ fastest: !r.partial && r.pace_s_per_km === fastest }}>
+                <th scope="row">{r.km}</th>
+                <td>{formatDuration(r.time_s)}</td>
+                <td>
+                  {formatDuration(r.pace_s_per_km)}
+                  {!r.partial && r.pace_s_per_km === fastest && rows.length > 2 && <span class="visually-hidden"> (fastest)</span>}
+                </td>
+                {hasHr && <td>{r.hr !== undefined ? Math.round(r.hr) : ''}</td>}
+                {hasElev && <td>{r.elev_delta_m !== undefined ? elev(r.elev_delta_m) : ''}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .table-scroll {
+    max-height: 28rem;
+    margin-top: var(--space-3);
+    overflow: auto;
+  }
+
+  table {
+    width: 100%;
+    margin: 0;
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  th,
+  td {
+    padding: var(--space-1) var(--space-2) var(--space-1) 0;
+    border-bottom: 1px solid var(--color-border);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+  }
+
+  tbody th {
+    font-weight: normal;
+  }
+
+  .unit {
+    font-weight: normal;
+  }
+
+  abbr {
+    text-decoration: none;
+  }
+
+  .fastest td {
+    font-weight: var(--weight-bold);
+  }
+</style>

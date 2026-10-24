@@ -21,6 +21,7 @@ from awingest.providers.intervals.client import IntervalsClient
 class IntervalsProvider:
     name = "intervals"
     metrics = APPROVED_HEALTH_METRICS
+    bundle_layout = endpoints.BUNDLE_LAYOUT
 
     def __init__(self, client_factory: Callable[[], IntervalsClient] = IntervalsClient.from_env):
         self._client_factory = client_factory
@@ -45,6 +46,9 @@ class IntervalsProvider:
 
     def fetch_activity(self, ref: ActivityRef) -> RawBundle:
         return endpoints.fetch_activity(self.client, ref)
+
+    def fetch_new_parts(self, ref: ActivityRef, layout: int) -> RawBundle:
+        return endpoints.fetch_new_parts(self.client, ref, layout)
 
     def fetch_health(self, oldest: date, newest: date) -> Iterable[RawHealthDay]:
         return list(endpoints.fetch_health(self.client, oldest, newest))

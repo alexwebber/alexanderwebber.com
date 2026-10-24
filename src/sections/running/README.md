@@ -5,7 +5,8 @@ loader and share images, and uses only `src/shared/` (layout, design system, cha
 `integration.ts` injects the routes of each shipped area; `astro.config.mjs` is the one line that
 adds the section to the site.
 
-This is the section's graduation design note (T110, for the MVP: Goals and the landing page).
+This is the section's graduation design note (T110, for the MVP: Goals and the landing page;
+extended for Training and run detail, US3).
 The contracts it builds on are [routes](../../../specs/001-running-section/contracts/routes.md),
 [data files](../../../specs/001-running-section/contracts/data-files.md) and
 [pipeline](../../../specs/001-running-section/contracts/pipeline.md) (freshness endpoint). The
@@ -17,14 +18,20 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   series, the owner's YAML (goals, upcoming races, races, run overrides, manual Garmin metrics,
   `section.yaml`) and `refresh.json`. No page calls a third-party API (Principle III).
 - **Output:** static pages and share images, built for one Europe/London "today". The pages
-  are `/running/`, `/running/goals/` and `/running/runs/<id>/`; the share images are
-  `/og/running.png`, `/og/running-goals.png` and `/og/running-run.png`.
+  are `/running/`, `/running/goals/`, `/running/training/`, `/running/training/<year>/` and
+  `/running/runs/<id>/`; the share images are `/og/running.png`, `/og/running-goals.png`,
+  `/og/running-training.png`, and the shared `/og/running-year.png` and `/og/running-run.png`.
 - **Figures mean what the owner's Garmin Connect means** (owner review, 2026-10-23):
   - **Best efforts** use timer time (watch pauses left out); races use the official time.
   - **Weight and body fat** are 7-day averages throughout a card.
   - **Garmin's predictions** are "at current fitness", dated, not race-day forecasts.
   - **Race targets** read "sub-3:20" and count only a time under 3:20:00 to the second.
   - **Unreached targets** never show as beaten or as 100%.
+  - **Heart-rate zones** are Garmin's own five, read from the watch's original FIT file, with
+    Garmin's names and bpm ranges (owner, 2026-10-24). Time below zone 1 is left out, as on
+    Garmin Connect's chart; time above the top boundary counts in zone 5.
+  - **Training totals** count treadmill runs; average pace is distance-weighted; a period's
+    elevation is the sum of the runs that recorded it, else "Not recorded".
 - **Goal logic is pure** (`domain/`): every function takes "today" as an argument, so tests pin
   dates without a clock.
 
@@ -34,20 +41,24 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   `astro:build:start`, before Astro empties `dist/`, so the deploy keeps the last good build.
   The error names the file, entry and field (FR-070).
 - **Missing data renders as "no data yet",** never as zeros. Examples: a goal with no effort, the
-  training build before the first run, a page before `section.yaml` exists.
+  training build before the first run, a page before `section.yaml` exists. On a run page each
+  panel (charts, zones, splits, best efforts, dynamics) and each figure is left out when the
+  watch didn't record it (FR-048).
 - **Stale data says so.** "Last updated" and the stale notice are decided at build time, then
   corrected by the freshness script. If `/running/api/freshness` fails, the build-time text
   stays (FR-005/006/074).
 - **Day-based text follows the UK date.** The 00:17 UTC refresh deploys daily (T105), and
   `Countdown` corrects the day count in the browser.
 - **Without JavaScript** every figure, chart table and goal is still there. JS only refreshes
-  "Last updated" and the countdown.
+  "Last updated" and the countdown. The week/month/year, all runs/races only and
+  distance/time switches are CSS (`:has()` over native radios, shared `Toggle`).
 
 ## Tests and budgets
 
 - **Vitest** (`tests/unit/`, `tests/contract/`): goal evaluation and card text (`goals.test.ts`,
-  `goal-cards.test.ts`), races, weeks, manual metrics, attribution, the landing page rendered
-  with only `Date` faked (`landing.test.ts`), data validation and the schemas.
+  `goal-cards.test.ts`), races, weeks, periods, manual metrics, attribution, the landing,
+  training and run pages rendered with only `Date` faked (`landing.test.ts`, `training.test.ts`,
+  `run-detail.test.ts`), data validation and the schemas.
 - **Playwright** (`tests/e2e/`, `tests/a11y/`): each page at 360 px and on desktop, axe (WCAG 2.2
   AA) in light and dark, heading order, and the keyboard path through every link and control.
 - **Lighthouse** (`scripts/lighthouse-budget.mjs`, also local on Windows): at graduation every
@@ -55,6 +66,11 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   1.06 s, the largest page 11.2 KB gzip, with no script files and no third-party requests.
 - **Gate:** the site build, `validate-data`, `check-boundaries`, `scan-images` and
   `scan-privacy`, on every push and every bot commit.
+
+- **Scale (SC-011, T124):** `tests/fixtures/generate-runs.ts` writes 5,000 synthetic runs (every
+  series at the 600-point cap) into a scratch copy of the repo, never this one. On 2026-10-24:
+  build 48 s for 5,019 pages, 5,032 deployed files (limit 20,000); Lighthouse 100 on the hub
+  (LCP 1.15 s, 34.5 KB gzip), a year page (LCP 0.90 s) and a run page (LCP 1.06 s, 19.5 KB).
 
 ## Known limits
 
@@ -87,9 +103,17 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   `og/landing.ts` (`/og/running.png`, "N days to Brighton"). Domain: `domain/races.ts` (the
   upcoming-race state machine, days remaining, target labels) and `domain/weeks.ts` (this week,
   the training build, the latest run).
-- Run pages: `pages/runs/[id].astro` (minimal until US3) with `TreadmillBadge.astro`, and the one
-  shared share image `og/run.png.ts` (`/og/running-run.png`). Their routes sit in the landing
-  area of the registry until US3's Training area takes them.
+- Training (US3): `pages/training.astro` at `/running/training/` and `pages/training/[year].astro`,
+  fed by `data/training.ts` (`loadTraining()`): `PeriodTotals.astro` (week/month/year columns and
+  all-time totals, `domain/periods.ts`), `RunList.astro` (by month, all runs or races only) and
+  `YearLinks.astro`. Share images `og/training.png.ts` and the shared `og/year.png.ts`.
+- Run pages: `pages/runs/[id].astro` (in the Training area since US3) with `RunSummary`,
+  `RunSeriesCharts` (shared `XYChart`, against distance or elapsed time), `HrZones`,
+  `SplitsTable`, `RunBestEfforts`, `RunDynamics` and `TreadmillBadge`; their figures come from
+  `domain/run-detail.ts`. One shared share image, `og/run.png.ts` (`/og/running-run.png`).
+- **Runs published before processor version 4** carry intervals.icu's zone times; run pages show
+  no zones for them until the refresh republishes them with Garmin's (T159). The run schema still
+  accepts the old shape until then.
 - Dates: pages are built for today in Europe/London. The 00:17 UTC refresh run deploys every day
   (T105), so countdowns and "New" badges follow the UK date; `Countdown` corrects the day count
   in the browser.

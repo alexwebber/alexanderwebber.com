@@ -4,7 +4,7 @@
 
 | Command | Stage | Does | Exit codes |
 |---|---|---|---|
-| `fetch [--reimport-from D --reimport-to D] [--health-only] [--archive r2\|local]` | fetch | Call intervals.icu (`INTERVALS_API_KEY`, descriptive User-Agent): list activities in the date window (cursor - 14 days .. today), archive raw parts of new/changed ones, fetch wellness for the same window (approved keys only), update cursors + `state/fetch-status.json` + `public/freshness.json` on success | 0 ok/partial-ok, 10 auth, 11 rate-limited/429 (sets `rate_limited_until`), 12 forbidden (403 HTML bot block), 13 provider-changed, 14 archive, 1 other |
+| `fetch [--reimport-from D --reimport-to D [--missing-only]] [--health-only] [--archive r2\|local]` | fetch | Call intervals.icu (`INTERVALS_API_KEY`, descriptive User-Agent): list activities in the date window (cursor - 14 days .. today), archive raw parts of new/changed ones, top up unchanged ones archived under an older bundle layout with only the new parts (`--missing-only` does this over a re-import window instead of re-fetching everything), fetch wellness for the same window (approved keys only), update cursors + `state/fetch-status.json` + `public/freshness.json` on success | 0 ok/partial-ok, 10 auth, 11 rate-limited/429 (sets `rate_limited_until`), 12 forbidden (403 HTML bot block), 13 provider-changed, 14 archive, 1 other |
 | `backfill [--from D] [--resume]` | fetch | Whole-history, paced, resumable; run once after the owner's Garmin export is imported into intervals.icu (agent runs it locally with the owner's `INTERVALS_API_KEY`/`R2_*` env vars) | same |
 | `process [--all] [--repo-root P]` | publish | Normalise + sanitise raw -> published JSON, assigning opaque run IDs from the R2 ID map (incremental by manifest hash; `--all` = reprocess everything, e.g. after an adapter fix) | 0 ok/partial (an activity that fails to normalise is skipped, its last good file kept), 14 archive (incl. an unreadable or missing ID map), 20 validation error (owner or published) |
 | `publish-check [--repo-root P]` | publish | Schema-validate published tree + manifest consistency (no archive needed) | 0, 20 |
@@ -20,7 +20,7 @@ fully successful point; `process` writes nothing if any validation fails.
 ## Workflows
 
 - **`refresh.yml`** — triggers: `workflow_dispatch` (inputs `reimport_from`, `reimport_to`,
-  `fetch_only` (runs `fetch` and skips publish/deploy; used by the T070 smoke check)), dispatched
+  `missing_only` (with `reimport_from`: `fetch --missing-only`), `fetch_only` (runs `fetch` and skips publish/deploy; used by the T070 smoke check)), dispatched
   every 2 hours by the site Worker's cron (see *Refresh trigger*); a backup
   `schedule: 47 1-23/6 * * *`, whose `guard` job skips the run while dispatches arrive; and `push`
   to `main` touching `data/running/owner/**`.

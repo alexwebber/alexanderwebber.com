@@ -9,35 +9,32 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, mid-morning):** the site is live on alexanderwebber.com, Phase 5 is
-  complete, and **the lesson harvest is done**: it went to
-  [sdd-playbook#11](https://github.com/alexwebber/sdd-playbook/pull/11) (house-process 0.9.0)
-  and this repo's `001-harvest-3` PR. **Next: Phase 6.**
+- **Status (2026-10-24, afternoon):** **Phase 6 (US3 Training) is built** in the `001-training`
+  PR (sdd-playbook#11 merged; house-process 0.9.0 reinstalled, hooks unchanged). **After it
+  merges:**
+  1. Check the `gate.yml` deploy on `main` finished.
+  2. Dispatch the one-off zone backfill:
+     `gh workflow run refresh.yml -f reimport_from=2025-10-01 -f missing_only=true` (about 15
+     billed minutes). Its fetch summary should show `topped_up` of about 200.
+  3. Check that the 23 Oct run (`/running/runs/2026-10-23-bv7w/`) shows Zone 3 Aerobic
+     123–140 bpm 23:13 and Zone 4 Threshold 140–158 bpm 25:32.
+  4. Ask the owner any unticked PR confirmations.
+  5. Guide the owner's live review of `/running/training/` and a run page.
+  6. Raise the follow-up PR that drops the deprecated `{zone, seconds}` `hr_zones` branch from
+     `schemas/published/run.schema.json` (plus its legacy fixture), once no published run uses it.
+
+  **Then Phase 7.**
   - **Planned order** (owner, 2026-10-24):
-    1. **Phase 6: US3 Training stats and run detail** (next session), then Phase 7 (US4 Races
-       and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    1. ~~Phase 6~~ (built), then Phase 7 (US4 Races and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
-  - **Check first:**
-    - that sdd-playbook#11 merged. If so, pull the playbook's `main` and reinstall house-process
-      0.9.0 (`specify extension add ...\extensions\house-process --dev --force`), then check
-      `extensions.yml` still lists the same hooks (parsed, not by diff). The template changes
-      (canary wording, the `AGENT_TIPS.md` line in `CLAUDE.md`) are already copied here. If not
-      merged, carry on with Phase 6 and check again next session.
-    - that this repo's `001-harvest-3` PR merged (docs only).
-    - that the nightly Quality run is still green. The first one against the domain (24 Oct)
-      failed on Cloudflare's default RUM beacon. Once the owner turned RUM off, its rerun passed
-      at 100/100 on every page (decisions log). If the beacon comes back, Cloudflare re-enabled
-      RUM.
-    - T105's no-change path: still unseen (the 00:17 UTC run on 24 Oct had new data). Find a
-      00:xx UTC refresh run whose `commit` job printed "Nothing to commit." (grep the log
-      without the script's `[36;1m` lines) and check its `deploy` job ran. If none ever does,
-      that's fine; say so once.
-    - minutes: 806 used by about 08:15 UTC on 2026-10-24. October should end around
-      1,150–1,250. If it's close to the limit, use the owner's lever order (2026-10-23
-      decision).
-  - **Phase 6 touches CI and Astro:** read the matching sections of sdd-playbook's
-    `AGENT_TIPS.md` first (most of this project's old *Upstream candidates* now live there).
+  - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
+    was re-enabled). T105's no-change path is still unseen: find a 00:xx UTC refresh whose
+    `commit` job printed "Nothing to commit." and check its `deploy` ran. If none ever does,
+    that's fine; say so once. Minutes: 824 used by about 11:00 UTC on 2026-10-24; October should
+    end around 1,200, plus about 15 for the zone backfill.
+  - **Phase 7 touches Astro and maps:** read the matching sections of sdd-playbook's
+    `AGENT_TIPS.md` first.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
   - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
@@ -59,14 +56,12 @@ Update this as decisions get made — treat it as the source of truth alongside
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
   quickstart.md §0.
-- **Next step: Phase 6 (US3 Training stats and run detail, tasks.md)** in its own session,
-  starting with a short guided look at the live domain and a question round on what the owner
-  wants from the Training pages. History is complete from 7 Oct 2025 (T150 and T085 done).
+- **Next step: Phase 7 (US4 Races and PBs, tasks.md)** in its own session, once Phase 6's
+  post-merge steps are done, starting with a short guided look at the live Training pages and a
+  question round on races and PBs. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
-  - **Run pages** currently sit in the landing area of the route registry; US3's Training area
-    takes them (decisions log, Phase 4).
   - Offer the owner a fresh Garmin training-status and predictions reading at reviews; never
     ask as a chore.
   - **Don't invent values** (Principle VIII).
@@ -903,8 +898,68 @@ project-specific notes.
   showed it as on. The owner turned it off (*Speed → Observatory*), keeping the plan's
   zero-third-party rule. Cloudflare's server-side zone analytics (requests, visits) need no
   script and stay. Recorded in quickstart.md §0.
+- **2026-10-24** — **Phase 6 owner picks** (question round before implement; tasks.md amended):
+  - **Garmin's own HR zones, with bpm ranges.** intervals.icu's 7 zones (its own LTHR model)
+    disagree with Garmin Connect: on the 23 Oct 10k, intervals.icu put most time in Z2 and Garmin
+    in Z3–Z4. Garmin's original FIT (`/activity/{id}/file`, not the generated `/fit-file` we
+    archived) carries `time_in_zone` with that day's boundaries (% of max HR; max 172–180 over the
+    year), present on all 199 runs since Oct 2025. New part `original.fit`, parsed with
+    `garmin-fit-sdk` 21.218.0 (Garmin's SDK, current; `fitparse` 1.2.0 is stale since 2020 and
+    can't decode message 216; `fitdecode` 0.11.0 is maintained but unofficial). A one-off
+    re-fetch of originals after merge costs about 20–30 Actions minutes. No fallback to
+    intervals.icu's zones (T159).
+  - **Run charts:** distance on the axis, with a no-JS switch to elapsed time.
+  - **Best efforts in each run** are shown on its page (an approved addition to FR-047; T160).
+  - **Training hub** opens on weekly totals for the last 26 weeks.
+
+- **2026-10-24** — **Phase 6 (US3 Training and run detail) built** (`001-training` branch;
+  implement subagent). Choices later tasks build on; the owner confirms them in the PR:
+  - **Garmin's own HR zones (T159).** Fetch archives the watch's original upload
+    (`/activity/{id}/file`) as `original.fit` (gzip or one-file zip unwrapped; a non-FIT original
+    counts as absent). The normaliser reads the session `time_in_zone` message with
+    `garmin-fit-sdk` 21.218.0: zone *k* spans boundary *k-1* to *k*, time below zone 1 is left out
+    (Garmin Connect's chart starts at zone 1) and time above the top boundary counts in zone 5.
+    No original or no message means no zones; intervals.icu's zone times are never used.
+    Decoding costs about 0.2 s a run, so a full reprocess of 200 runs adds about 40 s.
+    `PROCESSOR_VERSION` 4.
+  - **Bundle layouts.** `fetch.json` now records the adapter's bundle layout (2 = with
+    `original.fit`). A refresh tops up unchanged bundles in its window with just the new parts,
+    and `fetch --missing-only` (refresh.yml input `missing_only`, with `reimport_from`) does it
+    over any window with one call per run, instead of a full re-import.
+  - **Schema transition.** `hr_zones` is now `{zone, name, low_bpm, high_bpm, seconds}` (five
+    entries). The schema keeps the old `{zone, seconds}` shape as a deprecated branch, because
+    `main`'s published runs use it until the first refresh after merge republishes them; remove
+    the branch once no published run has it.
+  - **Training hub** opens on the last 26 weeks (weeks start at the first run when history is
+    shorter); months and years cover all history; distance and moving time are both charted.
+    The list shows the latest year's runs; "Races only" lists races from every year. Year pages
+    hold each year's runs.
+  - **Run page:** summary, then charts (pace, HR, elevation, cadence, power) against distance
+    with a CSS-only switch to elapsed time, zones, splits, best efforts (plausible only), dynamics.
+    Pace, cadence and power charts draw the 2nd–98th percentile range, so stops don't flatten
+    them; tables give per-km (or per-5-minute) means. Cadence reads "spm", never "steps" (the
+    privacy scan treats "<n> steps" on a page as a step count).
+  - **Shared plumbing:** `Toggle.astro` (a positional CSS-only switch for up to four views) and
+    `XYChart.astro` (a numeric x axis), both in `src/shared/charts/`.
+  - **Scale (T124):** 5,000 synthetic runs build in 48 s to 5,032 files; every page scores 100.
 
 ## Upstream candidates
+
+- 2026-10-24 — intervals.icu's `/activity/{id}/fit-file` is a FIT file intervals.icu generates,
+  not Garmin's original, and it drops Garmin-only messages such as `time_in_zone` (216). Use
+  `/activity/{id}/file` for the original. Agent tip (intervals.icu): archive the original, and
+  check which endpoint a "FIT" download really is before relying on device-specific messages.
+- 2026-10-24 — The common `.visually-hidden:not(:focus):not(:active)` rule (meant for skip
+  links) reveals a hidden radio when its label is clicked, since the radio takes focus. A
+  native radio popped into CSS-only toggles and shifted the options. Locally it went unnoticed
+  (the subagent ran only one Playwright project). On CI's 360 px project with different fonts,
+  the shift moved the next option from under the pointer ("fieldset intercepts pointer events",
+  about 165 retries). Agent tips (UI, testing): always hide `input.visually-hidden`, even when
+  focused; run every Playwright project locally before a PR; when a CI click retries on
+  "intercepts pointer events", look for a layout shift, not slowness.
+- 2026-10-24 — `fitparse` (last release 2020) reads message 216 as `unknown_216` with no fields;
+  Garmin's own `garmin-fit-sdk` decodes it. Agent tip (FIT files): use Garmin's SDK for newer
+  messages.
 
 - 2026-10-24 — Cloudflare switched on Real User Monitoring by default for a new Free zone,
   excluding EU/UK visitors, so it injected a third-party beacon (`static.cloudflareinsights.com`)
@@ -916,6 +971,15 @@ project-specific notes.
   (a branch workflow) for injected scripts, and turn RUM off explicitly in *Speed →
   Observatory* if the site promises no third-party requests. Run production budget checks from
   a non-EU location.
+
+- 2026-10-24 — When an ingest adapter adds a raw part, version the bundle layout in each item's
+  fetch marker and let the fetch stage top up older items with just the new parts. A full
+  re-import of history would have re-fetched five parts per run; the top-up is one call per run
+  (about 7 minutes for 200 runs instead of an hour of Actions minutes). Agent tip (pipelines).
+- 2026-10-24 — Git Bash: with `MSYS_NO_PATHCONV=1` (needed to pass `/running/...` URL paths to
+  node), a `/c/Users/...` argument reaches node unconverted and resolves to `C:\c\Users\...`,
+  so a script wrote its output into a stray `C:\c\` tree. Pass Windows-style `C:/...` paths
+  whenever path conversion is off. Agent tip (Windows).
 
 ## Open questions
 

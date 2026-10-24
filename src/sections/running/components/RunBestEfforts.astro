@@ -1,0 +1,94 @@
+---
+// "Best efforts in this run" (T160; owner-approved addition to FR-047, 2026-10-24): the fastest
+// stretch of each standard distance (1k, mile, 3k, 5k ...) inside the run, with its time and
+// pace. Only plausible efforts are shown (FR-057's GPS-glitch filter); with none, the panel isn't
+// rendered. Treadmill runs show theirs too, although they stay out of PBs and goals unless the
+// owner includes them. Garmin attribution names the run's watch (FR-077). No client JS.
+import { formatDuration, formatPace } from '../../../shared/format/units.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { effortRows } from '../domain/run-detail.ts';
+import GarminAttribution from './GarminAttribution.astro';
+
+export interface Props {
+  run: Run;
+  heading?: 2 | 3;
+}
+
+const { run, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+const rows = effortRows(run);
+const id = `efforts-${run.id}`;
+// Labels as runners say them: "1k", "Mile", "Half marathon".
+const NAMES: Record<string, string> = { '1mi': 'Mile', '10mi': '10 miles', half: 'Half marathon', marathon: 'Marathon' };
+const name = (label: string) => NAMES[label] ?? label;
+// Why these efforts may not appear among the PBs or achieve a goal (FR-057, FR-049).
+const note = run.flags.excluded_from_records
+  ? "This run is left out of personal bests and goals."
+  : (run.treadmill || run.type === 'indoor') && !run.flags.include_indoor_in_records
+    ? `${run.treadmill ? 'A treadmill' : 'An indoor'} run's efforts don't count towards personal bests or goals.`
+    : undefined;
+---
+
+{
+  rows.length > 0 && (
+    <section class="run-panel" aria-labelledby={id} data-run-efforts>
+      <Heading id={id}>Best efforts in this run</Heading>
+      <GarminAttribution device={run.device} />
+      <table>
+        <caption class="visually-hidden">The fastest time for each distance within this run</caption>
+        <thead>
+          <tr>
+            <th scope="col">Distance</th>
+            <th scope="col">Time</th>
+            <th scope="col">Pace</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr data-effort={r.label}>
+              <th scope="row">{name(r.label)}</th>
+              <td>{formatDuration(r.time_s)}</td>
+              <td>{formatPace(r.pace_s_per_km)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {note && <p class="efforts-note">{note}</p>}
+    </section>
+  )
+}
+
+<style>
+  table {
+    width: 100%;
+    margin: var(--space-3) 0 0;
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  th,
+  td {
+    padding: var(--space-1) var(--space-3) var(--space-1) 0;
+    border-bottom: 1px solid var(--color-border);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  thead th {
+    color: var(--color-text-secondary);
+  }
+
+  tbody th {
+    font-weight: normal;
+  }
+
+  .efforts-note {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+</style>

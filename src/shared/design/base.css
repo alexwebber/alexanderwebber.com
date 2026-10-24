@@ -93,7 +93,10 @@ table {
   padding-inline: var(--gutter);
 }
 
-.visually-hidden:not(:focus):not(:active) {
+/* Focusable elements (skip links) show when focused. Hidden inputs never do: a toggle's radio
+   takes focus when its label is clicked, and the label carries the focus ring. */
+.visually-hidden:not(:focus):not(:active),
+input.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;

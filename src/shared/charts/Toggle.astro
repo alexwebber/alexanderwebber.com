@@ -1,0 +1,123 @@
+---
+// A CSS-only choice between views (T114, T115, T119): week/month/year totals, all runs or races
+// only, a run's charts against distance or time. Like RangeToggle, each option is a named slot
+// holding its view, the options are native radio inputs, and the checked one shows its panel
+// through :has(), so keyboard and screen readers work with no JS. Panels match radios by position,
+// so any keys work, up to MAX_OPTIONS. Child combinators keep a toggle nested inside another
+// panel independent of it. A browser without :has() shows every panel in turn (still complete).
+import { chartId } from './ids.ts';
+
+export const MAX_OPTIONS = 4;
+
+export interface ToggleOption {
+  /** Slot name holding this option's view. */
+  key: string;
+  label: string;
+}
+
+export interface Props {
+  /** Names the control for assistive tech, e.g. "Totals by". */
+  legend: string;
+  options: readonly ToggleOption[];
+  /** Initially selected key; defaults to the first option. */
+  selected?: string;
+  /** Show the legend as text before the options (default: for assistive tech only). */
+  showLegend?: boolean;
+  id?: string;
+}
+
+const { legend, options, showLegend = false } = Astro.props;
+if (options.length === 0 || options.length > MAX_OPTIONS) {
+  throw new Error(`Toggle needs 1 to ${MAX_OPTIONS} options, got ${options.length}`);
+}
+const selected = Astro.props.selected ?? options[0]!.key;
+const name = chartId('toggle', Astro.props.id);
+
+const panels = await Promise.all(
+  options.map(async (option, index) => {
+    if (!Astro.slots.has(option.key)) throw new Error(`Toggle: no content for the "${option.key}" slot`);
+    return { index, key: option.key, html: await Astro.slots.render(option.key) };
+  }),
+);
+---
+
+<div class="toggled">
+  {
+    options.length > 1 && (
+      <fieldset class="toggle">
+        <legend class:list={{ 'visually-hidden': !showLegend, 'toggle-legend': showLegend }}>{legend}</legend>
+        {options.map((option, index) => (
+          <>
+            <input type="radio" class="visually-hidden" id={`${name}-${option.key}`} name={name} value={option.key} data-index={index} checked={option.key === selected} />
+            <label for={`${name}-${option.key}`}>{option.label}</label>
+          </>
+        ))}
+      </fieldset>
+    )
+  }
+  {
+    panels.map((panel) => (
+      <div class="toggle-panel" data-index={panel.index} data-option={panel.key}>
+        <Fragment set:html={panel.html} />
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .toggle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    border: 0;
+  }
+
+  .toggle-legend {
+    float: left;
+    margin-right: var(--space-2);
+    padding: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .toggle label {
+    min-height: 1.5rem;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .toggle input:checked + label {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-surface);
+    font-weight: var(--weight-bold);
+  }
+
+  .toggle input:focus-visible + label {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-offset);
+  }
+
+  .toggled:has(> .toggle input[data-index='0']:checked) > .toggle-panel:not([data-index='0']),
+  .toggled:has(> .toggle input[data-index='1']:checked) > .toggle-panel:not([data-index='1']),
+  .toggled:has(> .toggle input[data-index='2']:checked) > .toggle-panel:not([data-index='2']),
+  .toggled:has(> .toggle input[data-index='3']:checked) > .toggle-panel:not([data-index='3']) {
+    display: none;
+  }
+
+  @media (forced-colors: active) {
+    .toggle input:checked + label {
+      border: 2px solid Highlight;
+      background: Canvas;
+      color: CanvasText;
+    }
+  }
+</style>

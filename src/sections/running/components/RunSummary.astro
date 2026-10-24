@@ -1,0 +1,68 @@
+---
+// A run's headline figures (T116, FR-047, FR-048): the date, distance, moving and elapsed time,
+// average and best pace, elevation gain and loss, average and max heart rate, and training effect
+// when a source supplies it (intervals.icu doesn't, so it is normally absent). Each figure is left
+// out when the watch didn't record it, never shown as 0. The date only, never a time of day
+// (FR-011). No client JS.
+import { formatDate } from '../../../shared/format/dates.ts';
+import type { Run } from '../../../shared/storage/index.ts';
+import { summaryFigures } from '../domain/run-detail.ts';
+
+export interface Props {
+  run: Run;
+}
+
+const { run } = Astro.props;
+const figures = summaryFigures(run);
+---
+
+<dl class="run-figures" data-run-summary>
+  <div data-figure="date">
+    <dt>Date</dt>
+    <dd><time datetime={run.date}>{formatDate(run.date)}</time></dd>
+  </div>
+  {
+    figures.map((f) => (
+      <div data-figure={f.key}>
+        <dt>{f.label}</dt>
+        <dd>{f.value}</dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .run-figures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0 0 var(--space-5);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  @media (min-width: 40rem) {
+    .run-figures {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .run-figures dt {
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+
+  .run-figures dd {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: var(--weight-bold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .run-figures [data-figure='training-effect'] dd {
+    white-space: normal;
+  }
+</style>

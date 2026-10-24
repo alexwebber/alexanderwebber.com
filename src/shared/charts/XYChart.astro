@@ -1,0 +1,114 @@
+---
+// A build-time line chart over a numeric x axis (T119), e.g. a run's pace against distance or
+// elapsed time: one series, an optional dashed reference level (e.g. the average) and an inverted
+// y axis for measures where lower is better (pace: faster sits higher, as on Garmin Connect). No
+// client JS. The SVG carries the text alternative (<title>, <desc>; FR-071); ChartFigure adds the
+// data table. Like LineChart, the SVG is stretched over the plot with non-scaling strokes and all
+// labels are HTML placed by percentage, so it reads the same at 320px and on a desktop.
+//
+// Long series are thinned for drawing only (bucket means, at most `maxPoints`, default 150), which
+// keeps the page light and evens out second-to-second GPS noise; the table carries the figures. Null values break the line (gaps stay gaps).
+import { chartId } from './ids.ts';
+import { PLOT, linePath, linearScale, niceTicks, percent, type Point } from './scales.ts';
+import './chart.css';
+
+export interface Props {
+  title: string;
+  desc: string;
+  points: readonly Point[];
+  /** Formats y values for the axis and the reference label. */
+  format?: (value: number) => string;
+  /** Formats x values for the axis. */
+  formatX?: (value: number) => string;
+  /** x tick values; default: nice ticks from 0 to the last x. */
+  xTicks?: readonly number[];
+  /** y range to show; values outside it are drawn at its edge. Default: fit the data. */
+  domain?: [number, number];
+  /** Lower values plot higher (pace). */
+  invert?: boolean;
+  reference?: { value: number; label: string };
+  color?: string;
+  maxPoints?: number;
+  id?: string;
+}
+
+const {
+  title,
+  desc,
+  points,
+  format = String,
+  formatX = String,
+  invert = false,
+  reference,
+  color = 'var(--running-series, var(--series-1))',
+  maxPoints = 150,
+} = Astro.props;
+const id = chartId('xy', Astro.props.id);
+
+const present = points.filter((p): p is { x: number; y: number } => p.y !== null && Number.isFinite(p.y));
+const ys = present.map((p) => p.y);
+const [lo, hi] = Astro.props.domain ?? (ys.length ? [Math.min(...ys), Math.max(...ys)] : [0, 1]);
+const ticks = niceTicks(lo, hi, { count: 4 });
+const y = linearScale(ticks.domain, invert ? [0, PLOT] : [PLOT, 0]);
+const xMax = points.length ? Math.max(...points.map((p) => p.x)) : 1;
+const xTicks = Astro.props.xTicks ?? niceTicks(0, xMax, { zero: true, count: 4 }).values.filter((v) => v <= xMax);
+const x = linearScale([0, Math.max(xMax, ...xTicks)], [0, PLOT]);
+const clamp = (v: number) => Math.min(ticks.domain[1], Math.max(ticks.domain[0], v));
+
+/** Bucket means, so a 600-point series draws as at most `maxPoints` (gaps kept). */
+function thin(all: readonly Point[], max: number): Point[] {
+  if (all.length <= max) return [...all];
+  const out: Point[] = [];
+  for (let b = 0; b < max; b++) {
+    const group = all.slice(Math.floor((b * all.length) / max), Math.floor(((b + 1) * all.length) / max));
+    const values = group.map((p) => p.y).filter((v): v is number => v !== null && Number.isFinite(v));
+    out.push({
+      x: group.reduce((sum, p) => sum + p.x, 0) / group.length,
+      y: values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : null,
+    });
+  }
+  return out;
+}
+
+const path = linePath(
+  thin(points, maxPoints).map((p) => ({ x: p.x, y: p.y === null ? null : clamp(p.y) })),
+  x,
+  y,
+);
+---
+
+<div class="chart xy-chart">
+  <div class="chart-y" aria-hidden="true">
+    {ticks.values.map((v) => <span style={`top: ${percent(y(v))}`}>{format(v)}</span>)}
+  </div>
+  <div class="chart-plot">
+    <svg viewBox={`0 0 ${PLOT} ${PLOT}`} preserveAspectRatio="none" role="img" aria-labelledby={`${id}-title ${id}-desc`}>
+      <title id={`${id}-title`}>{title}</title>
+      <desc id={`${id}-desc`}>{desc}</desc>
+      <g class="chart-grid">
+        {ticks.values.map((v) => <line x1="0" x2={PLOT} y1={y(v)} y2={y(v)} vector-effect="non-scaling-stroke" />)}
+      </g>
+      <path class="chart-line" d={path} stroke={color} vector-effect="non-scaling-stroke" />
+    </svg>
+    {
+      reference && (
+        <div class="chart-target" style={`top: ${percent(y(clamp(reference.value)))}`} aria-hidden="true">
+          <span>{reference.label}</span>
+        </div>
+      )
+    }
+  </div>
+  <div class="chart-x" aria-hidden="true">
+    {xTicks.map((v, i, all) => <span class:list={{ minor: i > 0 && i < all.length - 1 && i % 2 === 1 }} style={`left: ${percent(x(v))}`}>{formatX(v)}</span>)}
+  </div>
+</div>
+
+<style>
+  .xy-chart {
+    --chart-height: 9rem;
+    --chart-height-wide: 11rem;
+    --chart-y-width: 3.25rem;
+    /* Room for the last x label, which sits right-aligned on the plot's edge */
+    --chart-end-space: 0.5rem;
+  }
+</style>

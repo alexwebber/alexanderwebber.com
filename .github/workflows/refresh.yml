@@ -34,6 +34,10 @@ on:
         description: Re-fetch up to this date (YYYY-MM-DD); needs reimport_from
         type: string
         default: ''
+      missing_only:
+        description: With reimport_from, fetch only what is new or missing (e.g. a part the adapter added) instead of re-fetching everything
+        type: boolean
+        default: false
       fetch_only:
         description: Fetch and alert only (no publish, commit or deploy); the T070 smoke check
         type: boolean
@@ -149,10 +153,12 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           REIMPORT_FROM: ${{ inputs.reimport_from }}
           REIMPORT_TO: ${{ inputs.reimport_to }}
+          MISSING_ONLY: ${{ inputs.missing_only && inputs.reimport_from != '' && 'yes' || '' }}
         run: >-
           uv run --no-sync awingest fetch --archive r2
           ${REIMPORT_FROM:+--reimport-from "$REIMPORT_FROM"}
           ${REIMPORT_TO:+--reimport-to "$REIMPORT_TO"}
+          ${MISSING_ONLY:+--missing-only}
           | tee "$RUNNER_TEMP/fetch-summary.json"
 
       # After every fetch, even a failed one: opens, updates or closes the ingest-failing issue from
@@ -190,7 +196,7 @@ jobs:
           elif [ "$FETCH" != success ]; then reason="the fetch step's outcome was $FETCH"
           elif [ -n "$REIMPORT_FROM" ]; then reason='a re-import'
           elif [ "$daily" = true ]; then reason='the daily catch-all'
-          elif ! idle=$(jq -r '.outcome == "ok" and .activities.fetched == 0 and .wellness.written == 0' "$summary"); then
+          elif ! idle=$(jq -r '.outcome == "ok" and .activities.fetched == 0 and .activities.topped_up == 0 and .wellness.written == 0' "$summary"); then
             reason="the fetch summary couldn't be read"
           elif [ "$idle" != true ]; then reason='the fetch archived new data or was partial'
           elif ! last=$(gh run list --workflow refresh.yml --branch main --status completed --limit 1 --json conclusion --jq '.[0].conclusion // ""'); then

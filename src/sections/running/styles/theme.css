@@ -27,3 +27,30 @@
     --color-focus: #f0956b;
   }
 }
+
+/* A panel on a run's page (splits, best efforts, dynamics, charts): a card with its heading and
+   Garmin attribution at the top, like ChartFigure (T116–T119). */
+.theme-running .run-panel {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+@media (min-width: 40rem) {
+  .theme-running .run-panel {
+    padding: var(--space-4);
+  }
+}
+
+.theme-running .run-panel > :is(h2, h3) {
+  margin: 0 0 var(--space-1);
+}
+
+/* The charts panel holds ChartFigures, which bring their own cards. */
+.theme-running .run-panel.run-charts {
+  padding: 0;
+  border: 0;
+  background: none;
+}

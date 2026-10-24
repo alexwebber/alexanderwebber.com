@@ -366,3 +366,25 @@ def test_a_start_date_edited_later_keeps_the_run_on_its_first_date(run, publishe
     assert result.exit_code == 0
     assert runs(published)[target]["date"] == target[:10]
     assert '"event": "run_date_changed"' in run.log
+
+
+def test_an_original_fit_topped_up_later_adds_garmin_zones(run, published, filled_archive):
+    prefix = "raw/intervals/activities/i90000001/"
+    original = filled_archive.get(prefix + "original.fit")
+    filled_archive.delete(prefix + "original.fit")
+    run()
+    run_id = run_id_for(filled_archive, "i90000001")
+    assert "hr_zones" not in runs(published)[run_id]  # no original, no zones (no fallback)
+    filled_archive.put(prefix + "original.fit", original)
+    marker = json.loads(filled_archive.get(prefix + "fetch.json")) | {"layout": 2}
+    filled_archive.put(prefix + "fetch.json", json.dumps(marker).encode())
+    again = run(now=LATER)
+    assert again.runs.written == 1 and again.runs.unchanged == 5
+    zones = runs(published)[run_id]["hr_zones"]
+    assert [(z["zone"], z["name"], z["low_bpm"], z["high_bpm"]) for z in zones][2] == (
+        3,
+        "Aerobic",
+        123,
+        140,
+    )
+    assert [z["seconds"] for z in zones] == [2, 44, 1393, 1532, 0]

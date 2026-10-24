@@ -7,8 +7,12 @@ Provider -> raw archive, incrementally by date window:
   from ``backfill``. ``--reimport-from``/``--reimport-to`` override the window, re-fetch every
   activity in it and leave the cursors alone.
 - **Change detection**: an activity's parts are fetched only when it is new or its list row
-  changed. Its ``fetch.json`` marker (row hash and part names) is written after all its parts,
-  so a marker means a complete set.
+  changed. Its ``fetch.json`` marker (row hash, part names and the adapter's bundle layout) is
+  written after all its parts, so a marker means a complete set.
+- **Top-ups**: an unchanged activity archived under an older bundle layout (before the adapter
+  added a part, e.g. ``original.fit``) gets only the new parts, then a new marker. Normal runs top
+  up what their window lists; for older history, ``--missing-only`` with a re-import window tops
+  up (and fetches anything new or changed) without re-fetching everything.
 - **Never destructive**: nothing is deleted, and an empty part never replaces stored data. One
   activity failing is recorded and the run carries on (exit 0, outcome ``partial``).
 - **Cursors** advance only after the writes they cover succeed; a partial activity run keeps
@@ -64,6 +68,7 @@ _FATAL = (AuthRejected, ProviderForbidden, RateLimited)
 class ActivityCounts:
     listed: int = 0
     fetched: int = 0
+    topped_up: int = 0
     unchanged: int = 0
     failed: int = 0
 
@@ -109,17 +114,36 @@ def activity_prefix(provider: str, ref: ActivityRef) -> str:
     return f"raw/{provider}/activities/{ref.provider_id}/"
 
 
-def _unchanged(archive: RawArchive, prefix: str, ref: ActivityRef) -> bool:
-    marker = archive.get(prefix + MARKER)
-    if marker is None:
-        return False
+def _marker(archive: RawArchive, prefix: str) -> dict[str, Any] | None:
+    data = archive.get(prefix + MARKER)
+    if data is None:
+        return None
     try:
-        return json.loads(marker).get("row_hash") == ref.row_hash
-    except (UnicodeDecodeError, json.JSONDecodeError, AttributeError):
-        return False
+        marker = json.loads(data)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return marker if isinstance(marker, dict) else None
 
 
-def archive_bundle(archive: RawArchive, prefix: str, bundle: RawBundle, log: Logger) -> None:
+def marker_layout(marker: dict[str, Any]) -> int:
+    """The bundle layout a marker was written under (markers before layouts existed are 1)."""
+    layout = marker.get("layout", 1)
+    return layout if isinstance(layout, int) and not isinstance(layout, bool) else 1
+
+
+def _write_marker(
+    archive: RawArchive, prefix: str, ref: ActivityRef, parts: Iterable[str], layout: int
+) -> None:
+    marker = {
+        "row_hash": ref.row_hash,
+        "start_local": ref.start_local.isoformat(),
+        "parts": sorted(parts),
+        "layout": layout,
+    }
+    archive.put(prefix + MARKER, json.dumps(marker, sort_keys=True).encode())
+
+
+def _put_parts(archive: RawArchive, prefix: str, bundle: RawBundle, log: Logger) -> None:
     for name in sorted(bundle.parts):
         data = bundle.parts[name]
         key = prefix + name
@@ -129,12 +153,28 @@ def archive_bundle(archive: RawArchive, prefix: str, bundle: RawBundle, log: Log
                 log.warning("empty_part_kept_existing", part=name)
                 continue
         archive.put(key, data)
-    marker = {
-        "row_hash": bundle.ref.row_hash,
-        "start_local": bundle.ref.start_local.isoformat(),
-        "parts": sorted(bundle.parts),
-    }
-    archive.put(prefix + MARKER, json.dumps(marker, sort_keys=True).encode())
+
+
+def archive_bundle(
+    archive: RawArchive, prefix: str, bundle: RawBundle, log: Logger, layout: int = 1
+) -> None:
+    _put_parts(archive, prefix, bundle, log)
+    _write_marker(archive, prefix, bundle.ref, bundle.parts, layout)
+
+
+def top_up_bundle(
+    archive: RawArchive,
+    prefix: str,
+    bundle: RawBundle,
+    marker: dict[str, Any],
+    log: Logger,
+    layout: int,
+) -> None:
+    """Add the new parts to an archived bundle, then re-mark it under the current layout."""
+    _put_parts(archive, prefix, bundle, log)
+    known = marker.get("parts")
+    names = set(known if isinstance(known, list) else []) | set(bundle.parts)
+    _write_marker(archive, prefix, bundle.ref, (n for n in names if isinstance(n, str)), layout)
 
 
 def fetch_activities(
@@ -148,15 +188,21 @@ def fetch_activities(
     counts: ActivityCounts,
 ) -> None:
     refs: Iterable[ActivityRef] = list(provider.list_activities(oldest, newest))
+    layout = provider.bundle_layout
     streak = 0
     for ref in refs:
         counts.listed += 1
         prefix = activity_prefix(provider.name, ref)
-        if not force and _unchanged(archive, prefix, ref):
+        marker = None if force else _marker(archive, prefix)
+        top_up = marker is not None and marker.get("row_hash") == ref.row_hash
+        if top_up and marker_layout(marker) >= layout:
             counts.unchanged += 1
             continue
         try:
-            bundle = provider.fetch_activity(ref)
+            if top_up:
+                bundle = provider.fetch_new_parts(ref, marker_layout(marker))
+            else:
+                bundle = provider.fetch_activity(ref)
         except _FATAL:
             raise
         except ProviderError as exc:
@@ -167,8 +213,12 @@ def fetch_activities(
                 raise
             continue
         streak = 0
-        archive_bundle(archive, prefix, bundle, log)
-        counts.fetched += 1
+        if top_up:
+            top_up_bundle(archive, prefix, bundle, marker, log, layout)
+            counts.topped_up += 1
+        else:
+            archive_bundle(archive, prefix, bundle, log, layout)
+            counts.fetched += 1
 
 
 def fetch_wellness(
@@ -238,6 +288,7 @@ def run_fetch(
     reimport_from: date | None = None,
     reimport_to: date | None = None,
     health_only: bool = False,
+    missing_only: bool = False,
 ) -> FetchResult:
     now = now or datetime.now(UTC)
     today = london_date(now)
@@ -277,6 +328,7 @@ def run_fetch(
         newest=newest.isoformat(),
         reimport=reimport,
         health_only=health_only,
+        missing_only=missing_only,
     )
 
     before = json.dumps(cursor.value, sort_keys=True)
@@ -289,7 +341,7 @@ def run_fetch(
                     archive,
                     act_oldest,
                     newest,
-                    force=reimport,
+                    force=reimport and not missing_only,
                     log=log,
                     counts=result.activities,
                 )
