@@ -106,8 +106,9 @@ data follows Garmin's API brand guidelines.
 - <https://developer.garmin.com/brand-guidelines/api-brand-guidelines/>
 - <https://developer.garmin.com/downloads/brand/Garmin-Developer-API-Brand-Guidelines.pdf>
 
-They were re-read on 2026-10-17 through published excerpts, because the cloud sandbox can't reach
-developer.garmin.com. Re-check the PDF itself before go-live (T112).
+They were first read on 2026-10-17 through published excerpts, because the cloud sandbox can't
+reach developer.garmin.com. The PDF itself (still V 6.30.2025, one page) was read in full at
+go-live (T112, 2026-10-24) and matches what follows; nothing changed.
 
 **What the guidelines ask:**
 
