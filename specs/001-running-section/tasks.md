@@ -686,15 +686,22 @@ confirm all available detail appears while no start time, map or place name appe
 ### Implementation for User Story 3
 
 - [ ] T113 [P] [US3] Create `src/sections/running/domain/periods.ts`: totals by week (Monday–Sunday, Europe/London), month, year and all-time. Each has runs, distance, moving time, distance-weighted average pace and elevation gain. Indoor/treadmill runs are **included** in totals (FR-045, FR-058).
-- [ ] T114 [P] [US3] Create `src/sections/running/components/PeriodTotals.astro`: a `BarChart` per period, switched with a CSS-only toggle (week/month/year), with supporting figures and all-time totals.
+- [ ] T114 [P] [US3] Create `src/sections/running/components/PeriodTotals.astro`: a `BarChart` per period, switched with a CSS-only toggle (week/month/year), with supporting figures and all-time totals. It opens on weekly, the last 26 weeks; month and year cover all history (owner, 2026-10-24).
 - [ ] T115 [P] [US3] Create `src/sections/running/components/RunList.astro`:
   - Newest first, grouped by month.
   - Each row shows date, title, distance, time and pace, with a race badge and the `TreadmillBadge` (T155) for treadmill runs.
   - A pre-rendered "All runs / Races only" CSS toggle (FR-046) implements routes.md's `?races=1` filter on the static site.
 - [ ] T116 [P] [US3] Create `src/sections/running/components/RunSummary.astro`: distance, moving and elapsed time, average and best pace, elevation gain/loss, average and max HR, and training effect (absent with intervals.icu, so normally omitted). Each item is omitted when not recorded (FR-048).
-- [ ] T117 [P] [US3] Create `src/sections/running/components/SplitsTable.astro` (per-km splits) and `HrZones.astro`. Each is omitted when absent.
+- [ ] T159 [US3] **Garmin's own HR zones** (owner, 2026-10-24; replaces intervals.icu's 7-zone `icu_hr_zone_times` on the site). intervals.icu's `/activity/{id}/fit-file` is a FIT file it generates and drops Garmin's `time_in_zone` message (216); `/activity/{id}/file` is Garmin's original and keeps it. Checked on the 23 Oct run and on all 199 export runs since Oct 2025 (165 Venu X1, 34 Venu 2 Plus), every one with per-run boundaries (max HR 172–180 over the year).
+  - **Fetch:** add an optional `original.fit` part from `/activity/{id}/file` (a 404 or a non-FIT original, e.g. gzip, TCX or GPX, leaves it absent or decoded as appropriate; a gzip FIT is unzipped). Keep the existing parts. The `fetch.json` marker lists it.
+  - **Normalise:** read the session-level `time_in_zone` message with `garmin-fit-sdk` 21.218.0 (Garmin's official SDK, released 2026-10-06; `fitparse` 1.2.0 can't decode message 216). Publish `hr_zones` as five entries `{zone, name, low_bpm, high_bpm, seconds}`: Zone 1 Warm Up, 2 Easy, 3 Aerobic, 4 Threshold, 5 Maximum. The SDK's `time_in_hr_zone` has 7 values (below Z1, Z1–Z5, above the top boundary); match Garmin Connect's zone chart (check value: 23 Oct 2026 10.07 km run, Z3 123–140 bpm 1,393 s, Z4 140–158 bpm 1,532 s); put the PR's interpretation of the edge values as an owner confirmation.
+  - **No Garmin zones** (no original, no message): `hr_zones` is omitted (FR-048). No fallback to intervals.icu's zones.
+  - Schema, data-model.md and the provider contract updated; `PROCESSOR_VERSION` bumped so the next refresh reprocesses everything.
+  - **Backfill:** existing bundles lack `original.fit`. Provide the way to fetch it for them (e.g. the existing `reimport_from`/`reimport_to` windows, sized under the fetch limit); the agent runs it after merge.
+- [ ] T117 [P] [US3] Create `src/sections/running/components/SplitsTable.astro` (per-km splits) and `HrZones.astro` (Garmin's five zones from T159, each with its name, bpm range and time; owner, 2026-10-24). Each is omitted when absent.
+- [ ] T160 [P] [US3] Create `src/sections/running/components/RunBestEfforts.astro`: "Best efforts in this run" (fastest 1k, mile, 3k, 5k … within the run), plausible efforts only, omitted when none (owner-approved addition to FR-047, 2026-10-24). Treadmill runs show theirs too; they stay excluded from PBs and goals.
 - [ ] T118 [P] [US3] Create `src/sections/running/components/RunDynamics.astro`: cadence, stride length, power, ground contact time, GCT balance, vertical oscillation and vertical ratio. Each is omitted when absent, never shown as 0.
-- [ ] T119 [P] [US3] Create `src/sections/running/components/RunSeriesCharts.astro`: pace, HR, elevation, cadence and power, plotted against distance or elapsed time, **never clock time** (FR-013). Each chart is omitted when its series is absent and uses `ChartFigure` with a text alternative and table.
+- [ ] T119 [P] [US3] Create `src/sections/running/components/RunSeriesCharts.astro`: pace, HR, elevation, cadence and power, plotted against distance by default with a CSS-only switch to elapsed time (owner, 2026-10-24), **never clock time** (FR-013). Each chart is omitted when its series is absent and uses `ChartFigure` with a text alternative and table.
 - [ ] T120 [US3] Create `src/sections/running/pages/training.astro` at `/running/training/` (period totals plus the current year's run list and year links) and `src/sections/running/pages/training/[year].astro` at `/running/training/<year>/`. Register the routes. OG: the hub card `/og/running-training.png` and the shared `/og/running-year.png`.
 - [ ] T121 [US3] Extend `src/sections/running/pages/runs/[id].astro` to full detail (FR-047), adding:
   - the owner's title and note
@@ -702,7 +709,7 @@ confirm all available detail appears while no start time, map or place name appe
   - the shared OG card `/og/running-run.png` (no per-run images)
   - no start time, map, route or place name anywhere in the URL or HTML
 
-  Depends on T102 and T116–T119.
+  Depends on T102, T116–T119 and T160.
 - [ ] T122 [P] [US3] Create `tests/unit/periods.test.ts`, covering week, month and year boundaries in Europe/London, distance-weighted pace and indoor/treadmill runs included.
 - [ ] T123 [P] [US3] Create `tests/e2e/training.spec.ts`, `tests/e2e/run-detail.spec.ts` and `tests/a11y/training.spec.ts`. They cover acceptance scenarios US3.1–US3.6 (incl. the treadmill label and no map), privacy assertions on a training run started at 06:42 (date only, no provider free-text name), panels omitted when absent, Garmin attribution present, and zero axe violations.
 - [ ] T124 [US3] SC-011 scale check. Promote the Spike 1b generator into `tests/fixtures/generate-runs.ts`, then generate 5,000 synthetic runs into a temp data dir (never committed) and build. Confirm:

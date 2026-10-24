@@ -903,8 +903,29 @@ project-specific notes.
   showed it as on. The owner turned it off (*Speed → Observatory*), keeping the plan's
   zero-third-party rule. Cloudflare's server-side zone analytics (requests, visits) need no
   script and stay. Recorded in quickstart.md §0.
+- **2026-10-24** — **Phase 6 owner picks** (question round before implement; tasks.md amended):
+  - **Garmin's own HR zones, with bpm ranges.** intervals.icu's 7 zones (its own LTHR model)
+    disagree with Garmin Connect: on the 23 Oct 10k, intervals.icu put most time in Z2 and Garmin
+    in Z3–Z4. Garmin's original FIT (`/activity/{id}/file`, not the generated `/fit-file` we
+    archived) carries `time_in_zone` with that day's boundaries (% of max HR; max 172–180 over the
+    year), present on all 199 runs since Oct 2025. New part `original.fit`, parsed with
+    `garmin-fit-sdk` 21.218.0 (Garmin's SDK, current; `fitparse` 1.2.0 is stale since 2020 and
+    can't decode message 216; `fitdecode` 0.11.0 is maintained but unofficial). A one-off
+    re-fetch of originals after merge costs about 20–30 Actions minutes. No fallback to
+    intervals.icu's zones (T159).
+  - **Run charts:** distance on the axis, with a no-JS switch to elapsed time.
+  - **Best efforts in each run** are shown on its page (an approved addition to FR-047; T160).
+  - **Training hub** opens on weekly totals for the last 26 weeks.
 
 ## Upstream candidates
+
+- 2026-10-24 — intervals.icu's `/activity/{id}/fit-file` is a FIT file intervals.icu generates,
+  not Garmin's original, and it drops Garmin-only messages such as `time_in_zone` (216). Use
+  `/activity/{id}/file` for the original. Agent tip (intervals.icu): archive the original, and
+  check which endpoint a "FIT" download really is before relying on device-specific messages.
+- 2026-10-24 — `fitparse` (last release 2020) reads message 216 as `unknown_216` with no fields;
+  Garmin's own `garmin-fit-sdk` decodes it. Agent tip (FIT files): use Garmin's SDK for newer
+  messages.
 
 - 2026-10-24 — Cloudflare switched on Real User Monitoring by default for a new Free zone,
   excluding EU/UK visitors, so it injected a third-party beacon (`static.cloudflareinsights.com`)
