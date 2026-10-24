@@ -9,21 +9,13 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, afternoon):** **Phase 6 (US3 Training) is built** in the `001-training`
-  PR (sdd-playbook#11 merged; house-process 0.9.0 reinstalled, hooks unchanged). **After it
-  merges:**
-  1. Check the `gate.yml` deploy on `main` finished.
-  2. Dispatch the one-off zone backfill:
-     `gh workflow run refresh.yml -f reimport_from=2025-10-01 -f missing_only=true` (about 15
-     billed minutes). Its fetch summary should show `topped_up` of about 200.
-  3. Check that the 23 Oct run (`/running/runs/2026-10-23-bv7w/`) shows Zone 3 Aerobic
-     123–140 bpm 23:13 and Zone 4 Threshold 140–158 bpm 25:32.
-  4. Ask the owner any unticked PR confirmations.
-  5. Guide the owner's live review of `/running/training/` and a run page.
-  6. Raise the follow-up PR that drops the deprecated `{zone, seconds}` `hr_zones` branch from
-     `schemas/published/run.schema.json` (plus its legacy fixture), once no published run uses it.
-
-  **Then Phase 7.**
+- **Status (2026-10-24, evening):** **Phase 6 (US3 Training) is live** (#52, fix #53).
+  - **Zones:** all 199 runs show Garmin's zones; the 23 Oct run matches Garmin Connect (Z3
+    23:13, Z4 25:32).
+  - **Cleanup:** the old zone shape was dropped in the `001-zones-cleanup` PR. Check it merged.
+  - **Owner review of the live Training pages:** given at the end of the Phase 6 session. Ask
+    for any feedback the owner hasn't given yet before starting Phase 7.
+  - **Next: Phase 7 (US4 Races and PBs).**
   - **Planned order** (owner, 2026-10-24):
     1. ~~Phase 6~~ (built), then Phase 7 (US4 Races and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
