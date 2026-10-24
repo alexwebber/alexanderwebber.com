@@ -71,6 +71,16 @@ export function formatDateTime(instant: Date): string {
   return `${formatDate(londonDate(instant))}, ${londonTime.format(instant)}`;
 }
 
+/**
+ * The instant (epoch ms) a Europe/London calendar day starts. UK clocks change at 01:00 UTC, never
+ * at midnight, so every day has exactly one, and London is UTC or one hour ahead of it.
+ */
+export function londonMidnight(date: string): number {
+  const utcMidnight = toDays(date) * DAY_MS;
+  const bstMidnight = utcMidnight - 3_600_000;
+  return londonDate(new Date(bstMidnight)) === date ? bstMidnight : utcMidnight;
+}
+
 /** Today in Europe/London. */
 export function today(now: Date = new Date()): string {
   return londonDate(now);

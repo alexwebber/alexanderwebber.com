@@ -9,7 +9,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { parse } from 'yaml';
-import { formatLongDate, today as londonToday } from '../../src/shared/format/dates.ts';
+import { addDays, formatLongDate, today as londonToday } from '../../src/shared/format/dates.ts';
 import { countdownText, daysRemaining, targetLabel } from '../../src/sections/running/domain/races.ts';
 
 const PATH = '/running/';
@@ -189,6 +189,15 @@ test('Garmin attribution sits under the page heading, the chart title and each c
   if ((await page.locator('[data-run-card]').count()) > 0) {
     await expect(page.locator('[data-run-card] .run-card-title + [data-garmin-attribution]')).toHaveText(/^Source: Garmin/);
   }
+});
+
+test("the countdown follows the visitor's UK date on a day after the build", async ({ page }) => {
+  test.skip(Boolean(focus.result_ref), 'the focus race has a result');
+  // Within the build's own UK day the script leaves the built text alone; on any other day it
+  // works the count out again.
+  await page.clock.setFixedTime(new Date(`${addDays(focus.date, -10)}T12:00:00Z`));
+  await open(page);
+  await expect(page.locator('[data-hero] [data-countdown]')).toHaveText('10 days to go');
 });
 
 test.describe('without JavaScript (FR-074)', () => {

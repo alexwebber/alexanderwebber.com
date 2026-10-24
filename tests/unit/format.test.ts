@@ -8,6 +8,7 @@ import {
   formatKm,
   formatPace,
   londonDate,
+  londonMidnight,
   parseDistance,
   parseTime,
   weekStart,
@@ -48,6 +49,15 @@ describe('dates', () => {
     expect(londonDate(new Date('2026-12-01T23:30:00Z'))).toBe('2026-12-01'); // GMT
     expect(londonDate(new Date('2026-10-25T00:30:00Z'))).toBe('2026-10-25'); // 01:30 BST, clocks go back
     expect(londonDate(new Date('2027-03-28T00:30:00Z'))).toBe('2027-03-28'); // 00:30 GMT, clocks go forward
+  });
+
+  it('finds the instant a UK day starts, in BST, in GMT and on both clock-change days', () => {
+    expect(londonMidnight('2026-07-01')).toBe(Date.parse('2026-06-30T23:00:00Z')); // BST
+    expect(londonMidnight('2026-12-01')).toBe(Date.parse('2026-12-01T00:00:00Z')); // GMT
+    expect(londonMidnight('2026-10-25')).toBe(Date.parse('2026-10-24T23:00:00Z')); // clocks go back at 02:00 BST
+    expect(londonMidnight('2026-10-26')).toBe(Date.parse('2026-10-26T00:00:00Z'));
+    expect(londonMidnight('2027-03-28')).toBe(Date.parse('2027-03-28T00:00:00Z')); // clocks go forward at 01:00 GMT
+    expect(londonMidnight('2027-03-29')).toBe(Date.parse('2027-03-28T23:00:00Z'));
   });
 
   it('counts calendar days across clock changes', () => {

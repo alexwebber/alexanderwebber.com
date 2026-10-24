@@ -9,6 +9,12 @@
 //   node scripts/lighthouse-budget.mjs                        # against astro preview of dist/
 //   node scripts/lighthouse-budget.mjs --base-url=https://... # against a deployed site
 //
+// A page under the performance budget is measured twice more and judged on the median run, because
+// scores on a shared 2-core CI runner are noisy. On PR #46 the first two pages measured lost 1-23
+// points (all of it total blocking time) while the same build scored 100 locally and against
+// production on the same runner; the likeliest cause is the just-started preview server still
+// competing for the CPU.
+//
 // Page types that don't exist yet (not built, or 404 remotely) are skipped and listed. Results go
 // to stdout, and to the job summary when GITHUB_STEP_SUMMARY is set. Non-blocking: quality.yml
 // runs it, the build gate doesn't.
@@ -29,6 +35,14 @@ const BUDGET = { performance: 90, landingLcpMs: 2500, jsGzip: 10 * KB, pageGzip:
 // The race page's interactive map loads on click, so it should never be in a load-time trace;
 // if it ever is, it doesn't count against the JS budget (plan.md Constraints).
 const MAP_SCRIPT = /maplibre|race-map/i;
+/** Lighthouse 13's scored performance metrics, as [audit id, short name]. */
+const PERF_METRICS = [
+  ['first-contentful-paint', 'FCP'],
+  ['largest-contentful-paint', 'LCP'],
+  ['total-blocking-time', 'TBT'],
+  ['cumulative-layout-shift', 'CLS'],
+  ['speed-index', 'SI'],
+];
 
 /**
  * A package's CLI as `[node, its bin file]`. Not `npx`: on Windows that's `npx.cmd`, which Node
@@ -139,7 +153,11 @@ async function checkPage(page, url, lhr) {
   const failures = [];
   const origin = new URL(url).origin;
   const perf = Math.round((lhr.categories.performance.score ?? 0) * 100);
-  if (perf < BUDGET.performance) failures.push(`performance ${perf} < ${BUDGET.performance}`);
+  if (perf < BUDGET.performance) {
+    // Which metrics cost the points, so a CI-only drop can be read from the job summary.
+    const metrics = PERF_METRICS.map(([id, name]) => `${name} ${lhr.audits[id].displayValue} (${Math.round((lhr.audits[id].score ?? 0) * 100)})`);
+    failures.push(`performance ${perf} < ${BUDGET.performance}: ${metrics.join(', ')}`);
+  }
 
   const a11y = Math.round((lhr.categories.accessibility.score ?? 0) * 100);
   const a11yFailed = lhr.categories.accessibility.auditRefs
@@ -176,7 +194,7 @@ function report(results, skipped) {
     '|---|---|---|---|---|---|---|---|',
     ...results.map(
       (r) =>
-        `| ${r.type} (\`${new URL(r.url).pathname}\`) | ${r.perf} | ${r.a11y} | ${(r.lcp / 1000).toFixed(2)} s | ` +
+        `| ${r.type} (\`${new URL(r.url).pathname}\`) | ${r.perf}${r.scores ? ` (median of ${r.scores.join(', ')})` : ''} | ${r.a11y} | ${(r.lcp / 1000).toFixed(2)} s | ` +
         `${(r.js / KB).toFixed(1)} KB | ${(r.total / KB).toFixed(1)} KB | ${r.thirdParty} | ` +
         `${r.failures.length === 0 ? 'pass' : `**fail**: ${r.failures.join('; ')}`} |`,
     ),
@@ -205,7 +223,14 @@ try {
       continue;
     }
     const url = new URL(path, baseUrl).href;
-    results.push(await checkPage(page, url, await runLighthouse(url)));
+    let result = await checkPage(page, url, await runLighthouse(url));
+    if (result.perf < BUDGET.performance) {
+      const runs = [result];
+      for (let i = 0; i < 2; i++) runs.push(await checkPage(page, url, await runLighthouse(url)));
+      const scores = runs.map((r) => r.perf);
+      result = { ...runs.toSorted((a, b) => a.perf - b.perf)[1], scores };
+    }
+    results.push(result);
   }
 } finally {
   server?.stop();

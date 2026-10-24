@@ -4,6 +4,12 @@
 // 00:17 UTC refresh) keeps that current. The page can still be up to about 1h20 behind the UK date
 // in summer, so a tiny inline script (well under 1 KB) recomputes it from the visitor's clock in
 // Europe/London. Without JS, or if anything fails, the build-time text stays (FR-074).
+//
+// The build's count is right for the whole of its own UK day, whose span the page carries as
+// epoch ms. Within it, which is nearly always, the script does nothing: no Intl time-zone set-up
+// and no text rewrite, which on a slow phone forced a relayout after first paint (about half the
+// landing page's blocking time, PR #47).
+import { addDays, londonMidnight } from '../../../shared/format/dates.ts';
 import { countdownText } from '../domain/races.ts';
 
 export interface Props {
@@ -15,18 +21,23 @@ export interface Props {
 
 const { date, days } = Astro.props;
 const [value, unit] = countdownText(days);
+const buildDay = addDays(date, -days);
 ---
 
-<p class="countdown" data-countdown data-race-date={date}>
+<p class="countdown" data-countdown data-race-date={date} data-day-from={londonMidnight(buildDay)} data-day-to={londonMidnight(addDays(buildDay, 1))}>
   <span class="countdown-value" data-countdown-value data-word={unit ? undefined : ''}>{value}</span>{' '}
   <span class="countdown-unit" data-countdown-unit hidden={!unit}>{unit}</span>
 </p>
 
 <script>
   // Keep in step with countdownText() in domain/races.ts.
-  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+  const now = Date.now();
+  const stale = [...document.querySelectorAll<HTMLElement>('[data-countdown]')].filter(
+    (el) => !(now >= Number(el.dataset.dayFrom) && now < Number(el.dataset.dayTo)),
+  );
+  const day = stale.length > 0 ? new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date(now)) : '';
   if (/^\d{4}-\d\d-\d\d$/.test(day)) {
-    for (const el of document.querySelectorAll<HTMLElement>('[data-countdown]')) {
+    for (const el of stale) {
       const d = Math.round((Date.parse(el.dataset.raceDate!) - Date.parse(day)) / 864e5);
       const unit = el.querySelector<HTMLElement>('[data-countdown-unit]')!;
       const value = el.querySelector<HTMLElement>('[data-countdown-value]')!;
