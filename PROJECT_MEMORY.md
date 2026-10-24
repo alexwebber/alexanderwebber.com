@@ -25,8 +25,10 @@ Update this as decisions get made — treat it as the source of truth alongside
       (canary wording, the `AGENT_TIPS.md` line in `CLAUDE.md`) are already copied here. If not
       merged, carry on with Phase 6 and check again next session.
     - that this repo's `001-harvest-3` PR merged (docs only).
-    - that the nightly Quality run (first one against `https://alexanderwebber.com/` is due about
-      08:50 UTC on 24 Oct) is green.
+    - that the nightly Quality run is still green. The first one against the domain (24 Oct)
+      failed on Cloudflare's default RUM beacon. Once the owner turned RUM off, its rerun passed
+      at 100/100 on every page (decisions log). If the beacon comes back, Cloudflare re-enabled
+      RUM.
     - T105's no-change path: still unseen (the 00:17 UTC run on 24 Oct had new data). Find a
       00:xx UTC refresh run whose `commit` job printed "Nothing to commit." (grep the log
       without the script's `[36;1m` lines) and check its `deploy` job ran. If none ever does,
@@ -893,10 +895,27 @@ project-specific notes.
     real release.
   - **Not sent:** Garmin export FIT matching (already in the audit decision), ruff PLE1205
     (niche), and the cloud image's Playwright Chromium mismatch.
+- **2026-10-24** — **No visitor analytics script** (owner pick). The first nightly Quality run
+  against the domain failed every page on "third-party requests: static.cloudflareinsights.com"
+  (scores 98–100). Cloudflare had switched on Real User Monitoring by default for the new Free
+  zone, excluding EU/UK visitors, so a US runner always got the beacon, while UK fetches and
+  workers.dev never did (shown with a throwaway branch workflow). Nothing in the dashboard
+  showed it as on. The owner turned it off (*Speed → Observatory*), keeping the plan's
+  zero-third-party rule. Cloudflare's server-side zone analytics (requests, visits) need no
+  script and stay. Recorded in quickstart.md §0.
 
 ## Upstream candidates
 
-- _None yet._
+- 2026-10-24 — Cloudflare switched on Real User Monitoring by default for a new Free zone,
+  excluding EU/UK visitors, so it injected a third-party beacon (`static.cloudflareinsights.com`)
+  into pages served to everyone else. Fetches from the UK and the workers.dev address never
+  showed it, the account's Web Analytics page said "Get started", and the Observatory opened
+  with a welcome offering to *enable* RUM. Only a production Lighthouse run from a US runner
+  caught it, and a throwaway branch workflow curling from there confirmed it. Agent tip
+  (Cloudflare, go-live): after attaching a domain, check the live HTML from outside Europe
+  (a branch workflow) for injected scripts, and turn RUM off explicitly in *Speed →
+  Observatory* if the site promises no third-party requests. Run production budget checks from
+  a non-EU location.
 
 ## Open questions
 
