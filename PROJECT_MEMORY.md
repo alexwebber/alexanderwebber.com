@@ -9,26 +9,24 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, night):** **Phase 7 (US4 Races and PBs) is built**, in the
-  `001-races` PR. Phase 6 is live and its cleanup (#54) merged; the owner had no more Training
-  feedback.
-  - **First:** check the PR merged and its `main` gate deployed, then ask about any PR
-    checkboxes left unticked. Start with a short guided look at the live
-    `/running/races/` (Brighton countdown, PB table, empty history) and the "Races" menu item on
-    phone and desktop, then a question round on what the owner saw.
+- **Status (2026-10-24, late):** **Phase 7 (US4 Races and PBs) is live** (#55 merged and
+  deployed, all 11 confirmations ticked). The owner reviewed `/running/races/` on phone and
+  desktop: all good, and the Brighton card stays without Garmin's prediction (the landing hero
+  and goal already show it).
+  - **Next: Phase 8 (US5 Health, tasks.md)**, starting with a question round on the health
+    metrics before implement.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
-  - **Next: Phase 8 (US5 Health).**
   - **Planned order** (owner, 2026-10-24):
-    1. ~~Phase 6~~, ~~Phase 7~~ (built), then Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    1. ~~Phase 6~~, ~~Phase 7~~, then Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
-    was re-enabled). T105's no-change path is still unseen: find a 00:xx UTC refresh whose
-    `commit` job printed "Nothing to commit." and check its `deploy` ran. If none ever does,
-    that's fine; say so once. Minutes: 824 used by about 11:00 UTC on 2026-10-24; October should
-    end around 1,200, plus about 15 for the zone backfill.
+    was re-enabled). Minutes: 995 used by about 19:30 UTC on 2026-10-24; October should end
+    around 1,400–1,500 with Phase 8's PR checks.
+  - **T105's no-change path** was never seen: every 00:17 refresh so far committed new data.
+    That's fine, and the owner has been told; stop looking for it.
   - **Phase 8 touches Astro and charts:** read the matching sections of sdd-playbook's
     `AGENT_TIPS.md` first.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
@@ -52,9 +50,8 @@ Update this as decisions get made — treat it as the source of truth alongside
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
   quickstart.md §0.
-- **Next step: Phase 8 (US5 Health, tasks.md)** in its own session, once Phase 7's
-  post-merge steps are done, starting with the guided look at the live races page and a
-  question round on health metrics. History is complete from 7 Oct 2025 (T150 and T085 done).
+- **Next step: Phase 8 (US5 Health, tasks.md)** in its own session, starting with a question
+  round on health metrics. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
