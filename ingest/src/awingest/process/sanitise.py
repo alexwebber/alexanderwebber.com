@@ -174,7 +174,6 @@ def _hr_zones(activity: NormalisedActivity) -> list[dict[str, Any]]:
         zones.append(
             {
                 "zone": z.zone,
-                "name": z.name,
                 "low_bpm": _num(low, 0),
                 "high_bpm": _num(high, 0),
                 "seconds": _num(z.seconds, 0),

@@ -84,7 +84,10 @@ export function splitRows(run: Run): SplitRow[] {
   });
 }
 
-type GarminZone = Extract<NonNullable<Run['hr_zones']>[number], { name: string }>;
+type GarminZone = Extract<NonNullable<Run['hr_zones']>[number], { low_bpm: number }>;
+
+/** Garmin's names for its five heart-rate zones, as Garmin Connect shows them (zone 1 first). */
+export const GARMIN_ZONE_NAMES = ['Warm Up', 'Easy', 'Aerobic', 'Threshold', 'Maximum'] as const;
 
 export interface ZoneRow {
   zone: number;
@@ -98,14 +101,15 @@ export interface ZoneRow {
 
 /**
  * Garmin's five heart-rate zones (T117, T159), as the watch recorded them. Runs published before
- * processor version 4 carry intervals.icu's zones (no names or ranges); those show nothing.
+ * processor version 4 carry intervals.icu's zones (no bpm ranges); those show nothing. Names come from
+ * the zone number, so published data never carries a "name" key (scan-privacy reserves it).
  */
 export function zoneRows(run: Run): ZoneRow[] {
-  const zones: readonly (NonNullable<Run['hr_zones']>[number] & { name?: string })[] = run.hr_zones ?? [];
-  if (zones.length !== 5 || !zones.every((z): z is GarminZone => typeof z.name === 'string')) return [];
+  const zones: readonly NonNullable<Run['hr_zones']>[number][] = run.hr_zones ?? [];
+  if (zones.length !== 5 || !zones.every((z): z is GarminZone => 'low_bpm' in z && typeof z.low_bpm === 'number')) return [];
   const total = zones.reduce((sum, z) => sum + z.seconds, 0);
   if (total <= 0) return [];
-  return zones.map((z) => ({ zone: z.zone, name: z.name, low_bpm: z.low_bpm, high_bpm: z.high_bpm, seconds: z.seconds, share: z.seconds / total }));
+  return zones.map((z) => ({ zone: z.zone, name: GARMIN_ZONE_NAMES[z.zone - 1] ?? `Zone ${z.zone}`, low_bpm: z.low_bpm, high_bpm: z.high_bpm, seconds: z.seconds, share: z.seconds / total }));
 }
 
 export interface EffortRow {
