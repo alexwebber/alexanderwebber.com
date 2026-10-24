@@ -18,7 +18,11 @@ plan.md; the agent runs them (owner only supplies the few account actions flagge
     (`nikon`/`pam.ns.cloudflare.com`; the zone is on the Free plan, AI crawlers allowed, DNSSEC
     off). The domain stays registered at Namecheap. Dashboard-only settings on the zone (not in
     git): the Redirect Rule "Redirect from WWW to root [Template]" (`https://www.*` → 301
-    `https://${1}`, query string kept) and *SSL/TLS → Always Use HTTPS*.
+    `https://${1}`, query string kept), *SSL/TLS → Always Use HTTPS*, and Real User Monitoring
+    **disabled** (*Speed → Observatory*). Cloudflare turns RUM on by default for new Free zones,
+    excluding EU/UK visitors, which injects a `static.cloudflareinsights.com` beacon into pages
+    served to everyone else. That breaks the zero-third-party budget, and the nightly Quality run
+    catches it.
     `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" template, All zones) needed no change:
     attaching a custom domain needs only Workers Scripts Write, and Cloudflare creates the DNS
     records itself.

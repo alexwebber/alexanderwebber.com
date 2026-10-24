@@ -9,28 +9,35 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, morning):** **the site is live on alexanderwebber.com** (#48), and
-  Phase 5 is complete (T110–T112, T004; recorded in #49). **Next: a lesson harvest**, then Phase 6.
+- **Status (2026-10-24, mid-morning):** the site is live on alexanderwebber.com, Phase 5 is
+  complete, and **the lesson harvest is done**: it went to
+  [sdd-playbook#11](https://github.com/alexwebber/sdd-playbook/pull/11) (house-process 0.9.0)
+  and this repo's `001-harvest-3` PR. **Next: Phase 6.**
   - **Planned order** (owner, 2026-10-24):
-    1. **Harvest lessons upstream** (next session): run
-       `/speckit-house-process-harvest-lessons` in the **main conversation** (it needs the
-       owner's picks partway through; it's not a subagent step). About 50 *Upstream candidates*
-       have built up since the 2026-10-04 harvest. It ends with sdd-playbook PR(s); afterwards
-       reinstall house-process from the playbook's `main` if its version changed, and clear the
-       harvested entries here.
-    2. **Phase 6: US3 Training stats and run detail**, then Phase 7 (US4 Races and PBs),
-       Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
-    3. **Harvest lessons again** once Phase 9 is done, before starting the next spec
+    1. **Phase 6: US3 Training stats and run detail** (next session), then Phase 7 (US4 Races
+       and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:**
-    - that the `001-schedule-harvests` PR merged (docs only).
-    - that the nightly Quality run (now against `https://alexanderwebber.com/`) is green.
+    - that sdd-playbook#11 merged. If so, pull the playbook's `main` and reinstall house-process
+      0.9.0 (`specify extension add ...\extensions\house-process --dev --force`), then check
+      `extensions.yml` still lists the same hooks (parsed, not by diff). The template changes
+      (canary wording, the `AGENT_TIPS.md` line in `CLAUDE.md`) are already copied here. If not
+      merged, carry on with Phase 6 and check again next session.
+    - that this repo's `001-harvest-3` PR merged (docs only).
+    - that the nightly Quality run is still green. The first one against the domain (24 Oct)
+      failed on Cloudflare's default RUM beacon. Once the owner turned RUM off, its rerun passed
+      at 100/100 on every page (decisions log). If the beacon comes back, Cloudflare re-enabled
+      RUM.
     - T105's no-change path: still unseen (the 00:17 UTC run on 24 Oct had new data). Find a
       00:xx UTC refresh run whose `commit` job printed "Nothing to commit." (grep the log
       without the script's `[36;1m` lines) and check its `deploy` job ran. If none ever does,
       that's fine; say so once.
-    - minutes: 789 used by 07:00 UTC on 2026-10-24. October should end around 1,150–1,250. If
-      it's close to the limit, use the owner's lever order (2026-10-23 decision).
+    - minutes: 806 used by about 08:15 UTC on 2026-10-24. October should end around
+      1,150–1,250. If it's close to the limit, use the owner's lever order (2026-10-23
+      decision).
+  - **Phase 6 touches CI and Astro:** read the matching sections of sdd-playbook's
+    `AGENT_TIPS.md` first (most of this project's old *Upstream candidates* now live there).
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
   - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
@@ -126,14 +133,12 @@ project-specific notes.
   evolves this itself via `speckit.house-process.model-canary`: it reruns a step on another
   model when the owner is unhappy with an output. A canary costs 2–3.5× the step, and the
   agent can't see the owner's remaining plan usage. So trying each new model once per step type
-  and sampling about 1 in 4 high-value steps happen only if this project opts in. The agent asks
-  for a usage screenshot before big spends (e.g. a canary or `/speckit-implement`). Results,
-  including token cost, are logged in `canaries.md`. The judge is never one of the candidate
-  models. Norm changes are proposed only once a pattern holds. **Project override
-  (2026-10-04):** this project does not opt in. Canaries run only when the owner is unhappy
-  with an output, because of plan usage limits. The agent logs each step's token cost anyway.
-  **Project override (2026-10-17):** the agent doesn't ask for usage screenshots. The owner says
-  when usage is running low.
+  and sampling about 1 in 4 high-value steps happen only if this project opts in. The owner says
+  when usage is running low; the agent doesn't ask for usage screenshots. Results, including
+  token cost, are logged in `canaries.md`. The judge is never one of the candidate models. Norm
+  changes are proposed only once a pattern holds. **Project override (2026-10-04):** this
+  project does not opt in. Canaries run only when the owner is unhappy with an output, because
+  of plan usage limits. The agent logs each step's token cost anyway.
 - **Don't miss important updates.** Check the components in use for updates and adopt the ones
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
@@ -875,319 +880,42 @@ project-specific notes.
     supporter features.
   - **Phase 5 is complete** (T110–T112): the Running MVP (goals and landing) has graduated and
     is live.
+- **2026-10-24** — **Harvested about 60 lessons upstream** (2026-10-04 to go-live), merged into
+  50: [sdd-playbook#11](https://github.com/alexwebber/sdd-playbook/pull/11) (house-process
+  0.9.0). Owner picks:
+  - **Split by when they're needed.** Process lessons go in `PLAYBOOK.md`: session-health
+    checks, one session per checkout, the fuller Spec Kit upgrade steps, Windows gotchas, and
+    nine project lessons. Technical tips (shell, secrets, Actions, pipelines, Astro, Cloudflare,
+    UI) go in a new `AGENT_TIPS.md`. `CLAUDE.md` here and in the template points at it before
+    CI, framework or hosting work, so it isn't loaded every session.
+  - **"Show me the real thing"** (How to view it, guided review of the live site) went to the
+    owner's global `~/.claude/CLAUDE.md`.
+  - **The usage-screenshot rule** is dropped from the template's canary norm.
+  - **A Spec Kit upgrade script** waits in the playbook's backlog, to be built at the next
+    real release.
+  - **Not sent:** Garmin export FIT matching (already in the audit decision), ruff PLE1205
+    (niche), and the cloud image's Playwright Chromium mismatch.
+- **2026-10-24** — **No visitor analytics script** (owner pick). The first nightly Quality run
+  against the domain failed every page on "third-party requests: static.cloudflareinsights.com"
+  (scores 98–100). Cloudflare had switched on Real User Monitoring by default for the new Free
+  zone, excluding EU/UK visitors, so a US runner always got the beacon, while UK fetches and
+  workers.dev never did (shown with a throwaway branch workflow). Nothing in the dashboard
+  showed it as on. The owner turned it off (*Speed → Observatory*), keeping the plan's
+  zero-third-party rule. Cloudflare's server-side zone analytics (requests, visits) need no
+  script and stay. Recorded in quickstart.md §0.
 
 ## Upstream candidates
 
-- 2026-10-24 — Moving a domain's nameservers to Cloudflare went smoothly, because the agent first
-  read the domain's records (A, MX, TXT, `www`) and the registry's DS record, so it knew nothing
-  needed carrying over and DNSSEC was off. Then it confirmed the change at the TLD server
-  (`nslookup -type=NS <domain> a.gtld-servers.net`), not a public resolver, which keeps the old
-  answer for up to 48 h. Cloudflare's current flow is *Add a domain → Connect a domain* (not
-  Transfer). Search results said a Worker custom domain also needs DNS Edit on the CI token, but
-  the API reference lists only Workers Scripts Write; check the endpoint's own permissions
-  before widening a token. Agent tip
-  (go-live): do those read-only checks before the owner touches the registrar, and walk them
-  through it screen by screen.
-
-- 2026-10-24 — A Lighthouse budget run once per page in CI failed the landing page (all of it
-  blocking time) while it scored 100 locally and against production on the same runner. Agent
-  tips (CI performance budgets): print the metric breakdown on failure; judge a miss on the
-  median of three runs; reproduce locally with `--throttling.cpuSlowdownMultiplier` and compare
-  long-task start times with first paint. Here the cost was a tiny inline script rewriting
-  build-time text on every load (`Intl` time-zone set-up plus a forced relayout). Agent tip
-  (static sites): give a client-side "correct the build's value" script the span its build value
-  is valid for, and have it do nothing inside it.
-
-- 2026-10-23 — Two Claude sessions shared one checkout. The new session switched branches while
-  the old one was still finishing a follow-up on a merged PR, so the old one committed into the
-  new session's branch (it undid that, and the work was carried over). Agent tip: before
-  committing, check `git rev-parse --abbrev-ref HEAD` is the branch you expect. When a session
-  hands off, it stops touching the folder, and follow-ups go to the new session.
-- 2026-10-23 — `npx playwright test | tail -12` showed only the end of the failure list and the
-  "passed" count, so the agent first read 28 failures as passes. Agent tip: filter a test run's
-  output for its summary lines (`passed|failed|flaky|skipped`), never a bare `tail`.
-- 2026-10-23 — Astro raised its minimum Node version in a patch release (7.4.2, for Node security
-  fixes), which only the release notes said. Agent tip (update checks): read the release notes
-  of core-framework patch releases too, and keep `engines` in step with the framework's floor.
-  `actions/setup-node` with a major-only version uses the runner's cached release, which can be
-  below a new floor; set `check-latest: true`.
-
-- 2026-10-23 — In the guided review, the owner gave remembered figures ("about 128 kg, 34%,
-  Jun 2025"; "133.2 kg in Feb 2023"). The Garmin export had the exact weigh-ins (127.6 kg and
-  33.7% on 2 Jun 2025; 133.2 kg on 31 Jan 2023), so the site uses those. Generalisation
-  (Authentic Voice / owner data): when the owner supplies a figure from memory and a source
-  export exists, look it up read-only and confirm the exact value and date, rather than
-  entering the remembered one or estimating a missing one.
-- 2026-10-23 — On a phone, "Target sub-43:00" broke after the hyphen ("sub-" / "43:00"), and
-  "(23 Oct 2026)" split mid-date. Unit and e2e tests passed; only a screenshot showed it.
-  Agent tip (UI): keep short labels that contain hyphens or dates on one line
-  (`white-space: nowrap`), and look at a phone-width screenshot before raising a UI PR.
-- 2026-10-23 — Locally, Playwright's `webServer` failed with "was not able to start" while an
-  `astro preview` the agent had started for screenshots was still running on another port.
-  Stopping it by PID fixed it. Agent tip (Astro 7): one `astro preview` at a time; stop your own
-  before running Playwright.
-- 2026-10-23 — A Playwright job's `playwright install --with-deps` hung in apt's font
-  downloads on two PRs in a row, with no output and no failure until a timeout. apt
-  `Acquire::*::Timeout`/`Retries` didn't stop it. Agent tip (CI): on GitHub's Ubuntu runners,
-  skip `--with-deps` (the image's Chrome already brings Chromium's libraries), and give the
-  install step its own `timeout-minutes` so a stall fails fast.
-
-- 2026-10-23 — The plan carried "import the full Garmin history" from spec time to the eve of
-  doing it, and the owner then asked whether it was safe and worth it. It wasn't: it added no
-  PBs or goal data, and a bulk import into the provider account risked duplicates that are hard
-  to undo. The part that mattered (finding runs missing from the last year) needed no import:
-  an offline comparison of the export with the published data. Generalisation (planning): before
-  running a risky, hard-to-reverse bulk step that was planned long ago, re-weigh what it adds
-  against what the owner now cares about, and look for a read-only route to the same benefit.
-- 2026-10-23 — A Garmin export's FIT files (`DI-Connect-Uploaded-Files/UploadedFiles_*.zip`)
-  are named by upload ID, which the activity summaries don't carry. Agent tip (Garmin exports):
-  match a FIT file to an activity by `file_id.time_created` against `startTimeGmt` (within
-  about two minutes), reading only each file's first message from the zip in memory.
-- 2026-10-23 — intervals.icu imported two activities Garmin logged as "Other" (the owner's
-  junior parkruns with his son) as runs. Generalisation (provider choice): a sync partner can
-  re-type activities, so an audit against the source should compare activity types, not only
-  find missing items.
-
-- 2026-10-23 — Most of the owner's first comments on the live site were about meaning, not
-  bugs the tests could catch: Garmin predictions read as race-day forecasts, a "fastest" time
-  counted watch pauses that Garmin leaves out, and one card mixed a 7-day average with a single
-  reading. Generalisation (spec quality, personal-data sites): for every figure shown, the spec
-  should say what it means in the source app (now vs forecast, timer vs elapsed, average vs
-  reading), and the owner should see the real page early, before more is built on it.
-- 2026-10-23 — The site's run history started on the day the refresh first ran, because the
-  full backfill was held back until a later data import, so the owner's real best half (from
-  April) was missing and the page showed a slower one as "fastest". Generalisation (data
-  pipelines): backfill whatever the provider already holds at launch, and add older history
-  when it arrives, so personal-best views aren't silently wrong in the meantime.
-
-- 2026-10-23 — Two phases of pages (the shared shell, the goals page, the landing page) shipped
-  with tests and Lighthouse scores in their PRs, but the owner had never looked at the site
-  itself. The owner asked for a review of the real site
-  with steps to view it. Generalisation (house norm, for projects with a UI): every PR that
-  changes what users see says how to view it (URLs, phone and desktop checks), and each phase
-  that ships UI starts the next session with a guided review of the live result.
-- 2026-10-23 — Astro's build strips line-break whitespace between inline elements, so
-  `<span>163</span>` and `<span>days</span>` on separate lines rendered "163days". A test helper
-  that strips tags hid it. Agent tip (Astro): add an explicit `{' '}` between inline elements on
-  separate lines, and assert on text read from a real browser.
-- 2026-10-23 — A whole Astro page can be tested with the container API with only `Date` faked
-  (`vi.useFakeTimers({ toFake: ['Date'] })`), which pins "today" without a test hook in
-  production code. Agent tip (testing date-driven pages).
-
-- 2026-10-23 — On the 1.2.3 upgrade, a text diff of the regenerated `extensions.yml` showed
-  whole hook blocks as deleted, because only the key order had changed. Strengthen the
-  *Upgrading Spec Kit* note: compare the backup and the new file as parsed YAML (installed
-  list, settings, hooks per event), not by `diff`, before restoring the backup.
-- 2026-10-23 — Astro 7 empties `outDir` before it renders pages, so a data error thrown while
-  rendering still wipes the previous `dist/`. Agent tip (Astro): when a failed build must leave
-  `dist/` untouched, validate in an integration's `astro:build:start` hook.
-- 2026-10-23 — `scripts/lighthouse-budget.mjs` calls `spawn('npx', ...)`, which fails on Windows
-  with ENOENT, so the Lighthouse budget ran only in CI. `shell: true` would split quoted
-  arguments (Chrome flags) and make `child.kill()` stop the shell rather than the server.
-  Fixed at T110 by running each package's bin file with `process.execPath`. Agent tip (Windows
-  gotchas): in cross-platform Node scripts, run a package's bin with `node`, not `npx`.
-- 2026-10-23 — A keyboard-path test that de-duplicated focus stops by `href` stopped early,
-  because the site name and the footer both link to `/`. Agent tip (a11y tests): key focus
-  stops on the `href` plus the link text.
-- 2026-10-23 — The owner's goal list (seven featured goals) broke a validator limit (six) that
-  the question round never mentioned. Generalisation (question rounds): when collecting owner
-  data, check the answers against the schema's rules before the round ends, so a conflict is
-  asked about while the owner is there.
-
-- 2026-10-23 — GitHub Actions bills each job as at least a whole minute, so a 2-hourly refresh
-  split into many short jobs used about 55 minutes a day (about 1,700 a month on a private repo,
-  against Free's 2,000). The plan's estimate of 1,200–1,500 had counted run time, not jobs.
-  Also, the runs `timing` API reported 0 billable ms, so measure from job start and end times.
-  Agent tip (CI cost): estimate minutes as jobs per run x runs per day, and fold short steps
-  into one job unless they need different permissions.
-
-- 2026-10-23 — Garmin's push to a sync partner (intervals.icu) silently skipped three Track
-  Running activities from one day, while other activities synced. Generalisation (provider
-  choice): a partner sync is not a complete copy of the source. Plan a reconciliation against
-  the source of truth, such as a full export at onboarding, and a way to repair gaps, such as a
-  manual upload that flows through the normal pipeline.
-
-- 2026-10-18 — A secrets-file shape check (`awk -F=` printing the key and value length) assumed
-  `KEY=value` lines. The owner's file used `Key: value`, so each whole line, value included,
-  printed as the "key", leaking four credentials into the transcript. Agent tip for the secrets
-  file helper: never print any part of a line. Print line numbers, a fixed label for known keys,
-  and lengths only, and treat a line with no `=` as unparsed rather than as a key.
-
-- 2026-10-18 — Tests written in Linux cloud sessions symlinked a directory into temp repos. On
-  Windows that needs the symlink privilege (WinError 1314), so 48 pytest cases errored on the
-  first local run, while CI and the cloud were green. Agent tip (Windows gotchas): when a
-  project alternates between cloud and local sessions, run the full suites locally on return.
-  Test helpers should fall back to a directory junction (`_winapi.CreateJunction`; Node
-  `symlinkSync(..., 'junction')`).
-- 2026-10-18 — Incremental processing keyed on input hashes alone meant a processor change
-  (a new published field) would never reach already-published files without a manual `--all`
-  that no workflow ran. Generalisation (pipelines): include a code or processor version in
-  every incremental cache key, so a change reprocesses on its own.
-
-- 2026-10-18 — The browser-test page for the shared shell read "Last updated" from the repo's
-  published data. Its tests assumed there was none, so they broke on the PR as soon as the first
-  scheduled refresh published real data to `main` (PR CI tests the merge with the base).
-  Generalisation (testing): test fixture pages pin every input they assert on, never repo data
-  that a bot can change underneath an open PR.
-- 2026-10-18 — A newly merged GitHub Actions `schedule` fired its first slot about 1h45 late
-  (22:17 slot, run started 00:03 UTC), with zero schedule runs listed in between. Agent tip:
-  don't treat a missed first slot as a failure or dispatch a publishing run to "unstick" it.
-  Wait about two slots, and check the workflow is `active` on the default branch. Later that
-  day it **dropped** three of five 2-hourly slots outright, not just delayed them (a 4 h gap).
-  So a freshness requirement of a few hours can't rest on GitHub `schedule` alone; plan for an
-  external trigger (e.g. Cloudflare cron calling `workflow_dispatch`). Pattern adopted here
-  (PR #28): keep `schedule` as a sparse backup whose first job skips the run when a dispatched
-  run is recent, and opens an issue when dispatches stop, so a dead external trigger isn't
-  silent.
-- 2026-10-17 — satori sizes boxes content-box. A root with `width: 100%` plus padding and a border
-  rendered at 1360 x 790 on a 1200 x 630 canvas, and the footer line fell off the image. Agent
-  tip: give the sized root no padding or border, and put the padding on a `flexGrow: 1` child.
-  Look at a rendered PNG before trusting a share-image layout.
-- 2026-10-17 — The `pkill -f` self-kill recurred with a *specific* pattern
-  (`pkill -f 'astro preview --port 4321'`), because the pattern was in the same Bash command's
-  own text, so it matched the agent's shell (exit 144). Strengthen the tip: never `pkill -f` at
-  all from an agent shell. Find the PID by port (`ss -ltnp`) or keep the PID from when it was
-  started.
-- 2026-10-17 — Cloud session: `@playwright/test` 1.64.1 wants `chromium_headless_shell-1248`,
-  but the image ships chromium 1194 under `/opt/pw-browsers`, so `playwright test` can't launch.
-  Agent tip: run locally with a throwaway config that spreads the repo config and sets
-  `launchOptions.executablePath: '/opt/pw-browsers/chromium'`. Don't edit the committed config;
-  CI installs its own browser.
-- 2026-10-17 — Cloud session: developer.garmin.com is blocked for both the sandbox and WebFetch,
-  so the brand guidelines T152 says to re-read could only be read through search excerpts.
-  Generalisation (research before choosing): when a required primary source can't be fetched,
-  say so in the code comment and the decisions log, and name the checkpoint where it gets
-  re-checked (here T112), rather than presenting excerpts as a full read.
-
-- 2026-10-17 — A private repo on GitHub Free answers the rulesets endpoints with 403 "Upgrade
-  to GitHub Pro", so the plan's `gh api .../rulesets` check can't succeed there, and a job's
-  `GITHUB_TOKEN` can't read the default workflow permissions either. Agent tip: read
-  `branches/<name>`'s `protected` flag instead, and treat the rulesets 403 as "none apply".
-- 2026-10-17 — A bot-commit workflow that runs `npm ci` and the build in the same job as
-  `contents: write` gives every install script a token that can push to `main`. Generalisation
-  (CI security): build and gate with read-only permissions, then hand the gated output as an
-  artifact to a separate job that has write access and runs only git.
-
-- 2026-10-17 — Astro 7 runs `astro preview` in the background when it detects a coding agent
-  (`CLAUDECODE` set), so Playwright's `webServer` reports "exited early" locally while CI works.
-  Agent tip: clear `CLAUDECODE`/`AI_AGENT` in the web server's env (done in
-  `playwright.config.ts`), and stop strays with `astro preview stop`.
-- 2026-10-17 — A privacy scan that prints ±30 characters around each match puts the caught
-  values (coordinates, provider IDs) into CI logs, which become public with the repo.
-  Generalisation (privacy checks): scanners report position and rule, never the matched value.
-- 2026-10-17 — ruff's PLE1205 flags any `<name>.error("event", exc)` as a stdlib logging
-  format-string call. Agent tip: give custom structured loggers keyword-only extras (`exc=`).
-
-- 2026-10-17 — In a cloud session, a Bash call with a stray `cat > file` and no input waited on
-  stdin until it timed out. The `pkill -f cat` used to clean up then killed the agent's own
-  shell, because the pattern matched its command line. Agent tips: always give `cat >` a
-  heredoc or a source file. Kill background tasks by task ID or exact PID, never with
-  `pkill -f <common word>`.
-- 2026-10-17 — Contract docs carried example IDs (`k3f9`, `p0rt`) that broke the schema's own
-  pattern, and nobody noticed until the schemas were written. Generalisation (spec quality):
-  when schemas land, validate the contract's examples against them, or make the examples
-  fixtures.
-- 2026-10-17 — Python's PyYAML is YAML 1.1, so unquoted `3:30:00` becomes 12600 and `2027-04-04`
-  becomes a date. JS `yaml` 2.x defaults to YAML 1.2, where both stay strings. Generalisation
-  (agent tips): when two languages read the same YAML, pin both to one YAML version and test it
-  with shared fixtures.
-- 2026-10-17 — ajv's `schemaPath` restarts at every `$ref`, so you can't group branch errors
-  under a failed `anyOf`/`oneOf` by path prefix. ajv emits them directly before the composite
-  error, so group by that order instead. Agent tip for owner-friendly schema errors.
-
-- 2026-10-17 — In a GitHub Actions `run:` step (`bash -e`), `x=$(curl ...)` inside a retry loop
-  exits the step on the first curl failure (here exit 35, TLS not yet ready on a newly
-  registered workers.dev subdomain), so the loop never retries. Agent tip: add `|| true` to
-  command substitutions inside retry loops, and allow a few minutes for a new workers.dev
-  subdomain's certificate.
-- 2026-10-17 — Cloud session: the sandbox's egress policy blocks intervals.icu and
-  `*.workers.dev` (CONNECT 403), not only secrets. So an adapter can't be checked against the
-  real API from the sandbox. Agent tip: check real payload shapes with a throwaway branch
-  workflow that prints aggregates only (key names, counts, rounded medians), never values.
-- 2026-10-17 — An "aggregates only" report used `Counter.update(record)` to count a dict's
-  keys, but `Counter.update(mapping)` adds the mapping's *values*. So it printed every wellness
-  date and summed health values into an Actions log. Agent tip: count keys with
-  `update(d.keys())`, and dry-run a report on fixtures and read its output before it touches
-  real data.
-- 2026-10-17 — Cloud session: the GitHub MCP `get_job_logs` returns 404 while a job is still
-  running, and works once it finishes. Agent tip: poll the job's step status, then read the
-  logs at the end. This made the planned "commit RESULTS.md back" fallback unnecessary.
-
-- 2026-10-17 — The Agent tool's `isolation: "remote"` quietly ran the subagents in a local git
-  worktree (`.claude/worktrees/agent-*`), not in the cloud. That spent plan usage, not the
-  owner's cloud credits. The agent also couldn't check out the branch held by the main
-  checkout, so it pushed with `HEAD:<branch>` and left a stray worktree and branches behind.
-  Worktrees lack the gitignored `.specify/feature.json`, so the speckit scripts needed
-  `SPECIFY_FEATURE_DIRECTORY=specs/<feature>`. Agent tips:
-  - Check `git worktree list` after a "remote" run, and clean up.
-  - Pass the branch and that env var in the prompt of any isolated speckit subagent.
-  - Don't promise cloud-credit spend from `remote` isolation; a claude.ai/code session is the
-    reliable route.
-
-- 2026-10-17 — The mandatory `/speckit-git-initialize` pre-hook of `/speckit-constitution` was
-  blocked by the auto-mode permission classifier inside a subagent. It is a no-op when a repo
-  already exists, so nothing was lost, but the run reported a failed mandatory hook. Agent
-  tip: when dispatching speckit commands to subagents in an existing repo, say this hook can
-  be skipped. Alternatively, the git extension could make it conditional.
-- 2026-10-17 — `/speckit-constitution` writes its Sync Impact Report as an HTML comment at the
-  top of the constitution, to be removed before commit. Agent tip: copy it into the PR body
-  first, so the owner still reviews it (the governance section says the owner reviews it).
-
-<!-- Lessons that might help future projects, captured the moment they happen (see the working
-     norm above). One line each: date, what happened, and the suggested generalisation. The
-     harvest command processes this list and removes entries once sent upstream or rejected. -->
-
-- 2026-10-04 — In Windows PowerShell 5.1, `gh pr create --body @'…'@` fails ("unknown
-  arguments") when the body contains double quotes. 5.1 splits native arguments at embedded
-  `"`. Generalisation (Windows gotchas / agent tips): write PR bodies to a scratch file and pass
-  `--body-file`.
-- 2026-10-17 — In Windows PowerShell 5.1, `Get-Content -Raw` followed by
-  `[IO.File]::WriteAllText` garbled every em dash and arrow in a UTF-8 file without a BOM. 5.1
-  reads BOM-less files as ANSI. Agent tip: edit repo files with the Edit tool. If PowerShell
-  must do it, use `Get-Content -Encoding utf8`.
-- 2026-10-17 — Cloudflare-fronted APIs (here intervals.icu) return a 403 HTML challenge for
-  Python `urllib`'s default `Python-urllib/x.y` User-Agent, while PowerShell's request with the
-  same key succeeds. Agent tip: always send a descriptive User-Agent from scripts and ingest
-  clients. Read a 403 with an HTML body as a bot block, not an auth failure.
-- 2026-10-17 — The owner pointed out that an official sync partner (intervals.icu) removes most
-  of the risk of an unofficial client (python-garminconnect), and the agent had kept planning
-  around the riskier source. Generalisation (research before choosing dependencies): when a
-  provider is reachable through an official partner or aggregator, evaluate that route
-  first, and make manual entry the fallback for the few fields it lacks before adopting
-  an unofficial client.
-- 2026-10-17 — The owner offered secrets in a temp file rather than using the
-  hidden-prompt helper. The agent read it while printing only key names and value lengths,
-  then set the secrets directly. Generalisation: a secrets helper should also accept a file
-  path (shape-checked, never echoed), and the agent reminds the owner to delete the file.
-- 2026-10-04 — Piping a here-string into `git commit -F -` from the PowerShell tool succeeds,
-  but the subject starts with a UTF-8 BOM (`EF BB BF`), because PowerShell adds one when it
-  writes to a native stdin. Strengthen the existing agent tip: never pipe commit messages; use
-  `git commit -m @'…'@`. Optionally check with `git log -1 --format=%B | od -c | head -1`.
-- 2026-10-17 — The owner overrode "ask for a usage screenshot before big spends". Usage reads
-  near zero at the start of a session, so screenshots there are useless, and the owner would
-  rather flag low usage themselves. Generalisation: make the canary/usage norm "the owner flags
-  low usage", with screenshots optional.
-- 2026-10-17 — PLAYBOOK > Upgrading Spec Kit is missing steps. It should say: reinstall the
-  `git` extension too, before `house-process`, because install order sets the hook order in
-  `extensions.yml`. It should also say to back up and restore `.specify/feature.json` and
-  `extensions/git/git-config.yml` alongside the constitution, and to diff `extensions.yml`,
-  restoring it if only the order changed.
-- 2026-10-17 — Python's jsonschema ignores the OpenAPI-style `discriminator` keyword that ajv
-  honours, so a goal with a bad `target.time` reported only "is not a goal type" (the `oneOf`).
-  Agent tip: when two validators share schemas, compare their error output on the shared invalid
-  fixtures, not just pass/fail. Here the fix was choosing the branch by discriminator in Python.
-- 2026-10-17 — jsonschema's error messages quote the offending value (`'2026-10-11T07:15' is not
-  valid`), so logging them from a publish stage would put unpublished data in public CI logs.
-  Generalisation (privacy checks): validators in a privacy-sensitive pipeline report path and rule
-  only.
-- 2026-10-23 — The Lighthouse budget script ran Lighthouse with `spawnSync` and then `fetch`ed
-  the page's assets. It passed while only one page existed. From the second page on, it failed
-  in CI with "fetch failed: other side closed": the blocked event loop froze undici's keep-alive
-  timers, so fetch reused a socket the local server had closed after 5 s idle. A non-required
-  check failing on every PR went unnoticed until the owner mentioned the emails. Agent tips:
-  don't block the event loop (`spawnSync`) between `fetch` calls in Node scripts; and a red
-  non-required check is still a failure, so check every workflow's runs on each PR, not just
-  the gate.
+- 2026-10-24 — Cloudflare switched on Real User Monitoring by default for a new Free zone,
+  excluding EU/UK visitors, so it injected a third-party beacon (`static.cloudflareinsights.com`)
+  into pages served to everyone else. Fetches from the UK and the workers.dev address never
+  showed it, the account's Web Analytics page said "Get started", and the Observatory opened
+  with a welcome offering to *enable* RUM. Only a production Lighthouse run from a US runner
+  caught it, and a throwaway branch workflow curling from there confirmed it. Agent tip
+  (Cloudflare, go-live): after attaching a domain, check the live HTML from outside Europe
+  (a branch workflow) for injected scripts, and turn RUM off explicitly in *Speed →
+  Observatory* if the site promises no third-party requests. Run production budget checks from
+  a non-EU location.
 
 ## Open questions
 
