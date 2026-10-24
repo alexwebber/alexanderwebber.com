@@ -25,16 +25,21 @@ interface Indexed {
 
 export class JsonFileStore implements RunningStore {
   readonly #root: string;
+  readonly #schemaRoot: string;
   #indexed: Indexed | undefined;
 
-  /** `root` is the repository root (holding data/ and schemas/). */
-  constructor(root: string = process.cwd()) {
+  /**
+   * `root` is the repository root (holding data/ and schemas/). `schemaRoot` holds schemas/ when
+   * it lives elsewhere (a fixture data tree validated against the repository's schemas).
+   */
+  constructor(root: string = process.cwd(), schemaRoot: string = root) {
     this.#root = root;
+    this.#schemaRoot = schemaRoot;
   }
 
   #load(): Indexed {
     if (this.#indexed) return this.#indexed;
-    const { data, issues } = loadRunningData(this.#root);
+    const { data, issues } = loadRunningData(this.#root, this.#schemaRoot);
     const errors = issues.filter((issue) => issue.severity === 'error');
     if (errors.length > 0) throw new DataValidationError(errors);
 

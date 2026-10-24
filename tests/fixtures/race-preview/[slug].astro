@@ -1,0 +1,33 @@
+---
+// /race-preview/<slug>/ (SHELL_PREVIEW=1 only): each synthetic race through the real RacePage,
+// with its map, photos and share image (/og/race-preview-<slug>.png).
+import type { GetStaticPaths } from 'astro';
+import RacePage from '../../../src/sections/running/components/RacePage.astro';
+import { galleryPhotos } from '../../../src/sections/running/data/photos.ts';
+import { loadRaces } from '../../../src/sections/running/data/races.ts';
+import type { RaceHistoryEntry } from '../../../src/sections/running/domain/races.ts';
+import type { RaceTrack } from '../../../src/shared/storage/index.ts';
+import { noRunPage, PREVIEW_PHOTO_FOLDER, PREVIEW_PHOTOS, PREVIEW_TODAY, previewStore } from './store.ts';
+
+export const getStaticPaths = (async () => {
+  const { history, tracks } = await loadRaces(PREVIEW_TODAY, previewStore);
+  return history.map((race) => ({ params: { slug: race.slug }, props: { race, track: tracks.get(race.slug) } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  race: RaceHistoryEntry;
+  track?: RaceTrack;
+}
+
+const { race, track } = Astro.props;
+---
+
+<RacePage
+  race={race}
+  track={track}
+  photos={galleryPhotos(race.entry, PREVIEW_PHOTOS, PREVIEW_PHOTO_FOLDER)}
+  routeSrc={`/race-preview/${race.slug}/route.json`}
+  image={`/og/race-preview-${race.slug}.png`}
+  racesHref="/race-preview/"
+  runLink={noRunPage}
+/>

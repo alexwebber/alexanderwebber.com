@@ -220,7 +220,7 @@ describe('landing page (US1)', () => {
   it('links only to shipped areas (FR-027), and the fundraising slot renders nothing (FR-025)', async () => {
     const html = await page();
     const links = html.match(/data-section-links[\s\S]*?<\/nav>/)![0];
-    expect([...links.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual(['/running/goals/', '/running/training/']);
+    expect([...links.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual(['/running/goals/', '/running/training/', '/running/races/']);
     expect(html).not.toMatch(/fundrais/i);
   });
 

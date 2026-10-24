@@ -1,0 +1,76 @@
+---
+// A race's photos (T132; FR-055, US4.5). Race pages only. Each photo is optimised at build time by
+// astro:assets (sharp) into AVIF, WebP and a JPEG fallback at two widths (640 and 1280 px), so a
+// 100-photo site stays within the plan's ~600 image variants; sharp writes no metadata, and the gate's
+// privacy scan re-checks dist/ for any (SC-004). The owner's description is the alt text, and the
+// optional caption shows under the photo. Lazy-loaded, with width and height set so nothing
+// shifts as they arrive. No client JS. The photos are the owner's, not Garmin data, so no
+// attribution.
+import { Picture } from 'astro:assets';
+import type { GalleryPhoto } from '../data/photos.ts';
+
+export interface Props {
+  photos: readonly GalleryPhoto[];
+  heading?: 2 | 3;
+}
+
+const { photos, heading = 2 } = Astro.props;
+const Heading = `h${heading}` as const;
+---
+
+{
+  photos.length > 0 && (
+    <section class="gallery" aria-labelledby="race-photos" data-photo-gallery>
+      <Heading id="race-photos">Photos</Heading>
+      <ul class="gallery-list">
+        {photos.map((photo) => (
+          <li>
+            <figure class="gallery-photo">
+              <Picture
+                src={photo.image}
+                alt={photo.description}
+                formats={['avif', 'webp']}
+                fallbackFormat="jpg"
+                widths={[640, 1280]}
+                width={1280}
+                sizes="(min-width: 48rem) 22rem, calc(100vw - 2rem)"
+                loading="lazy"
+                decoding="async"
+              />
+              {photo.caption && <figcaption>{photo.caption}</figcaption>}
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .gallery-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gallery-photo {
+    margin: 0;
+  }
+
+  .gallery-photo :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    background: var(--color-border);
+  }
+
+  .gallery-photo figcaption {
+    margin-top: var(--space-1);
+    color: var(--color-text-secondary);
+    font-size: var(--step--1);
+  }
+</style>

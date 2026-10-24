@@ -1,0 +1,12 @@
+---
+// /running/races/ (T133, US4; contracts/routes.md): upcoming races with the Brighton countdown,
+// the PB table, and the race history. Evaluated at build time for today in Europe/London; the
+// daily deploy keeps the countdowns and the "New" highlights current. See RacesPage.astro.
+import { ogPath } from '../../../shared/og/render.ts';
+import RacesPage from '../components/RacesPage.astro';
+import { loadRaces } from '../data/races.ts';
+
+const data = await loadRaces();
+---
+
+<RacesPage data={data} image={ogPath('/running/races/')} />

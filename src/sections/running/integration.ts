@@ -57,6 +57,19 @@ export const runningAreas: readonly RunningArea[] = [
       { pattern: '/og/running-run.png', entrypoint: './src/sections/running/og/run.png.ts' },
     ],
   },
+  {
+    key: 'races',
+    label: 'Races',
+    href: '/running/races/',
+    description: 'Upcoming races, personal bests and race results.',
+    routes: [
+      { pattern: '/running/races', entrypoint: './src/sections/running/pages/races.astro' },
+      { pattern: '/running/races/[slug]', entrypoint: './src/sections/running/pages/races/[slug].astro' },
+      { pattern: '/running/races/[slug]/route.json', entrypoint: './src/sections/running/pages/races/route.json.ts' },
+      { pattern: '/og/running-races.png', entrypoint: './src/sections/running/og/races.png.ts' },
+      { pattern: '/og/running-races-[slug].png', entrypoint: './src/sections/running/og/race.ts' },
+    ],
+  },
 ];
 
 /** Shipped areas in nav order; the section nav and landing links read this. */

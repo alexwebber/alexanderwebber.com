@@ -6,7 +6,7 @@ loader and share images, and uses only `src/shared/` (layout, design system, cha
 adds the section to the site.
 
 This is the section's graduation design note (T110, for the MVP: Goals and the landing page;
-extended for Training and run detail, US3).
+extended for Training and run detail, US3, and Races and PBs, US4).
 The contracts it builds on are [routes](../../../specs/001-running-section/contracts/routes.md),
 [data files](../../../specs/001-running-section/contracts/data-files.md) and
 [pipeline](../../../specs/001-running-section/contracts/pipeline.md) (freshness endpoint). The
@@ -18,9 +18,12 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   series, the owner's YAML (goals, upcoming races, races, run overrides, manual Garmin metrics,
   `section.yaml`) and `refresh.json`. No page calls a third-party API (Principle III).
 - **Output:** static pages and share images, built for one Europe/London "today". The pages
-  are `/running/`, `/running/goals/`, `/running/training/`, `/running/training/<year>/` and
-  `/running/runs/<id>/`; the share images are `/og/running.png`, `/og/running-goals.png`,
-  `/og/running-training.png`, and the shared `/og/running-year.png` and `/og/running-run.png`.
+  are `/running/`, `/running/goals/`, `/running/training/`, `/running/training/<year>/`,
+  `/running/runs/<id>/`, `/running/races/` and `/running/races/<slug>/` (plus each mapped race's
+  `route.json`); the share images are `/og/running.png`, `/og/running-goals.png`,
+  `/og/running-training.png`, `/og/running-races.png`, one per race
+  (`/og/running-races-<slug>.png`), and the shared `/og/running-year.png` and
+  `/og/running-run.png`.
 - **Figures mean what the owner's Garmin Connect means** (owner review, 2026-10-23):
   - **Best efforts** use timer time (watch pauses left out); races use the official time.
   - **Weight and body fat** are 7-day averages throughout a card.
@@ -111,6 +114,19 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   `RunSeriesCharts` (shared `XYChart`, against distance or elapsed time), `HrZones`,
   `SplitsTable`, `RunBestEfforts`, `RunDynamics` and `TreadmillBadge`; their figures come from
   `domain/run-detail.ts`. One shared share image, `og/run.png.ts` (`/og/running-run.png`).
+- Races (US4): `pages/races.astro` at `/running/races/` and `pages/races/[slug].astro`, both thin
+  wrappers round `RacesPage.astro` (`UpcomingRaces`, `PBTable`, `RaceHistory`) and
+  `RacePage.astro` (the result, `RaceMap`, the run detail components above, `PhotoGallery`), fed
+  by `data/races.ts` (`loadRaces(today, store)`) over `domain/races.ts` (`raceHistory()`) and
+  `domain/pbs.ts`. The PB table's any-run efforts come from the goals' Best Effort index
+  (`domain/efforts.ts`), so PBs and race-time goals follow one set of rules. `RaceMap` is a
+  build-time SVG (`domain/race-map.ts`) with MapLibre and OpenFreeMap tiles loaded only on a click
+  (the one JS-budget exception); photos come from `data/photos.ts` through `astro:assets`.
+  Share images `og/races.png.ts` and `og/race.ts`.
+- **Race preview (tests only):** with `SHELL_PREVIEW=1`, `/race-preview/` renders the same
+  `RacesPage` and `RacePage` over the synthetic races in `tests/fixtures/race-preview/`
+  (`generate.ts` writes them), so race pages, maps and photos are tested before there is a real
+  race. Deploy builds never include it.
 - **Runs published before processor version 4** carry intervals.icu's zone times; run pages show
   no zones for them until the refresh republishes them with Garmin's (T159). The run schema still
   accepts the old shape until then.
@@ -164,7 +180,13 @@ go-live (T112, 2026-10-24) and matches what follows; nothing changed.
   `SectionLayout`, which puts the attribution directly under the `<h1>`.
 - **On every chart, tile and card:** each one showing Garmin data also carries it at its own
   heading. Charts use `ChartFigure`'s `source` slot, which puts it right under the chart title.
-- **In share images:** a share image showing Garmin data passes `attribution` to the OG renderer.
+- **In share images:** a share image showing Garmin data passes `attribution` to the OG renderer
+  (a race's card does when its time is the watch's; an official or hand-entered time isn't Garmin
+  data).
+- **Races:** the races page names the watches behind the PB table and history at each heading;
+  a race page names its watch under the `<h1>` and at the route map (the GPS is the watch's). A
+  hand-entered race shows no Garmin attribution. The interactive map also carries
+  OpenFreeMap/OpenMapTiles/OpenStreetMap attribution.
 - **Manual figures:** the owner's manual Garmin figures (training status, race predictions) are
   attributed the same way.
 

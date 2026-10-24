@@ -19,7 +19,7 @@ interface PublishedRun {
   cadence_avg?: number;
   stride_m_avg?: number;
   splits: unknown[];
-  hr_zones?: { name?: string }[];
+  hr_zones?: { zone: number; low_bpm?: number; high_bpm?: number }[];
   best_efforts: { plausible: boolean }[];
   series: Record<string, (number | null)[]>;
 }
@@ -27,7 +27,8 @@ const runs: PublishedRun[] = readdirSync(runsDir).flatMap((year) =>
   readdirSync(join(runsDir, year)).map((file) => JSON.parse(readFileSync(join(runsDir, year, file), 'utf8')) as PublishedRun),
 );
 const has = (values?: (number | null)[]) => (values ?? []).filter((v) => v !== null).length >= 2;
-const garminZones = (r: PublishedRun) => (r.hr_zones ?? []).length === 5 && r.hr_zones!.every((z) => typeof z.name === 'string');
+// Garmin's five zones carry their bpm range (zone names aren't published, #53).
+const garminZones = (r: PublishedRun) => (r.hr_zones ?? []).length === 5 && r.hr_zones!.every((z) => typeof z.low_bpm === 'number' && typeof z.high_bpm === 'number');
 
 test('US3.2–US3.4: each panel shows exactly when its data was recorded, and no time of day, map or 0 stands in', async ({ page }) => {
   test.skip(runs.length === 0, 'no runs published');

@@ -3,15 +3,16 @@
 // date (never a time of day, FR-011), title (neutral or the owner's), distance, moving time and
 // pace, a "Race" badge and the "Treadmill" label (FR-058), linking to the run's page. A CSS-only
 // "All runs / Races only" toggle stands in for routes.md's ?races=1 on the static site: the races
-// list is pre-rendered beside the full one (a page may pass races from other years too). No
-// client JS. Garmin attribution names the watches behind the list (FR-077).
+// list is pre-rendered beside the full one (a page may pass races from other years too). A race's
+// badge links to its race page (US4). No client JS. Garmin attribution names the watches behind
+// the list (FR-077).
 import Toggle from '../../../shared/charts/Toggle.astro';
 import { formatDate } from '../../../shared/format/dates.ts';
 import { formatDuration, formatKm, formatPace } from '../../../shared/format/units.ts';
 import type { Run } from '../../../shared/storage/index.ts';
 import { runDevices } from '../domain/attribution.ts';
 import { groupByMonth } from '../domain/periods.ts';
-import { runHref } from '../links.ts';
+import { raceHref, runHref } from '../links.ts';
 import GarminAttribution from './GarminAttribution.astro';
 import TreadmillBadge from './TreadmillBadge.astro';
 
@@ -27,9 +28,11 @@ export interface Props {
   title: string;
   heading?: 2 | 3;
   id?: string;
+  /** Race run ID -> race page slug (data/races.ts). */
+  raceSlugs?: ReadonlyMap<string, string>;
 }
 
-const { runs, title, racesNote, heading = 2, id = 'run-list' } = Astro.props;
+const { runs, title, racesNote, heading = 2, id = 'run-list', raceSlugs = new Map() } = Astro.props;
 const races = Astro.props.races ?? runs.filter((r) => r.is_race);
 const Heading = `h${heading}` as const;
 const MonthHeading = `h${heading + 1}` as 'h3' | 'h4';
@@ -65,6 +68,8 @@ const devices = runDevices([...runs].sort((a, b) => b.date.localeCompare(a.date)
                 <ol class="runs">
                   {group.runs.map((run) => {
                     const href = runHref(run.id);
+                    const slug = raceSlugs.get(run.id);
+                    const raceUrl = slug === undefined ? undefined : raceHref(slug);
                     return (
                       <li class:list={['run-row', { 'is-race': run.is_race }]} data-run-id={run.id}>
                         <p class="run-row-title">
@@ -72,7 +77,13 @@ const devices = runDevices([...runs].sort((a, b) => b.date.localeCompare(a.date)
                           {run.is_race && (
                             <>
                               {' '}
-                              <span class="race-badge">Race</span>
+                              {raceUrl ? (
+                                <a class="race-badge" href={raceUrl} aria-label={`Race page: ${run.title}`}>
+                                  Race
+                                </a>
+                              ) : (
+                                <span class="race-badge">Race</span>
+                              )}
                             </>
                           )}
                           {run.treadmill && (

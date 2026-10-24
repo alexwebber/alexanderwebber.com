@@ -17,14 +17,16 @@ export interface Props {
   date: string;
   /** Days remaining at build time (0 on race day, negative after). */
   days: number;
+  /** Smaller figures, for a list of races (the races page) rather than the hero. */
+  compact?: boolean;
 }
 
-const { date, days } = Astro.props;
+const { date, days, compact = false } = Astro.props;
 const [value, unit] = countdownText(days);
 const buildDay = addDays(date, -days);
 ---
 
-<p class="countdown" data-countdown data-race-date={date} data-day-from={londonMidnight(buildDay)} data-day-to={londonMidnight(addDays(buildDay, 1))}>
+<p class:list={['countdown', { compact }]} data-countdown data-race-date={date} data-day-from={londonMidnight(buildDay)} data-day-to={londonMidnight(addDays(buildDay, 1))}>
   <span class="countdown-value" data-countdown-value data-word={unit ? undefined : ''}>{value}</span>{' '}
   <span class="countdown-unit" data-countdown-unit hidden={!unit}>{unit}</span>
 </p>
@@ -73,6 +75,15 @@ const buildDay = addDays(date, -days);
   .countdown-unit {
     font-size: var(--step-1);
     font-weight: var(--weight-bold);
+  }
+
+  .compact .countdown-value {
+    font-size: var(--step-3);
+  }
+
+  .compact .countdown-value[data-word],
+  .compact .countdown-unit {
+    font-size: var(--step-0);
   }
 
   .countdown-unit[hidden] {

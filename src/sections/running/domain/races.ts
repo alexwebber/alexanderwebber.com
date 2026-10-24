@@ -1,5 +1,6 @@
-// Upcoming races and the focus race (T096; FR-020, FR-026, FR-056, data-model §5 "Upcoming race
-// state"). Pure: "today" (a Europe/London YYYY-MM-DD date) is passed in, so tests pin it.
+// Races (T096, T128): upcoming races and the focus race (FR-020, FR-026, FR-056, data-model §5
+// "Upcoming race state"), and the race history (FR-050–FR-052), at the end. Pure: "today" (a
+// Europe/London YYYY-MM-DD date) is passed in, so tests pin it.
 //
 // State machine, evaluated at build time (the 00:17 UTC daily deploy keeps it current) and
 // corrected client-side by Countdown.astro:
@@ -7,7 +8,8 @@
 //   result_ref) -> completed (result_ref set: the owner race entry holding the result).
 // A race with result_ref is completed whatever its date, and leaves the upcoming list.
 import { daysBetween } from '../../../shared/format/dates.ts';
-import { parseDistance, parseTime } from '../../../shared/format/parse.ts';
+import { DISTANCES_M, parseDistance, parseTime } from '../../../shared/format/parse.ts';
+import { formatKm } from '../../../shared/format/units.ts';
 import type { Race, Run, SectionSettings, UpcomingRace } from '../../../shared/storage/index.ts';
 
 export type RaceState = 'upcoming' | 'race_day' | 'awaiting_result' | 'completed';
@@ -100,4 +102,100 @@ export function raceResult(race: Pick<UpcomingRace, 'result_ref'>, races: readon
     slug: entry.slug,
     ...(entry.run_id ? { run_id: entry.run_id } : {}),
   };
+}
+
+// --- Race history (T128; FR-050–FR-052, data-model §5 "Race (linked)") ---
+
+/** A race run without a race.yaml takes the named distance it is within this much of (GPS overrun). */
+const SNAP_RATIO = 0.05;
+
+export interface RaceHistoryEntry {
+  /** The race page: /running/races/<slug>/. The owner's slug, else the run ID. */
+  slug: string;
+  date: string;
+  /** The official name (race.yaml), else the run's published title. */
+  name: string;
+  /** Metres shown: the official distance, else the named one, else what the watch measured. */
+  distance_m: number;
+  /** The named distance it counts at in the PB table (5k, half, ...); undefined when it has none. */
+  pb_distance_m?: number;
+  /** Seconds: the official time (FR-051: it wins), else the recorded run's elapsed time. */
+  time_s?: number;
+  official: boolean;
+  /** The watch's time when an official time replaces it (US4.3: 1:41:07 official, 1:41:15 device). */
+  device_time_s?: number;
+  position?: number;
+  results_url?: string;
+  note?: string;
+  /** The recorded run, for a race recorded by the watch; absent for a hand-entered race. */
+  run?: Run;
+  /** The owner's race.yaml, when there is one. */
+  entry?: Race;
+}
+
+/** The named distance (DISTANCES_M) within SNAP_RATIO of `metres`, nearest first. */
+export function snapDistance(metres: number): number | undefined {
+  let best: number | undefined;
+  for (const named of Object.values(DISTANCES_M)) {
+    const off = Math.abs(metres - named) / named;
+    if (off <= SNAP_RATIO && (best === undefined || off < Math.abs(metres - best) / best)) best = named;
+  }
+  return best;
+}
+
+/**
+ * Every race once, newest first (FR-052). Races come from recorded runs the processor published as
+ * races (the intervals.icu flag, a race.yaml linked by run_id, or run-overrides.yaml is_race; FR-050)
+ * and from hand-entered race.yaml entries. A race.yaml joins a run only through its explicit
+ * run_id, never by date or distance (validate-data rejects a hand entry that duplicates a recorded
+ * race). Linked details win over device values (FR-051). A race.yaml whose run isn't published yet,
+ * or which says designate: not_race, shows nothing.
+ */
+export function raceHistory(runs: readonly Run[], races: readonly Race[]): RaceHistoryEntry[] {
+  const runsById = new Map(runs.map((run) => [run.id, run]));
+  const linked = new Set(races.flatMap((race) => (race.run_id ? [race.run_id] : [])));
+  const out: RaceHistoryEntry[] = [];
+
+  for (const entry of races) {
+    if (entry.designate === 'not_race') continue;
+    const run = entry.run_id ? runsById.get(entry.run_id) : undefined;
+    if (entry.run_id && (!run || !run.is_race)) continue;
+    const named = parseDistance(entry.distance);
+    const official = entry.official_time === undefined ? undefined : parseTime(entry.official_time);
+    const distance = entry.official_distance_m ?? named ?? run?.distance_m;
+    if (distance === undefined) continue; // the schema only allows named distances or metres
+    const time = official ?? run?.elapsed_s;
+    out.push({
+      slug: entry.slug,
+      date: entry.date,
+      name: entry.name ?? run?.title ?? `Race · ${formatKm(distance)}`,
+      distance_m: distance,
+      ...(named !== undefined ? { pb_distance_m: named } : {}),
+      ...(time !== undefined ? { time_s: time } : {}),
+      official: official !== undefined,
+      ...(official !== undefined && run ? { device_time_s: run.elapsed_s } : {}),
+      ...(entry.position !== undefined ? { position: entry.position } : {}),
+      ...(entry.results_url ? { results_url: entry.results_url } : {}),
+      ...(entry.note ? { note: entry.note } : {}),
+      ...(run ? { run } : {}),
+      entry,
+    });
+  }
+
+  for (const run of runs) {
+    if (!run.is_race || linked.has(run.id)) continue;
+    const snapped = snapDistance(run.distance_m);
+    out.push({
+      slug: run.id,
+      date: run.date,
+      name: run.title,
+      distance_m: run.distance_m,
+      ...(snapped !== undefined ? { pb_distance_m: snapped } : {}),
+      time_s: run.elapsed_s,
+      official: false,
+      run,
+    });
+  }
+
+  return out.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
 }
