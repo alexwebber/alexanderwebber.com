@@ -9,35 +9,32 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, mid-morning):** the site is live on alexanderwebber.com, Phase 5 is
-  complete, and **the lesson harvest is done**: it went to
-  [sdd-playbook#11](https://github.com/alexwebber/sdd-playbook/pull/11) (house-process 0.9.0)
-  and this repo's `001-harvest-3` PR. **Next: Phase 6.**
+- **Status (2026-10-24, afternoon):** **Phase 6 (US3 Training) is built** in the `001-training`
+  PR (sdd-playbook#11 merged; house-process 0.9.0 reinstalled, hooks unchanged). **After it
+  merges:**
+  1. Check the `gate.yml` deploy on `main` finished.
+  2. Dispatch the one-off zone backfill:
+     `gh workflow run refresh.yml -f reimport_from=2025-10-01 -f missing_only=true` (about 15
+     billed minutes). Its fetch summary should show `topped_up` of about 200.
+  3. Check that the 23 Oct run (`/running/runs/2026-10-23-bv7w/`) shows Zone 3 Aerobic
+     123–140 bpm 23:13 and Zone 4 Threshold 140–158 bpm 25:32.
+  4. Ask the owner any unticked PR confirmations.
+  5. Guide the owner's live review of `/running/training/` and a run page.
+  6. Raise the follow-up PR that drops the deprecated `{zone, seconds}` `hr_zones` branch from
+     `schemas/published/run.schema.json` (plus its legacy fixture), once no published run uses it.
+
+  **Then Phase 7.**
   - **Planned order** (owner, 2026-10-24):
-    1. **Phase 6: US3 Training stats and run detail** (next session), then Phase 7 (US4 Races
-       and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
+    1. ~~Phase 6~~ (built), then Phase 7 (US4 Races and PBs), Phase 8 (US5 Health) and Phase 9 (Polish), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
-  - **Check first:**
-    - that sdd-playbook#11 merged. If so, pull the playbook's `main` and reinstall house-process
-      0.9.0 (`specify extension add ...\extensions\house-process --dev --force`), then check
-      `extensions.yml` still lists the same hooks (parsed, not by diff). The template changes
-      (canary wording, the `AGENT_TIPS.md` line in `CLAUDE.md`) are already copied here. If not
-      merged, carry on with Phase 6 and check again next session.
-    - that this repo's `001-harvest-3` PR merged (docs only).
-    - that the nightly Quality run is still green. The first one against the domain (24 Oct)
-      failed on Cloudflare's default RUM beacon. Once the owner turned RUM off, its rerun passed
-      at 100/100 on every page (decisions log). If the beacon comes back, Cloudflare re-enabled
-      RUM.
-    - T105's no-change path: still unseen (the 00:17 UTC run on 24 Oct had new data). Find a
-      00:xx UTC refresh run whose `commit` job printed "Nothing to commit." (grep the log
-      without the script's `[36;1m` lines) and check its `deploy` job ran. If none ever does,
-      that's fine; say so once.
-    - minutes: 806 used by about 08:15 UTC on 2026-10-24. October should end around
-      1,150–1,250. If it's close to the limit, use the owner's lever order (2026-10-23
-      decision).
-  - **Phase 6 touches CI and Astro:** read the matching sections of sdd-playbook's
-    `AGENT_TIPS.md` first (most of this project's old *Upstream candidates* now live there).
+  - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
+    was re-enabled). T105's no-change path is still unseen: find a 00:xx UTC refresh whose
+    `commit` job printed "Nothing to commit." and check its `deploy` ran. If none ever does,
+    that's fine; say so once. Minutes: 824 used by about 11:00 UTC on 2026-10-24; October should
+    end around 1,200, plus about 15 for the zone backfill.
+  - **Phase 7 touches Astro and maps:** read the matching sections of sdd-playbook's
+    `AGENT_TIPS.md` first.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
   - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
@@ -59,14 +56,12 @@ Update this as decisions get made — treat it as the source of truth alongside
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
   quickstart.md §0.
-- **Next step: Phase 6 (US3 Training stats and run detail, tasks.md)** in its own session,
-  starting with a short guided look at the live domain and a question round on what the owner
-  wants from the Training pages. History is complete from 7 Oct 2025 (T150 and T085 done).
+- **Next step: Phase 7 (US4 Races and PBs, tasks.md)** in its own session, once Phase 6's
+  post-merge steps are done, starting with a short guided look at the live Training pages and a
+  question round on races and PBs. History is complete from 7 Oct 2025 (T150 and T085 done).
   - **Re-imports, if ever needed:** `refresh.yml` with `reimport_from`/`reimport_to`, one window
     at a time, sized under the 25-minute fetch limit (about 10 runs a minute). A runs-only
     window of 17 days took a few minutes.
-  - **Run pages** currently sit in the landing area of the route registry; US3's Training area
-    takes them (decisions log, Phase 4).
   - Offer the owner a fresh Garmin training-status and predictions reading at reviews; never
     ask as a chore.
   - **Don't invent values** (Principle VIII).
