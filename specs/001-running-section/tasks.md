@@ -899,7 +899,7 @@ stress or Body Battery data appears anywhere.
   - Update `src/sections/running/README.md`.
 - [x] T148 OWNER: (Optional; folded into the final review.) Run the SC-001 hallway test with at least 5 people on phones, plus screen-reader and share-preview spot-checks of the remaining chart and page types (line chart, splits table, map fallback, race page). The agent prepares a one-page script. Skipped (owner, 2026-10-25): the phase-by-phase live reviews on phone and desktop covered the spot-checks.
 - [ ] T149 SC-002 follow-up, 30 days after go-live. Compute from `gh run list --workflow refresh.yml` how often a synced run appears within 3 h (target >= 95%), and record the result in `PROJECT_MEMORY.md`. The agent runs this at a session start; the owner does nothing.
-- [ ] T158 Harvest lessons upstream once the rest of Phase 9 is done, before the next spec starts (owner, 2026-10-24). Run `/speckit-house-process-harvest-lessons` in the main conversation (it needs the owner's picks), send the approved lessons to sdd-playbook as PR(s), reinstall house-process if its version changed, and clear the harvested *Upstream candidates*. An earlier harvest ran right after go-live.
+- [x] T158 Harvest lessons upstream once the rest of Phase 9 is done, before the next spec starts (owner, 2026-10-24). Run `/speckit-house-process-harvest-lessons` in the main conversation (it needs the owner's picks), send the approved lessons to sdd-playbook as PR(s), reinstall house-process if its version changed, and clear the harvested *Upstream candidates*. An earlier harvest ran right after go-live. Done 2026-10-25: sdd-playbook#12, house-process 0.10.0.
 
 ---
 
