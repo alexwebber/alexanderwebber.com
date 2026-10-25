@@ -8,7 +8,8 @@ import { today as londonToday } from '../../../shared/format/dates.ts';
 import { buildEffortIndex } from '../domain/efforts.ts';
 import { personalBests, racePbSlugs, type PbRow } from '../domain/pbs.ts';
 import { daysRemaining, focusRace, raceHistory, raceState, targetLabel, upcomingRaces, type RaceHistoryEntry, type RaceState } from '../domain/races.ts';
-import { runningStore, SECTION_DEFAULTS } from './load.ts';
+import { runningStore, sectionSettings } from './load.ts';
+import { perStoreAndDay } from './memo.ts';
 import type { RaceTrack, RunningStore, UpcomingRace } from './store/index.ts';
 
 export interface UpcomingView {
@@ -37,21 +38,12 @@ export interface RacesData {
   tracks: Map<string, RaceTrack>;
 }
 
-const cache = new WeakMap<RunningStore, Map<string, Promise<RacesData>>>();
-
 export function loadRaces(today: string = londonToday(), store: RunningStore = runningStore()): Promise<RacesData> {
-  let byDay = cache.get(store);
-  if (!byDay) cache.set(store, (byDay = new Map()));
-  let data = byDay.get(today);
-  if (!data) {
-    data = load(today, store);
-    byDay.set(today, data);
-  }
-  return data;
+  return load(today, store);
 }
 
-async function load(today: string, store: RunningStore): Promise<RacesData> {
-  const [owner, runs] = await Promise.all([store.getOwner(), store.listRuns()]);
+const load = perStoreAndDay(async (today, store): Promise<RacesData> => {
+  const [owner, runs, settings] = await Promise.all([store.getOwner(), store.listRuns(), sectionSettings(store)]);
   const history = raceHistory(runs, owner.races);
   const focusId = focusRace(owner.section, owner.upcomingRaces)?.id;
   const upcoming = upcomingRaces(owner.upcomingRaces, focusId, today);
@@ -61,7 +53,7 @@ async function load(today: string, store: RunningStore): Promise<RacesData> {
     overrides: owner.overrides,
     upcoming,
     today,
-    highlightDays: owner.section?.recent_highlight_days?.pb ?? SECTION_DEFAULTS.recent_highlight_days.pb,
+    highlightDays: settings.recent_highlight_days.pb,
   });
   const tracks = new Map<string, RaceTrack>();
   for (const entry of history) {
@@ -80,4 +72,4 @@ async function load(today: string, store: RunningStore): Promise<RacesData> {
     slugByRun: new Map(history.flatMap((entry) => (entry.run ? [[entry.run.id, entry.slug] as const] : []))),
     tracks,
   };
-}
+});

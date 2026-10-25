@@ -9,15 +9,14 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, evening):** **refactor session 2 of 3 is done**:
-  PR #69 (`001-running-owns-data`, findings 1 + 4) is raised. PRs #67 and #68 (session 1)
-  merged green.
+- **Status (2026-10-25, evening):** **refactor session 3 of 3 is under way**: PR #69 merged
+  green, and the simplify-the-section PR (`001-simplify-section`, findings 2 + 3) is raised.
   - **Next session:**
-    1. **Check PR #69 merged** (and every check is green); if not, remind the owner once.
-    2. **Refactor session 3 of 3** (see `specs/001-running-section/maintainability-review.md`
-       *Owner picks and order*): simplify the section (findings 2 + 3) as one PR, then the
-       tidy-ups (6 + 7 with a before/after computed-style check, + 9) as a second, each from
-       `main` after the one before merges. Report each PR's `dist/` diff against `main`.
+    1. **Check the simplify PR merged** (and every check is green); if not, remind the owner
+       once.
+    2. **Finish refactor session 3** (see `specs/001-running-section/maintainability-review.md`
+       *Owner picks and order*): the tidy-ups (6 + 7 with a before/after computed-style check,
+       + 9) as one PR from `main`. Report its `dist/` diff against `main`.
     3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
     4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
@@ -1191,7 +1190,28 @@ project-specific notes.
     different components (`.as-of-date`, `.treadmill-badge`) swapped order. No element matches
     both, so nothing renders differently.
 
+- **2026-10-25** — **Refactor session 3 of 3, first PR: simplify the section**
+  (`001-simplify-section`, findings 2 + 3). Choices later work builds on:
+  - **No more page-by-page shims:** `shippedAreas()` is gone (read `runningAreas`), and
+    `runHref`/`raceHref` always return a string. Components' `runLink`/`raceLink` props still
+    allow `undefined`, because the race preview has no run pages (`noRunPage`). The home and 404
+    pages link to `/running/` directly.
+  - **One memo:** `data/memo.ts` (`perStore`, `perStoreAndDay`). Every loader takes `today` and a
+    store, so swapping the store in a test starts fresh and the `clear…Cache` functions are gone.
+  - **One source of section defaults:** `SECTION_DEFAULTS` is read from
+    `section.schema.json`, and `validate.ts`, goals and races go through it or
+    `sectionSettings(store)`.
+  - **`dist/` against `main`:** byte-identical, except that the shared CSS chunk is now named
+    `Base.DP398Z1Y.css` instead of `integration.DP398Z1Y.css` (same contents and hash). Rollup
+    names a chunk after the first module that imports it, and the home and 404 pages no longer
+    import `integration.ts`.
+
 ## Upstream candidates
+
+- **A `dist/` diff can show every page changed when only a chunk's name moved:** Rollup names a
+  shared CSS chunk after the first module importing it, so dropping an import renamed
+  `integration.<hash>.css` to `Base.<hash>.css` (same hash) on all 208 pages. Compare the file
+  with `cmp`, normalise the name, then diff again (AGENT_TIPS, *Astro*).
 
 - **The Bash tool turns `\\` into `\` inside a quoted heredoc** (`<<'EOF'`, Windows): a Python
   script written that way wrote real newlines for `'\\n'` and its `'\\r'` patterns never

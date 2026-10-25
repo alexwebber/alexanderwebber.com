@@ -27,13 +27,11 @@ import { loadLanding } from '../data/landing.ts';
 import { sectionSettings } from '../data/load.ts';
 import { viewAttribution } from '../domain/attribution.ts';
 import { countdownText } from '../domain/races.ts';
-import { shippedAreas } from '../integration.ts';
 
 const PATH = '/running/';
 const data = await loadLanding();
 const settings = await sectionSettings();
 const { focus, week, weekRuns, lastWeekRuns, latest, featured, today } = data;
-const goalsHref = shippedAreas().find((area) => area.key === 'goals')?.href;
 // Which featured cards span both columns on wider screens.
 const leadIndex = featured.findIndex((e) => !e.newlyAchieved);
 const pairedCount = leadIndex < 0 ? 0 : featured.length - leadIndex - 1;
@@ -62,7 +60,7 @@ const description = `Alexander Webber's running: ${raceLine}Goals, this week's t
   <section class="landing-section" aria-labelledby="featured-goals" data-featured>
     <div class="landing-section-header">
       <h2 id="featured-goals">Goals</h2>
-      {goalsHref && <a href={goalsHref}>All goals</a>}
+      <a href="/running/goals/">All goals</a>
     </div>
     {
       featured.length > 0 ? (

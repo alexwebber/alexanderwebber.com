@@ -1,8 +1,7 @@
 ---
 // Links from the landing page to the section's other areas (T100, FR-027): Goals, Training,
-// Races & PBs and Health & Performance, but only the ones in the route registry (integration.ts),
-// so an increment never links to a page that isn't built yet. No client JS.
-import { shippedAreas } from '../integration.ts';
+// Races and Health, from the route registry (integration.ts). No client JS.
+import { runningAreas } from '../integration.ts';
 
 export interface Props {
   heading?: 2 | 3;
@@ -10,7 +9,7 @@ export interface Props {
 
 const { heading = 2 } = Astro.props;
 const Heading = `h${heading}` as const;
-const areas = shippedAreas().filter((area) => area.key !== 'landing' && area.inNav !== false);
+const areas = runningAreas.filter((area) => area.key !== 'landing' && area.inNav !== false);
 ---
 
 {

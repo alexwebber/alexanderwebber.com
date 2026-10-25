@@ -3,7 +3,6 @@
 // charts, CSS-only ranges (FR-068), page metadata (FR-072), freshness without JS (FR-005/006)
 // and Garmin attribution (FR-077). Browser behaviour (layout, keyboard, axe) is in
 // tests/a11y/shell.spec.ts.
-import { readFileSync } from 'node:fs';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { RefreshRecord, RunningStore, SectionSettings } from '../../src/sections/running/data/store/index.ts';
@@ -17,7 +16,7 @@ import Nav from '../../src/shared/layout/Nav.astro';
 import GarminAttribution from '../../src/sections/running/components/GarminAttribution.astro';
 import LastUpdated from '../../src/sections/running/components/LastUpdated.astro';
 import SectionLayout from '../../src/sections/running/components/SectionLayout.astro';
-import { SECTION_DEFAULTS, setRunningStore } from '../../src/sections/running/data/load.ts';
+import { setRunningStore } from '../../src/sections/running/data/load.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -361,11 +360,4 @@ describe('SectionLayout', () => {
     const html = await render(SectionLayout, props, {}, '/running/goals/');
     expect(html).toContain(`data-stale-ms="${6 * 3_600_000}"`);
   });
-});
-
-it('SECTION_DEFAULTS match the section.yaml schema defaults', () => {
-  const schema = JSON.parse(readFileSync(new URL('../../schemas/owner/section.schema.json', import.meta.url), 'utf8'));
-  expect(SECTION_DEFAULTS.stale_after_hours).toBe(schema.properties.stale_after_hours.default);
-  expect(SECTION_DEFAULTS.featured_goal_limit).toBe(schema.properties.featured_goal_limit.default);
-  expect(SECTION_DEFAULTS.recent_highlight_days).toEqual(schema.properties.recent_highlight_days.default);
 });

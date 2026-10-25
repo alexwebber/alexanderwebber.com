@@ -6,7 +6,6 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import type { Run, RunningStore } from '../../src/sections/running/data/store/index.ts';
-import { clearTrainingCache } from '../../src/sections/running/data/training.ts';
 import Training from '../../src/sections/running/pages/training.astro';
 import YearPage from '../../src/sections/running/pages/training/[year].astro';
 import { run as runFixture } from '../helpers/temp-repo.ts';
@@ -44,12 +43,10 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-10-24T10:00:00Z'));
   setRunningStore(store(RUNS));
-  clearTrainingCache();
 });
 afterEach(() => {
   vi.useRealTimers();
   setRunningStore(undefined);
-  clearTrainingCache();
 });
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
@@ -110,7 +107,6 @@ describe('training hub (T120)', () => {
 
   it('says so when there are no runs yet', async () => {
     setRunningStore(store([]));
-    clearTrainingCache();
     const t = text(await hub());
     expect(t).toContain('No runs yet.');
     expect(t).not.toContain('All time');

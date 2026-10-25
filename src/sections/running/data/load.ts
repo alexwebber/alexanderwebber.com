@@ -1,12 +1,12 @@
 // The Running section's data loader (T076): every Running page and component reads data through
 // here, never through files. It wraps the shared RunningStore (contracts/storage.md), which
 // validates every file against schemas/ on first use and throws DataValidationError (failing the
-// build with the FR-070 file/entry/field message) on any problem. Results are memoised per build.
+// build with the FR-070 file/entry/field message) on any problem. Results are memoised per store.
+import sectionSchema from '../../../../schemas/owner/section.schema.json' with { type: 'json' };
+import { perStore } from './memo.ts';
 import { JsonFileStore, type RunningStore, type SectionSettings } from './store/index.ts';
 
 let store: RunningStore | undefined;
-let settings: Promise<Settings> | undefined;
-let freshness: Promise<Freshness> | undefined;
 
 /** The store every Running page reads from (data/running/ under the repo root). */
 export function runningStore(): RunningStore {
@@ -17,16 +17,17 @@ export function runningStore(): RunningStore {
 /** Tests swap in a store over fixtures; `undefined` restores the default. */
 export function setRunningStore(next: RunningStore | undefined): void {
   store = next;
-  settings = undefined;
-  freshness = undefined;
 }
 
-/** schemas/owner/section.schema.json defaults; a test keeps them in step with the schema. */
+/**
+ * section.yaml's defaults, read from its schema: the one source. ajv fills the same ones into
+ * section.yaml when it exists; these stand in before it does.
+ */
 export const SECTION_DEFAULTS = {
-  stale_after_hours: 12,
-  featured_goal_limit: 6,
-  recent_highlight_days: { pb: 14, goal: 14 },
-} as const;
+  stale_after_hours: sectionSchema.properties.stale_after_hours.default,
+  featured_goal_limit: sectionSchema.properties.featured_goal_limit.default,
+  recent_highlight_days: sectionSchema.properties.recent_highlight_days.default,
+};
 
 export interface Settings {
   stale_after_hours: number;
@@ -40,22 +41,21 @@ export interface Settings {
 }
 
 /** section.yaml with every default filled in, also before the file exists. */
-export function sectionSettings(): Promise<Settings> {
-  settings ??= runningStore()
-    .getOwner()
-    .then(({ section }) => ({
-      stale_after_hours: section?.stale_after_hours ?? SECTION_DEFAULTS.stale_after_hours,
-      featured_goal_limit: section?.featured_goal_limit ?? SECTION_DEFAULTS.featured_goal_limit,
-      recent_highlight_days: {
-        pb: section?.recent_highlight_days?.pb ?? SECTION_DEFAULTS.recent_highlight_days.pb,
-        goal: section?.recent_highlight_days?.goal ?? SECTION_DEFAULTS.recent_highlight_days.goal,
-      },
-      focus_race: section?.focus_race,
-      story_link: section?.story_link,
-      garmin_devices: { ...section?.garmin_devices },
-    }));
-  return settings;
+export function sectionSettings(from: RunningStore = runningStore()): Promise<Settings> {
+  return settings(from);
 }
+
+const settings = perStore(async (from): Promise<Settings> => {
+  const { section } = await from.getOwner();
+  return {
+    stale_after_hours: section?.stale_after_hours ?? SECTION_DEFAULTS.stale_after_hours,
+    featured_goal_limit: section?.featured_goal_limit ?? SECTION_DEFAULTS.featured_goal_limit,
+    recent_highlight_days: { ...SECTION_DEFAULTS.recent_highlight_days, ...section?.recent_highlight_days },
+    focus_race: section?.focus_race,
+    story_link: section?.story_link,
+    garmin_devices: { ...section?.garmin_devices },
+  };
+});
 
 export interface Freshness {
   /** The last successful fetch as known at build time (refresh.json); undefined before the first publish. */
@@ -64,10 +64,11 @@ export interface Freshness {
 }
 
 /** What LastUpdated shows without JS (FR-005/006). */
-export function buildFreshness(): Promise<Freshness> {
-  freshness ??= Promise.all([runningStore().getRefreshRecord(), sectionSettings()]).then(([refresh, s]) => ({
-    lastSuccessAt: refresh?.sources.intervals.last_success_at_build,
-    staleAfterHours: s.stale_after_hours,
-  }));
-  return freshness;
+export function buildFreshness(from: RunningStore = runningStore()): Promise<Freshness> {
+  return freshness(from);
 }
+
+const freshness = perStore(async (from): Promise<Freshness> => {
+  const [refresh, s] = await Promise.all([from.getRefreshRecord(), sectionSettings(from)]);
+  return { lastSuccessAt: refresh?.sources.intervals.last_success_at_build, staleAfterHours: s.stale_after_hours };
+});

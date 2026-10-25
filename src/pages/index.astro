@@ -1,9 +1,5 @@
 ---
 import Base from '../shared/layout/Base.astro';
-import { shippedAreas } from '../sections/running/integration.ts';
-
-// Link to Running only once its landing page ships (no dead links, FR-027).
-const runningLanding = shippedAreas().find((area) => area.key === 'landing');
 ---
 
 <Base
@@ -13,13 +9,7 @@ const runningLanding = shippedAreas().find((area) => area.key === 'landing');
   imageAlt="Alexander Webber: running, training and the road to Brighton Marathon 2027."
 >
   <h1>Alexander Webber</h1>
-  {
-    runningLanding ? (
-      <p>
-        <a href={runningLanding.href}>Running</a>: training, races and the road to Brighton Marathon 2027.
-      </p>
-    ) : (
-      <p>Running: training, races and the road to Brighton Marathon 2027. Coming soon.</p>
-    )
-  }
+  <p>
+    <a href="/running/">Running</a>: training, races and the road to Brighton Marathon 2027.
+  </p>
 </Base>

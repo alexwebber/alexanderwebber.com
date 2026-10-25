@@ -3,7 +3,6 @@
 // `Date` faked. Every value here is synthetic. Browser checks are in tests/e2e/health.spec.ts.
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearGoalsCache } from '../../src/sections/running/data/goals.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import { allTimeText, startChangeText } from '../../src/sections/running/domain/goal-text.ts';
 import type { ValueEvaluation } from '../../src/sections/running/domain/goals.ts';
@@ -303,12 +302,10 @@ function store(owner: Partial<OwnerData> = {}): RunningStore {
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-10-24T10:00:00Z'));
-  clearGoalsCache();
 });
 afterEach(() => {
   vi.useRealTimers();
   setRunningStore(undefined);
-  clearGoalsCache();
 });
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');

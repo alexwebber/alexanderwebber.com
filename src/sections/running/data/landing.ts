@@ -1,6 +1,6 @@
 // The landing page's data (T101, US1): the focus race and its training build, this week, the latest
 // run and the featured goals, evaluated for `today` (Europe/London). Shared by the page and its
-// share image, so both say the same thing. Memoised per build and day.
+// share image, so both say the same thing. Memoised per store and day.
 import { today as londonToday } from '../../../shared/format/dates.ts';
 import { featuredGoals, type GoalEvaluation } from '../domain/goals.ts';
 import { latestManualMetrics, predictionDistanceFor, type Prediction } from '../domain/manual-metrics.ts';
@@ -8,7 +8,8 @@ import { daysRemaining, focusRace, raceDistance, raceResult, raceState, targetLa
 import { latestRun, trainingBuild, weekSnapshot, type LatestRun, type TrainingBuild, type WeekSnapshot } from '../domain/weeks.ts';
 import { loadGoals } from './goals.ts';
 import { runningStore, sectionSettings } from './load.ts';
-import type { Run, UpcomingRace } from './store/index.ts';
+import { perStoreAndDay } from './memo.ts';
+import type { Run, RunningStore, UpcomingRace } from './store/index.ts';
 
 export interface FocusRaceView {
   race: UpcomingRace;
@@ -40,25 +41,12 @@ export interface LandingData {
   featured: GoalEvaluation[];
 }
 
-const cache = new Map<string, Promise<LandingData>>();
-
-export function loadLanding(today: string = londonToday()): Promise<LandingData> {
-  let data = cache.get(today);
-  if (!data) {
-    data = load(today);
-    cache.set(today, data);
-  }
-  return data;
+export function loadLanding(today: string = londonToday(), store: RunningStore = runningStore()): Promise<LandingData> {
+  return load(today, store);
 }
 
-/** Tests swap the store; this drops data loaded from the old one. */
-export function clearLandingCache(): void {
-  cache.clear();
-}
-
-async function load(today: string): Promise<LandingData> {
-  const store = runningStore();
-  const [owner, runs, settings, goals] = await Promise.all([store.getOwner(), store.listRuns(), sectionSettings(), loadGoals(today)]);
+const load = perStoreAndDay(async (today, store): Promise<LandingData> => {
+  const [owner, runs, settings, goals] = await Promise.all([store.getOwner(), store.listRuns(), sectionSettings(store), loadGoals(today, store)]);
   const week = weekSnapshot(runs, today);
   const inWeek = (w: { start: string; end: string }) => runs.filter((r) => r.date >= w.start && r.date <= w.end);
   const weekRuns = inWeek(week.thisWeek);
@@ -95,4 +83,4 @@ async function load(today: string): Promise<LandingData> {
     ...(latest ? { latest } : {}),
     featured: featuredGoals(goals.evaluations, settings.featured_goal_limit),
   };
-}
+});

@@ -1,12 +1,13 @@
 // The Training area's data (T120, US3): every published run, the period totals for `today`
 // (Europe/London) and the years that have runs. Shared by the hub and the year pages, and
-// memoised per build and day, so thousands of runs are summed once, not once per page.
+// memoised per store and day, so thousands of runs are summed once, not once per page.
 import { today as londonToday } from '../../../shared/format/dates.ts';
 import { runDevices } from '../domain/attribution.ts';
 import { runYears, trainingSummary, type Summary } from '../domain/periods.ts';
 import { runningStore } from './load.ts';
+import { perStoreAndDay } from './memo.ts';
 import { loadRaces } from './races.ts';
-import type { Run } from './store/index.ts';
+import type { Run, RunningStore } from './store/index.ts';
 
 export interface TrainingData {
   today: string;
@@ -23,24 +24,12 @@ export interface TrainingData {
   raceSlugs: ReadonlyMap<string, string>;
 }
 
-const cache = new Map<string, Promise<TrainingData>>();
-
-export function loadTraining(today: string = londonToday()): Promise<TrainingData> {
-  let data = cache.get(today);
-  if (!data) {
-    data = load(today);
-    cache.set(today, data);
-  }
-  return data;
+export function loadTraining(today: string = londonToday(), store: RunningStore = runningStore()): Promise<TrainingData> {
+  return load(today, store);
 }
 
-/** Tests swap the store; this drops data loaded from the old one. */
-export function clearTrainingCache(): void {
-  cache.clear();
-}
-
-async function load(today: string): Promise<TrainingData> {
-  const runs = [...(await runningStore().listRuns())].sort((a, b) => b.date.localeCompare(a.date) || b.distance_m - a.distance_m || a.id.localeCompare(b.id));
+const load = perStoreAndDay(async (today, store): Promise<TrainingData> => {
+  const runs = [...(await store.listRuns())].sort((a, b) => b.date.localeCompare(a.date) || b.distance_m - a.distance_m || a.id.localeCompare(b.id));
   return {
     today,
     runs,
@@ -48,9 +37,9 @@ async function load(today: string): Promise<TrainingData> {
     years: runYears(runs),
     races: runs.filter((r) => r.is_race),
     devices: runDevices(runs),
-    raceSlugs: (await loadRaces(today)).slugByRun,
+    raceSlugs: (await loadRaces(today, store)).slugByRun,
   };
-}
+});
 
 /** A year's runs, newest first. */
 export function runsInYear(data: TrainingData, year: number): Run[] {

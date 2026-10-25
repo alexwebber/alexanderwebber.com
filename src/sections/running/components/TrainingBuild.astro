@@ -29,7 +29,6 @@ const current = build.weeks.at(-1);
 // The last week shown is this week, unless the build ended with the race in an earlier week.
 const thisWeek = current && today <= addDays(current.start, 6) ? current : undefined;
 const longest = build.longest;
-const longestHref = longest ? runHref(longest.id) : undefined;
 const bars = build.weeks.map((w) => ({
   label: formatDayMonth(w.start),
   value: Math.round(w.distance_m / 100) / 10,
@@ -74,7 +73,7 @@ const summary = [
         {
           longest && (
             <p class="build-longest" data-longest-run>
-              Longest run: {longestHref ? <a href={longestHref}>{formatKm(longest.distance_m)}</a> : <strong>{formatKm(longest.distance_m)}</strong>} on {formatDate(longest.date)}
+              Longest run: <a href={runHref(longest.id)}>{formatKm(longest.distance_m)}</a> on {formatDate(longest.date)}
             </p>
           )
         }

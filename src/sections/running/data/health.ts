@@ -12,6 +12,7 @@ import type { GoalEvaluation, ValueEvaluation } from '../domain/goals.ts';
 import { trainingStatusHistory, type CurrentTrainingStatus } from '../domain/manual-metrics.ts';
 import { loadGoals } from './goals.ts';
 import { runningStore } from './load.ts';
+import { perStoreAndDay } from './memo.ts';
 import type { HealthMetric, LabMeasurement, RunningStore } from './store/index.ts';
 
 export interface HealthData {
@@ -39,20 +40,11 @@ export interface HealthData {
   evaluations: GoalEvaluation[];
 }
 
-const cache = new WeakMap<RunningStore, Map<string, Promise<HealthData>>>();
-
 export function loadHealth(today: string = londonToday(), store: RunningStore = runningStore()): Promise<HealthData> {
-  let byDay = cache.get(store);
-  if (!byDay) cache.set(store, (byDay = new Map()));
-  let data = byDay.get(today);
-  if (!data) {
-    data = load(today, store);
-    byDay.set(today, data);
-  }
-  return data;
+  return load(today, store);
 }
 
-async function load(today: string, store: RunningStore): Promise<HealthData> {
+const load = perStoreAndDay(async (today, store): Promise<HealthData> => {
   const series = async (metric: HealthMetric) => (await store.getHealthSeries(metric, { to: today })).map(({ date, value }) => ({ date, value }));
   const [owner, runs, { evaluations }, weight, bodyFat, vo2max, restingHr, hrvPoints, ctl, atl] = await Promise.all([
     store.getOwner(),
@@ -91,6 +83,6 @@ async function load(today: string, store: RunningStore): Promise<HealthData> {
     predictionEntries: owner.manualMetrics.race_predictions.length,
     evaluations,
   };
-}
+});
 
 const opt = <K extends string, V>(key: K, value: V | undefined): Partial<Record<K, V>> => (value === undefined ? {} : ({ [key]: value } as Record<K, V>));
