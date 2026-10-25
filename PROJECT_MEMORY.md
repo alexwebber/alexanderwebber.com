@@ -9,12 +9,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, afternoon):** the refactor is done (#71 merged and deployed). The
-  **README PR #72** (`001-readme`: README, `LICENSE`, BACKLOG tidy) is raised.
+- **Status (2026-10-25, afternoon):** the refactor is done (#71) and the README is merged
+  (#72; the owner ticked wording and licence). The follow-up PR (`001-readme-effort`) changes
+  the README's "21 days" to "3 days", per the owner's PR #72 comment.
   - **Next session:**
-    1. **Check PR #72 merged** and every check is green; if not merged, remind the owner
-       once. Ask any of its confirmation boxes left unticked. It changes no site files, so
-       there's no deploy to wait for, but check the Gate run on `main` finished green anyway.
+    1. **Check the `001-readme-effort` PR merged** and every check is green; if not merged,
+       remind the owner once. It changes no site files, so there's no deploy to wait for.
     2. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. It covers the README too (e.g. whether
        links into `PROJECT_MEMORY.md` stay). After it, ask the owner which spec comes next:
@@ -1240,13 +1240,21 @@ project-specific notes.
   - **Three diagrams:** an overview (private vs public), refresh triggers and alerts, and pull
     requests and deploys. Each was rendered locally with mermaid-cli 11.12.0 before the PR. The
     overview is top-to-bottom, because left-to-right was too wide for a phone.
-  - **"How it was built" has its own section with figures**, as of 25 Oct 2026: 21 days from
-    first commit to live, 70 FRs, 12 SCs, 160 tasks, over 70 PRs, 522 Vitest, 408 pytest and
-    220 Playwright tests. They're a dated snapshot, so they don't need updating.
+  - **"How it was built" has its own section with figures**, as of 25 Oct 2026: 70 FRs,
+    12 SCs, 160 tasks, over 70 PRs, 522 Vitest, 408 pytest and 220 Playwright tests. They're a
+    dated snapshot, so they don't need updating.
+  - **Time: "3 days (23–25 Oct)", not "21 days"** (owner, PR #72 comment). The owner only
+    started properly on Friday 23 Oct; earlier effort was minor. Git agrees: apart from bot
+    commits, 3–4 and 17–18 Oct were setup, spec, plan and foundations, and every page, go-live
+    and the refactor came on 23–25 Oct (`001-readme-effort` PR).
   - **Detail stays in the existing docs**; the README links to them (research R0–R10, the
     contracts, quickstart, section READMEs) so it doesn't drift.
 
 ## Upstream candidates
+
+- **Git dates give calendar span, not effort:** the README said "21 days from first commit to
+  live", but the owner's real effort was 3 days. Ask the owner before publishing any
+  time-or-effort figure about them (PLAYBOOK, project lessons).
 
 - **Windows PowerShell 5.1 adds a BOM when piping a here-string to `git commit -F -`:** the
   subject started with U+FEFF. Commit from the Bash tool with a message file or heredoc (no

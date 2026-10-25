@@ -172,7 +172,7 @@ standards in [sdd-playbook](https://github.com/alexwebber/sdd-playbook).
 
 | | |
 |---|---|
-| First commit to live site | 3 Oct to 24 Oct 2026 (21 days) |
+| Main build | 3 days (23–25 Oct 2026): every page, go-live and a refactor, on a spec, plan and foundations from a few shorter sessions earlier in October |
 | Requirements | 70 functional requirements, 12 success criteria |
 | Tasks | 160 over 9 phases; the 4 still open wait on the owner or a date |
 | Pull requests merged | over 70 |
