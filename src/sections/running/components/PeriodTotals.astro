@@ -10,7 +10,8 @@ import BarChart from '../../../shared/charts/BarChart.astro';
 import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import Toggle from '../../../shared/charts/Toggle.astro';
 import { formatDate, formatDayMonth, formatMonth } from '../../../shared/format/dates.ts';
-import { formatDuration, formatKm, formatMetres, formatPace } from '../../../shared/format/units.ts';
+import { formatDuration, formatKm, formatMetres } from '../../../shared/format/units.ts';
+import { formatPace } from '../domain/pace.ts';
 import type { PeriodKind, PeriodTotals, Summary, Totals } from '../domain/periods.ts';
 import GarminAttribution from './GarminAttribution.astro';
 

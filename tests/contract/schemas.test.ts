@@ -4,11 +4,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { SCHEMA_NAMES, SchemaSet, listSchemaFiles } from '../../src/shared/storage/schemas.ts';
+import { RUNNING_SCHEMAS as SCHEMA_NAMES } from '../../src/sections/running/data/store/schemas.ts';
+import { DISTANCES_M } from '../../src/sections/running/domain/distances.ts';
+import { SchemaSet, listSchemaFiles } from '../../src/shared/storage/schemas.ts';
 import { walk } from '../../scripts/lib/walk.ts';
 import { REPO_ROOT } from '../helpers/temp-repo.ts';
 
-const schemas = new SchemaSet(join(REPO_ROOT, 'schemas'));
+const schemas = new SchemaSet(join(REPO_ROOT, 'schemas'), SCHEMA_NAMES);
 const fixtures = walk(REPO_ROOT, 'schemas/fixtures');
 
 function load(file: string): unknown {
@@ -134,5 +136,15 @@ describe('schema structure', () => {
     expect([...schema.properties.metric.enum].sort()).toEqual(
       ['body_fat_pct', 'fatigue_atl', 'fitness_ctl', 'hrv', 'resting_hr', 'vo2max', 'weight_avg7'].sort(),
     );
+  });
+
+  it('the distance names are exactly those in distances.json, which ingest reads too', () => {
+    const defs = JSON.parse(readFileSync(join(REPO_ROOT, 'schemas/defs.schema.json'), 'utf8'));
+    const names = Object.keys(DISTANCES_M);
+    expect(defs.$defs.distanceName.enum).toEqual(names);
+    // The owner-facing messages list the names too.
+    const expected = `is not a known distance (expected ${names.slice(0, -1).join(', ')}, ${names.at(-1)}, or metres)`;
+    expect(defs.$defs.distanceName['x-error']).toBe(expected);
+    expect(defs.$defs.distance['x-error']).toBe(expected);
   });
 });

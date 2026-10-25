@@ -5,8 +5,8 @@ import type { GetStaticPaths } from 'astro';
 import RacePage from '../../../src/sections/running/components/RacePage.astro';
 import { galleryPhotos } from '../../../src/sections/running/data/photos.ts';
 import { loadRaces } from '../../../src/sections/running/data/races.ts';
+import type { RaceTrack } from '../../../src/sections/running/data/store/index.ts';
 import type { RaceHistoryEntry } from '../../../src/sections/running/domain/races.ts';
-import type { RaceTrack } from '../../../src/shared/storage/index.ts';
 import { noRunPage, PREVIEW_PHOTO_FOLDER, PREVIEW_PHOTOS, PREVIEW_TODAY, previewStore } from './store.ts';
 
 export const getStaticPaths = (async () => {

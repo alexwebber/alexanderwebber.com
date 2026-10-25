@@ -7,10 +7,10 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { clearGoalsCache } from '../../src/sections/running/data/goals.ts';
 import { clearLandingCache, loadLanding } from '../../src/sections/running/data/landing.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
+import type { Goal, HealthMetric, OwnerData, RefreshRecord, Run, RunningStore, SectionSettings, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { landingCard } from '../../src/sections/running/og/landing.ts';
 import Landing from '../../src/sections/running/pages/index.astro';
 import RunPage from '../../src/sections/running/pages/runs/[id].astro';
-import type { Goal, HealthMetric, OwnerData, RefreshRecord, Run, RunningStore, SectionSettings, UpcomingRace } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;

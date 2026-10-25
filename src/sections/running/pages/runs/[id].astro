@@ -15,8 +15,7 @@
 // its race page (US4), which adds the map and photos. No client JS beyond the freshness script.
 import type { GetStaticPaths } from 'astro';
 import { formatDate } from '../../../../shared/format/dates.ts';
-import { formatDuration, formatKm, formatPace } from '../../../../shared/format/units.ts';
-import type { Run } from '../../../../shared/storage/index.ts';
+import { formatDuration, formatKm } from '../../../../shared/format/units.ts';
 import HrZones from '../../components/HrZones.astro';
 import RunBestEfforts from '../../components/RunBestEfforts.astro';
 import RunDynamics from '../../components/RunDynamics.astro';
@@ -27,6 +26,8 @@ import SplitsTable from '../../components/SplitsTable.astro';
 import TreadmillBadge from '../../components/TreadmillBadge.astro';
 import { runningStore } from '../../data/load.ts';
 import { loadRaces } from '../../data/races.ts';
+import type { Run } from '../../data/store/index.ts';
+import { formatPace } from '../../domain/pace.ts';
 import { raceHref } from '../../links.ts';
 
 export const getStaticPaths = (async () => {

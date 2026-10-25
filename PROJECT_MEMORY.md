@@ -9,19 +9,15 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, afternoon):** **refactor session 1 of 3 is done**: PR #67 (tests,
-  findings 5 + 10) and the `001-remove-backfill` PR (finding 8) are raised.
+- **Status (2026-10-25, evening):** **refactor session 2 of 3 is done**:
+  PR #69 (`001-running-owns-data`, findings 1 + 4) is raised. PRs #67 and #68 (session 1)
+  merged green.
   - **Next session:**
-    1. **Check PR #67 and the `001-remove-backfill` PR merged** (and every check is green); if
-       not, remind the owner once.
-    2. **Refactor session 2 of 3: Running owns its data** (findings 1 + 4, one PR; see
-       `specs/001-running-section/maintainability-review.md` *Owner picks and order*): move the
-       store, file map, schema list, validate-data's checks, `formatPace` and the `XYChart`
-       default out of `src/shared/`, with one distance table for both languages. Report the
-       `dist/` diff against `main`.
-
-       Session 3: simplify the section (2 + 3), then tidy-ups (6 + 7 with a computed-style
-       check + 9).
+    1. **Check PR #69 merged** (and every check is green); if not, remind the owner once.
+    2. **Refactor session 3 of 3** (see `specs/001-running-section/maintainability-review.md`
+       *Owner picks and order*): simplify the section (findings 2 + 3) as one PR, then the
+       tidy-ups (6 + 7 with a before/after computed-style check, + 9) as a second, each from
+       `main` after the one before merges. Report each PR's `dist/` diff against `main`.
     3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
     4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
@@ -1172,8 +1168,35 @@ project-specific notes.
   - **`backfill` removed (finding 8):** history comes from `refresh.yml` re-import windows,
     now documented in quickstart §2. `state/backfill.json` is no longer used.
 
+- **2026-10-25** — **Refactor session 2 of 3: Running owns its data** (PR #69,
+  `001-running-owns-data`, findings 1 + 4). Choices later work builds on:
+  - **Running's store is in the section:** `src/sections/running/data/store/` holds the
+    `RunningStore` interface, `JsonFileStore`, the file map (`files.ts`, the former
+    `shared/storage/load.ts`), the schema list (`RUNNING_SCHEMAS`) and the generated types
+    (gitignored as `src/sections/*/data/store/generated/`).
+  - **Shared keeps the machinery:** `SchemaSet` now takes the schema names it validates against;
+    `toIssues`, `DataIssue`/`DataValidationError`, `listDataFiles` and `parseDataFile` (JSON and
+    YAML 1.2) stay in `src/shared/storage/`. `gen-types` and `validate-data` each loop over a list
+    of sections, so a new section adds one entry to each.
+  - **Referential checks** moved to `src/sections/running/validate.ts` (`validateRunning`);
+    `scripts/validate-data.ts` is the runner and still exports `validateData`.
+  - **One distance table:** `schemas/distances.json` (name to metres) is read by
+    `domain/distances.ts` and `awingest.distances`. Prediction distances, goal-card labels and
+    Python's world records (now keyed by name) take their metres from it. Contract tests in both
+    languages check it matches `defs.schema.json`'s enum (and, in Vitest, its two messages).
+    `parse_time` (Python, unused) is gone; `parseTime` stays shared.
+  - **`formatPace`** is in `domain/pace.ts`. **`XYChart`** defaults to `--series-1`, and
+    `RunSeriesCharts` passes the Running colour itself.
+  - **`dist/` against `main`:** identical except the landing page, where two inlined CSS rules of
+    different components (`.as-of-date`, `.treadmill-badge`) swapped order. No element matches
+    both, so nothing renders differently.
+
 ## Upstream candidates
 
+- **The Bash tool turns `\\` into `\` inside a quoted heredoc** (`<<'EOF'`, Windows): a Python
+  script written that way wrote real newlines for `'\\n'` and its `'\\r'` patterns never
+  matched. Write any script containing backslashes with the Write tool instead (AGENT_TIPS,
+  *Shell*).
 - **Measure CI speed-ups on one runner, back to back:** GitHub-hosted runners differ enough
   (the same Playwright suite took 292 s and 414 s) that a PR's own job time can't show a 30%
   gain. A throwaway branch workflow that runs the old and new versions in one job can

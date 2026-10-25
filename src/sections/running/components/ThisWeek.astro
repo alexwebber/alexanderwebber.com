@@ -5,7 +5,7 @@
 // count. Garmin attribution names the watches behind the two weeks' runs (FR-077). No client JS.
 import { formatDayMonth } from '../../../shared/format/dates.ts';
 import { formatDuration, formatKm } from '../../../shared/format/units.ts';
-import type { Run } from '../../../shared/storage/index.ts';
+import type { Run } from '../data/store/index.ts';
 import { runDevices } from '../domain/attribution.ts';
 import type { WeekSnapshot } from '../domain/weeks.ts';
 import GarminAttribution from './GarminAttribution.astro';

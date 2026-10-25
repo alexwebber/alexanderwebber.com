@@ -5,7 +5,7 @@
 // Every published run counts here, treadmill and indoor runs included (FR-058): this is training
 // volume, not records, so the PB-eligibility filter (efforts.ts) is not applied.
 import { addDays, weekStart } from '../../../shared/format/dates.ts';
-import type { Run } from '../../../shared/storage/index.ts';
+import type { Run } from '../data/store/index.ts';
 
 type RunLike = Pick<Run, 'id' | 'date' | 'distance_m' | 'moving_s'>;
 

@@ -36,7 +36,7 @@ Rules: refuses to write any path outside `data/running/published/`; refuses obje
 schema (privacy second line of defence); never leaves a half-written tree if a run aborts
 (writes into a staging dir and swaps, or aborts before touching tracked files).
 
-## `RunningStore` (TypeScript, `src/shared/storage`) — site reads
+## `RunningStore` (TypeScript, `src/sections/running/data/store`) — site reads
 
 ```text
 listRuns(): Run[]                         # sorted newest first
@@ -51,6 +51,13 @@ Implementation: `JsonFileStore` (build-time, reads `data/running/`, validates ev
 ajv; a failure throws `DataValidationError{file, entry, field, message}` which fails the build with
 that message, FR-070). Section code depends only on the interface, so a future DB-backed store is a
 drop-in.
+
+The store is Running's own (Principle VII): its interface, file map (`files.ts`), schema list
+(`RUNNING_SCHEMAS`) and generated types live in the section. `src/shared/storage` holds only the
+generic machinery any section's store is built from: `SchemaSet` (validates against the schema
+names it is given), `DataIssue`/`DataValidationError`, and JSON/YAML 1.2 file reading. Each section
+also owns its referential checks (Running: `src/sections/running/validate.ts`), which
+`scripts/validate-data.ts` runs one section at a time.
 
 ## Contract test suite
 

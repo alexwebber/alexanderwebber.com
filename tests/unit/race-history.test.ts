@@ -3,9 +3,9 @@
 // duplicate-race validation error (a hand entry matching a recorded race) and its fix (add run_id)
 // are checked end to end with validate-data. Every race here is synthetic.
 import { afterEach, describe, expect, it } from 'vitest';
+import type { Race, Run } from '../../src/sections/running/data/store/index.ts';
 import { formatIssue } from '../../src/shared/storage/errors.ts';
 import { raceHistory, snapDistance } from '../../src/sections/running/domain/races.ts';
-import type { Race, Run } from '../../src/shared/storage/index.ts';
 import { validateData } from '../../scripts/validate-data.ts';
 import { run as runFixture, runPath, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 

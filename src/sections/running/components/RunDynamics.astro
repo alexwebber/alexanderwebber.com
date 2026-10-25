@@ -3,7 +3,7 @@
 // time and balance, vertical oscillation and vertical ratio. Each is left out when the watch
 // didn't record it, never shown as 0, and with none at all the panel isn't rendered (US3.4).
 // Garmin attribution names the run's watch at the panel heading (FR-077). No client JS.
-import type { Run } from '../../../shared/storage/index.ts';
+import type { Run } from '../data/store/index.ts';
 import { dynamicsFigures } from '../domain/run-detail.ts';
 import GarminAttribution from './GarminAttribution.astro';
 

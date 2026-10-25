@@ -6,8 +6,8 @@ import { today as londonToday } from '../../../shared/format/dates.ts';
 import { buildEffortIndex } from '../domain/efforts.ts';
 import { evaluateGoals, type GoalEvaluation, type GoalHealth, type ValueMetric } from '../domain/goals.ts';
 import { latestManualMetrics } from '../domain/manual-metrics.ts';
-import type { HealthMetric, RunningStore } from '../../../shared/storage/index.ts';
 import { runningStore, SECTION_DEFAULTS } from './load.ts';
+import type { HealthMetric, RunningStore } from './store/index.ts';
 
 export interface GoalsData {
   evaluations: GoalEvaluation[];

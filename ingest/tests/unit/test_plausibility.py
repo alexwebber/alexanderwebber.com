@@ -2,6 +2,7 @@
 
 import pytest
 
+from awingest.distances import DISTANCES_M
 from awingest.process.plausibility import (
     MIN_KM_SPLIT_S,
     WORLD_RECORD_S,
@@ -27,19 +28,7 @@ def test_the_threshold_is_85_percent_of_the_world_record(distance, threshold):
 
 
 def test_every_standard_distance_has_a_record():
-    assert set(WORLD_RECORD_S) == {
-        1000,
-        1609.344,
-        3000,
-        5000,
-        10000,
-        15000,
-        16093.44,
-        20000,
-        21097.5,
-        30000,
-        42195,
-    }
+    assert set(WORLD_RECORD_S) == set(DISTANCES_M.values())
 
 
 def test_other_distances_scale_from_the_nearest_record():

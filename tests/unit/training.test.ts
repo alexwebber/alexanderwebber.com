@@ -5,10 +5,10 @@
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
+import type { Run, RunningStore } from '../../src/sections/running/data/store/index.ts';
 import { clearTrainingCache } from '../../src/sections/running/data/training.ts';
 import Training from '../../src/sections/running/pages/training.astro';
 import YearPage from '../../src/sections/running/pages/training/[year].astro';
-import type { Run, RunningStore } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;

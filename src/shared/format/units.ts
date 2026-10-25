@@ -1,4 +1,4 @@
-// Metric units for display (FR-075): km, min/km, h:mm:ss, kg, metres of elevation.
+// Metric units for display (FR-075): km, h:mm:ss, kg, metres of elevation, percentages.
 
 function number(value: number, decimals: number): string {
   return new Intl.NumberFormat('en-GB', {
@@ -20,11 +20,6 @@ export function formatDuration(seconds: number): string {
   const s = total % 60;
   const ss = String(s).padStart(2, '0');
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
-}
-
-/** "4:28 /km" (seconds per km in). */
-export function formatPace(secondsPerKm: number): string {
-  return `${formatDuration(secondsPerKm)} /km`;
 }
 
 /** "100.7 kg" */

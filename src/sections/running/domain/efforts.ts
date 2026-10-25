@@ -8,8 +8,9 @@
 // - Race results (FR-035): every owner race entry with an official time. For a race linked to a
 //   recorded run (`run_id`), the official time replaces that run's device effort at the race
 //   distance (official times win, FR-051). A hand-entered race (no `run_id`) counts as it is.
-import { parseDistance, parseTime } from '../../../shared/format/parse.ts';
-import type { Race, Run, RunOverride } from '../../../shared/storage/index.ts';
+import { parseTime } from '../../../shared/format/parse.ts';
+import type { Race, Run, RunOverride } from '../data/store/index.ts';
+import { parseDistance } from './distances.ts';
 
 /** Best efforts at the same distance match within half a metre (the processor's dedup tolerance). */
 export const DISTANCE_TOLERANCE_M = 0.5;

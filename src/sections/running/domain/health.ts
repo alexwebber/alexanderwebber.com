@@ -23,7 +23,7 @@
 // - Manual Garmin figures (FR-069): training status and race predictions from manual-metrics.ts,
 //   each dated by its `as_of`; race predictions sit beside their race-time goals.
 import { addDays, daysBetween, formatDate } from '../../../shared/format/dates.ts';
-import type { LabMeasurement, Run } from '../../../shared/storage/index.ts';
+import type { LabMeasurement, Run } from '../data/store/index.ts';
 import { trailingMean, type DatedValue } from './composition.ts';
 import { capitalise, distanceLabel, formatMetric, shortTargetText } from './goal-text.ts';
 import type { GoalEvaluation, RaceTimeEvaluation, ValueEvaluation, ValueMetric } from './goals.ts';

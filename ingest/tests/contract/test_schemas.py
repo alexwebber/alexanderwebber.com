@@ -9,6 +9,7 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 from awingest import yaml12
+from awingest.distances import DISTANCES_M
 
 REPO = Path(__file__).resolve().parents[3]
 SCHEMAS = REPO / "schemas"
@@ -102,3 +103,10 @@ def test_no_name_or_description_key_validates_in_a_run():
         for key in ("name", "description"):
             for variant in _variants(load(path), key):
                 assert not v.is_valid(variant), (path.name, key)
+
+
+def test_distances_come_from_the_table_the_schemas_name():
+    defs = json.loads((SCHEMAS / "defs.schema.json").read_text())
+    table = json.loads((SCHEMAS / "distances.json").read_text())
+    assert list(DISTANCES_M) == defs["$defs"]["distanceName"]["enum"] == list(table)
+    assert DISTANCES_M["half"] == 21097.5

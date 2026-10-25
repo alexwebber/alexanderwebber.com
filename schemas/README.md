@@ -11,6 +11,9 @@ are in [contracts/data-files.md](../specs/001-running-section/contracts/data-fil
   exclusions) can't carry it, so they are always the current version.
 - `defs.schema.json`: shared building blocks (dates, run IDs, owner times and distances), used
   through `$ref: ../defs.schema.json#/$defs/...`.
+- `distances.json`: each named race distance in metres, the one table for both languages
+  (`src/sections/running/domain/distances.ts`, `awingest.distances`). Contract tests in both
+  keep it in step with `defs.schema.json`'s `distanceName` enum and its messages.
 - `fixtures/<schema>/{valid,invalid}/`: shared cases, run by `tests/contract/schemas.test.ts` and
   `ingest/tests/contract/test_schemas.py`. Add a fixture with every schema change.
 
@@ -23,8 +26,9 @@ Conventions:
   the node, e.g. `is not a valid time (expected mm:ss or h:mm:ss)`; `src/shared/storage/schemas.ts`
   uses it to turn ajv errors into FR-070 file/entry/field messages.
 - `tsType` steers `scripts/gen-types.ts` (json-schema-to-typescript) where the generated type
-  would be awkward, e.g. tuples. Types are generated into `src/shared/storage/generated/`
-  (gitignored) by the `prebuild`, `pretest` and `predev` hooks.
+  would be awkward, e.g. tuples. Types are generated into each section's store, e.g.
+  `src/sections/running/data/store/generated/` (gitignored), by the `prebuild`, `pretest` and
+  `predev` hooks.
 - Goals use `discriminator` on `type`, so ajv reports errors for the goal's own type only.
 - Owner YAML is read with YAML 1.2 core-schema rules in both languages, so `3:30:00` and
   `2027-04-04` stay strings (Python: `awingest.yaml12`, not plain PyYAML).

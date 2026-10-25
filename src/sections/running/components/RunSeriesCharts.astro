@@ -11,7 +11,7 @@ import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import Toggle from '../../../shared/charts/Toggle.astro';
 import XYChart from '../../../shared/charts/XYChart.astro';
 import { formatDuration } from '../../../shared/format/units.ts';
-import type { Run } from '../../../shared/storage/index.ts';
+import type { Run } from '../data/store/index.ts';
 import { axisEnd, axisValues, formatAxisTime, seriesCharts, tableRows, timeTicks, type Axis } from '../domain/run-detail.ts';
 import GarminAttribution from './GarminAttribution.astro';
 
@@ -70,6 +70,7 @@ const axes: { axis: Axis; label: string; xs: number[]; formatX: (v: number) => s
                     {...(a.ticks ? { xTicks: a.ticks } : {})}
                     {...(c.domain ? { domain: c.domain } : {})}
                     invert={c.invert}
+                    color="var(--running-series, var(--series-1))"
                     {...(c.average !== undefined ? { reference: { value: c.average, label: `Avg ${c.format(c.average)}` } } : {})}
                   />
                 </ChartFigure>

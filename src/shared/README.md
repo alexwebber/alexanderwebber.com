@@ -7,18 +7,19 @@ here imports a section, or if one section imports another. This is the graduatio
 [data files](../../specs/001-running-section/contracts/data-files.md) and
 [routes](../../specs/001-running-section/contracts/routes.md).
 
-- **`storage/`**: the site's read side of the storage abstraction (Principle IV).
-  - **Interface:** sections depend only on the `RunningStore` interface (`running-store.ts`).
-    `JsonFileStore` implements it over `data/running/`, so moving off JSON-in-git means a new
-    implementation, not changes in sections.
-  - **Validation:** every file is checked against `schemas/` (the single schema source, shared
-    with Python) on first use. Any problem throws `DataValidationError` with the FR-070 message
-    naming the file, entry and field, which fails the build before `dist/` is written.
-  - **Types:** generated from the schemas into `storage/generated/` (gitignored) by
-    `scripts/gen-types.ts`, so TypeScript can't drift from the published contract.
-  - **Ordering:** runs list newest first; results are memoised per store.
+- **`storage/`**: the generic machinery each section's store is built from (Principle IV). Each
+  section owns its store, file map and schema list (Running's are in
+  `src/sections/running/data/store/`), so adding a section changes nothing here.
+  - **Schemas:** `SchemaSet` loads `schemas/` (the single schema source, shared with Python) into
+    ajv and validates against the schema names a section gives it. `toIssues` turns ajv's errors
+    into one owner-readable message per problem.
+  - **Errors:** `DataIssue` and `DataValidationError` carry the FR-070 message naming the file,
+    entry and field. A store throws it on any problem, which fails the build before `dist/` is
+    written.
+  - **Files:** `listDataFiles` lists a data folder and `parseDataFile` reads JSON or owner YAML
+    (YAML 1.2, so `3:30:00` and dates stay strings).
 - **`format/`**: UK formatting (`dates.ts`: Europe/London, "17 Oct 2026"), units (`units.ts`) and
-  the owner time and distance parsers (`parse.ts`). Pages format through here, never ad hoc.
+  the owner time parser (`parse.ts`). Pages format through here, never ad hoc.
 - **`design/`**: `tokens.css` holds colour (light and dark, following the OS setting), the type
   scale, spacing, focus and the chart palette. `base.css` holds element defaults. Sections restyle
   by overriding tokens under their own theme class. `tests/unit/design-tokens.test.ts` enforces
@@ -44,8 +45,8 @@ here imports a section, or if one section imports another. This is the graduatio
 
 **Tests:**
 
-- `tests/contract/store.test.ts` and `schemas.test.ts` cover the store contract (validation
-  errors, ordering, listing 5,000 runs) and the shared schema fixtures.
+- `tests/contract/schemas.test.ts` covers `SchemaSet` over the shared schema fixtures, and
+  `store.test.ts` Running's store built on it (validation errors, ordering, listing 5,000 runs).
 - `tests/unit/format.test.ts` covers formatting and the owner-value parsers.
 - `tests/unit/chart-scales.test.ts`, `shell-components.test.ts` and `og.test.ts` run in Vitest,
   rendering components with Astro's container API.

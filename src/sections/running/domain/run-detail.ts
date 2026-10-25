@@ -6,8 +6,9 @@
 // no time of day at all. Pace plots with faster higher (as on Garmin Connect), on a range cut to
 // the 2nd–98th percentile (cadence and power too), so a few seconds of standing still don't
 // flatten the line; the summary and table still give the full range.
-import { formatDuration, formatKm, formatMetres, formatPace } from '../../../shared/format/units.ts';
-import type { Run } from '../../../shared/storage/index.ts';
+import { formatDuration, formatKm, formatMetres } from '../../../shared/format/units.ts';
+import type { Run } from '../data/store/index.ts';
+import { formatPace } from './pace.ts';
 
 export interface Figure {
   key: string;
