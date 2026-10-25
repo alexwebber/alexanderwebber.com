@@ -1,0 +1,63 @@
+/*
+ * What GoalCard.astro and AchievedGoalCard.astro share: the card shell, header, title,
+ * description and facts grid (and the achieved card's accent edge, which overrides the shell's
+ * border, so it sits here in a fixed order). Each card keeps its own differences in its scoped
+ * styles; `.theme-running` gives these rules the same weight as those.
+ */
+.theme-running .goal-card {
+  height: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.theme-running .goal-card-achieved {
+  border-left: 6px solid var(--color-accent);
+}
+
+@media (forced-colors: active) {
+  .theme-running .goal-card-achieved {
+    border-left-color: Highlight;
+  }
+}
+
+.theme-running .goal-card-header {
+  margin-bottom: var(--space-3);
+}
+
+.theme-running .goal-card-title {
+  margin: 0;
+  font-size: var(--step-1);
+  line-height: var(--leading-tight);
+}
+
+.theme-running .goal-description {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-secondary);
+}
+
+.theme-running .goal-facts {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.theme-running .goal-facts div {
+  display: grid;
+  gap: 0 var(--space-3);
+}
+
+@media (min-width: 30rem) {
+  .theme-running .goal-facts div {
+    grid-template-columns: 9rem 1fr;
+  }
+}
+
+.theme-running .goal-facts dt {
+  color: var(--color-text-secondary);
+  font-size: var(--step--1);
+}
+
+.theme-running .goal-facts dd {
+  margin: 0;
+}

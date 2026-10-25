@@ -54,3 +54,8 @@
   border: 0;
   background: none;
 }
+
+/* "All races", "Runs in 2026": the link back above a race, run or year page's content. */
+.theme-running .breadcrumb {
+  margin: 0 0 var(--space-4);
+}

@@ -19,7 +19,8 @@ here imports a section, or if one section imports another. This is the graduatio
   - **Files:** `listDataFiles` lists a data folder and `parseDataFile` reads JSON or owner YAML
     (YAML 1.2, so `3:30:00` and dates stay strings).
 - **`format/`**: UK formatting (`dates.ts`: Europe/London, "17 Oct 2026"), units (`units.ts`) and
-  the owner time parser (`parse.ts`). Pages format through here, never ad hoc.
+  the owner time parser (`parse.ts`). Pages format through here, never ad hoc: any other number
+  goes through `formatNumber`, and km axis labels through `formatAxisKm`.
 - **`design/`**: `tokens.css` holds colour (light and dark, following the OS setting), the type
   scale, spacing, focus and the chart palette. `base.css` holds element defaults. Sections restyle
   by overriding tokens under their own theme class. `tests/unit/design-tokens.test.ts` enforces

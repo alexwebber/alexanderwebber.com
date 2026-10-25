@@ -13,6 +13,7 @@ import { effortText, formatMetric, metricName, targetText } from '../domain/goal
 import type { GoalEvaluation } from '../domain/goals.ts';
 import { runHref } from '../links.ts';
 import GarminAttribution from './GarminAttribution.astro';
+import '../styles/goal-card.css';
 
 export interface Props {
   evaluation: GoalEvaluation;
@@ -112,20 +113,10 @@ const headline = e.newlyAchieved ? (effort ? formatDuration(effort.time_s) : rea
 </article>
 
 <style>
-  .goal-card {
-    height: 100%;
-    padding: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-left: 6px solid var(--color-accent);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-  }
-
   .goal-card-header {
     display: flex;
     gap: var(--space-3);
     align-items: flex-start;
-    margin-bottom: var(--space-3);
   }
 
   .goal-medal {
@@ -152,40 +143,7 @@ const headline = e.newlyAchieved ? (effort ? formatDuration(effort.time_s) : rea
     letter-spacing: 0.04em;
   }
 
-  .goal-card-title {
-    margin: 0;
-    font-size: var(--step-1);
-    line-height: var(--leading-tight);
-  }
-
-  .goal-description {
-    margin: 0 0 var(--space-3);
-    color: var(--color-text-secondary);
-  }
-
   .goal-facts {
-    display: grid;
-    gap: var(--space-2);
-    margin: 0;
-  }
-
-  .goal-facts div {
-    display: grid;
-    gap: 0 var(--space-3);
-  }
-
-  @media (min-width: 30rem) {
-    .goal-facts div {
-      grid-template-columns: 9rem 1fr;
-    }
-  }
-
-  .goal-facts dt {
-    color: var(--color-text-secondary);
-    font-size: var(--step--1);
-  }
-
-  .goal-facts dd {
     margin: 0;
   }
 
@@ -209,11 +167,5 @@ const headline = e.newlyAchieved ? (effort ? formatDuration(effort.time_s) : rea
     font-weight: var(--weight-bold);
     line-height: var(--leading-tight);
     color: var(--color-accent-strong);
-  }
-
-  @media (forced-colors: active) {
-    .goal-card {
-      border-left-color: Highlight;
-    }
   }
 </style>
