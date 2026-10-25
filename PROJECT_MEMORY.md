@@ -9,26 +9,39 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, afternoon):** the refactor is done (#71) and the README is merged
-  (#72; the owner ticked wording and licence). The follow-up PR (`001-readme-effort`) changes
-  the README's "21 days" to "3 days", per the owner's PR #72 comment.
+- **Status (2026-10-25, late afternoon):** the README work is merged (#73) and its diagrams
+  render for the owner. The public-readiness sweep's read-only part is done and the owner has
+  decided the fixes (decisions log, 2026-10-25). The `001-public-sweep` PR records them, makes
+  the docs' wording neutral and trims local-file notes.
   - **Next session:**
-    1. **Check the `001-readme-effort` PR (#73) merged** and every check is green; if not
-       merged, remind the owner once. It changes no site files, so there's no deploy to wait for.
-       **Ask whether the README's diagrams render now.** On 25 Oct GitHub showed "Unable to
-       render rich display" for every diagram, on `main` (plain) and the branch (coloured)
-       alike, after the plain ones had rendered earlier. The diagrams are valid: Mermaid 9.4 to
-       12 renders them, and GitHub's own renderer drew all of them when fed them directly from a
-       github.com page (Playwright replay into `viewscreen.githubusercontent.com`). GitHub's
-       status was green. So it's GitHub's private-repo rendering or the owner's browser (an
-       extension blocking viewscreen); the test is whether the public Mermaid README
-       (github.com/mermaid-js/mermaid) renders for them. Don't change the diagrams for this.
-    2. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
-       ending with the owner making the repo public. It covers the README too (e.g. whether
-       links into `PROJECT_MEMORY.md` stay). After it, ask the owner which spec comes next:
-       fundraising, journey story or CV & Blog.
-    3. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    4. Remember that the lab wording is decided at the first lab result.
+    1. **Check the `001-public-sweep` PR merged** and every check is green, including `main`'s
+       Gate run and the refresh its `run-overrides.yaml` change triggers (both to the end). If
+       not merged, remind the owner once. Check its box: the owner deletes PR #44's earlier
+       description revisions (GitHub shows edit history to every reader of a public repo).
+    2. **Rotate credentials with the owner** (guided, one at a time; **never print a value**:
+       the owner pastes new values into the GitHub secret form and their local environment
+       variables themselves, and the agent checks only that a run works):
+       - Garmin: the owner turns on two-step verification (the site never logs in to Garmin).
+       - intervals.icu: a new API key (*Settings → Developer*), then `INTERVALS_API_KEY`.
+       - R2: a new API token scoped to the bucket (Object Read & Write), then
+         `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`; delete the old token.
+       - Cloudflare deploy token: roll it, check it holds only what deploys need, then
+         `CLOUDFLARE_API_TOKEN`.
+       - Prove each with a dispatched refresh (fetch + publish) and a Gate deploy, then reword
+         the docs' security notes (decisions log 2026-10-04's MFA line, 2026-10-18 "No
+         credential rotation", BACKLOG's sweep entry) to say they were rotated.
+    3. **Public-repo setup, then the switch** (BACKLOG's list): the owner turns on *Keep my
+       email addresses private* and *Block command line pushes that expose my email*; add
+       `SECURITY.md`; turn off Projects. After the owner's switch (or the agent's, on their
+       explicit go-ahead): fork-PR approval for all outside contributors, `sha_pinning_required`,
+       a `main` ruleset with a bypass for the refresh bot (prove a bot push still lands),
+       secret scanning with push protection, Dependabot alerts, code scanning, and a logged-out
+       look at the public repo. Then drop the Actions-minutes watch (public repos are free).
+       Steps 2 and 3 may need two sessions.
+    4. **After it, ask the owner which spec comes next:** fundraising, journey story or CV &
+       Blog.
+    5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    6. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
@@ -36,19 +49,16 @@ Update this as decisions get made — treat it as the source of truth alongside
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
     2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
     3. ~~Maintainability review and refactor~~ (2026-10-25; PRs #67–#71).
-    4. **Repo README** (PR #72, raised 2026-10-25).
-    5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
-       (fundraising, journey story or CV & Blog).
+    4. ~~Repo README~~ (PRs #72–#73).
+    5. **Public-readiness sweep** (read-only part done 2026-10-25), **then the repo goes
+       public** (BACKLOG), then the next spec (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
-    was re-enabled). Minutes: 1,105 used by about 09:00 UTC on 2026-10-25; October should end
-    around 1,450–1,550. A one-off intervals.icu 503 failed the 04:17 refresh on 25 Oct; the
-    next runs recovered.
+    was re-enabled). Minutes: 1,231 used by about 14:00 UTC on 2026-10-25; October should end
+    around 1,450–1,550.
   - **T105's no-change path** was never seen: every 00:17 refresh so far committed new data.
     That's fine, and the owner has been told; stop looking for it.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
     (unit-tested, not yet seen live).
-  - **Owner's local files:** reminded once (2026-10-23) that `C:\temp\runs` can go; don't
-    repeat. The export zip in Downloads stays as their backup.
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -803,10 +813,9 @@ project-specific notes.
     (within 3%). The 4 misses are treadmill runs on 7, 9, 12 and 14 Oct 2025, before
     intervals.icu's history starts; their FIT files were found in the export by start time,
     and the owner uploads them (device override Venu 2 Plus, as that month's runs show).
-  - **Junior parkruns hidden:** the two published runs with no matching export run (8 and
-    15 Mar 2026, about 2 km, Sundays just after 9am) are junior parkruns with the owner's son.
-    Garmin logged them as "Other", and intervals.icu typed them as runs. Owner: ignore them, so
-    `run-overrides.yaml` hides them.
+  - **Two runs hidden:** the two published runs with no matching export run (8 and 15 Mar
+    2026, about 2 km) weren't the owner's own runs. Garmin logged them as "Other", and
+    intervals.icu typed them as runs. Owner: ignore them, so `run-overrides.yaml` hides them.
 - **2026-10-23** — **Phase 5 guided site review** (owner, on phone and desktop). Every figure
   agreed with Garmin Connect. Answers, built in the `001-review-fixes` PR:
   - **Seven landing goals stay** (SC-001 is fine).
@@ -1262,8 +1271,52 @@ project-specific notes.
     themes (both rendered before pushing).
   - **Detail stays in the existing docs**; the README links to them (research R0–R10, the
     contracts, quickstart, section READMEs) so it doesn't drift.
+- **2026-10-25** — **README diagrams render** for the owner on GitHub now; nothing changed.
+- **2026-10-25** — **Public-readiness sweep, read-only part** (`001-public-sweep` PR). Scope:
+  all 282 commits (the 73 `refs/pull/*` refs hold no commit missing from `main`), the logs of
+  all 418 Actions runs, 31 artifacts, 73 PRs with their comments, and the repo settings.
+  - **Clean:**
+    - gitleaks 8.30.1 and trufflehog 3.99.2 found no secret in history or logs (gitleaks
+      flagged two made-up test keys).
+    - An exact-value search for the real credentials, the owner's email, the intervals.icu
+      athlete ID and every provider activity ID (R2's map of 201, plus 278 Garmin IDs) found
+      none in any commit, log or PR.
+    - `scanText` passes on all 633 historical versions of files under `data/`.
+    - There are no issues, deploy keys or webhooks.
+    - Workflows: the default token is read-only, there's no `pull_request_target`, every
+      action is SHA-pinned, inputs and secrets reach scripts only through `env:`, deploys run
+      only on `main` pushes, and fork PRs get no secrets (the gate copes).
+  - **Found:** the owner's personal email as author and committer on 208 commits; two
+    security notes in the docs (an account's MFA status, and four credentials printed into a
+    session transcript and kept, 2026-10-18; they never reached the repo, logs or PRs); and a
+    family detail in the docs, a YAML comment and PR #44's body. Also notes about the owner's
+    local files and billing (low), and infrastructure names (bucket, workers.dev subdomain,
+    token expiry), which are harmless without credentials and stay.
+  - **Owner picks** (all on the agent's recommendation):
+    - **Keep the repo and its history.** The PR trail is part of what the README shows. The
+      old commits keep the personal email; new ones use the GitHub noreply address (this
+      repo's `user.email`, set 2026-10-25), and the owner turns on GitHub's email privacy
+      settings before the switch, so web merges stop using it too.
+    - **Neutral wording:** the two hidden runs are "not the owner's own runs" everywhere,
+      PR #44's body included. Old commits keep the earlier wording.
+    - **Rotate before the switch:** the owner turns on Garmin two-step verification, and the
+      intervals.icu key, the R2 token and the Cloudflare deploy token are replaced. Then the
+      security notes are reworded.
+    - **Links from the README into `PROJECT_MEMORY.md` stay** (agent default, as the file is
+      reworded rather than hidden).
 
 ## Upstream candidates
+
+- **Public-readiness sweep: search for exact secret values, not just patterns.** gitleaks and
+  trufflehog only catch known shapes. A script that takes the real values from environment
+  variables (and provider IDs from the private ID map) and reports only paths and counts
+  checked history, Actions logs and PR text with nothing printed (PLAYBOOK, project lessons).
+- **Check `git rev-list --all --not main` before scanning PR refs:** GitHub keeps
+  `refs/pull/*/head` after branches go; if that list is empty, `main`'s history covers them
+  (AGENT_TIPS, *Git*).
+- **Git Bash on Windows rewrites a leading `/` in `gh api` paths** into
+  `C:/Program Files/Git/...`; write `gh api repos/...` without the slash, and pass Windows-style
+  paths (`cygpath -m`) to native tools like gitleaks and trufflehog (AGENT_TIPS, *Shell*).
 
 - **Git dates give calendar span, not effort:** the README said "21 days from first commit to
   live", but the owner's real effort was 3 days. Ask the owner before publishing any
