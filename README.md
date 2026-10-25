@@ -36,6 +36,10 @@ Data flows **ingest → store → render** ([constitution](.specify/memory/const
 Principle III). Scheduled jobs pull new data into the site's own store, and pages are static HTML
 built from it, so no visitor request depends on a third-party API.
 
+The diagrams share one colour key. Zones: red is private, blue is GitHub Actions, green is
+public. Boxes: grey for third-party services, amber for data stores, purple for triggers, blue
+for checks, green for what's live, orange for alert issues, and pink for people.
+
 ### Overview: what's private and what's public
 
 ```mermaid
@@ -72,6 +76,23 @@ flowchart TB
   site --> browser
   worker -->|"Last updated"| browser
   tiles -->|"race maps, on click"| browser
+
+  classDef external fill:#eaeef2,stroke:#57606a,color:#1f2328
+  classDef store fill:#fff8c5,stroke:#9a6700,color:#1f2328
+  classDef step fill:#ffffff,stroke:#0969da,color:#1f2328
+  classDef check fill:#b6e3ff,stroke:#0969da,color:#1f2328
+  classDef live fill:#aceebb,stroke:#1a7f37,color:#1f2328
+  classDef people fill:#ffd8ec,stroke:#bf3989,color:#1f2328
+  class devices,gc,icu,tiles external
+  class r2,repo store
+  class fetch,process,commit step
+  class gate check
+  class deploy,site,worker live
+  class owner,browser people
+  style private fill:#ffebe9,stroke:#cf222e,color:#82071e
+  style actions fill:#ddf4ff,stroke:#0969da,color:#0a3069
+  style public fill:#dafbe1,stroke:#1a7f37,color:#044f1e
+  linkStyle default stroke:#6e7781,stroke-width:1.5px
 ```
 
 - **Fetch** calls the intervals.icu API for activities and wellness data in a date window and
@@ -102,6 +123,18 @@ flowchart TB
   alert -->|"no successful fetch for 24 h"| issue2["Issue: ingest-failing<br/>closes itself on recovery"]
   fetch --> pub["process, gate, commit, deploy<br/>skipped when nothing is new"]
   daily["00:17 UTC run: daily catch-all<br/>always deploys, so date-based text follows the UK day"] -.-> pub
+
+  classDef trigger fill:#ecd8ff,stroke:#8250df,color:#1f2328
+  classDef step fill:#ffffff,stroke:#0969da,color:#1f2328
+  classDef check fill:#b6e3ff,stroke:#0969da,color:#1f2328
+  classDef alert fill:#ffd8b5,stroke:#bc4c00,color:#1f2328
+  classDef muted fill:#f6f8fa,stroke:#8c959f,color:#57606a,stroke-dasharray:4 3
+  class cron,manual,push,sched,daily trigger
+  class refresh,fetch,alert,pub step
+  class guard check
+  class issue1,issue2 alert
+  class skip muted
+  linkStyle default stroke:#6e7781,stroke-width:1.5px
 ```
 
 GitHub's own `schedule` dropped slots and left four-hour gaps, so the two-hourly trigger is a
@@ -119,6 +152,14 @@ flowchart LR
   pr -->|"owner reviews and merges"| main["Push to main"]
   main --> g2["Gate"] --> dep["Deploy to Cloudflare"]
   nightly["Nightly, 03:41 UTC"] --> q2["Quality against production"]
+
+  classDef trigger fill:#ecd8ff,stroke:#8250df,color:#1f2328
+  classDef check fill:#b6e3ff,stroke:#0969da,color:#1f2328
+  classDef live fill:#aceebb,stroke:#1a7f37,color:#1f2328
+  class pr,main,nightly trigger
+  class g1,t,q,g2,q2 check
+  class dep live
+  linkStyle default stroke:#6e7781,stroke-width:1.5px
 ```
 
 Every change reaches `main` through a reviewed pull request, except the refresh bot's commits,
@@ -172,7 +213,7 @@ standards in [sdd-playbook](https://github.com/alexwebber/sdd-playbook).
 
 | | |
 |---|---|
-| First commit to live site | 3 Oct to 24 Oct 2026 (21 days) |
+| Main build | 3 days (23–25 Oct 2026): every page, go-live and a refactor, on a spec, plan and foundations from a few shorter sessions earlier in October |
 | Requirements | 70 functional requirements, 12 success criteria |
 | Tasks | 160 over 9 phases; the 4 still open wait on the owner or a date |
 | Pull requests merged | over 70 |
