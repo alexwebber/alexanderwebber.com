@@ -74,7 +74,7 @@ const devices = runDevices([...runs].sort((a, b) => b.date.localeCompare(a.date)
                     return (
                       <li class:list={['run-row', { 'is-race': run.is_race }]} data-run-id={run.id}>
                         <p class="run-row-title">
-                          {href ? <a href={href}>{run.title}</a> : run.title}
+                          <a href={href}>{run.title}</a>
                           {run.is_race && (
                             <>
                               {' '}

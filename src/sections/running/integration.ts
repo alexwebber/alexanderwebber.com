@@ -3,8 +3,7 @@ import { JsonFileStore } from './data/store/index.ts';
 
 /**
  * One area of the Running section (landing, goals, training, ...). An area is
- * added here when its user story ships; until then nothing links to it, so
- * there are no dead links between increments (FR-027).
+ * added here when it ships, so the nav never links to an unbuilt page (FR-027).
  */
 export interface RunningArea {
   /** Stable key, e.g. 'landing', 'goals'. */
@@ -21,7 +20,7 @@ export interface RunningArea {
   routes: { pattern: string; entrypoint: string }[];
 }
 
-/** The route registry, in nav order. Each user story adds its area when it ships. */
+/** The route registry, in nav order; the section nav and landing links read it. */
 export const runningAreas: readonly RunningArea[] = [
   {
     key: 'landing',
@@ -82,13 +81,8 @@ export const runningAreas: readonly RunningArea[] = [
   },
 ];
 
-/** Shipped areas in nav order; the section nav and landing links read this. */
-export function shippedAreas(): readonly RunningArea[] {
-  return runningAreas;
-}
-
 /**
- * The Running section's Astro integration: injects every shipped area's routes, and validates all
+ * The Running section's Astro integration: injects every area's routes, and validates all
  * Running data when a build starts. Astro empties dist/ before rendering pages, so without the
  * early check a bad owner file (e.g. a goal time of "3:7x") would fail the build only after the
  * previous build was gone. Now it stops the build with the file/entry/field message (FR-070,

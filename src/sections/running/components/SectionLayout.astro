@@ -1,13 +1,13 @@
 ---
 // The layout every Running page uses (T076): the shared Base shell in Running's warm theme, the
-// section nav built from the route registry (integration.ts; only shipped areas, so no dead
-// links), the page heading with Garmin attribution right under it when the page shows Garmin
-// data (T152, title-level placement), and "Last updated" with the stale notice.
+// section nav built from the route registry (integration.ts), the page heading with Garmin
+// attribution right under it when the page shows Garmin data (T152, title-level placement), and
+// "Last updated" with the stale notice.
 //
 // Slots: default = page content; "last-updated" replaces the freshness line (rarely needed).
 import Base from '../../../shared/layout/Base.astro';
 import Nav from '../../../shared/layout/Nav.astro';
-import { shippedAreas } from '../integration.ts';
+import { runningAreas } from '../integration.ts';
 import { buildFreshness } from '../data/load.ts';
 import GarminAttribution from '../components/GarminAttribution.astro';
 import LastUpdated from '../components/LastUpdated.astro';
@@ -30,7 +30,7 @@ export interface Props {
 
 const { heading, description, image, imageAlt, garmin = false, current } = Astro.props;
 const title = Astro.props.title ?? `${heading} · Running · Alexander Webber`;
-const nav = shippedAreas()
+const nav = runningAreas
   .filter((area) => area.inNav !== false)
   .map((area) => ({ label: area.label, href: area.href }));
 const freshness = await buildFreshness();

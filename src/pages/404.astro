@@ -4,9 +4,6 @@
 // `not_found_handling`), so a mistyped or old link (e.g. a run the owner has since hidden) gets
 // the site's own page with a way back, not a blank one. It isn't indexed and isn't in the sitemap.
 import Base from '../shared/layout/Base.astro';
-import { shippedAreas } from '../sections/running/integration.ts';
-
-const runningLanding = shippedAreas().find((area) => area.key === 'landing');
 ---
 
 <Base
@@ -20,10 +17,8 @@ const runningLanding = shippedAreas().find((area) => area.key === 'landing');
   <p>There's no page at this address. It may have moved, or the link may have a typo.</p>
   <ul>
     <li><a href="/">Alexander Webber's home page</a></li>
-    {runningLanding && (
-      <li>
-        <a href={runningLanding.href}>Running</a>: training, races and the road to Brighton Marathon 2027
-      </li>
-    )}
+    <li>
+      <a href="/running/">Running</a>: training, races and the road to Brighton Marathon 2027
+    </li>
   </ul>
 </Base>

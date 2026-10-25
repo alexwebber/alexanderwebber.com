@@ -3,7 +3,7 @@
 A self-contained section (constitution Principle VII): it owns its pages, components, data
 store, validation and share images, and uses only `src/shared/` (layout, design system, charts,
 formatting and the generic storage machinery).
-`integration.ts` injects the routes of each shipped area; `astro.config.mjs` is the one line that
+`integration.ts` injects each area's routes (an area joins its registry when it ships); `astro.config.mjs` is the one line that
 adds the section to the site.
 
 This is the section's graduation design note (T110, for the MVP: Goals and the landing page;
@@ -129,14 +129,17 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
 - `validate.ts`: the referential checks of contracts/data-files.md on top of the schemas.
   `scripts/validate-data.ts` runs it in the gate.
 - `data/load.ts`: the only way Running code reads data (`runningStore()`, `sectionSettings()`,
-  `buildFreshness()`), memoised per build. `data/goals.ts` (`loadGoals()`) evaluates every goal
-  for today from it.
+  `buildFreshness()`). `sectionSettings()` takes section.yaml's defaults from its schema, also
+  before the file exists. Every loader (`data/goals.ts`, `landing.ts`, `training.ts`, `races.ts`,
+  `health.ts`) takes `today` and a store (default: the site's) and is memoised per store and day
+  by `data/memo.ts`, so a test or preview store gets its own results and nothing needs clearing.
+  `loadGoals()` evaluates every goal for today.
 - `domain/`: pure functions, unit-tested with "today" passed in. `distances.ts` (the named race
   distances, from `schemas/distances.json`, which ingest reads too), `pace.ts` (`formatPace`),
   `efforts.ts` (the Best Effort index), `composition.ts` (body fat's build-time 7-day mean), `manual-metrics.ts` (the owner's
   Garmin training status and race predictions, latest per distance), `goals.ts` (goal status and
   progress, data-model §5) and `goal-text.ts` (the words and figures cards show).
-- `links.ts`: links to another area (e.g. a run page) only once that area has shipped.
+- `links.ts`: a run's and a race's page address (`runHref`, `raceHref`).
 - Goals (US2): `pages/goals.astro` at `/running/goals/`, `components/GoalCard.astro`,
   `AchievedGoalCard.astro` and `AsOf.astro`, and the share image `og/goals.png.ts`.
 - Landing (US1): `pages/index.astro` at `/running/`, fed by `data/landing.ts` (`loadLanding()`).

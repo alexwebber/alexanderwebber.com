@@ -8,10 +8,10 @@ import { parseTime } from '../../shared/format/parse.ts';
 import type { DataIssue } from '../../shared/storage/index.ts';
 import { OWNER_DIR, PHOTO_FILE, PUBLISHED_DIR, locate, loadRunningData } from './data/store/files.ts';
 import type { RacePredictionEntry } from './data/store/index.ts';
+import { SECTION_DEFAULTS } from './data/load.ts';
 import type { RunningSchema } from './data/store/schemas.ts';
 import { parseDistance } from './domain/distances.ts';
 
-const DEFAULT_FEATURED_GOAL_LIMIT = 6;
 const DUPLICATE_RACE_TOLERANCE = 0.02;
 
 /** Provider activity links, and IDs outside links, that must never appear in owner files (data-model §3). */
@@ -216,7 +216,7 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
       }
     }
   });
-  const limit = section?.value.featured_goal_limit ?? DEFAULT_FEATURED_GOAL_LIMIT;
+  const limit = section?.value.featured_goal_limit ?? SECTION_DEFAULTS.featured_goal_limit;
   if (featured > limit) {
     error(data.goals!.file, '', '', `${featured} goals are featured; at most ${limit} can be (featured_goal_limit in section.yaml)`);
   }

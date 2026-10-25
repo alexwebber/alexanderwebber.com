@@ -28,7 +28,7 @@ const href = runHref(run.id);
 <article class="run-card" aria-labelledby={id} data-run-card data-run-id={run.id}>
   <header class="run-card-header">
     <Heading class="run-card-title" id={id}>
-      {href ? <a href={href}>{run.title}</a> : run.title}
+      <a href={href}>{run.title}</a>
     </Heading>
     <GarminAttribution device={run.device} />
   </header>

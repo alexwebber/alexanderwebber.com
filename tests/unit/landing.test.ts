@@ -4,8 +4,7 @@
 // at 360px, no-JS, axe, keyboard) are in tests/e2e/landing.spec.ts and tests/a11y/landing.spec.ts.
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearGoalsCache } from '../../src/sections/running/data/goals.ts';
-import { clearLandingCache, loadLanding } from '../../src/sections/running/data/landing.ts';
+import { loadLanding } from '../../src/sections/running/data/landing.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import type { Goal, HealthMetric, OwnerData, RefreshRecord, Run, RunningStore, SectionSettings, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { landingCard } from '../../src/sections/running/og/landing.ts';
@@ -82,8 +81,6 @@ function store(f: Fixture = {}): RunningStore {
 
 function use(f: Fixture = {}) {
   setRunningStore(store(f));
-  clearGoalsCache();
-  clearLandingCache();
 }
 
 beforeEach(() => {
@@ -94,8 +91,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   setRunningStore(undefined);
-  clearGoalsCache();
-  clearLandingCache();
 });
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
@@ -161,8 +156,6 @@ describe('landing page (US1)', () => {
     // Fourteen days on (12 Oct), it is back in priority order; the lead spans, and weight, left
     // alone on the last row, spans it.
     vi.setSystemTime(new Date('2026-10-12T10:00:00Z'));
-    clearGoalsCache();
-    clearLandingCache();
     const later = await page();
     expect(ids(later, 'data-featured-goals')).toEqual(['brighton', '10k', '5k', 'weight']);
     expect(later.match(/<article[^>]*data-goal-id="5k"[^>]*>/)![0]).not.toContain('goal-card-new');

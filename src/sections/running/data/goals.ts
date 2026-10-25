@@ -6,7 +6,8 @@ import { today as londonToday } from '../../../shared/format/dates.ts';
 import { buildEffortIndex } from '../domain/efforts.ts';
 import { evaluateGoals, type GoalEvaluation, type GoalHealth, type ValueMetric } from '../domain/goals.ts';
 import { latestManualMetrics } from '../domain/manual-metrics.ts';
-import { runningStore, SECTION_DEFAULTS } from './load.ts';
+import { runningStore, sectionSettings } from './load.ts';
+import { perStoreAndDay } from './memo.ts';
 import type { HealthMetric, RunningStore } from './store/index.ts';
 
 export interface GoalsData {
@@ -22,22 +23,13 @@ const HEALTH: Record<ValueMetric, HealthMetric> = {
   hrv: 'hrv',
 };
 
-let cache = new WeakMap<RunningStore, Map<string, Promise<GoalsData>>>();
-
 /** Every non-retired goal, evaluated for `today` (default: today in Europe/London). */
 export function loadGoals(today: string = londonToday(), store: RunningStore = runningStore()): Promise<GoalsData> {
-  let byDay = cache.get(store);
-  if (!byDay) cache.set(store, (byDay = new Map()));
-  let data = byDay.get(today);
-  if (!data) {
-    data = evaluate(today, store);
-    byDay.set(today, data);
-  }
-  return data;
+  return evaluate(today, store);
 }
 
-async function evaluate(today: string, store: RunningStore): Promise<GoalsData> {
-  const [owner, runs] = await Promise.all([store.getOwner(), store.listRuns()]);
+const evaluate = perStoreAndDay(async (today, store): Promise<GoalsData> => {
+  const [owner, runs, settings] = await Promise.all([store.getOwner(), store.listRuns(), sectionSettings(store)]);
   const health: GoalHealth = {};
   for (const [metric, series] of Object.entries(HEALTH) as [ValueMetric, HealthMetric][]) {
     health[metric] = (await store.getHealthSeries(series)).map(({ date, value }) => ({ date, value }));
@@ -49,12 +41,7 @@ async function evaluate(today: string, store: RunningStore): Promise<GoalsData> 
     manual: latestManualMetrics(owner.manualMetrics),
     upcomingRaces: owner.upcomingRaces,
     today,
-    highlightDays: owner.section?.recent_highlight_days?.goal ?? SECTION_DEFAULTS.recent_highlight_days.goal,
+    highlightDays: settings.recent_highlight_days.goal,
   });
   return { evaluations, today };
-}
-
-/** Tests swap the store; this drops evaluations made over the old one. */
-export function clearGoalsCache(): void {
-  cache = new WeakMap();
-}
+});
