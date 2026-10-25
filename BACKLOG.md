@@ -9,14 +9,13 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   subagents, and the reviews so far (T110, T147) checked correctness, speed, accessibility,
   privacy and SEO, not simplicity. CV & Blog will be the second section, the first real test of
   Principle VII, so any coupling between shared plumbing and Running is cheapest to fix now.
-  - **Review first (one session, read-only):** a ranked list of findings, each with its payoff
-    and risk. It covers patterns that drifted between phases, duplicated helpers, dead code and
-    leftover transition shims, and Running details leaking into `src/shared/`, `schemas/` or the
-    gate. It also covers the ingest package's structure, tests that are slow or duplicated, and
-    docs that have drifted from the code. The owner picks what to do.
-  - **Then small refactor PRs:** one concern each, with no change visitors can see. The existing
-    tests and the gate are the safety net, and published data must not change unless a finding
-    says why.
+  - **Review: done** (2026-10-25):
+    [`specs/001-running-section/maintainability-review.md`](specs/001-running-section/maintainability-review.md).
+    It found ten things, and the owner picked all ten.
+  - **Now small refactor PRs** over four sessions, in the review's order: tests first, then
+    storage out of shared, then the section's shims and loaders, then the tidy-ups. One concern
+    per PR, with no change visitors can see. The built `dist/` is diffed against `main`'s, and
+    published data doesn't change.
 - **Repo README: how this site was built** (owner, 2026-10-25). **Next after the refactor**,
   so it describes the simplified code; before the next spec. Today's `README.md` is 7 lines. It
   should be a showcase a recruiter or engineer can follow, and it feeds the repo-visibility

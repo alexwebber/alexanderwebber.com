@@ -9,12 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, late morning):** **Phase 9 is live** and **T158 is done**
-  (sdd-playbook#12 merged; house-process 0.10.0 reinstalled in the `001-house-process-0-10` PR).
+- **Status (2026-10-25, midday):** **the maintainability review is done**
+  (`001-maintainability-review` PR, docs only). The owner picked all ten findings.
   - **Next session:**
-    1. **Check the `001-house-process-0-10` PR merged** (and its checks are green); if not,
+    1. **Check the `001-maintainability-review` PR merged** (and its checks are green); if not,
        remind the owner once.
-    2. **The maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s).
+    2. **Refactor session 1 of 4: tests first.** Follow
+       `specs/001-running-section/maintainability-review.md` *Owner picks and order*: finding 5
+       (Playwright: full axe sweeps in the phone project only, the stale drill in desktop only,
+       shared a11y helpers), then 10 (archive test at 1,001 objects), then 9 (dead code). Each
+       is its own PR. Measure Playwright's CI time before and after #5 (it averaged 4 min 16 s
+       over 10 runs).
+       Sessions 2–4: storage out of shared (1, two PRs); shims and loaders (2, 3); tidy-ups
+       (4, 6, 7 with a computed-style check, 8).
     3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
     4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
@@ -27,7 +34,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **Planned order** (owner, 2026-10-24):
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
     2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
-    3. **Maintainability review and refactor** (BACKLOG).
+    3. **Maintainability review** (done, 2026-10-25) **and refactor** (BACKLOG, four sessions).
     4. **Repo README** (BACKLOG).
     5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
        (fundraising, journey story or CV & Blog).
@@ -1135,8 +1142,30 @@ project-specific notes.
 - **2026-10-25** — Reinstalled house-process 0.10.0 from the playbook's `main` after
   sdd-playbook #12 merged. The PR norm gains the template's "every check green before ready and
   after merge" sentence. `extensions.yml` is unchanged. T158 is done.
+- **2026-10-25** — **Maintainability review done**
+  (`specs/001-running-section/maintainability-review.md`; read-only, with knip, vulture and
+  timed suites). It found ten things, ranked by payoff and risk. The biggest is that Running's
+  store, file map, schema list and gate checks live in `src/shared/`. The others are leftover
+  page-by-page shims, drifted data loaders, distance tables in four places, Playwright repeating
+  axe sweeps and the stale drill in both projects (about 45% of its time), hand-built number
+  formatting, copied goal-card CSS, the superseded `backfill` command, a little dead code and a
+  slow archive test.
+  - **The owner picked all ten.** Finding 7 (goal-card CSS) was added after the owner asked
+    whether the copying would hurt later. Adding goals never copies anything, but a third card
+    type would (e.g. fundraising), and a before/after computed-style check removes the risk.
+  - **Checked and fine:** the READMEs match the code, the ingest package and domain code are
+    cleanly split, the workflows explain every step, and no schema transition shims remain.
+  - **Refactor order:** four sessions, tests first.
 
 ## Upstream candidates
+
+- **Playwright `beforeAll` runs once per project (and worker):** expensive setup (building a site
+  copy) and viewport-independent checks (full axe sweeps) double with a phone and a desktop
+  project. Pin them to one project (AGENT_TIPS, *End-to-end testing*).
+- **Schedule a simplicity review after a multi-slice build:** the per-phase reviews checked
+  correctness, speed, a11y and privacy, but drift between subagent-built slices (three caching
+  patterns, section code in shared, page-by-page shims) only shows when read as a whole
+  (PLAYBOOK, project lessons).
 
 ## Open questions
 
