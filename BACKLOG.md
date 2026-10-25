@@ -62,3 +62,10 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   every reading, so `/running/health/` grows about 40 KB gzip a year (54 KB in Oct 2026) and
   reaches the 150 KB page budget in about two years. Plan: keep daily rows for the last year
   and weekly means before that. Revisit by autumn 2027, or sooner if the page passes 100 KB.
+- **Security headers** (T147 review, 2026-10-25). The site sends no `Content-Security-Policy`,
+  `X-Content-Type-Options: nosniff` or `Referrer-Policy`. They aren't one of the constitution's
+  quality bars, and the site has no forms, logins or third-party scripts, so the risk is low. A
+  CSP needs care: the inline freshness and countdown scripts need hashes, and the race map loads
+  OpenFreeMap tiles and a worker. Could be a `_headers` file in `public/`.
+- **Favicon** (T147 review). There is none, so browsers request `/favicon.ico` and get the 404
+  page. Pick one when the CV & Blog section sets the site-wide identity.

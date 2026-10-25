@@ -9,19 +9,23 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-24, late night):** **Phase 8 (US5 Health) is live and reviewed** (#57,
-  #58). The review's one change, hiding "All time" until it adds a month, is the
-  `001-health-alltime` PR.
+- **Status (2026-10-25, morning):** **Phase 9 (Polish) is built** in the `001-polish` PR
+  (T145–T147; T148 skipped by the owner). Phase 8 is live (#59 checked: 3 months and 1 year
+  only until 16–20 Nov 2026).
   - **Next session:**
-    1. Check that the `001-health-alltime` PR merged and deployed (the live Health page then
-       offers only 3 months and 1 year until 16–20 Nov 2026).
-    2. **Phase 9 (Polish, tasks.md)**, in its own session(s).
-    3. Remember that the lab wording is decided at the first lab result.
+    1. Check that the `001-polish` PR merged and deployed, then confirm on the live site that
+       `/running/no-such-page/` shows the 404 page (status 404) and that
+       `https://alexanderwebber.com/running/api/freshness` still returns JSON, including when
+       opened in a browser. Ask about any unticked PR boxes.
+    2. **T158: harvest lessons** (`/speckit-house-process-harvest-lessons`, main conversation),
+       then ask the owner which spec comes next: fundraising, journey story or CV & Blog.
+    3. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    4. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
   - **Planned order** (owner, 2026-10-24):
-    1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), then Phase 9 (Polish), each in its own session(s).
+    1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (`001-polish` PR), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done, before starting the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
@@ -1089,6 +1093,26 @@ project-specific notes.
     on 17–21 Oct 2025. `RANGE_MIN_EXTRA_DAYS` (30) applies to "1 year" over "3 months" too, for
     consistency. "All time" returns by itself on 16–20 Nov 2026, depending on the chart.
 
+- **2026-10-25** — **Phase 9 (Polish) built** (`001-polish` PR; implement subagent about 235k
+  tokens). The owner skipped T148's hallway test, because the phase-by-phase live reviews
+  covered it. T149 waits until about 2026-11-23.
+  - **Stale-data drill (T145):** `tests/e2e/stale.spec.ts` builds a copy of the site with
+    `refresh.json` 7 days old. It checks that the gate passes and every page shows its build-time
+    time and the stale notice, also when the freshness endpoint returns 503 or JS is off.
+  - **404 page (T147):** the live site answered unknown addresses with a blank 404. Now
+    `src/pages/404.astro` is served with a 404 status (`not_found_handling: "404-page"`), and
+    `run_worker_first: ["/running/api/*"]` keeps the freshness endpoint on the Worker for browser
+    navigations too.
+  - **#59 merged with Playwright red:** the Health keyboard test expected "All time". It now
+    walks whatever ranges a chart offers. From now on the agent checks `gh pr checks` before
+    calling a PR ready, and again after the merge.
+  - **Final review:** every page type scores 100 (performance and accessibility), with no
+    script files on real pages. axe found 0 violations on all 216 pages, in three set-ups.
+    Every page has a unique title and description, a canonical URL and a share image.
+    scan-privacy found nothing. The quickstart was corrected where it had fallen behind
+    (scenario 2's target, the dropped Garmin import, gate and Playwright build modes).
+  - **Not built:** security headers (CSP etc.) and a favicon, both in BACKLOG.
+
 ## Upstream candidates
 
 - 2026-10-25 — PR #59 merged with its Playwright check red: a keyboard test expected an "All time"
@@ -1100,7 +1124,8 @@ project-specific notes.
   default, so the live site showed a blank page for mistyped or stale links until T147. Agent tip
   (Cloudflare, go-live): add a 404 page and `assets.not_found_handling: "404-page"` at go-live.
   With a Worker, browser navigations to unmatched paths then skip the Worker (an API path opened
-  in the address bar shows the 404 page), while `fetch()` and curl still reach it; check with
+  in the address bar shows the 404 page), while `fetch()` and curl still reach it. Add
+  `assets.run_worker_first: ["/api/path/*"]` for the Worker's paths, and check with
   `wrangler dev` and `Sec-Fetch-Mode: navigate`.
 - 2026-10-25 — Local `wrangler dev` (workerd) refused to start the Worker because its entry module
   also exports string constants ("Incorrect type for map entry 'FRESHNESS_KEY'"), although
