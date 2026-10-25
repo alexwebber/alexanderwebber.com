@@ -10,9 +10,9 @@ Update this as decisions get made — treat it as the source of truth alongside
      A new session reads this first; the owner only needs to type "continue". -->
 
 - **Status (2026-10-25, afternoon):** the refactor is done (#71 merged and deployed). The
-  **README PR** (`001-readme`: README, `LICENSE`, BACKLOG tidy) is raised.
+  **README PR #72** (`001-readme`: README, `LICENSE`, BACKLOG tidy) is raised.
   - **Next session:**
-    1. **Check the README PR merged** and every check is green; if not merged, remind the owner
+    1. **Check PR #72 merged** and every check is green; if not merged, remind the owner
        once. Ask any of its confirmation boxes left unticked. It changes no site files, so
        there's no deploy to wait for, but check the Gate run on `main` finished green anyway.
     2. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
@@ -28,7 +28,7 @@ Update this as decisions get made — treat it as the source of truth alongside
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
     2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
     3. ~~Maintainability review and refactor~~ (2026-10-25; PRs #67–#71).
-    4. **Repo README** (raised 2026-10-25).
+    4. **Repo README** (PR #72, raised 2026-10-25).
     5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
@@ -1232,7 +1232,7 @@ project-specific notes.
 
 - **2026-10-25** — **#71 deployed:** the tidy-ups PR merged, and the Gate run on `main` after
   it finished green, deploy included. The refactor (findings 1–10) is done.
-- **2026-10-25** — **Repo README** (`001-readme` PR). Owner picks:
+- **2026-10-25** — **Repo README** (PR #72). Owner picks:
   - **Neutral project voice**, not first person.
   - **Licence: MIT for the code, content all rights reserved** (the data under `data/`, race
     photos, and the written text of the site and docs). `LICENSE` is the plain MIT text, so
@@ -1247,6 +1247,10 @@ project-specific notes.
     contracts, quickstart, section READMEs) so it doesn't drift.
 
 ## Upstream candidates
+
+- **Windows PowerShell 5.1 adds a BOM when piping a here-string to `git commit -F -`:** the
+  subject started with U+FEFF. Commit from the Bash tool with a message file or heredoc (no
+  backslashes), or check `git log -1 | od -c` (AGENT_TIPS, *Shell*, which suggests `-F -`).
 
 - **Render Mermaid diagrams before a PR with mermaid-cli and Playwright's Chromium:**
   `npx @mermaid-js/mermaid-cli -p pp.json`, where `pp.json` gives `executablePath` with forward
