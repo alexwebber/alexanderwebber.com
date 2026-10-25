@@ -47,12 +47,20 @@ test('charts carry their key message, and the range choice works from the keyboa
   await page.goto('/running/health/');
   const weight = page.locator('figure.chart-figure').filter({ has: page.getByRole('heading', { name: 'Weight', exact: true }) });
   await expect(weight.locator('[data-range="1y"] svg[role="img"]')).toHaveAccessibleName(/^Weight, last year From [\d.]+ kg on \d+ \w+ \d{4} to [\d.]+ kg on \d+ \w+ \d{4}\. Target [\d.]+ kg\./);
-  await weight.getByRole('radio', { name: '1 year' }).focus();
+  // The ranges on offer follow the data ("All time" only once it adds a month over "1 year"), so
+  // walk whatever the chart offers: arrow keys move between native radios and wrap round.
+  const ranges = await weight.locator('fieldset.range-toggle input[type="radio"]').evaluateAll((els) => els.map((el) => (el as HTMLInputElement).value));
+  expect(ranges.length).toBeGreaterThanOrEqual(2);
+  const radio = (i: number) => weight.locator(`fieldset.range-toggle input[value="${ranges[(i + ranges.length) % ranges.length]}"]`);
+  const panel = (i: number) => weight.locator(`[data-range="${ranges[(i + ranges.length) % ranges.length]}"] svg`);
+  const start = ranges.indexOf('1y');
+  await expect(radio(start)).toBeChecked();
+  await radio(start).focus();
   await page.keyboard.press('ArrowRight');
-  await expect(weight.getByRole('radio', { name: 'All time' })).toBeChecked();
-  await expect(weight.locator('[data-range="all"] svg')).toBeVisible();
+  await expect(radio(start + 1)).toBeChecked();
+  await expect(panel(start + 1)).toBeVisible();
   await page.keyboard.press('ArrowLeft');
   await page.keyboard.press('ArrowLeft');
-  await expect(weight.getByRole('radio', { name: '3 months' })).toBeChecked();
-  await expect(weight.locator('[data-range="3m"] svg')).toBeVisible();
+  await expect(radio(start - 1)).toBeChecked();
+  await expect(panel(start - 1)).toBeVisible();
 });
