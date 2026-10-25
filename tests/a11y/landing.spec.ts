@@ -3,11 +3,10 @@
 // words, and a keyboard path from the skip link through every link with a visible focus ring.
 import { readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { axe, fullSweep, outline, sweepOnlyInDark } from '../helpers/a11y.ts';
 
 const PATH = '/running/';
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const runsDir = resolve(import.meta.dirname, '../../data/running/published/runs');
 const runIds = readdirSync(runsDir).flatMap((year) => readdirSync(join(runsDir, year)).map((f) => f.replace(/\.json$/, '')));
 
@@ -16,16 +15,13 @@ async function open(page: Page, path = PATH) {
   expect(response?.status()).toBe(200);
 }
 
-async function axe(page: Page) {
-  const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-  return results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
-}
-
 for (const colorScheme of ['light', 'dark'] as const) {
   test(`passes axe in ${colorScheme} mode`, async ({ page }) => {
+    sweepOnlyInDark(colorScheme);
     await page.emulateMedia({ colorScheme });
     await open(page);
     expect(await axe(page)).toEqual([]);
+    if (!fullSweep()) return;
     // The chart's data table, opened.
     await page.locator('[data-training-build] summary').first().click();
     expect(await axe(page)).toEqual([]);
@@ -33,6 +29,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
   test(`a run page passes axe in ${colorScheme} mode`, async ({ page }) => {
     test.skip(runIds.length === 0, 'no runs published');
+    sweepOnlyInDark(colorScheme);
     await page.emulateMedia({ colorScheme });
     await open(page, `/running/runs/${runIds.sort().at(-1)}/`);
     expect(await axe(page)).toEqual([]);
@@ -41,9 +38,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
 test('headings never skip a level', async ({ page }) => {
   await open(page);
-  const levels = await page.locator('main :is(h1, h2, h3, h4, h5, h6)').evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
-  expect(levels[0]).toBe(1);
-  for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1);
+  await outline(page);
   await expect(page.getByRole('heading', { level: 2, name: 'Goals' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: 'This week' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: 'Latest run' })).toBeVisible();

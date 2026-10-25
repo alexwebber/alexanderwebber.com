@@ -2,30 +2,20 @@
 // and the health preview (synthetic data with lab results, SHELL_PREVIEW=1), in light and dark,
 // in every range and with every data table open; a sound heading outline; charts exposed as images
 // with their key message; and the range choice operable from the keyboard.
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { axe, fullSweep, outline, sweepOnlyInDark } from '../helpers/a11y.ts';
 
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const PAGES = ['/running/health/', '/health-preview/'];
-
-async function axe(page: Page) {
-  const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-  return results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
-}
-
-async function outline(page: Page) {
-  const levels = await page.locator('main :is(h1, h2, h3, h4, h5, h6):visible').evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
-  expect(levels[0]).toBe(1);
-  for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1);
-}
 
 for (const colorScheme of ['light', 'dark'] as const) {
   test(`the health pages pass axe in ${colorScheme} mode, in every range and with the tables open`, async ({ page }) => {
+    sweepOnlyInDark(colorScheme);
     test.slow();
     await page.emulateMedia({ colorScheme });
     for (const path of PAGES) {
       await page.goto(path);
       expect(await axe(page), path).toEqual([]);
+      if (!fullSweep()) continue;
       for (const range of ['3 months', 'All time']) {
         for (const label of await page.locator('fieldset.range-toggle label', { hasText: range }).all()) await label.click();
         expect(await axe(page), `${path} (${range})`).toEqual([]);
