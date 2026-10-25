@@ -1,8 +1,8 @@
 // Build-time RunningStore over the JSON/YAML files in data/running/ (T037). Every file is
 // validated against schemas/ on first use; any problem throws DataValidationError, which fails
 // the build with the FR-070 file/entry/field message. Loaded once per store and memoised.
-import { DataValidationError } from './errors.ts';
-import { loadRunningData, type RunningData } from './load.ts';
+import { DataValidationError } from '../../../../shared/storage/index.ts';
+import { loadRunningData, type RunningData } from './files.ts';
 import type {
   DateRange,
   HealthMetric,

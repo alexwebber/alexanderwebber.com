@@ -5,11 +5,11 @@
 // Every function takes the store to read, defaulting to the site's own: the test-only race
 // preview (SHELL_PREVIEW=1) passes a store of synthetic races through the same code.
 import { today as londonToday } from '../../../shared/format/dates.ts';
-import type { RaceTrack, RunningStore, UpcomingRace } from '../../../shared/storage/index.ts';
 import { buildEffortIndex } from '../domain/efforts.ts';
 import { personalBests, racePbSlugs, type PbRow } from '../domain/pbs.ts';
 import { daysRemaining, focusRace, raceHistory, raceState, targetLabel, upcomingRaces, type RaceHistoryEntry, type RaceState } from '../domain/races.ts';
 import { runningStore, SECTION_DEFAULTS } from './load.ts';
+import type { RaceTrack, RunningStore, UpcomingRace } from './store/index.ts';
 
 export interface UpcomingView {
   race: UpcomingRace;

@@ -3,7 +3,7 @@
 // build time, so the baseline map needs no JS and no third party. The page carries only these
 // projected figures; the coordinates themselves go to the interactive map's route file, which
 // is fetched on click.
-import type { RaceTrack } from '../../../shared/storage/index.ts';
+import type { RaceTrack } from '../data/store/index.ts';
 
 /** The SVG's width in user units; the height follows the route's shape. */
 export const MAP_WIDTH = 1000;

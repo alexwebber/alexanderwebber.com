@@ -3,7 +3,7 @@
 // "today" pinned so the ranges don't drift. Paths resolve from the repo root, where builds and
 // tests run.
 import { resolve } from 'node:path';
-import { JsonFileStore } from '../../../src/shared/storage/index.ts';
+import { JsonFileStore } from '../../../src/sections/running/data/store/index.ts';
 
 export const PREVIEW_TODAY = '2026-10-24';
 export const previewStore = new JsonFileStore(resolve('tests/fixtures/health-preview'), process.cwd());

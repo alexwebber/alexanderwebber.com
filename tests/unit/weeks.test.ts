@@ -1,8 +1,8 @@
 // This week, the training build and the latest run (T108 for T097; FR-021, FR-023, FR-058, FR-075).
 // "Today" is pinned in every case; runs are fixtures.
 import { describe, expect, it } from 'vitest';
+import type { Run } from '../../src/sections/running/data/store/index.ts';
 import { latestRun, trainingBuild, weekSnapshot } from '../../src/sections/running/domain/weeks.ts';
-import type { Run } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 const run = (id: string, km: number, extra: Partial<Run> = {}): Run =>

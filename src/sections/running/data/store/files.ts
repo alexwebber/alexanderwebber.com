@@ -1,10 +1,9 @@
-// Reads and schema-validates every file under data/running/ (contracts/data-files.md layout).
-// Shared by JsonFileStore (which throws on any problem) and scripts/validate-data.ts (which adds
-// referential checks and reports everything at once).
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+// Running's file map: reads and schema-validates every file under data/running/
+// (contracts/data-files.md layout). Shared by JsonFileStore (which throws on any problem) and
+// ../../validate.ts (which adds referential checks and reports everything at once).
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseDocument } from 'yaml';
-import { fieldPath, type DataIssue } from './errors.ts';
+import { fieldPath, listDataFiles, parseDataFile, SchemaSet, type DataIssue } from '../../../../shared/storage/index.ts';
 import type {
   Goal,
   HealthExclusion,
@@ -20,7 +19,7 @@ import type {
   SectionSettings,
   UpcomingRace,
 } from './generated/index.ts';
-import { SchemaSet, type SchemaName } from './schemas.ts';
+import { RUNNING_SCHEMAS, type RunningSchema } from './schemas.ts';
 
 export const DATA_DIR = 'data/running';
 export const PUBLISHED_DIR = `${DATA_DIR}/published`;
@@ -55,7 +54,7 @@ export interface LoadResult {
   issues: DataIssue[];
 }
 
-const LIST_NOUNS: Partial<Record<SchemaName, string>> = {
+const LIST_NOUNS: Partial<Record<RunningSchema, string>> = {
   'owner/goals': 'goal',
   'owner/upcoming-races': 'upcoming race',
   'owner/run-overrides': 'override',
@@ -74,7 +73,7 @@ function at(value: unknown, key: string | number): unknown {
 }
 
 /** Splits a JSON path into the FR-070 "entry" and "field" for a file of the given schema. */
-export function locate(schema: SchemaName, value: unknown, path: Path): { entry: string; field: string } {
+export function locate(schema: RunningSchema, value: unknown, path: Path): { entry: string; field: string } {
   const [head, ...rest] = path;
   const listNoun = LIST_NOUNS[schema];
   if (listNoun && typeof head === 'number') {
@@ -90,7 +89,7 @@ export function locate(schema: SchemaName, value: unknown, path: Path): { entry:
     const label = `${noun} ${rest[0] + 1}${typeof asOf === 'string' ? ` (as of ${asOf})` : ''}`;
     return { entry: label, field: fieldPath(rest.slice(1)) };
   }
-  const named: Partial<Record<SchemaName, [string, string]>> = {
+  const named: Partial<Record<RunningSchema, [string, string]>> = {
     'published/run': ['run', 'id'],
     'published/race-track': ['race track', 'id'],
     'published/health-series': ['health series', 'metric'],
@@ -104,19 +103,10 @@ export function locate(schema: SchemaName, value: unknown, path: Path): { entry:
   return { entry: '', field: fieldPath(path) };
 }
 
-function listFiles(root: string, dir: string): string[] {
-  const abs = join(root, dir);
-  if (!existsSync(abs)) return [];
-  return readdirSync(abs, { recursive: true, encoding: 'utf8' })
-    .map((f) => `${dir}/${f.split('\\').join('/')}`)
-    .filter((f) => statSync(join(root, f)).isFile())
-    .sort();
-}
-
 /** Recognises a data file's schema from its path; undefined for photos and unexpected files. */
-export function schemaForFile(file: string): SchemaName | undefined {
+export function schemaForFile(file: string): RunningSchema | undefined {
   const rel = file.slice(DATA_DIR.length + 1);
-  const rules: [RegExp, SchemaName][] = [
+  const rules: [RegExp, RunningSchema][] = [
     [/^published\/runs\/\d{4}\/[^/]+\.json$/, 'published/run'],
     [/^published\/race-tracks\/[^/]+\.json$/, 'published/race-track'],
     [/^published\/health\/[^/]+\/\d{4}\.json$/, 'published/health-series'],
@@ -137,30 +127,11 @@ export function schemaForFile(file: string): SchemaName | undefined {
 export const PHOTO_FILE = /^data\/running\/owner\/races\/[^/]+\/[^/]+\.(jpg|webp|avif)$/;
 const IGNORED_FILE = /(^|\/)(\.gitkeep|README\.md)$/;
 
-/** Parses JSON or YAML 1.2 (so `3:30:00` and `2027-04-04` stay strings). Null for an empty document. */
-function parse(file: string, text: string): { value: unknown } | { error: string } {
-  if (file.endsWith('.json')) {
-    try {
-      return { value: JSON.parse(text) };
-    } catch (error) {
-      return { error: `is not valid JSON: ${(error as Error).message}` };
-    }
-  }
-  const doc = parseDocument(text, { version: '1.2', schema: 'core', uniqueKeys: true, prettyErrors: true });
-  const problem = doc.errors[0];
-  if (problem) {
-    const line = problem.linePos?.[0]?.line;
-    const reason = problem.message.split('\n')[0]!.replace(/ at line \d+, column \d+:?$/, '');
-    return { error: `is not valid YAML${line ? ` (line ${line})` : ''}: ${reason}` };
-  }
-  return { value: doc.toJS({ maxAliasCount: 50 }) ?? null };
-}
-
-const schemaSets = new Map<string, SchemaSet>();
-function schemasFor(root: string): SchemaSet {
+const schemaSets = new Map<string, SchemaSet<RunningSchema>>();
+function schemasFor(root: string): SchemaSet<RunningSchema> {
   let set = schemaSets.get(root);
   if (!set) {
-    set = new SchemaSet(join(root, 'schemas'));
+    set = new SchemaSet(join(root, 'schemas'), RUNNING_SCHEMAS);
     schemaSets.set(root, set);
   }
   return set;
@@ -187,7 +158,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     exclusions: undefined,
     lab: [],
     manualMetrics: undefined,
-    files: listFiles(root, DATA_DIR),
+    files: listDataFiles(root, DATA_DIR),
   };
 
   for (const file of data.files) {
@@ -198,7 +169,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
       }
       continue;
     }
-    const parsed = parse(file, readFileSync(join(root, file), 'utf8'));
+    const parsed = parseDataFile(file, readFileSync(join(root, file), 'utf8'));
     if ('error' in parsed) {
       issues.push({ file, entry: '', field: '', severity: 'error', message: parsed.error });
       continue;
@@ -219,7 +190,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
   return { data, issues };
 }
 
-function store(data: RunningData, schema: SchemaName, loaded: Loaded<unknown>): void {
+function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>): void {
   switch (schema) {
     case 'published/run': data.runs.push(loaded as Loaded<Run>); break;
     case 'published/race-track': data.raceTracks.push(loaded as Loaded<RaceTrack>); break;

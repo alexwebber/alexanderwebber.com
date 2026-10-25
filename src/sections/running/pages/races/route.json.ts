@@ -2,8 +2,8 @@
 // a visitor clicks "Load interactive map". Races with a published track only; like the race
 // pages, it is one of the few places coordinates are published (FR-014, Principle VI).
 import type { APIRoute, GetStaticPaths } from 'astro';
-import type { RaceTrack } from '../../../../shared/storage/index.ts';
 import { loadRaces } from '../../data/races.ts';
+import type { RaceTrack } from '../../data/store/index.ts';
 import { routeJson } from '../../domain/race-map.ts';
 
 export const getStaticPaths = (async () => {

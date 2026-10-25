@@ -6,13 +6,13 @@
 // Owner exclusions (health-exclusions.yaml, FR-067) are removed by the processor before the series
 // are published, so nothing here needs to drop them again.
 import { today as londonToday } from '../../../shared/format/dates.ts';
-import type { HealthMetric, LabMeasurement, RunningStore } from '../../../shared/storage/index.ts';
 import type { DatedValue } from '../domain/composition.ts';
 import { dailyMetric, fitnessSeries, fitnessStart, goalFor, hrvStart, predictionRows, type DailyMetric, type FitnessPoint, type HrvStart, type PredictionRow } from '../domain/health.ts';
 import type { GoalEvaluation, ValueEvaluation } from '../domain/goals.ts';
 import { trainingStatusHistory, type CurrentTrainingStatus } from '../domain/manual-metrics.ts';
 import { loadGoals } from './goals.ts';
 import { runningStore } from './load.ts';
+import type { HealthMetric, LabMeasurement, RunningStore } from './store/index.ts';
 
 export interface HealthData {
   today: string;

@@ -2,13 +2,13 @@
 // run and the featured goals, evaluated for `today` (Europe/London). Shared by the page and its
 // share image, so both say the same thing. Memoised per build and day.
 import { today as londonToday } from '../../../shared/format/dates.ts';
-import type { Run, UpcomingRace } from '../../../shared/storage/index.ts';
 import { featuredGoals, type GoalEvaluation } from '../domain/goals.ts';
 import { latestManualMetrics, predictionDistanceFor, type Prediction } from '../domain/manual-metrics.ts';
 import { daysRemaining, focusRace, raceDistance, raceResult, raceState, targetLabel, type RaceResult, type RaceState } from '../domain/races.ts';
 import { latestRun, trainingBuild, weekSnapshot, type LatestRun, type TrainingBuild, type WeekSnapshot } from '../domain/weeks.ts';
 import { loadGoals } from './goals.ts';
 import { runningStore, sectionSettings } from './load.ts';
+import type { Run, UpcomingRace } from './store/index.ts';
 
 export interface FocusRaceView {
   race: UpcomingRace;

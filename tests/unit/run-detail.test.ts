@@ -3,9 +3,9 @@
 // pinned fixtures. The browser checks over the real build are in tests/e2e/run-detail.spec.ts.
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { beforeAll, describe, expect, it } from 'vitest';
+import type { Run } from '../../src/sections/running/data/store/index.ts';
 import { effortRows, seriesCharts, splitRows, tableRows, timeTicks, zoneRows, formatAxisTime } from '../../src/sections/running/domain/run-detail.ts';
 import RunPage from '../../src/sections/running/pages/runs/[id].astro';
-import type { Run } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;

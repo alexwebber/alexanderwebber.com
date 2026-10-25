@@ -8,9 +8,10 @@
 //   result_ref) -> completed (result_ref set: the owner race entry holding the result).
 // A race with result_ref is completed whatever its date, and leaves the upcoming list.
 import { daysBetween } from '../../../shared/format/dates.ts';
-import { DISTANCES_M, parseDistance, parseTime } from '../../../shared/format/parse.ts';
+import { parseTime } from '../../../shared/format/parse.ts';
 import { formatKm } from '../../../shared/format/units.ts';
-import type { Race, Run, SectionSettings, UpcomingRace } from '../../../shared/storage/index.ts';
+import type { Race, Run, SectionSettings, UpcomingRace } from '../data/store/index.ts';
+import { DISTANCES_M, parseDistance } from './distances.ts';
 
 export type RaceState = 'upcoming' | 'race_day' | 'awaiting_result' | 'completed';
 

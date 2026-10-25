@@ -50,7 +50,7 @@
       "x-error": "is not a valid time (expected mm:ss or h:mm:ss)"
     },
     "distanceName": {
-      "description": "A named race distance.",
+      "description": "A named race distance; schemas/distances.json gives each one in metres.",
       "enum": ["1k", "1mi", "3k", "5k", "10k", "15k", "10mi", "20k", "half", "30k", "marathon"],
       "x-error": "is not a known distance (expected 1k, 1mi, 3k, 5k, 10k, 15k, 10mi, 20k, half, 30k, marathon, or metres)"
     },

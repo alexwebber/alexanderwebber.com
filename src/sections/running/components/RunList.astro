@@ -8,9 +8,10 @@
 // the list (FR-077).
 import Toggle from '../../../shared/charts/Toggle.astro';
 import { formatDate } from '../../../shared/format/dates.ts';
-import { formatDuration, formatKm, formatPace } from '../../../shared/format/units.ts';
-import type { Run } from '../../../shared/storage/index.ts';
+import { formatDuration, formatKm } from '../../../shared/format/units.ts';
+import type { Run } from '../data/store/index.ts';
 import { runDevices } from '../domain/attribution.ts';
+import { formatPace } from '../domain/pace.ts';
 import { groupByMonth } from '../domain/periods.ts';
 import { raceHref, runHref } from '../links.ts';
 import GarminAttribution from './GarminAttribution.astro';

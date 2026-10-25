@@ -4,8 +4,9 @@
 // pace. Only plausible efforts are shown (FR-057's GPS-glitch filter); with none, the panel isn't
 // rendered. Treadmill runs show theirs too, although they stay out of PBs and goals unless the
 // owner includes them. Garmin attribution names the run's watch (FR-077). No client JS.
-import { formatDuration, formatPace } from '../../../shared/format/units.ts';
-import type { Run } from '../../../shared/storage/index.ts';
+import { formatDuration } from '../../../shared/format/units.ts';
+import type { Run } from '../data/store/index.ts';
+import { formatPace } from '../domain/pace.ts';
 import { effortRows } from '../domain/run-detail.ts';
 import GarminAttribution from './GarminAttribution.astro';
 

@@ -12,7 +12,7 @@ import {
   targetLabel,
   upcomingRaces,
 } from '../../src/sections/running/domain/races.ts';
-import type { Race, Run, UpcomingRace } from '../../src/shared/storage/index.ts';
+import type { Race, Run, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { run } from '../helpers/temp-repo.ts';
 
 const brighton: UpcomingRace = { id: 'brighton-2027', name: 'Brighton Marathon', date: '2027-04-04', distance: 'marathon', target_time: '3:30:00' };

@@ -12,18 +12,24 @@ distance outside the table is scaled from the nearest record with Riegel's formu
 
 import math
 
+from awingest.distances import DISTANCES_M
+
+# By distance name, so every named distance has a record and the metres come from one table.
+_WORLD_RECORDS_BY_NAME: dict[str, float] = {
+    "1k": 131,  # 2:11.96
+    "1mi": 223,  # 3:43.13
+    "3k": 437,  # 7:17.55
+    "5k": 755,  # 12:35.36
+    "10k": 1571,  # 26:11.00
+    "15k": 2427,  # 40:27 (road)
+    "10mi": 2664,  # 44:24 (road)
+    "20k": 3321,  # 55:21 (road)
+    "half": 3402,  # 56:42 (road)
+    "30k": 5207,  # 1:26:47
+    "marathon": 7235,  # 2:00:35
+}
 WORLD_RECORD_S: dict[float, float] = {
-    1000: 131,  # 2:11.96
-    1609.344: 223,  # 3:43.13
-    3000: 437,  # 7:17.55
-    5000: 755,  # 12:35.36
-    10000: 1571,  # 26:11.00
-    15000: 2427,  # 40:27 (road)
-    16093.44: 2664,  # 44:24 (road)
-    20000: 3321,  # 55:21 (road)
-    21097.5: 3402,  # 56:42 (road)
-    30000: 5207,  # 1:26:47
-    42195: 7235,  # 2:00:35
+    DISTANCES_M[name]: seconds for name, seconds in _WORLD_RECORDS_BY_NAME.items()
 }
 WORLD_RECORD_FACTOR = 0.85
 MIN_KM_SPLIT_S = 150  # 2:30/km

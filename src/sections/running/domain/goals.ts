@@ -23,9 +23,10 @@
 // - Newly achieved: achieved within recent_highlight_days.goal days (FR-042); they lead the
 //   landing page's featured goals for that window (owner, 2026-10-23).
 import { daysBetween } from '../../../shared/format/dates.ts';
-import { parseDistance, parseTime } from '../../../shared/format/parse.ts';
-import type { Goal, UpcomingRace } from '../../../shared/storage/index.ts';
+import { parseTime } from '../../../shared/format/parse.ts';
+import type { Goal, UpcomingRace } from '../data/store/index.ts';
 import { bodyFatAverage, type DatedValue } from './composition.ts';
+import { parseDistance } from './distances.ts';
 import { effortsAt, type Effort, type EffortIndex } from './efforts.ts';
 import { predictionDistanceFor, type CurrentManualMetrics, type Prediction } from './manual-metrics.ts';
 

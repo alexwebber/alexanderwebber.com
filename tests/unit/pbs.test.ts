@@ -1,10 +1,10 @@
 // The personal-best table (T136 for T129; FR-053, FR-057, US4.2, US4.3, US4.7). "Today" is
 // pinned. Every race and run here is synthetic.
 import { describe, expect, it } from 'vitest';
+import type { Race, Run, RunOverride, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { buildEffortIndex } from '../../src/sections/running/domain/efforts.ts';
 import { PB_DISTANCES, personalBests, racePbSlugs, type PbInput } from '../../src/sections/running/domain/pbs.ts';
 import { raceHistory } from '../../src/sections/running/domain/races.ts';
-import type { Race, Run, RunOverride, UpcomingRace } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 const TODAY = '2026-10-24';

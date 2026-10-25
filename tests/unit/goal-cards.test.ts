@@ -7,9 +7,9 @@ import AchievedGoalCard from '../../src/sections/running/components/AchievedGoal
 import AsOf from '../../src/sections/running/components/AsOf.astro';
 import GoalCard from '../../src/sections/running/components/GoalCard.astro';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
+import type { Goal, RunningStore, SectionSettings } from '../../src/sections/running/data/store/index.ts';
 import type { Effort } from '../../src/sections/running/domain/efforts.ts';
 import type { GoalEvaluation } from '../../src/sections/running/domain/goals.ts';
-import type { Goal, RunningStore, SectionSettings } from '../../src/shared/storage/index.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {

@@ -7,13 +7,14 @@
 // freshness script.
 import type { GetStaticPaths } from 'astro';
 import { formatDate } from '../../../../shared/format/dates.ts';
-import { formatDuration, formatKm, formatMetres, formatPace } from '../../../../shared/format/units.ts';
-import type { Run } from '../../../../shared/storage/index.ts';
+import { formatDuration, formatKm, formatMetres } from '../../../../shared/format/units.ts';
 import RunList from '../../components/RunList.astro';
 import SectionLayout from '../../components/SectionLayout.astro';
 import YearLinks from '../../components/YearLinks.astro';
+import type { Run } from '../../data/store/index.ts';
 import { loadTraining, runsInYear } from '../../data/training.ts';
 import { runDevices } from '../../domain/attribution.ts';
+import { formatPace } from '../../domain/pace.ts';
 import { totals } from '../../domain/periods.ts';
 
 export const getStaticPaths = (async () => {

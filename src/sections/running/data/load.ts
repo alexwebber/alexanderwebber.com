@@ -2,7 +2,7 @@
 // here, never through files. It wraps the shared RunningStore (contracts/storage.md), which
 // validates every file against schemas/ on first use and throws DataValidationError (failing the
 // build with the FR-070 file/entry/field message) on any problem. Results are memoised per build.
-import { JsonFileStore, type RunningStore, type SectionSettings } from '../../../shared/storage/index.ts';
+import { JsonFileStore, type RunningStore, type SectionSettings } from './store/index.ts';
 
 let store: RunningStore | undefined;
 let settings: Promise<Settings> | undefined;

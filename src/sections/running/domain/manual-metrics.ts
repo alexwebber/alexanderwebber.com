@@ -6,14 +6,20 @@
 //
 // Pure functions over the loader's `manualMetrics`; `currentManualMetrics()` reads it from the store.
 import { parseTime } from '../../../shared/format/parse.ts';
-import type { OwnerData, RacePredictionEntry, TrainingStatusEntry } from '../../../shared/storage/index.ts';
 import { runningStore } from '../data/load.ts';
+import type { OwnerData, RacePredictionEntry, TrainingStatusEntry } from '../data/store/index.ts';
+import { DISTANCES_M } from './distances.ts';
 
 export type ManualMetrics = OwnerData['manualMetrics'];
 export type TrainingStatus = TrainingStatusEntry['status'];
 
 /** The distances Garmin predicts, with their lengths in metres. */
-export const PREDICTION_DISTANCES = { '5k': 5000, '10k': 10000, half: 21097.5, marathon: 42195 } as const;
+export const PREDICTION_DISTANCES = {
+  '5k': DISTANCES_M['5k'],
+  '10k': DISTANCES_M['10k'],
+  half: DISTANCES_M.half,
+  marathon: DISTANCES_M.marathon,
+} as const;
 export type PredictionDistance = keyof typeof PREDICTION_DISTANCES;
 
 /** Display names for Garmin's training statuses. */

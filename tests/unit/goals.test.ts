@@ -17,8 +17,8 @@ import {
   type RaceTimeEvaluation,
   type ValueEvaluation,
 } from '../../src/sections/running/domain/goals.ts';
+import type { Goal, Race, Run, RunOverride } from '../../src/sections/running/data/store/index.ts';
 import { latestManualMetrics } from '../../src/sections/running/domain/manual-metrics.ts';
-import type { Goal, Race, Run, RunOverride } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 type Effort = { distance_m: number; label: string; time_s: number; plausible?: boolean };

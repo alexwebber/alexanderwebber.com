@@ -1,6 +1,7 @@
 // Contract tests for RunningStore via JsonFileStore (T083, contracts/storage.md).
 import { afterEach, describe, expect, it } from 'vitest';
-import { DataValidationError, JsonFileStore } from '../../src/shared/storage/index.ts';
+import { JsonFileStore } from '../../src/sections/running/data/store/index.ts';
+import { DataValidationError } from '../../src/shared/storage/index.ts';
 import { run, runPath, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
 let repo: TempRepo;

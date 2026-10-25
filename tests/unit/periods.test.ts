@@ -1,8 +1,8 @@
 // Training totals by week, month, year and all time (T122 for T113; FR-045, FR-046, FR-058,
 // FR-075). "Today" is pinned in every case; runs are fixtures.
 import { describe, expect, it } from 'vitest';
+import type { Run } from '../../src/sections/running/data/store/index.ts';
 import { groupByMonth, periodTotals, recentWeeks, runYears, totals, trainingSummary } from '../../src/sections/running/domain/periods.ts';
-import type { Run } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 const run = (id: string, km: number, extra: Partial<Run> = {}): Run =>

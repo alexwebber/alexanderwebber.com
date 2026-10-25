@@ -25,9 +25,9 @@ import {
   startingFrom,
   targetLine,
 } from '../../src/sections/running/domain/health.ts';
+import type { Goal, HealthMetric, LabMeasurement, OwnerData, Run, RunningStore } from '../../src/sections/running/data/store/index.ts';
 import { predictionHistory, trainingStatusHistory, type ManualMetrics } from '../../src/sections/running/domain/manual-metrics.ts';
 import Health from '../../src/sections/running/pages/health.astro';
-import type { Goal, HealthMetric, LabMeasurement, OwnerData, Run, RunningStore } from '../../src/shared/storage/index.ts';
 import { addDays } from '../../src/shared/format/dates.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 

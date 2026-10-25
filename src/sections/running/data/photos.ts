@@ -2,7 +2,7 @@
 // build time so Astro can optimise it, looked up by the race's `photos` list. A photo the list
 // names but the folder lacks is left out (validate-data reports it).
 import type { ImageMetadata } from 'astro';
-import type { Race } from '../../../shared/storage/index.ts';
+import type { Race } from './store/index.ts';
 
 export interface GalleryPhoto {
   image: ImageMetadata;

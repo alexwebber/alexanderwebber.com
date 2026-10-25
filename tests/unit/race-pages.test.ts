@@ -7,11 +7,11 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import RacePage from '../../src/sections/running/components/RacePage.astro';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import { loadRaces } from '../../src/sections/running/data/races.ts';
+import type { OwnerData, Race, RaceTrack, Run, RunningStore, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { elevationByKm, markerStep, routeJson, staticMap } from '../../src/sections/running/domain/race-map.ts';
 import { raceCard } from '../../src/sections/running/og/race.ts';
 import { racesCard } from '../../src/sections/running/og/races.png.ts';
 import Races from '../../src/sections/running/pages/races.astro';
-import type { OwnerData, Race, RaceTrack, Run, RunningStore, UpcomingRace } from '../../src/shared/storage/index.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;

@@ -2,7 +2,7 @@
 // recorded it (`device`, from intervals.icu); a view over several runs names each watch once,
 // newest first. Past MAX_DEVICES the list stops being useful, so it falls back to plain "Garmin",
 // which the guidelines allow when the device isn't known.
-import type { Run } from '../../../shared/storage/index.ts';
+import type { Run } from '../data/store/index.ts';
 import type { Effort } from './efforts.ts';
 import type { GoalEvaluation } from './goals.ts';
 

@@ -6,6 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import type { RefreshRecord, RunningStore, SectionSettings } from '../../src/sections/running/data/store/index.ts';
 import BarChart from '../../src/shared/charts/BarChart.astro';
 import ChartFigure from '../../src/shared/charts/ChartFigure.astro';
 import LineChart from '../../src/shared/charts/LineChart.astro';
@@ -17,7 +18,6 @@ import GarminAttribution from '../../src/sections/running/components/GarminAttri
 import LastUpdated from '../../src/sections/running/components/LastUpdated.astro';
 import SectionLayout from '../../src/sections/running/components/SectionLayout.astro';
 import { SECTION_DEFAULTS, setRunningStore } from '../../src/sections/running/data/load.ts';
-import type { RefreshRecord, RunningStore, SectionSettings } from '../../src/shared/storage/index.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {

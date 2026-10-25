@@ -9,7 +9,7 @@
 // made-up 0 (FR-048). Periods run unbroken from the first run's period to today's, so a week off
 // shows as a zero column; nothing before the first run is invented.
 import { addDays, monthStart, weekStart } from '../../../shared/format/dates.ts';
-import type { Run } from '../../../shared/storage/index.ts';
+import type { Run } from '../data/store/index.ts';
 
 export type RunLike = Pick<Run, 'date' | 'distance_m' | 'moving_s' | 'elevation_gain_m'>;
 

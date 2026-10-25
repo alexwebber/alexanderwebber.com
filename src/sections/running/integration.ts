@@ -1,5 +1,5 @@
 import type { AstroIntegration } from 'astro';
-import { JsonFileStore } from '../../shared/storage/index.ts';
+import { JsonFileStore } from './data/store/index.ts';
 
 /**
  * One area of the Running section (landing, goals, training, ...). An area is

@@ -2,16 +2,18 @@
 // the Goals page, the landing page's featured goals and the share image say the same thing.
 import { formatDate } from '../../../shared/format/dates.ts';
 import { formatDuration, formatKm } from '../../../shared/format/units.ts';
+import { DISTANCES_M } from './distances.ts';
 import { sameDistance } from './efforts.ts';
 import { subLabel } from './races.ts';
 import type { GoalEvaluation, RaceTimeEvaluation, ValueEvaluation, ValueMetric } from './goals.ts';
 
+/** How the named distances read in a sentence; the others read in km. */
 const NAMED: [number, string][] = [
-  [5000, '5k'],
-  [10000, '10k'],
-  [16093.44, '10 miles'],
-  [21097.5, 'half marathon'],
-  [42195, 'marathon'],
+  [DISTANCES_M['5k'], '5k'],
+  [DISTANCES_M['10k'], '10k'],
+  [DISTANCES_M['10mi'], '10 miles'],
+  [DISTANCES_M.half, 'half marathon'],
+  [DISTANCES_M.marathon, 'marathon'],
 ];
 
 /** "5k", "half marathon", or "8.0 km". */

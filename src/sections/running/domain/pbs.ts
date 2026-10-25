@@ -15,8 +15,8 @@
 // - `upcoming`: with nothing at the distance yet, the next upcoming race over it (the marathon
 //   row points at Brighton until there is a marathon effort).
 import { daysBetween } from '../../../shared/format/dates.ts';
-import { DISTANCES_M } from '../../../shared/format/parse.ts';
-import type { RunOverride, UpcomingRace } from '../../../shared/storage/index.ts';
+import type { RunOverride, UpcomingRace } from '../data/store/index.ts';
+import { DISTANCES_M } from './distances.ts';
 import { effortsAt, isRecordEligible, sameDistance, type Effort, type EffortIndex } from './efforts.ts';
 import { raceDistance, type RaceHistoryEntry } from './races.ts';
 

@@ -6,13 +6,13 @@ import {
   formatDuration,
   formatKg,
   formatKm,
-  formatPace,
   londonDate,
   londonMidnight,
-  parseDistance,
   parseTime,
   weekStart,
 } from '../../src/shared/format/index.ts';
+import { parseDistance } from '../../src/sections/running/domain/distances.ts';
+import { formatPace } from '../../src/sections/running/domain/pace.ts';
 
 describe('parse', () => {
   it('parses h:mm:ss and mm:ss', () => {

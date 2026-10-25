@@ -1,25 +1,9 @@
 // Loads schemas/** into one ajv instance and turns ajv errors into owner-readable issues.
-// schemas/ is the single source of truth (Python validates against the same files).
+// schemas/ is the single source of truth (Python validates against the same files). Each section
+// names the file schemas it validates against (e.g. Running's RUNNING_SCHEMAS).
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import Ajv2020, { type ErrorObject, type ValidateFunction } from 'ajv/dist/2020.js';
-
-export const SCHEMA_NAMES = [
-  'published/run',
-  'published/race-track',
-  'published/health-series',
-  'published/refresh',
-  'published/manifest',
-  'owner/section',
-  'owner/goals',
-  'owner/upcoming-races',
-  'owner/race',
-  'owner/run-overrides',
-  'owner/health-exclusions',
-  'owner/lab',
-  'owner/manual-metrics',
-] as const;
-export type SchemaName = (typeof SCHEMA_NAMES)[number];
 
 const SCHEMA_BASE = 'https://alexanderwebber.com/schemas/';
 
@@ -37,11 +21,12 @@ export function isValidDate(value: string): boolean {
   return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
 }
 
-export class SchemaSet {
+export class SchemaSet<Name extends string = string> {
   readonly #ajv: Ajv2020;
-  readonly #validators = new Map<SchemaName, ValidateFunction>();
+  readonly #validators = new Map<Name, ValidateFunction>();
 
-  constructor(schemaDir: string) {
+  /** `names` are schema paths under `schemaDir` without `.schema.json`, e.g. `published/run`. */
+  constructor(schemaDir: string, names: readonly Name[]) {
     this.#ajv = new Ajv2020({
       strict: true,
       // oneOf branches name fields declared on their parent schema; that is intended.
@@ -58,7 +43,7 @@ export class SchemaSet {
     for (const file of listSchemaFiles(schemaDir)) {
       this.#ajv.addSchema(JSON.parse(readFileSync(join(schemaDir, file), 'utf8')));
     }
-    for (const name of SCHEMA_NAMES) {
+    for (const name of names) {
       const validate = this.#ajv.getSchema(`${SCHEMA_BASE}${name}.schema.json`);
       if (!validate) throw new Error(`schema ${name} not found in ${schemaDir}`);
       this.#validators.set(name, validate);
@@ -66,7 +51,7 @@ export class SchemaSet {
   }
 
   /** Validates (and, for owner schemas, fills defaults into) `data`. Returns no issues when valid. */
-  validate(name: SchemaName, data: unknown): SchemaIssue[] {
+  validate(name: Name, data: unknown): SchemaIssue[] {
     const validate = this.#validators.get(name)!;
     if (validate(data)) return [];
     return toIssues(validate.errors ?? []);

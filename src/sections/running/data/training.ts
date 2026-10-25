@@ -2,11 +2,11 @@
 // (Europe/London) and the years that have runs. Shared by the hub and the year pages, and
 // memoised per build and day, so thousands of runs are summed once, not once per page.
 import { today as londonToday } from '../../../shared/format/dates.ts';
-import type { Run } from '../../../shared/storage/index.ts';
 import { runDevices } from '../domain/attribution.ts';
 import { runYears, trainingSummary, type Summary } from '../domain/periods.ts';
 import { runningStore } from './load.ts';
 import { loadRaces } from './races.ts';
+import type { Run } from './store/index.ts';
 
 export interface TrainingData {
   today: string;
