@@ -1358,6 +1358,11 @@ project-specific notes.
 - **Going public turns on scanners with a backlog:** Dependabot raised nine alerts at once
   (including a critical `certifi`) and CodeQL flagged test helpers. Plan a follow-up PR in the
   same session, and add the alert check to the session-start list (PLAYBOOK, project lessons).
+- **npm 10's `npm ci` rejects a nested override of an exact pin** (`"miniflare": {"undici":
+  "7.30.1"}`: "lock file's undici@7.30.1 does not satisfy undici@7.29.1"), while local npm 11
+  accepts it. A version-scoped top-level key (`"undici@7.29.1": "7.30.1"`) works in both.
+  Check with `npx npm@10 ci --dry-run` when CI's Node bundles an older npm (AGENT_TIPS,
+  *Actions*).
 - **Actions logs go public with the repo:** scan the logs of runs made since the readiness
   sweep, just before the switch (PLAYBOOK, project lessons).
 
