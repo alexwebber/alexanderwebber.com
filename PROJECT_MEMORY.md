@@ -1091,6 +1091,28 @@ project-specific notes.
 
 ## Upstream candidates
 
+- 2026-10-25 — PR #59 merged with its Playwright check red: a keyboard test expected an "All time"
+  radio that the PR itself had made data-dependent. Playbook lesson: before telling the owner a PR
+  is ready, and again after it merges, check every PR check is green (`gh pr checks`); and
+  end-to-end tests over real data derive what to expect from the data or the page, never a fixed
+  list of options.
+- 2026-10-25 — Workers static assets answer an address with no asset with an empty-body 404 by
+  default, so the live site showed a blank page for mistyped or stale links until T147. Agent tip
+  (Cloudflare, go-live): add a 404 page and `assets.not_found_handling: "404-page"` at go-live.
+  With a Worker, browser navigations to unmatched paths then skip the Worker (an API path opened
+  in the address bar shows the 404 page), while `fetch()` and curl still reach it; check with
+  `wrangler dev` and `Sec-Fetch-Mode: navigate`.
+- 2026-10-25 — Local `wrangler dev` (workerd) refused to start the Worker because its entry module
+  also exports string constants ("Incorrect type for map entry 'FRESHNESS_KEY'"), although
+  production deploys it fine. Workaround: a throwaway entry file that only re-exports `default`,
+  passed as `wrangler dev <file>`. Agent tip (Cloudflare): keep a Worker entry's exports to
+  handlers, and put shared constants in another module.
+- 2026-10-25 — An end-to-end check that needs its own build (the SC-003 stale drill) can copy
+  `src/`, `public/`, `schemas/`, `data/` and the root configs into the test's output folder inside
+  the repo: node_modules then resolves by walking up, Astro and Vite keep their caches beside the
+  copy, and `astro build` alone takes seconds. Exclude that folder in `tsconfig.json`. Agent tip
+  (testing, Astro).
+
 - 2026-10-24 — A PR checkbox about a feature with no data yet (lab tests) left the owner
   confused, because the PR didn't say the feature was for later. Playbook lesson (PR
   confirmations): when a confirmation covers something not visible yet, say so in the box
