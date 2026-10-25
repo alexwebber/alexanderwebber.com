@@ -9,27 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, late afternoon):** the README work is merged (#73) and its diagrams
-  render for the owner. The public-readiness sweep's read-only part is done and the owner has
-  decided the fixes (decisions log, 2026-10-25). The `001-public-sweep` PR records them, makes
-  the docs' wording neutral and trims local-file notes.
+- **Status (2026-10-25, evening):** the sweep's PR (#74) is merged and green. All four
+  credentials are rotated (decisions log, 2026-10-25); the `001-credential-rotation` PR records
+  it, and its merge deploys with the new Cloudflare token.
   - **Next session:**
-    1. **Check the `001-public-sweep` PR merged** and every check is green, including `main`'s
-       Gate run and the refresh its `run-overrides.yaml` change triggers (both to the end). If
-       not merged, remind the owner once. Check its box: the owner deletes PR #44's earlier
-       description revisions (GitHub shows edit history to every reader of a public repo).
-    2. **Rotate credentials with the owner** (guided, one at a time; **never print a value**:
-       the owner pastes new values into the GitHub secret form and their local environment
-       variables themselves, and the agent checks only that a run works):
-       - Garmin: the owner turns on two-step verification (the site never logs in to Garmin).
-       - intervals.icu: a new API key (*Settings → Developer*), then `INTERVALS_API_KEY`.
-       - R2: a new API token scoped to the bucket (Object Read & Write), then
-         `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`; delete the old token.
-       - Cloudflare deploy token: roll it, check it holds only what deploys need, then
-         `CLOUDFLARE_API_TOKEN`.
-       - Prove each with a dispatched refresh (fetch + publish) and a Gate deploy, then reword
-         the docs' security notes (decisions log 2026-10-04's MFA line, 2026-10-18 "No
-         credential rotation", BACKLOG's sweep entry) to say they were rotated.
+    1. **Check the `001-credential-rotation` PR merged** and every check is green, including
+       `main`'s Gate run to the end: its deploy is the new Cloudflare token's proof. If
+       not merged, remind the owner once. Then check its boxes: the owner deleted the old
+       "Edit Cloudflare Workers" token and the old "R2 Account Token", and PR #44's two
+       remaining 23 Oct description revisions (check with GraphQL `userContentEdits`, as on
+       2026-10-25: none may be left undeleted except the current one).
+    2. **Garmin two-step verification proof:** the owner's next weigh-in (Index S2, Wi-Fi) and
+       next run (Venu X1, via the Garmin Connect app) reach intervals.icu and a refresh publishes
+       them. If either stops, it's the first suspect.
     3. **Public-repo setup, then the switch** (BACKLOG's list): the owner turns on *Keep my
        email addresses private* and *Block command line pushes that expose my email*; add
        `SECURITY.md`; turn off Projects. After the owner's switch (or the agent's, on their
@@ -37,11 +29,13 @@ Update this as decisions get made — treat it as the source of truth alongside
        a `main` ruleset with a bypass for the refresh bot (prove a bot push still lands),
        secret scanning with push protection, Dependabot alerts, code scanning, and a logged-out
        look at the public repo. Then drop the Actions-minutes watch (public repos are free).
-       Steps 2 and 3 may need two sessions.
     4. **After it, ask the owner which spec comes next:** fundraising, journey story or CV &
        Blog.
     5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
     6. Remember that the lab wording is decided at the first lab result.
+  - **Secrets from the owner** come through a local file outside the repo
+    (`C:\temp\keys.txt`, `NAME: value` lines) that the agent pipes into `gh secret set` and the
+    user environment, printing nothing (owner, 2026-10-25).
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
@@ -241,8 +235,8 @@ project-specific notes.
 - **2026-10-04** — Running plan inputs: raw Garmin data goes to a private Cloudflare R2 bucket and
   never into git; only sanitised, publishable data is committed. Failed-refresh alerts are GitHub
   issues the ingest job opens and auto-closes. A minimal shared site shell (layout, nav, design
-  tokens, chart conventions, storage layer) is built inside the Running plan. The Garmin account
-  has no MFA, but tokens are still preferred over password logins.
+  tokens, chart conventions, storage layer) is built inside the Running plan. Tokens are
+  preferred over password logins.
 - **2026-10-04** — Running plan adopted (`specs/001-running-section/plan.md`): the simpler of two
   canary candidates (owner pick after a blind tie), hardened with the other's best ideas.
   - **Site**: Astro 7.3.5 static, on Cloudflare Workers Static Assets (Cloudflare's recommended
@@ -664,10 +658,10 @@ project-specific notes.
   schedule keeps refreshing and the `refresh-trigger-failing` issue opens within 6 h. The secret
   was set with the Cloudflare API token from the setup file (no `wrangler login`), and a test
   dispatch with it returned 204.
-- **2026-10-18** — **No credential rotation** (owner decision). A shape check printed the R2
-  access key and secret, the Cloudflare API token and the intervals.icu key into the session
-  transcript (not the repo or any log). Only the owner has access to the chat, so they're kept
-  as they are.
+- **2026-10-18** — **Credentials printed into a session transcript** (not the repo, any log or
+  PR): a shape check showed the R2 access key and secret, the Cloudflare API token and the
+  intervals.icu key. Only the owner has access to the chat, so they were kept at first, then
+  all replaced before the repo went public (2026-10-25, "Credentials rotated").
 
 - **2026-10-18** — **Phase 3 goal answers** (owner question round; goals not yet written):
   - **Featured, in priority order:**
@@ -1304,8 +1298,37 @@ project-specific notes.
       security notes are reworded.
     - **Links from the README into `PROJECT_MEMORY.md` stay** (agent default, as the file is
       reworded rather than hidden).
+- **2026-10-25** — **Credentials rotated** (guided with the owner, one at a time). No value was
+  printed: the owner put each new value in a local file outside the repo, and the agent piped
+  it into `gh secret set` and the owner's user environment variables, checking only shapes,
+  timestamps and real runs.
+  - **Garmin:** two-step verification is on (the site never logs in to Garmin). The watch and
+    scale keep their pairings; proof is the next weigh-in and run reaching the site. Garmin
+    forum reports say it can be hard to turn off again.
+  - **intervals.icu:** a new API key (`INTERVALS_API_KEY`), proven by a dispatched refresh
+    whose fetch listed 12 activities and 15 wellness days.
+  - **R2:** a new Account API token scoped to `alexanderwebber-private` (Object Read & Write),
+    as the old one was (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`). Proven by a one-day
+    `missing_only` re-import, which forces the publish stage: it read 201 runs and 384 health
+    days, the gate read the run-ID map, and the fetch wrote the freshness record (14:57 UTC).
+  - **Cloudflare deploy token: narrowed.** The old one came from the "Edit Cloudflare Workers"
+    template, which includes admin read and write on every R2 bucket, plus KV, Pages and more.
+    The new custom token (`CLOUDFLARE_API_TOKEN`) has only Account · Workers Scripts · Edit,
+    Account · Workers R2 Storage · Read (the deploy checks the Worker's bucket exists), Zone ·
+    Workers Routes · Edit and Zone · Zone · Read, on the `alexanderwebber.com` zone. Read-only
+    API calls with it passed for each (scripts, bucket, zone, routes, both custom domains), and
+    KV was refused. The `001-credential-rotation` PR's deploy on `main` is its real proof, and
+    the old token is deleted after it.
+  - **Old tokens deleted** in the Cloudflare dashboard by the owner (R2 at once, the deploy
+    token after the proof).
 
 ## Upstream candidates
+
+- **Rotating secrets: the owner drops the new value in a local file outside the repo, and the
+  agent pipes it** (owner, 2026-10-25): `gh secret set NAME < file` and a PowerShell
+  `SetEnvironmentVariable(..., 'User')` that print nothing, checked only by the secret's
+  timestamp and a real run. It keeps values out of the chat, and the owner fills in no forms
+  (PLAYBOOK, project lessons; AGENT_TIPS, *Secrets*).
 
 - **Public-readiness sweep: search for exact secret values, not just patterns.** gitleaks and
   trufflehog only catch known shapes. A script that takes the real values from environment

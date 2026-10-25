@@ -7,10 +7,7 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 - **Public-readiness sweep, then make the repo public** (owner, 2026-10-25: the repo will go
   public). **In progress.** The read-only sweep is done and the owner has picked the fixes
   (`PROJECT_MEMORY.md`, decisions log, 2026-10-25): keep the history, use neutral wording,
-  rotate credentials. What's left:
-  - **Rotate credentials** with the owner: Garmin two-step verification, a new intervals.icu
-    key, a bucket-scoped R2 token and a rolled Cloudflare deploy token, each proven by a run.
-    Then reword the docs' security notes.
+  rotate credentials. Credentials are rotated (decisions log, 2026-10-25). What's left:
   - **Email privacy:** the owner turns on *Keep my email addresses private* and *Block command
     line pushes that expose my email* (new commits already use the noreply address).
   - **Public-repo setup:**
