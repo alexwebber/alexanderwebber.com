@@ -21,9 +21,10 @@ Update this as decisions get made — treat it as the source of truth alongside
        next run (Venu X1, via the Garmin Connect app) reach intervals.icu and a refresh publishes
        them. If either stops, it's the first suspect.
     3. **Public-repo setup, then the switch** (BACKLOG's list): the owner turns on *Keep my
-       email addresses private* and *Block command line pushes that expose my email*; add
-       `SECURITY.md`; turn off Projects. After the owner's switch (or the agent's, on their
-       explicit go-ahead): fork-PR approval for all outside contributors, `sha_pinning_required`,
+       email addresses private* and *Block command line pushes that expose my email*.
+       `SECURITY.md` (PR #77) and Projects off are done. After the owner's switch (or the
+       agent's, on their explicit go-ahead): private vulnerability reporting, fork-PR
+       approval for all outside contributors, `sha_pinning_required`,
        a `main` ruleset with a bypass for the refresh bot (prove a bot push still lands),
        secret scanning with push protection, Dependabot alerts, code scanning, and a logged-out
        look at the public repo. Then drop the Actions-minutes watch (public repos are free).

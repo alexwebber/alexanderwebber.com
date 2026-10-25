@@ -11,12 +11,13 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   - **Email privacy:** the owner turns on *Keep my email addresses private* and *Block command
     line pushes that expose my email* (new commits already use the noreply address).
   - **Public-repo setup:**
-    - add `SECURITY.md`, and turn off Projects (the wiki is already off; Issues stay, for the
-      alerts);
-    - after the switch: fork-PR workflow approval for all outside contributors (GitHub only
-      offers it on public repos), `sha_pinning_required`, a ruleset for `main` with a bypass
-      for the refresh bot (prove a bot push still lands), secret scanning with push
-      protection, Dependabot alerts and code scanning;
+    - done before the switch: `SECURITY.md` (the `001-public-setup` PR) and Projects turned
+      off (2026-10-25; the wiki was already off; Issues stay, for the alerts);
+    - after the switch: private vulnerability reporting (`SECURITY.md` points reporters at
+      it), fork-PR workflow approval for all outside contributors (GitHub only offers both
+      on public repos), `sha_pinning_required`, a ruleset for `main` with a bypass for the
+      refresh bot (prove a bot push still lands), secret scanning with push protection,
+      Dependabot alerts and code scanning;
     - the licence is decided (MIT for code, content all rights reserved; `LICENSE` added in
       the README PR, 2026-10-25).
   - **The switch itself is the owner's**, or the agent's only on their explicit go-ahead, once
