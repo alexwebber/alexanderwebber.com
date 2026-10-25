@@ -13,7 +13,7 @@ import type { Race, Run, RunOverride } from '../data/store/index.ts';
 import { parseDistance } from './distances.ts';
 
 /** Best efforts at the same distance match within half a metre (the processor's dedup tolerance). */
-export const DISTANCE_TOLERANCE_M = 0.5;
+const DISTANCE_TOLERANCE_M = 0.5;
 
 export interface Effort {
   distance_m: number;

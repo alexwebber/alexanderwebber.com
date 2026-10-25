@@ -6,7 +6,7 @@
 import type { RaceTrack } from '../data/store/index.ts';
 
 /** The SVG's width in user units; the height follows the route's shape. */
-export const MAP_WIDTH = 1000;
+const MAP_WIDTH = 1000;
 /** Squat or tall routes are padded out to this range of width / height. */
 const MIN_ASPECT = 0.8;
 const MAX_ASPECT = 1.6;

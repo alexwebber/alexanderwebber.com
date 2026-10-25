@@ -6,7 +6,7 @@ import distances from '../../../../schemas/distances.json' with { type: 'json' }
 export const DISTANCES_M: Readonly<typeof distances> = distances;
 export type DistanceName = keyof typeof distances;
 
-export function isDistanceName(value: unknown): value is DistanceName {
+function isDistanceName(value: unknown): value is DistanceName {
   return typeof value === 'string' && Object.hasOwn(DISTANCES_M, value);
 }
 

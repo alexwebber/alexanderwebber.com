@@ -2,7 +2,7 @@
 // Best Effort index (T087) and body-composition averages (T088) it builds on. "Today" is pinned
 // in every case.
 import { describe, expect, it } from 'vitest';
-import { bodyFatAverage, trailingMean } from '../../src/sections/running/domain/composition.ts';
+import { trailingMean } from '../../src/sections/running/domain/composition.ts';
 import { buildEffortIndex, effortsAt, fastestEffort } from '../../src/sections/running/domain/efforts.ts';
 import { goalAttribution, goalsViewAttribution } from '../../src/sections/running/domain/attribution.ts';
 import { allTimeText, deadlineText, gapText, progressText, shortTargetText, startText, targetText } from '../../src/sections/running/domain/goal-text.ts';
@@ -397,7 +397,7 @@ describe('composition (T088)', () => {
       { date: '2027-01-03', value: 25.0 },
       { date: '2027-01-12', value: 24.0 },
     ];
-    const avg = bodyFatAverage(readings);
+    const avg = trailingMean(readings);
     expect(avg.slice(0, 3)).toEqual([
       { date: '2027-01-01', value: 26.0 },
       { date: '2027-01-02', value: 26.0 },

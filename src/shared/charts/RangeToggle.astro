@@ -7,7 +7,7 @@ import { chartId } from './ids.ts';
 
 export type RangeKey = '3m' | '1y' | 'all';
 
-export const RANGE_LABELS: Record<RangeKey, string> = { '3m': '3 months', '1y': '1 year', all: 'All time' };
+const RANGE_LABELS: Record<RangeKey, string> = { '3m': '3 months', '1y': '1 year', all: 'All time' };
 
 export interface Props {
   /** Names the control for assistive tech, e.g. "Weight chart range". */

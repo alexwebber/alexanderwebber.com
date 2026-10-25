@@ -53,14 +53,14 @@ export function totals(runs: readonly RunLike[]): Totals {
 }
 
 /** The first day of the period of `kind` holding `date`. */
-export function periodStart(kind: PeriodKind, date: string): string {
+function periodStart(kind: PeriodKind, date: string): string {
   if (kind === 'week') return weekStart(date);
   if (kind === 'month') return monthStart(date);
   return `${date.slice(0, 4)}-01-01`;
 }
 
 /** The first day of the next period after the one starting `start`. */
-export function nextPeriod(kind: PeriodKind, start: string): string {
+function nextPeriod(kind: PeriodKind, start: string): string {
   if (kind === 'week') return addDays(start, 7);
   if (kind === 'month') return monthStart(addDays(start, 31));
   return `${Number(start.slice(0, 4)) + 1}-01-01`;

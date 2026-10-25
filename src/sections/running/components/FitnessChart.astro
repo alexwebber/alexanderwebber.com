@@ -10,6 +10,7 @@ import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import LineChart from '../../../shared/charts/LineChart.astro';
 import RangeToggle from '../../../shared/charts/RangeToggle.astro';
 import { formatDate } from '../../../shared/format/dates.ts';
+import { formatNumber } from '../../../shared/format/units.ts';
 import { FITNESS_MODEL_LABEL, chartRanges, fitnessNote, inRange, latest, startingFrom, type FitnessPoint } from '../domain/health.ts';
 import GarminAttribution from './GarminAttribution.astro';
 
@@ -22,7 +23,7 @@ export interface Props {
 const { points: all, start, today } = Astro.props;
 const points = startingFrom(all, start?.chartStart);
 const ranges = chartRanges(points[0]?.date, today);
-const one = (v: number) => new Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v).replace('-', '−');
+const one = (v: number) => formatNumber(v, 1).replace('-', '−');
 const whole = (v: number) => String(Math.round(v)).replace('-', '−');
 const now = latest(points);
 const WORDS = { '3m': 'last 3 months', '1y': 'last year', all: 'all time' } as const;

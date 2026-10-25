@@ -14,7 +14,7 @@ export interface GalleryPhoto {
 /** Imported photo files by root-relative path, e.g. /data/running/owner/races/<slug>/finish.jpg. */
 export type PhotoFiles = Readonly<Record<string, ImageMetadata>>;
 
-export const OWNER_PHOTOS: PhotoFiles = import.meta.glob<ImageMetadata>('/data/running/owner/races/*/*.{jpg,webp,avif}', { eager: true, import: 'default' });
+const OWNER_PHOTOS: PhotoFiles = import.meta.glob<ImageMetadata>('/data/running/owner/races/*/*.{jpg,webp,avif}', { eager: true, import: 'default' });
 
 /** A race's gallery, in race.yaml order. `folder` is where the race folders sit within `files`. */
 export function galleryPhotos(entry: Race | undefined, files: PhotoFiles = OWNER_PHOTOS, folder = '/data/running/owner/races'): GalleryPhoto[] {

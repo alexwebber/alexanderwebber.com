@@ -9,7 +9,7 @@
 import BarChart from '../../../shared/charts/BarChart.astro';
 import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import { addDays, formatDate, formatDayMonth } from '../../../shared/format/dates.ts';
-import { formatKm } from '../../../shared/format/units.ts';
+import { formatAxisKm, formatKm } from '../../../shared/format/units.ts';
 import type { Run } from '../data/store/index.ts';
 import { runDevices } from '../domain/attribution.ts';
 import type { TrainingBuild } from '../domain/weeks.ts';
@@ -24,7 +24,6 @@ export interface Props {
 }
 
 const { build, today, heading = 3 } = Astro.props;
-const km = (km: number) => formatKm(km * 1000, Number.isInteger(km) ? 0 : 1);
 const current = build.weeks.at(-1);
 // The last week shown is this week, unless the build ended with the race in an earlier week.
 const thisWeek = current && today <= addDays(current.start, 6) ? current : undefined;
@@ -66,7 +65,7 @@ const summary = [
           title="Weekly distance in the training build"
           desc={summary}
           bars={bars}
-          format={km}
+          format={formatAxisKm}
           color="var(--running-series)"
           maxLabels={6}
         />

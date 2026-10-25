@@ -21,7 +21,7 @@ export interface AttributionProps {
 }
 
 /** The effort a race-time goal card shows: the achieving effort, else the fastest. */
-export function shownEffort(evaluation: GoalEvaluation): Effort | undefined {
+function shownEffort(evaluation: GoalEvaluation): Effort | undefined {
   if (evaluation.kind !== 'race_time') return undefined;
   return evaluation.status === 'achieved' ? evaluation.achievement?.effort : evaluation.fastest;
 }

@@ -13,10 +13,9 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, extname, join, resolve } from 'node:path';
 import sharp from 'sharp';
 import { parseDocument, YAMLSeq } from 'yaml';
-import { metadataKinds } from './scan-images.ts';
+import { MAX_LONG_EDGE, metadataKinds } from './scan-images.ts';
 import { isMain } from './lib/walk.ts';
 
-export const MAX_LONG_EDGE = 2400;
 const KEPT_FORMATS = { jpg: 'jpeg', jpeg: 'jpeg', webp: 'webp', avif: 'avif' } as const;
 const FILE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(jpg|webp|avif)$/;
 

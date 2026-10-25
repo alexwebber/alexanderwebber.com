@@ -104,7 +104,7 @@ export function locate(schema: RunningSchema, value: unknown, path: Path): { ent
 }
 
 /** Recognises a data file's schema from its path; undefined for photos and unexpected files. */
-export function schemaForFile(file: string): RunningSchema | undefined {
+function schemaForFile(file: string): RunningSchema | undefined {
   const rel = file.slice(DATA_DIR.length + 1);
   const rules: [RegExp, RunningSchema][] = [
     [/^published\/runs\/\d{4}\/[^/]+\.json$/, 'published/run'],

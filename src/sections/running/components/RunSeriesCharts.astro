@@ -10,7 +10,7 @@
 import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import Toggle from '../../../shared/charts/Toggle.astro';
 import XYChart from '../../../shared/charts/XYChart.astro';
-import { formatDuration } from '../../../shared/format/units.ts';
+import { formatAxisKm, formatDuration, formatNumber } from '../../../shared/format/units.ts';
 import type { Run } from '../data/store/index.ts';
 import { axisEnd, axisValues, formatAxisTime, seriesCharts, tableRows, timeTicks, type Axis } from '../domain/run-detail.ts';
 import GarminAttribution from './GarminAttribution.astro';
@@ -25,10 +25,9 @@ const Heading = `h${heading}` as const;
 const chartHeading = (heading + 1) as 3 | 4;
 const charts = seriesCharts(run);
 const id = `charts-${run.id}`;
-const km = (v: number) => `${Number.isInteger(v) ? v : v.toFixed(1)} km`;
 
 const axes: { axis: Axis; label: string; xs: number[]; formatX: (v: number) => string; ticks?: number[]; at: (v: number) => string; column: string }[] = [
-  { axis: 'distance', label: 'Distance', xs: axisValues(run, 'distance'), formatX: km, at: (v) => v.toFixed(Number.isInteger(v) ? 0 : 2), column: 'Km' },
+  { axis: 'distance', label: 'Distance', xs: axisValues(run, 'distance'), formatX: formatAxisKm, at: (v) => formatNumber(v, Number.isInteger(v) ? 0 : 2), column: 'Km' },
   {
     axis: 'time',
     label: 'Time',

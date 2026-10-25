@@ -15,7 +15,7 @@
 // The GPS comes from the watch, so Garmin attribution names it at the heading (FR-077).
 import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import XYChart from '../../../shared/charts/XYChart.astro';
-import { formatKm, formatMetres } from '../../../shared/format/units.ts';
+import { formatAxisKm, formatKm, formatMetres } from '../../../shared/format/units.ts';
 import type { RaceTrack } from '../data/store/index.ts';
 import { elevationByKm, elevationProfile, staticMap } from '../domain/race-map.ts';
 import GarminAttribution from './GarminAttribution.astro';
@@ -40,7 +40,6 @@ const profile = track ? elevationProfile(track) : [];
 const hasProfile = showProfile && profile.filter((p) => p.y !== null).length >= 2;
 const byKm = track ? elevationByKm(track) : [];
 const elevs = profile.flatMap((p) => (p.y === null ? [] : [p.y]));
-const km = (v: number) => `${Number.isInteger(v) ? v : v.toFixed(1)} km`;
 ---
 
 {
@@ -94,7 +93,7 @@ const km = (v: number) => `${Number.isInteger(v) ? v : v.toFixed(1)} km`;
             table={{ columns: ['Km', 'Elevation'], rows: byKm.map((r) => [r.km, formatMetres(r.elev_m)]), summary: 'Show the elevation per km' }}
           >
             <GarminAttribution slot="source" device={device} />
-            <XYChart title={`Course profile of ${name}`} desc="Elevation in metres against distance in km." points={profile} format={formatMetres} formatX={km} color="var(--running-series)" />
+            <XYChart title={`Course profile of ${name}`} desc="Elevation in metres against distance in km." points={profile} format={formatMetres} formatX={formatAxisKm} color="var(--running-series)" />
           </ChartFigure>
         )
       }

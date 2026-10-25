@@ -6,7 +6,6 @@
 //
 // Pure functions over the loader's `manualMetrics`; `currentManualMetrics()` reads it from the store.
 import { parseTime } from '../../../shared/format/parse.ts';
-import { runningStore } from '../data/load.ts';
 import type { OwnerData, RacePredictionEntry, TrainingStatusEntry } from '../data/store/index.ts';
 import { DISTANCES_M } from './distances.ts';
 
@@ -23,7 +22,7 @@ export const PREDICTION_DISTANCES = {
 export type PredictionDistance = keyof typeof PREDICTION_DISTANCES;
 
 /** Display names for Garmin's training statuses. */
-export const TRAINING_STATUS_LABELS: Record<TrainingStatus, string> = {
+const TRAINING_STATUS_LABELS: Record<TrainingStatus, string> = {
   peaking: 'Peaking',
   productive: 'Productive',
   maintaining: 'Maintaining',
@@ -92,9 +91,4 @@ export function latestManualMetrics(metrics: ManualMetrics): CurrentManualMetric
 /** The prediction distance a goal distance is (within half a metre), if Garmin predicts it. */
 export function predictionDistanceFor(distanceM: number): PredictionDistance | undefined {
   return (Object.entries(PREDICTION_DISTANCES) as [PredictionDistance, number][]).find(([, m]) => Math.abs(m - distanceM) <= 0.5)?.[0];
-}
-
-/** The current manual figures from the store. */
-export async function currentManualMetrics(): Promise<CurrentManualMetrics> {
-  return latestManualMetrics((await runningStore().getOwner()).manualMetrics);
 }

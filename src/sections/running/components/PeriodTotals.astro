@@ -10,7 +10,7 @@ import BarChart from '../../../shared/charts/BarChart.astro';
 import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import Toggle from '../../../shared/charts/Toggle.astro';
 import { formatDate, formatDayMonth, formatMonth } from '../../../shared/format/dates.ts';
-import { formatDuration, formatKm, formatMetres } from '../../../shared/format/units.ts';
+import { formatAxisKm, formatDuration, formatKm, formatMetres, formatNumber } from '../../../shared/format/units.ts';
 import { formatPace } from '../domain/pace.ts';
 import type { PeriodKind, PeriodTotals, Summary, Totals } from '../domain/periods.ts';
 import GarminAttribution from './GarminAttribution.astro';
@@ -36,8 +36,7 @@ const KINDS: { kind: PeriodKind; label: string; noun: string; current: string; a
 const periodName = (p: PeriodTotals) =>
   p.kind === 'week' ? `Week of ${formatDate(p.start)}` : p.kind === 'month' ? formatMonth(p.start) : p.start.slice(0, 4);
 const axisLabel = (p: PeriodTotals) => (p.kind === 'week' ? formatDayMonth(p.start) : p.kind === 'month' ? formatMonth(p.start) : p.start.slice(0, 4));
-const km = (value: number) => formatKm(value * 1000, Number.isInteger(value) ? 0 : 1);
-const hours = (value: number) => `${Number.isInteger(value) ? value : value.toFixed(1)} h`;
+const hours = (value: number) => `${formatNumber(value, Number.isInteger(value) ? 0 : 1)} h`;
 const runs = (n: number) => `${n} ${n === 1 ? 'run' : 'runs'}`;
 const pace = (t: Totals) => (t.avg_pace_s_per_km !== undefined ? formatPace(t.avg_pace_s_per_km) : 'No runs');
 const elevation = (t: Totals) => (t.elevation_gain_m !== undefined ? formatMetres(t.elevation_gain_m) : t.runs ? 'Not recorded' : '0 m');
@@ -106,7 +105,7 @@ const id = 'training-totals';
             )}
             <ChartFigure title={`Distance by ${p.noun}`} heading={chartHeading} summary={p.distanceSummary} table={p.table}>
               <GarminAttribution slot="source" device={devices} />
-              <BarChart title={`Distance by ${p.noun}`} desc={p.distanceSummary} bars={p.distanceBars} format={km} color="var(--running-series)" maxLabels={p.maxLabels} />
+              <BarChart title={`Distance by ${p.noun}`} desc={p.distanceSummary} bars={p.distanceBars} format={formatAxisKm} color="var(--running-series)" maxLabels={p.maxLabels} />
             </ChartFigure>
             <ChartFigure
               title={`Moving time by ${p.noun}`}

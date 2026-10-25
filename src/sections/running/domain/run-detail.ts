@@ -6,7 +6,7 @@
 // no time of day at all. Pace plots with faster higher (as on Garmin Connect), on a range cut to
 // the 2nd–98th percentile (cadence and power too), so a few seconds of standing still don't
 // flatten the line; the summary and table still give the full range.
-import { formatDuration, formatKm, formatMetres } from '../../../shared/format/units.ts';
+import { formatDuration, formatKm, formatMetres, formatNumber } from '../../../shared/format/units.ts';
 import type { Run } from '../data/store/index.ts';
 import { formatPace } from './pace.ts';
 
@@ -15,9 +15,6 @@ export interface Figure {
   label: string;
   value: string;
 }
-
-const number = (value: number, decimals = 0) =>
-  new Intl.NumberFormat('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
 
 /** The summary figures (T116): distance, times, paces, elevation, heart rate, training effect. */
 export function summaryFigures(run: Run): Figure[] {
@@ -38,7 +35,7 @@ export function summaryFigures(run: Run): Figure[] {
     figures.push({ key: 'max-hr', label: 'Max heart rate', value: `${Math.round(run.hr.max)} bpm` });
   }
   if (run.training_effect) {
-    figures.push({ key: 'training-effect', label: 'Training effect', value: `${number(run.training_effect.aerobic, 1)} aerobic, ${number(run.training_effect.anaerobic, 1)} anaerobic` });
+    figures.push({ key: 'training-effect', label: 'Training effect', value: `${formatNumber(run.training_effect.aerobic, 1)} aerobic, ${formatNumber(run.training_effect.anaerobic, 1)} anaerobic` });
   }
   return figures;
 }
@@ -49,14 +46,14 @@ export function dynamicsFigures(run: Run): Figure[] {
   const figures: Figure[] = [];
   // "spm", never "steps": the privacy scan treats "<number> steps" on a page as step counts.
   if (run.cadence_avg !== undefined) figures.push({ key: 'cadence', label: 'Cadence', value: `${Math.round(run.cadence_avg)} spm` });
-  if (run.stride_m_avg !== undefined) figures.push({ key: 'stride', label: 'Stride length', value: `${number(run.stride_m_avg, 2)} m` });
+  if (run.stride_m_avg !== undefined) figures.push({ key: 'stride', label: 'Stride length', value: `${formatNumber(run.stride_m_avg, 2)} m` });
   if (run.power_w_avg !== undefined) figures.push({ key: 'power', label: 'Average power', value: `${Math.round(run.power_w_avg)} W` });
   if (d.gct_ms !== undefined) figures.push({ key: 'gct', label: 'Ground contact time', value: `${Math.round(d.gct_ms)} ms` });
   if (d.gct_balance_pct !== undefined) {
-    figures.push({ key: 'gct-balance', label: 'Ground contact balance', value: `${number(d.gct_balance_pct, 1)}% L / ${number(100 - d.gct_balance_pct, 1)}% R` });
+    figures.push({ key: 'gct-balance', label: 'Ground contact balance', value: `${formatNumber(d.gct_balance_pct, 1)}% L / ${formatNumber(100 - d.gct_balance_pct, 1)}% R` });
   }
-  if (d.vert_osc_mm !== undefined) figures.push({ key: 'vertical-oscillation', label: 'Vertical oscillation', value: `${number(d.vert_osc_mm / 10, 1)} cm` });
-  if (d.vert_ratio_pct !== undefined) figures.push({ key: 'vertical-ratio', label: 'Vertical ratio', value: `${number(d.vert_ratio_pct, 1)}%` });
+  if (d.vert_osc_mm !== undefined) figures.push({ key: 'vertical-oscillation', label: 'Vertical oscillation', value: `${formatNumber(d.vert_osc_mm / 10, 1)} cm` });
+  if (d.vert_ratio_pct !== undefined) figures.push({ key: 'vertical-ratio', label: 'Vertical ratio', value: `${formatNumber(d.vert_ratio_pct, 1)}%` });
   return figures;
 }
 
@@ -75,7 +72,7 @@ export function splitRows(run: Run): SplitRow[] {
   return run.splits.map((s) => {
     const partial = s.km * 1000 > run.distance_m + 0.5;
     return {
-      km: partial ? number(run.distance_m / 1000, 2) : String(s.km),
+      km: partial ? formatNumber(run.distance_m / 1000, 2) : String(s.km),
       partial,
       time_s: s.time_s,
       pace_s_per_km: s.pace_s_per_km,
@@ -86,7 +83,7 @@ export function splitRows(run: Run): SplitRow[] {
 }
 
 /** Garmin's names for its five heart-rate zones, as Garmin Connect shows them (zone 1 first). */
-export const GARMIN_ZONE_NAMES = ['Warm Up', 'Easy', 'Aerobic', 'Threshold', 'Maximum'] as const;
+const GARMIN_ZONE_NAMES = ['Warm Up', 'Easy', 'Aerobic', 'Threshold', 'Maximum'] as const;
 
 export interface ZoneRow {
   zone: number;

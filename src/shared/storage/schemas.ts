@@ -13,7 +13,7 @@ export interface SchemaIssue {
   message: string;
 }
 
-export function isValidDate(value: string): boolean {
+function isValidDate(value: string): boolean {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return false;
   const [y, m, d] = [Number(match[1]), Number(match[2]), Number(match[3])];
@@ -95,7 +95,7 @@ const within = (inner: string, outer: string) => inner === outer || inner.starts
  *   sentence, not five. ajv reports a composite's branch errors directly before the composite
  *   error itself (schemaPath restarts at every $ref, so it can't be used to match them).
  */
-export function toIssues(errors: ErrorObject[]): SchemaIssue[] {
+function toIssues(errors: ErrorObject[]): SchemaIssue[] {
   const suppressed = new Set<number>();
   errors.forEach((error, i) => {
     const composite = error.keyword === 'anyOf' || error.keyword === 'oneOf';
