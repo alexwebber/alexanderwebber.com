@@ -9,26 +9,26 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, evening):** **the maintainability refactor is done**: PR #70 (findings
-  2 + 3) merged and deployed, and the tidy-ups PR (`001-tidy-ups`, findings 6 + 7 + 9) is raised.
+- **Status (2026-10-25, afternoon):** the refactor is done (#71 merged and deployed). The
+  **README PR** (`001-readme`: README, `LICENSE`, BACKLOG tidy) is raised.
   - **Next session:**
-    1. **Check the tidy-ups PR merged**, every check is green, *and* the Gate run on `main`
-       after the merge deployed (#69's deploy failed on a one-off Cloudflare error and went
-       unnoticed until #70); if not merged, remind the owner once.
-    2. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
-    3. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
-       ending with the owner making the repo public. After it, ask the owner which spec comes
-       next: fundraising, journey story or CV & Blog.
-    4. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    5. Remember that the lab wording is decided at the first lab result.
+    1. **Check the README PR merged** and every check is green; if not merged, remind the owner
+       once. Ask any of its confirmation boxes left unticked. It changes no site files, so
+       there's no deploy to wait for, but check the Gate run on `main` finished green anyway.
+    2. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
+       ending with the owner making the repo public. It covers the README too (e.g. whether
+       links into `PROJECT_MEMORY.md` stay). After it, ask the owner which spec comes next:
+       fundraising, journey story or CV & Blog.
+    3. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    4. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
   - **Planned order** (owner, 2026-10-24):
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
     2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
-    3. ~~Maintainability review and refactor~~ (2026-10-25; PRs #67–#70 and the tidy-ups PR).
-    4. **Repo README** (BACKLOG).
+    3. ~~Maintainability review and refactor~~ (2026-10-25; PRs #67–#71).
+    4. **Repo README** (raised 2026-10-25).
     5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
@@ -1230,7 +1230,31 @@ project-specific notes.
     CSS move changes 206 pages only inside `<style>`/`<link>` (the GoalCard stylesheet is now
     inlined), with no markup change.
 
+- **2026-10-25** — **#71 deployed:** the tidy-ups PR merged, and the Gate run on `main` after
+  it finished green, deploy included. The refactor (findings 1–10) is done.
+- **2026-10-25** — **Repo README** (`001-readme` PR). Owner picks:
+  - **Neutral project voice**, not first person.
+  - **Licence: MIT for the code, content all rights reserved** (the data under `data/`, race
+    photos, and the written text of the site and docs). `LICENSE` is the plain MIT text, so
+    GitHub detects it; the README states the scope.
+  - **Three diagrams:** an overview (private vs public), refresh triggers and alerts, and pull
+    requests and deploys. Each was rendered locally with mermaid-cli 11.12.0 before the PR. The
+    overview is top-to-bottom, because left-to-right was too wide for a phone.
+  - **"How it was built" has its own section with figures**, as of 25 Oct 2026: 21 days from
+    first commit to live, 70 FRs, 12 SCs, 160 tasks, over 70 PRs, 522 Vitest, 408 pytest and
+    220 Playwright tests. They're a dated snapshot, so they don't need updating.
+  - **Detail stays in the existing docs**; the README links to them (research R0–R10, the
+    contracts, quickstart, section READMEs) so it doesn't drift.
+
 ## Upstream candidates
+
+- **Render Mermaid diagrams before a PR with mermaid-cli and Playwright's Chromium:**
+  `npx @mermaid-js/mermaid-cli -p pp.json`, where `pp.json` gives `executablePath` with forward
+  slashes (backslashes are invalid JSON escapes). Run the renders one after another, because
+  parallel runs collide on puppeteer's profile lock (AGENT_TIPS, *Docs*).
+- **Mermaid flowcharts with subgraphs read better top-to-bottom on GitHub mobile:** the
+  left-to-right overview was about 1,400 px wide. Inner `direction` is ignored once a subgraph
+  links outside itself (AGENT_TIPS, *Docs*).
 
 - **"Green after merge" means `main`'s own run, to the end:** the PR's checks were green, but
   the push-triggered Gate run on `main` (which deploys) was still going at the session-start

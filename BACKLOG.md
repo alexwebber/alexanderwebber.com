@@ -4,49 +4,8 @@ Deferred or future work, tracked here so it doesn't get lost or buried in the de
 Each item: what it is, and why it's deferred. When something is picked up, move its entry to
 the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 
-- **Maintainability review and refactor** (owner, 2026-10-25). **Next after the T158 lesson
-  harvest, before the next spec.** The Running section was built in eight slices by separate
-  subagents, and the reviews so far (T110, T147) checked correctness, speed, accessibility,
-  privacy and SEO, not simplicity. CV & Blog will be the second section, the first real test of
-  Principle VII, so any coupling between shared plumbing and Running is cheapest to fix now.
-  - **Review: done** (2026-10-25):
-    [`specs/001-running-section/maintainability-review.md`](specs/001-running-section/maintainability-review.md).
-    It found ten things, and the owner picked all ten.
-  - **Now five refactor PRs** over three sessions, in the review's order. Findings that change
-    the same files are grouped: tests and `backfill` removal first, then Running owns its data,
-    then the section's shims and loaders, then the tidy-ups. None changes what visitors see: the
-    built `dist/` is diffed against `main`'s, and published data doesn't change.
-- **Repo README: how this site was built** (owner, 2026-10-25). **Next after the refactor**,
-  so it describes the simplified code; before the next spec. Today's `README.md` is 7 lines. It
-  should be a showcase a recruiter or engineer can follow, and it feeds the repo-visibility
-  decision below. It covers:
-  - **Architecture**, with a diagram (Mermaid, which GitHub renders): every component in every
-    workflow. That includes Garmin devices → Garmin Connect → intervals.icu, the fetch stage →
-    private R2, the publish stage → the gate → git, Cloudflare Workers static assets, the
-    freshness Worker and its cron dispatch, the backup schedule and guard, the alert issues, the
-    nightly Quality run, the PR checks and the OpenFreeMap tiles. It also shows what is public
-    and what stays private.
-  - **Tech stack and why**: Astro, TypeScript, build-time SVG charts, Python ingest, JSON
-    Schema, Cloudflare, intervals.icu over Garmin direct and Strava, MapLibre and OpenFreeMap.
-    Each comes with the one-line reason and a link to the decision.
-  - **Features and roadmap**: what's live (landing, goals, training, run pages, races and PBs,
-    health), with links, then what's next (fundraising, journey story, CV & Blog) from
-    BACKLOG.
-  - **Also:**
-    - How it was built: spec-driven with Spec Kit and the sdd-playbook, AI agents doing the
-      work under the constitution, with links to the spec, plan, tasks and constitution.
-    - Privacy by design: race-only maps, opaque run IDs, raw data never in git, the privacy
-      scan.
-    - Quality gates and tests: the build gate, the test suites, Lighthouse and axe budgets,
-      and the stale-data drill.
-    - Graceful degradation, running costs (about $0, plus the intervals.icu support), repo
-      layout, local development and how to run the checks.
-    - Data sources and attribution (Garmin, intervals.icu, OpenFreeMap), and a licence
-      decision if the repo goes public.
-  - Keep the detail in the existing docs (plan, quickstart, section README) and link to them,
-    so the README stays an overview that doesn't drift.
 - **Public-readiness sweep, then make the repo public** (owner, 2026-10-25: the repo will go
-  public). **Next after the README**, as the last check before the switch, so it covers the
+  public). **Next**, as the last check before the switch, so it covers the
   README too. It must be very thorough. Principle VI has kept the tree safe by design, but a
   public repo exposes much more than today's files.
   - **First, a read-only sweep with a findings report.** Each finding gets its severity, where
@@ -89,7 +48,8 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
       free on public repos);
     - add branch protection or a ruleset for `main` (available once public), with a bypass for
       the ingest bot;
-    - choose a licence (owner);
+    - the licence is decided (MIT for code, content all rights reserved; `LICENSE` added in
+      the README PR, 2026-10-25);
     - add `SECURITY.md`;
     - turn off unused features (wiki, projects).
   - **The switch itself is the owner's**, or the agent's only on their explicit go-ahead, once
