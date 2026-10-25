@@ -5,9 +5,14 @@
   "compatibility_date": "2026-10-12",
   // Static assets serve first; the Worker only handles paths with no asset
   // (GET /running/api/freshness).
+  // An address with no page gets dist/404.html (src/pages/404.astro) with a 404 status, also when
+  // it reaches the Worker and falls through to ASSETS.fetch. Browser navigations to an address with
+  // no asset no longer reach the Worker (so opening /running/api/freshness in the address bar shows
+  // that page); the page script's fetch() and curl still do (checked with `wrangler dev`).
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page"
   },
   // The live site. Deploy creates both hostnames' DNS records. www is redirected to the apex by
   // the zone's "Redirect from WWW to root" rule (dashboard), which runs before the Worker; the custom

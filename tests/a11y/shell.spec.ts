@@ -39,6 +39,16 @@ for (const colorScheme of ['light', 'dark'] as const) {
   });
 }
 
+test('an address with no page gets the site\'s own "page not found" page, which passes axe', async ({ page }) => {
+  const response = await page.goto('/running/no-such-page/');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+  await expect(page.getByRole('main').getByRole('link', { name: "Alexander Webber's home page" })).toHaveAttribute('href', '/');
+  await expect(page.getByRole('main').getByRole('link', { name: 'Running' })).toHaveAttribute('href', '/running/');
+  await expectNoAxeViolations(page);
+});
+
 test('no sideways scrolling at 320px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   for (const path of ['/', PREVIEW]) {

@@ -1,0 +1,29 @@
+---
+// The site's "page not found" page (T147). Astro builds it to dist/404.html, and Workers static
+// assets serve it with a 404 status for any address with no page (wrangler.jsonc
+// `not_found_handling`), so a mistyped or old link (e.g. a run the owner has since hidden) gets
+// the site's own page with a way back, not a blank one. It isn't indexed and isn't in the sitemap.
+import Base from '../shared/layout/Base.astro';
+import { shippedAreas } from '../sections/running/integration.ts';
+
+const runningLanding = shippedAreas().find((area) => area.key === 'landing');
+---
+
+<Base
+  title="Page not found · Alexander Webber"
+  description="There's no page at this address on Alexander Webber's site."
+  image="/og/site.png"
+  imageAlt="Alexander Webber: running, training and the road to Brighton Marathon 2027."
+>
+  <meta slot="head" name="robots" content="noindex" />
+  <h1>Page not found</h1>
+  <p>There's no page at this address. It may have moved, or the link may have a typo.</p>
+  <ul>
+    <li><a href="/">Alexander Webber's home page</a></li>
+    {runningLanding && (
+      <li>
+        <a href={runningLanding.href}>Running</a>: training, races and the road to Brighton Marathon 2027
+      </li>
+    )}
+  </ul>
+</Base>
