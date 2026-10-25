@@ -5,55 +5,25 @@ Each item: what it is, and why it's deferred. When something is picked up, move 
 the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 
 - **Public-readiness sweep, then make the repo public** (owner, 2026-10-25: the repo will go
-  public). **Next**, as the last check before the switch, so it covers the
-  README too. It must be very thorough. Principle VI has kept the tree safe by design, but a
-  public repo exposes much more than today's files.
-  - **First, a read-only sweep with a findings report.** Each finding gets its severity, where
-    it is (file and commit, or GitHub object) and the fix options.
-    - **Secrets in all history:** gitleaks and trufflehog over every commit on every branch and
-      tag, plus GitHub's PR refs (`refs/pull/*`), which keep old commits even after a branch
-      is deleted. Check for `.env` files, keys and tokens ever committed. The R2 keys, Cloudflare
-      token and intervals.icu key were printed in a session transcript (2026-10-18), never the
-      repo, so confirm that.
-    - **Personal data in history:** provider IDs (intervals.icu and Garmin activity or athlete
-      IDs), coordinates or GPS from training runs, raw provider responses (especially under
-      `spikes/`), start times, and email addresses. Also check the two junior parkruns with the
-      owner's son, which were published before `run-overrides.yaml` hid them (2026-10-23).
-      Run the privacy scan over every historical version of `data/`, not just today's.
-    - **Commit metadata:** author and committer emails, so the personal email isn't exposed
-      if a noreply address is wanted.
-    - **Docs as public prose:** `PROJECT_MEMORY.md`, `BACKLOG.md`, `canaries.md` and the specs
-      hold weight history, family details, billing amounts, kit, account and bucket names, the
-      dispatch token's expiry and session notes. The owner reads a summary of what's there and
-      decides what stays. Infrastructure identifiers (bucket name, workers.dev subdomain,
-      Cloudflare account ID if present) are judged too.
-    - **GitHub objects that go public with the repo:** issue and PR bodies and comments, closed
-      alert issues, Actions run logs (including spike, probe and throwaway workflows from
-      2026-10-17 on, run before the log-scrubbing rules existed), and uploaded artifacts.
-      Delete old logs and artifacts that aren't needed.
-    - **Workflow security once anyone can fork:**
-      - no `pull_request_target`, and no secrets reachable from fork PRs;
-      - "require approval for fork PR workflows" on;
-      - least-privilege `permissions:` on every job;
-      - SHA-pinned actions (already done);
-      - `workflow_dispatch` inputs safe, since only collaborators can dispatch;
-      - the ingest bot's push to `main` keeps working.
-  - **Fixes, as PRs.** If history holds anything that shouldn't be public, the choice is between
-    rewriting history and a new public repo with a fresh squashed history. With
-    `git filter-repo`, GitHub keeps the old commits behind PR refs until GitHub Support removes
-    them, so a fresh repo is often the cleaner option. That's the owner's call, with a
-    recommendation.
+  public). **In progress.** The read-only sweep is done and the owner has picked the fixes
+  (`PROJECT_MEMORY.md`, decisions log, 2026-10-25): keep the history, use neutral wording,
+  rotate credentials. What's left:
+  - **Rotate credentials** with the owner: Garmin two-step verification, a new intervals.icu
+    key, a bucket-scoped R2 token and a rolled Cloudflare deploy token, each proven by a run.
+    Then reword the docs' security notes.
+  - **Email privacy:** the owner turns on *Keep my email addresses private* and *Block command
+    line pushes that expose my email* (new commits already use the noreply address).
   - **Public-repo setup:**
-    - turn on secret scanning with push protection, Dependabot alerts and code scanning (all
-      free on public repos);
-    - add branch protection or a ruleset for `main` (available once public), with a bypass for
-      the ingest bot;
+    - add `SECURITY.md`, and turn off Projects (the wiki is already off; Issues stay, for the
+      alerts);
+    - after the switch: fork-PR workflow approval for all outside contributors (GitHub only
+      offers it on public repos), `sha_pinning_required`, a ruleset for `main` with a bypass
+      for the refresh bot (prove a bot push still lands), secret scanning with push
+      protection, Dependabot alerts and code scanning;
     - the licence is decided (MIT for code, content all rights reserved; `LICENSE` added in
-      the README PR, 2026-10-25);
-    - add `SECURITY.md`;
-    - turn off unused features (wiki, projects).
+      the README PR, 2026-10-25).
   - **The switch itself is the owner's**, or the agent's only on their explicit go-ahead, once
-    every finding is closed. Then the agent checks the public view logged out.
+    the items above are done. Then the agent checks the public view logged out.
   - **Side benefit:** Actions minutes on standard runners are free for public repos, which
     ends the 2,000-minute watch.
 - **Set up Martlets fundraising page** for Brighton Marathon (2027-04-04) —

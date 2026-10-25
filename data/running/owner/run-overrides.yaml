@@ -9,7 +9,7 @@
 - id: 2026-10-17-iaae
   device: Venu X1
 
-# Junior parkruns with my son (Garmin logged them as "Other"), not my own runs.
+# Not my own runs (Garmin logged them as "Other").
 - id: 2026-03-08-dvor
   hide: true
 - id: 2026-03-15-huen
