@@ -9,16 +9,14 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, evening):** the sweep's PR (#74) is merged and green. All four
-  credentials are rotated (decisions log, 2026-10-25); the `001-credential-rotation` PR records
-  it, and its merge deploys with the new Cloudflare token.
+- **Status (2026-10-25, evening):** the credential rotation is done and proven (decisions
+  log, 2026-10-25; PR #75, whose `main` deploy passed with the new Cloudflare token). The owner
+  deleted both old Cloudflare tokens, `C:\temp\r2.txt` and `C:\temp\keys.txt`. PR #44's edit
+  history holds only the current, neutral description (checked with GraphQL
+  `userContentEdits`).
   - **Next session:**
-    1. **Check the `001-credential-rotation` PR merged** and every check is green, including
-       `main`'s Gate run to the end: its deploy is the new Cloudflare token's proof. If
-       not merged, remind the owner once. Then check its boxes: the owner deleted the old
-       "Edit Cloudflare Workers" token and the old "R2 Account Token", and PR #44's two
-       remaining 23 Oct description revisions (check with GraphQL `userContentEdits`, as on
-       2026-10-25: none may be left undeleted except the current one).
+    1. **Check the `001-rotation-handoff` PR merged** (this handoff) and its checks are green.
+       If not merged, remind the owner once.
     2. **Garmin two-step verification proof:** the owner's next weigh-in (Index S2, Wi-Fi) and
        next run (Venu X1, via the Garmin Connect app) reach intervals.icu and a refresh publishes
        them. If either stops, it's the first suspect.
@@ -1320,9 +1318,21 @@ project-specific notes.
     KV was refused. The `001-credential-rotation` PR's deploy on `main` is its real proof, and
     the old token is deleted after it.
   - **Old tokens deleted** in the Cloudflare dashboard by the owner (R2 at once, the deploy
-    token after the proof).
+    token after the proof). #75's deploy on `main` passed with the new token (Worker, cron and
+    both custom domains), and the owner deleted the old one and both local key files.
+  - **PR #44's edit history** now holds only the current description; every earlier revision
+    is deleted (checked with GraphQL `userContentEdits`).
 
 ## Upstream candidates
+
+- **Cloudflare's "Edit Cloudflare Workers" token template is far too broad for CI deploys:** it
+  includes admin read and write on every R2 bucket (it shows up in R2's token list), plus KV,
+  Pages and more. A custom token with Workers Scripts Edit, Workers R2 Storage Read (only for an
+  R2 binding), and Workers Routes Edit and Zone Read on the zone deployed a Worker with custom
+  domains and a cron. Test it first with read-only API calls (AGENT_TIPS, *Cloudflare*).
+- **Check GitHub description-revision deletes through the API:** GraphQL
+  `pullRequest.userContentEdits` lists each revision with `deletedAt`, so the agent can confirm
+  the owner's deletes. The owner missed one of three on the first pass (AGENT_TIPS, *Git*).
 
 - **Rotating secrets: the owner drops the new value in a local file outside the repo, and the
   agent pipes it** (owner, 2026-10-25): `gh secret set NAME < file` and a PowerShell
