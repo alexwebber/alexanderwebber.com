@@ -1,7 +1,7 @@
 // Words and figures for goal cards (T090): units per FR-075 (kg, %, h:mm:ss, UK dates). Pure, so
 // the Goals page, the landing page's featured goals and the share image say the same thing.
 import { formatDate } from '../../../shared/format/dates.ts';
-import { formatDuration, formatKm } from '../../../shared/format/units.ts';
+import { formatDuration, formatKm, formatNumber } from '../../../shared/format/units.ts';
 import { DISTANCES_M } from './distances.ts';
 import { sameDistance } from './efforts.ts';
 import { subLabel } from './races.ts';
@@ -41,8 +41,7 @@ const UNITS: Record<ValueMetric, { suffix: string; name: string }> = {
  */
 export function formatMetric(metric: ValueMetric, value: number, reading = false): string {
   const fixed = reading && (metric === 'weight_kg' || metric === 'body_fat_pct') ? 1 : 0;
-  const text = new Intl.NumberFormat('en-GB', { minimumFractionDigits: fixed, maximumFractionDigits: 1 }).format(value);
-  return `${text}${UNITS[metric].suffix}`;
+  return `${formatNumber(value, fixed, 1)}${UNITS[metric].suffix}`;
 }
 
 export function metricName(metric: ValueMetric): string {
@@ -126,7 +125,7 @@ export function startChangeText(evaluation: ValueEvaluation): string | undefined
 }
 
 /** "<amount> down|up since <date> (<from value>)", or undefined with no change (to one decimal). */
-export function changeSinceText(metric: ValueMetric, from: { date: string; value: number }, now: number): string | undefined {
+function changeSinceText(metric: ValueMetric, from: { date: string; value: number }, now: number): string | undefined {
   const change = Math.round((now - from.value) * 10) / 10;
   if (change === 0) return undefined;
   const amount = formatMetric(metric, Math.abs(change), true);

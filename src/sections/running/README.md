@@ -141,7 +141,8 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   progress, data-model §5) and `goal-text.ts` (the words and figures cards show).
 - `links.ts`: a run's and a race's page address (`runHref`, `raceHref`).
 - Goals (US2): `pages/goals.astro` at `/running/goals/`, `components/GoalCard.astro`,
-  `AchievedGoalCard.astro` and `AsOf.astro`, and the share image `og/goals.png.ts`.
+  `AchievedGoalCard.astro` and `AsOf.astro`, and the share image `og/goals.png.ts`. The two cards'
+  common styles are in `styles/goal-card.css`; `styles/theme.css` also holds `.breadcrumb`.
 - Landing (US1): `pages/index.astro` at `/running/`, fed by `data/landing.ts` (`loadLanding()`).
   `components/Hero.astro` (focus race, `Countdown.astro`, target, Garmin prediction, charity, a
   reserved `fundraising` slot that nothing fills yet, and `TrainingBuild.astro`), the featured

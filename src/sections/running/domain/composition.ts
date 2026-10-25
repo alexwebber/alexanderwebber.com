@@ -16,7 +16,7 @@ export interface DatedValue {
   value: number;
 }
 
-export const WINDOW_DAYS = 7;
+const WINDOW_DAYS = 7;
 
 /**
  * The trailing 7-day mean (the day and the six before it) of `readings`, one point per calendar
@@ -43,14 +43,4 @@ export function trailingMean(readings: readonly DatedValue[], until?: string, wi
     }
   }
   return out;
-}
-
-/** Body fat's 7-day average series (build-time only). */
-export function bodyFatAverage(readings: readonly DatedValue[], until?: string): DatedValue[] {
-  return trailingMean(readings, until);
-}
-
-/** Weight's 7-day average series: the published `weight_avg7` points as they are. */
-export function weightAverage(weightAvg7: readonly DatedValue[]): DatedValue[] {
-  return [...weightAvg7].sort((a, b) => a.date.localeCompare(b.date));
 }

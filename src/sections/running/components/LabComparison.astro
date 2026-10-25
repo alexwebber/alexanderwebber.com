@@ -4,6 +4,7 @@
 // minus Garmin), in words. With no Garmin reading in the window it says so rather than comparing
 // with something further away. Nothing renders without lab results.
 import { formatDate } from '../../../shared/format/dates.ts';
+import { formatNumber } from '../../../shared/format/units.ts';
 import { LAB_WINDOW_DAYS, type LabComparison } from '../domain/health.ts';
 import type { ValueMetric } from '../domain/goals.ts';
 
@@ -17,7 +18,7 @@ export interface Props {
 const { comparisons, metric, device } = Astro.props;
 const UNIT: Record<ValueMetric, string> = { weight_kg: ' kg', body_fat_pct: '%', vo2max: '', resting_hr: ' bpm', hrv: ' ms' };
 const DIFF_UNIT: Record<ValueMetric, string> = { weight_kg: ' kg', body_fat_pct: ' percentage points', vo2max: '', resting_hr: ' bpm', hrv: ' ms' };
-const one = (v: number) => new Intl.NumberFormat('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(Math.abs(v));
+const one = (v: number) => formatNumber(Math.abs(v), 1);
 const value = (v: number) => `${v < 0 ? '−' : ''}${one(v)}${UNIT[metric]}`;
 const diff = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${one(v)}${DIFF_UNIT[metric]}`;
 ---

@@ -9,27 +9,25 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, evening):** **refactor session 3 of 3 is under way**: PR #69 merged
-  green, and the simplify-the-section PR (`001-simplify-section`, findings 2 + 3) is raised.
+- **Status (2026-10-25, evening):** **the maintainability refactor is done**: PR #70 (findings
+  2 + 3) merged and deployed, and the tidy-ups PR (`001-tidy-ups`, findings 6 + 7 + 9) is raised.
   - **Next session:**
-    1. **Check the simplify PR merged** (and every check is green); if not, remind the owner
-       once.
-    2. **Finish refactor session 3** (see `specs/001-running-section/maintainability-review.md`
-       *Owner picks and order*): the tidy-ups (6 + 7 with a before/after computed-style check,
-       + 9) as one PR from `main`. Report its `dist/` diff against `main`.
-    3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
-    4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
+    1. **Check the tidy-ups PR merged**, every check is green, *and* the Gate run on `main`
+       after the merge deployed (#69's deploy failed on a one-off Cloudflare error and went
+       unnoticed until #70); if not merged, remind the owner once.
+    2. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
+    3. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
        next: fundraising, journey story or CV & Blog.
-    5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    6. Remember that the lab wording is decided at the first lab result.
+    4. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    5. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
   - **Planned order** (owner, 2026-10-24):
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
     2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
-    3. **Maintainability review** (done, 2026-10-25) **and refactor** (BACKLOG, three sessions).
+    3. ~~Maintainability review and refactor~~ (2026-10-25; PRs #67–#70 and the tidy-ups PR).
     4. **Repo README** (BACKLOG).
     5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
        (fundraising, journey story or CV & Blog).
@@ -1205,8 +1203,42 @@ project-specific notes.
     `Base.DP398Z1Y.css` instead of `integration.DP398Z1Y.css` (same contents and hash). Rollup
     names a chunk after the first module that imports it, and the home and 404 pages no longer
     import `integration.ts`.
+  - **#69's deploy failed** (Gate run on `main`, 10:58): the gate passed, then Cloudflare's
+    asset upload answered "unknown error" (code 10013). Nothing visible broke, because the
+    previous build stayed live and #69's was the same, and #70's deploy replaced it. The agent
+    had checked the run while it was still going; post-merge checks now wait for it to finish.
+
+- **2026-10-25** — **Refactor session 3 of 3, second PR: tidy-ups** (`001-tidy-ups`, findings
+  6 + 7 + 9). Choices later work builds on:
+  - **Numbers:** `units.ts` exports `formatNumber(value, decimals, maxDecimals)` and
+    `formatAxisKm`; no component builds its own `Intl.NumberFormat` or `toFixed` label now.
+    The one visible change: a run chart table's last distance row read 8.71 where the run's
+    summary said 8.72 km (`toFixed` rounds 8.715's binary value down); both now say 8.72.
+  - **Goal cards:** their common rules are in `styles/goal-card.css`, under `.theme-running`,
+    so they weigh the same as the scoped rules they replace (0,2,0). The achieved card's accent
+    edge (and its forced-colours colour) is there too, after the shell's `border`, so the order
+    is fixed. `.breadcrumb` is in `styles/theme.css`. A Playwright check compared every
+    element's computed style (and `::before`/`::after`) on 12 pages, including the race and
+    health previews, at phone and desktop widths in light, dark and forced colours: 128,085
+    element styles, 0 differences. A planted 1px change in one rule showed 181, so the check
+    works.
+  - **Dead code:** `weightAverage`, `hasData`, `currentManualMetrics` (the one `domain/` import
+    of `data/load.ts`) and the `bodyFatAverage` wrapper are gone, 27 exports used only in their
+    own file are no longer exported, and the photo long-edge limit lives once, in
+    `scan-images.ts`.
+  - **`dist/` against `main`:** findings 6 + 9 are byte-identical except that table row. The
+    CSS move changes 206 pages only inside `<style>`/`<link>` (the GoalCard stylesheet is now
+    inlined), with no markup change.
 
 ## Upstream candidates
+
+- **"Green after merge" means `main`'s own run, to the end:** the PR's checks were green, but
+  the push-triggered Gate run on `main` (which deploys) was still going at the session-start
+  check, and it then failed on a Cloudflare upload error nobody saw for an hour. Wait for that
+  run to finish before calling a merge done (template PR norm).
+- **Prove a "0 differences" check with a planted change:** the computed-style comparison found
+  0 differences in 128,085 element styles, which only means something once a 1px edit to one
+  rule is shown to produce differences (PLAYBOOK, project lessons).
 
 - **A `dist/` diff can show every page changed when only a chunk's name moved:** Rollup names a
   shared CSS chunk after the first module importing it, so dropping an import renamed

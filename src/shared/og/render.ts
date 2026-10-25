@@ -32,7 +32,7 @@ export interface OgCard {
 }
 
 // The shared light tokens (src/shared/design/tokens.css).
-export const SITE_COLOURS: OgColours = {
+const SITE_COLOURS: OgColours = {
   background: '#f9f9f7',
   text: '#0b0b0b',
   muted: '#52514e',
@@ -95,7 +95,7 @@ export function cardTree(card: OgCard): Node {
   );
 }
 
-export async function renderOgSvg(card: OgCard): Promise<string> {
+async function renderOgSvg(card: OgCard): Promise<string> {
   return satori(cardTree(card) as Parameters<typeof satori>[0], {
     width: OG_WIDTH,
     height: OG_HEIGHT,

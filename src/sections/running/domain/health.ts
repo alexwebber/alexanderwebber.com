@@ -36,7 +36,7 @@ export type { DatedValue };
 export type RangeKey = '3m' | '1y' | 'all';
 
 /** Days each bounded range reaches back from today. */
-export const RANGE_DAYS = { '3m': 91, '1y': 365 } as const;
+const RANGE_DAYS = { '3m': 91, '1y': 365 } as const;
 
 export interface ChartRange {
   key: RangeKey;
@@ -49,7 +49,7 @@ export interface ChartRange {
  * Days a longer range must add over the shorter one before it is offered; less than this and it
  * would look the same (owner, 2026-10-24: "All time" was 3–9 days longer than "1 year").
  */
-export const RANGE_MIN_EXTRA_DAYS = 30;
+const RANGE_MIN_EXTRA_DAYS = 30;
 
 /**
  * The ranges a chart offers for data starting on `first`, ending today. Each starts no earlier
@@ -136,7 +136,7 @@ export type LabMetric = keyof LabMeasurement['values'];
 export type LabType = LabMeasurement['type'];
 
 /** Marker labels (US5.4, US5.5). */
-export const LAB_LABELS: Record<LabType, string> = { dexa: 'DEXA scan', lab_vo2max: 'Lab test' };
+const LAB_LABELS: Record<LabType, string> = { dexa: 'DEXA scan', lab_vo2max: 'Lab test' };
 
 /** How many days either side a Garmin reading may be to compare with a lab result (FR-065). */
 export const LAB_WINDOW_DAYS = 7;
@@ -217,7 +217,7 @@ export function hrvNote(start: HrvStart): string {
 // --- Fitness, fatigue and form (T156) -----------------------------------------------------
 
 /** intervals.icu's fitness time constant: fitness takes about this long to build from zero. */
-export const FITNESS_WARMUP_DAYS = 42;
+const FITNESS_WARMUP_DAYS = 42;
 
 /** How the chart names its model (FR-060): intervals.icu's, never Garmin's training load. */
 export const FITNESS_MODEL_LABEL = "intervals.icu's fitness and fatigue model, not Garmin's training load";

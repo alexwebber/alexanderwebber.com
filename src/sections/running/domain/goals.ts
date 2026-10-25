@@ -25,7 +25,7 @@
 import { daysBetween } from '../../../shared/format/dates.ts';
 import { parseTime } from '../../../shared/format/parse.ts';
 import type { Goal, UpcomingRace } from '../data/store/index.ts';
-import { bodyFatAverage, type DatedValue } from './composition.ts';
+import { trailingMean, type DatedValue } from './composition.ts';
 import { parseDistance } from './distances.ts';
 import { effortsAt, type Effort, type EffortIndex } from './efforts.ts';
 import { predictionDistanceFor, type CurrentManualMetrics, type Prediction } from './manual-metrics.ts';
@@ -122,7 +122,7 @@ export function evaluateGoals(inputs: GoalInputs): GoalEvaluation[] {
   return inputs.goals.filter((goal) => !goal.retired).map((goal) => evaluateGoal(goal, inputs));
 }
 
-export function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
+function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
   const linkedRace = goal.linked_race ? inputs.upcomingRaces?.find((r) => r.id === goal.linked_race) : undefined;
   const base = { goal, ...(linkedRace ? { linkedRace } : {}) };
   let evaluation: Record<string, unknown> & { kind: GoalEvaluation['kind'] };
@@ -161,7 +161,7 @@ export function evaluateGoal(goal: Goal, inputs: GoalInputs): GoalEvaluation {
       const recorded = [...(inputs.health[metric] ?? [])].sort((a, b) => a.date.localeCompare(b.date));
       const averaged = goal.type === 'body_composition';
       // Weight is published as its 7-day average already; body fat's is computed here.
-      const judgedSeries = metric === 'body_fat_pct' ? bodyFatAverage(recorded) : recorded;
+      const judgedSeries = metric === 'body_fat_pct' ? trailingMean(recorded) : recorded;
       const inScope = (p: DatedValue) => !goal.created || p.date >= goal.created;
       const judged = judgedSeries.filter(inScope);
       const hit = judged.find((p) => reaches(p.value, target, direction));
@@ -247,11 +247,4 @@ export function featuredGoals(evaluations: readonly GoalEvaluation[], limit: num
     .slice(0, limit);
   const fresh = achievedGoals(featured.filter((e) => e.newlyAchieved));
   return [...fresh, ...featured.filter((e) => !e.newlyAchieved)];
-}
-
-/** Whether there is anything to show progress from. */
-export function hasData(evaluation: GoalEvaluation): boolean {
-  if (evaluation.kind === 'race_time') return evaluation.fastest !== undefined;
-  if (evaluation.kind === 'value') return evaluation.current !== undefined;
-  return true;
 }

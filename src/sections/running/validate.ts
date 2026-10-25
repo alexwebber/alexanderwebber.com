@@ -15,12 +15,12 @@ import { parseDistance } from './domain/distances.ts';
 const DUPLICATE_RACE_TOLERANCE = 0.02;
 
 /** Provider activity links, and IDs outside links, that must never appear in owner files (data-model §3). */
-export const PROVIDER_LINK_PATTERNS: [RegExp, string][] = [
+const PROVIDER_LINK_PATTERNS: [RegExp, string][] = [
   [/intervals\.icu\/activities\//, 'is an intervals.icu activity link'],
   [/connect\.garmin\.com\/modern\/activity\//, 'is a Garmin Connect activity link'],
 ];
 // Checked with links removed: race results URLs often carry long numeric IDs of their own.
-export const PROVIDER_ID_PATTERNS: [RegExp, string][] = [
+const PROVIDER_ID_PATTERNS: [RegExp, string][] = [
   [/\bi\d{6,}\b/, 'looks like an intervals.icu activity ID'],
   [/\b\d{9,}\b/, 'looks like a Garmin activity ID'],
 ];

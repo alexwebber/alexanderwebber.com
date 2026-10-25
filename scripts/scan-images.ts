@@ -11,7 +11,7 @@ import { isMain, walk } from './lib/walk.ts';
 export const IMAGE = /\.(jpe?g|png|webp|avif|gif|tiff?|heic|heif)$/i;
 const OWNER_PHOTO_DIR = 'data/running/owner/';
 const OWNER_PHOTO = /\.(jpg|webp|avif)$/;
-const MAX_LONG_EDGE = 2400;
+export const MAX_LONG_EDGE = 2400;
 
 export interface ImageFinding {
   file: string;

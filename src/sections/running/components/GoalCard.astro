@@ -22,6 +22,7 @@ import type { GoalEvaluation } from '../domain/goals.ts';
 import { runHref } from '../links.ts';
 import AsOf from './AsOf.astro';
 import GarminAttribution from './GarminAttribution.astro';
+import '../styles/goal-card.css';
 
 export interface Props {
   evaluation: GoalEvaluation;
@@ -213,24 +214,6 @@ const fastestSuffix =
 </article>
 
 <style>
-  .goal-card {
-    height: 100%;
-    padding: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-  }
-
-  .goal-card-header {
-    margin-bottom: var(--space-3);
-  }
-
-  .goal-card-title {
-    margin: 0;
-    font-size: var(--step-1);
-    line-height: var(--leading-tight);
-  }
-
   .goal-flag {
     display: inline-block;
     margin: 0 0 var(--space-3);
@@ -243,35 +226,8 @@ const fastestSuffix =
     font-weight: var(--weight-bold);
   }
 
-  .goal-description {
-    margin: 0 0 var(--space-3);
-    color: var(--color-text-secondary);
-  }
-
   .goal-facts {
-    display: grid;
-    gap: var(--space-2);
     margin: 0 0 var(--space-4);
-  }
-
-  .goal-facts div {
-    display: grid;
-    gap: 0 var(--space-3);
-  }
-
-  @media (min-width: 30rem) {
-    .goal-facts div {
-      grid-template-columns: 9rem 1fr;
-    }
-  }
-
-  .goal-facts dt {
-    color: var(--color-text-secondary);
-    font-size: var(--step--1);
-  }
-
-  .goal-facts dd {
-    margin: 0;
   }
 
   .goal-headline {
