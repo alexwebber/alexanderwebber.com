@@ -4,6 +4,19 @@ Deferred or future work, tracked here so it doesn't get lost or buried in the de
 Each item: what it is, and why it's deferred. When something is picked up, move its entry to
 the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 
+- **Maintainability review and refactor** (owner, 2026-10-25). **Next after the T158 lesson
+  harvest, before the next spec.** The Running section was built in eight slices by separate
+  subagents, and the reviews so far (T110, T147) checked correctness, speed, accessibility,
+  privacy and SEO, not simplicity. CV & Blog will be the second section, the first real test of
+  Principle VII, so any coupling between shared plumbing and Running is cheapest to fix now.
+  - **Review first (one session, read-only):** a ranked list of findings, each with its payoff
+    and risk. It covers patterns that drifted between phases, duplicated helpers, dead code and
+    leftover transition shims, and Running details leaking into `src/shared/`, `schemas/` or the
+    gate. It also covers the ingest package's structure, tests that are slow or duplicated, and
+    docs that have drifted from the code. The owner picks what to do.
+  - **Then small refactor PRs:** one concern each, with no change visitors can see. The existing
+    tests and the gate are the safety net, and published data must not change unless a finding
+    says why.
 - **Decide repo visibility (public vs private)** — a public repo showing a spec-first, AI-built
   site could be a CV piece. Deferred by owner; constitution Principle VI already requires the
   repo be kept safe to publish.
