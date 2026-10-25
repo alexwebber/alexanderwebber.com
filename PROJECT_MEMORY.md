@@ -9,27 +9,20 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, evening):** the credential rotation is done and proven (decisions
-  log, 2026-10-25; PR #75, whose `main` deploy passed with the new Cloudflare token). The owner
-  deleted both old Cloudflare tokens, `C:\temp\r2.txt` and `C:\temp\keys.txt`. PR #44's edit
-  history holds only the current, neutral description (checked with GraphQL
-  `userContentEdits`).
+- **Status (2026-10-25, evening):** **the repo is public** and hardened (decisions log,
+  2026-10-25, "Repo public"). The `001-security-alerts` PR fixes the Dependabot alerts.
   - **Next session:**
-    1. **Check the `001-rotation-handoff` PR merged** (this handoff) and its checks are green.
-       If not merged, remind the owner once.
-    2. **Garmin two-step verification proof:** the owner's next weigh-in (Index S2, Wi-Fi) and
-       next run (Venu X1, via the Garmin Connect app) reach intervals.icu and a refresh publishes
-       them. If either stops, it's the first suspect.
-    3. **Public-repo setup, then the switch** (BACKLOG's list): the owner turns on *Keep my
-       email addresses private* and *Block command line pushes that expose my email*.
-       `SECURITY.md` (PR #77) and Projects off are done. After the owner's switch (or the
-       agent's, on their explicit go-ahead): private vulnerability reporting, fork-PR
-       approval for all outside contributors, `sha_pinning_required`,
-       a `main` ruleset with a bypass for the refresh bot (prove a bot push still lands),
-       secret scanning with push protection, Dependabot alerts, code scanning, and a logged-out
-       look at the public repo. Then drop the Actions-minutes watch (public repos are free).
-    4. **After it, ask the owner which spec comes next:** fundraising, journey story or CV &
-       Blog.
+    1. **Check the `001-security-alerts` PR merged**, its `main` Gate run finished green
+       (deploy included), and Dependabot shows no open alerts. If not merged, remind the owner
+       once.
+    2. **Bot-push proof under the ruleset:** a refresh commit (`data: publish running data`)
+       landed on `main` after 2026-10-25 16:55 UTC. The 00:17 refresh has committed every
+       night so far. If its push was rejected, the ruleset is the first suspect.
+    3. **Garmin two-step verification proof:** the owner's next weigh-in (Index S2, Wi-Fi) and
+       next run (Venu X1, via the Garmin Connect app) reach intervals.icu and a refresh
+       publishes them. The 25 Oct weigh-in probably came before two-step verification. If
+       either stops, it's the first suspect.
+    4. **Ask the owner which spec comes next:** fundraising, journey story or CV & Blog.
     5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
     6. Remember that the lab wording is decided at the first lab result.
   - **Secrets from the owner** come through a local file outside the repo
@@ -43,11 +36,10 @@ Update this as decisions get made — treat it as the source of truth alongside
     2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
     3. ~~Maintainability review and refactor~~ (2026-10-25; PRs #67–#71).
     4. ~~Repo README~~ (PRs #72–#73).
-    5. **Public-readiness sweep** (read-only part done 2026-10-25), **then the repo goes
-       public** (BACKLOG), then the next spec (fundraising, journey story or CV & Blog).
+    5. ~~Public-readiness sweep, then the repo goes public~~ (2026-10-25), then the next spec
+       (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
-    was re-enabled). Minutes: 1,231 used by about 14:00 UTC on 2026-10-25; October should end
-    around 1,450–1,550.
+    was re-enabled).
   - **T105's no-change path** was never seen: every 00:17 refresh so far committed new data.
     That's fine, and the owner has been told; stop looking for it.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
@@ -60,11 +52,13 @@ Update this as decisions get made — treat it as the source of truth alongside
 - **Each session, first:**
   - **Refresh runs:** fix any red one first, and any `refresh-trigger-failing` or
     `ingest-failing` issue.
-  - **Actions minutes:** read the usage
-    (`gh api "/users/alexwebber/settings/billing/usage/summary?product=actions"`) and warn before
-    the 2,000-minute limit. 435 minutes were used by 2026-10-23; the rate was about 55 a day
-    before PR #31. Billing check 2026-10-23: everything is $0. Cloudflare R2 and Workers are far
-    inside their free tiers, and Workers is on the Free plan.
+  - **Security alerts:** read the open Dependabot, code-scanning and secret-scanning alerts
+    (`gh api repos/alexwebber/alexanderwebber.com/{dependabot,code-scanning,secret-scanning}/alerts?state=open`).
+    Fix what affects us in a PR; dismiss the rest with a reason. Raise any secret-scanning
+    alert with the owner at once.
+  - **Costs:** Actions minutes stopped counting when the repo went public (2026-10-25), so
+    the 2,000-minute watch is over. Billing check 2026-10-23: everything is $0. Cloudflare R2
+    and Workers are far inside their free tiers, and Workers is on the Free plan.
 - **Owner setup done:** T001 (R2 + `R2_*`), T002 (Cloudflare token and account), the
   intervals.icu key, the `alexanderwebber` workers.dev subdomain, the `gh` `user` scope and
   T004 (nameservers, 2026-10-24). T003 is dropped. The zone's dashboard-only settings are in
@@ -1323,8 +1317,49 @@ project-specific notes.
     both custom domains), and the owner deleted the old one and both local key files.
   - **PR #44's edit history** now holds only the current description; every earlier revision
     is deleted (checked with GraphQL `userContentEdits`).
+- **2026-10-25** — **Repo public** (the agent, on the owner's "go"). Before the switch:
+  `SECURITY.md` (PR #77), Projects off, the owner's two email-privacy settings (the API showed
+  the primary email `private`), and an exact-value search of the 29 runs' logs since the sweep
+  (no credential or email; long numbers were run, artifact and release IDs). After it:
+  - **Settings:** private vulnerability reporting, approval before workflows run for all
+    outside contributors' PRs, `sha_pinning_required` (every `uses:` was already pinned),
+    secret scanning with push protection, Dependabot alerts, and CodeQL default setup
+    (actions, JavaScript/TypeScript, Python; its first run passed). Homepage
+    `https://alexanderwebber.com` and four topics (owner pick).
+  - **`main` ruleset: no deletion, no force-push, nothing else** (owner pick). A personal
+    repo's ruleset can't exempt GitHub Actions (the API answers 422 "must be part of the
+    ruleset source or owner organization"), so requiring PRs and the gate would block the
+    refresh bot. The alternative, a deploy key the ruleset exempts, adds a long-lived
+    credential that can write to the repo, for a rule that would only bind the owner and the
+    agent. Outsiders can't push to a public repo anyway.
+  - **Bot push under the ruleset:** not yet proven. The 16:54 dispatched refresh found nothing
+    new, so it didn't push; the next refresh with data does.
+  - **First alerts:** secret scanning found none. CodeQL flagged a tag-stripping regex in six
+    unit tests (`js/incomplete-multi-character-sanitization`); they were dismissed as "used in
+    tests", because the helper only reads the site's own build output. Dependabot raised nine:
+    `certifi` (critical, ingest TLS), `undici` (wrangler's miniflare), `fast-uri` (ajv) and
+    `fflate` (satori). The `001-security-alerts` PR fixes all nine: `certifi` 2026.10.23,
+    `fast-uri` 3.1.9 within range, and npm `overrides` for the two exact pins, `fflate` 0.7.5
+    and miniflare's `undici` 7.30.1 (both patch releases; `wrangler` 4.152.0 is the latest).
+    That ends the accepted `fflate` advisory. **Remove each override** once satori or
+    wrangler ships the fixed version (session-start update check).
+  - **Logged out**, the repo page, README, MIT licence, security policy, Actions and PRs all
+    load; Projects is gone and the wiki redirects to the repo.
 
 ## Upstream candidates
+
+- **A personal repo's ruleset can't exempt GitHub Actions:** naming the GitHub Actions app
+  (integration 15368) as a bypass actor answers 422 outside organisations. So a bot that pushes
+  to `main` with `GITHUB_TOKEN` rules out required PRs and checks there, unless it pushes with a
+  deploy key instead. Deletion and force-push rules don't affect it (AGENT_TIPS, *Actions*).
+- **Re-read a repo setting after setting it:** `gh api -X PUT
+  .../actions/permissions/fork-pr-contributor-approval -f approval_policy=...` answered 204 and
+  changed nothing; the same body sent as JSON with `--input -` worked (AGENT_TIPS, *Shell*).
+- **Going public turns on scanners with a backlog:** Dependabot raised nine alerts at once
+  (including a critical `certifi`) and CodeQL flagged test helpers. Plan a follow-up PR in the
+  same session, and add the alert check to the session-start list (PLAYBOOK, project lessons).
+- **Actions logs go public with the repo:** scan the logs of runs made since the readiness
+  sweep, just before the switch (PLAYBOOK, project lessons).
 
 - **Cloudflare's "Edit Cloudflare Workers" token template is far too broad for CI deploys:** it
   includes admin read and write on every R2 bucket (it shows up in R2's token list), plus KV,

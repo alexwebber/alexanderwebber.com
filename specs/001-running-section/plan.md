@@ -100,8 +100,8 @@ Spike 1 verifies the limit. This holds only because **training runs share one ge
 (per-run OG images would add ~5,000 files and ~5,000 render passes; rejected).
 
 **Recurring costs**: Cloudflare Workers static assets + R2 within free tiers = **$0/month**;
-GitHub Actions free minutes (private repo: ~2,000 min/month — the 2-hourly job is ~2-4 min
-=> ~1,000-1,400 min/month; **verify**; public repo would be unlimited); domain renewal at
+GitHub Actions free (the repo went public on 2026-10-25; while private it used 1,276 of
+GitHub Free's 2,000 minutes from 1 to 25 Oct 2026); domain renewal at
 Namecheap (existing); OpenFreeMap tiles free (optional GitHub Sponsors donation is the owner's
 call); **intervals.icu supporter, £9 every 3 months (about £36 a year)**, adopted by the owner at
 go-live (2026-10-24, T112) to support the service; it adds nothing the site depends on.

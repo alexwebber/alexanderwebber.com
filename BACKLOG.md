@@ -4,26 +4,6 @@ Deferred or future work, tracked here so it doesn't get lost or buried in the de
 Each item: what it is, and why it's deferred. When something is picked up, move its entry to
 the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 
-- **Public-readiness sweep, then make the repo public** (owner, 2026-10-25: the repo will go
-  public). **In progress.** The read-only sweep is done and the owner has picked the fixes
-  (`PROJECT_MEMORY.md`, decisions log, 2026-10-25): keep the history, use neutral wording,
-  rotate credentials. Credentials are rotated (decisions log, 2026-10-25). What's left:
-  - **Email privacy:** the owner turns on *Keep my email addresses private* and *Block command
-    line pushes that expose my email* (new commits already use the noreply address).
-  - **Public-repo setup:**
-    - done before the switch: `SECURITY.md` (the `001-public-setup` PR) and Projects turned
-      off (2026-10-25; the wiki was already off; Issues stay, for the alerts);
-    - after the switch: private vulnerability reporting (`SECURITY.md` points reporters at
-      it), fork-PR workflow approval for all outside contributors (GitHub only offers both
-      on public repos), `sha_pinning_required`, a ruleset for `main` with a bypass for the
-      refresh bot (prove a bot push still lands), secret scanning with push protection,
-      Dependabot alerts and code scanning;
-    - the licence is decided (MIT for code, content all rights reserved; `LICENSE` added in
-      the README PR, 2026-10-25).
-  - **The switch itself is the owner's**, or the agent's only on their explicit go-ahead, once
-    the items above are done. Then the agent checks the public view logged out.
-  - **Side benefit:** Actions minutes on standard runners are free for public repos, which
-    ends the 2,000-minute watch.
 - **Set up Martlets fundraising page** for Brighton Marathon (2027-04-04) —
   https://www.martlets.org.uk/set-up-fundraiser/. Owner action; needed before the fundraising
   provider can be built.
