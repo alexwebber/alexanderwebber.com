@@ -9,16 +9,12 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, mid-morning):** **Phase 9 is live** (#60, plus the planning PRs #61 and
-  #62, all deployed). **T158's harvest is raised**:
-  [sdd-playbook#12](https://github.com/alexwebber/sdd-playbook/pull/12) (house-process 0.10.0),
-  with this project's `001-harvest-4` PR logging it.
+- **Status (2026-10-25, late morning):** **Phase 9 is live** and **T158 is done**
+  (sdd-playbook#12 merged; house-process 0.10.0 reinstalled in the `001-house-process-0-10` PR).
   - **Next session:**
-    1. **Check sdd-playbook#12 merged**, then reinstall house-process 0.10.0 in dev mode from the
-       playbook's pulled `main` (PLAYBOOK > Dev-mode installs) on a branch, and raise it as a PR.
-       The template's PR norm gains the "green checks before ready" sentence; copy it into this
-       file's working norms. That finishes T158.
-    2. **Then the maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s).
+    1. **Check the `001-house-process-0-10` PR merged** (and its checks are green); if not,
+       remind the owner once.
+    2. **The maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s).
     3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
     4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
@@ -30,14 +26,15 @@ Update this as decisions get made — treat it as the source of truth alongside
     Brighton's page after race day.
   - **Planned order** (owner, 2026-10-24):
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
-    2. ~~Harvest lessons again~~ (sdd-playbook#12; the reinstall is left).
+    2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
     3. **Maintainability review and refactor** (BACKLOG).
     4. **Repo README** (BACKLOG).
     5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
-    was re-enabled). Minutes: 995 used by about 19:30 UTC on 2026-10-24; October should end
-    around 1,400–1,500 with Phase 8's PR checks.
+    was re-enabled). Minutes: 1,105 used by about 09:00 UTC on 2026-10-25; October should end
+    around 1,450–1,550. A one-off intervals.icu 503 failed the 04:17 refresh on 25 Oct; the
+    next runs recovered.
   - **T105's no-change path** was never seen: every 00:17 refresh so far committed new data.
     That's fine, and the owner has been told; stop looking for it.
   - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
@@ -108,7 +105,8 @@ project-specific notes.
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
   PRs unless explicitly asked. Anything the owner needs to confirm goes in the PR body as a
   checkbox question. If the PR merges with any left unanswered, the next session asks them
-  before building on them.
+  before building on them. Before telling the owner a PR is ready, and again after it merges,
+  the agent checks that every check on it is green (`gh pr checks`), not just the required ones.
 - **Draw requirements out with questions.** For specs, clarifications and design decisions, the
   agent asks focused rounds of questions with recommended options rather than expecting the
   owner to supply everything up front.
@@ -1134,6 +1132,9 @@ project-specific notes.
     and *Maps* sections.
   - **Not sent:** "per-phase live reviews made the hallway test unnecessary" (one judgement
     call, not a pattern). The one canary in `canaries.md` is still no pattern.
+- **2026-10-25** — Reinstalled house-process 0.10.0 from the playbook's `main` after
+  sdd-playbook #12 merged. The PR norm gains the template's "every check green before ready and
+  after merge" sentence. `extensions.yml` is unchanged. T158 is done.
 
 ## Upstream candidates
 

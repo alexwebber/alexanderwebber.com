@@ -20,9 +20,9 @@
       "installed_at": "2026-10-23T13:24:44.418125+00:00"
     },
     "house-process": {
-      "version": "0.9.0",
+      "version": "0.10.0",
       "source": "local",
-      "manifest_hash": "sha256:6cbf74756673916d2bb6537adc668583f65e02b9e8edf9fead7d8b0302835855",
+      "manifest_hash": "sha256:5183015d3b1dca509569251aeec8fb1d063058a413605328fc4cc33540377ed0",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
@@ -33,7 +33,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-10-24T11:00:10.924587+00:00"
+      "installed_at": "2026-10-25T08:37:47.643229+00:00"
     }
   }
 }

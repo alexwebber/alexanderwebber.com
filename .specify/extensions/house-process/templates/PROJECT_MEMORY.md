@@ -45,7 +45,8 @@ Update this as decisions get made — treat it as the source of truth alongside
   a PR for the owner to review and merge. Coding agents don't push to `main` or merge their own
   PRs unless explicitly asked. Anything the owner needs to confirm goes in the PR body as a
   checkbox question. If the PR merges with any left unanswered, the next session asks them
-  before building on them.
+  before building on them. Before telling the owner a PR is ready, and again after it merges,
+  the agent checks that every check on it is green (`gh pr checks`), not just the required ones.
 - **Draw requirements out with questions.** For the constitution, specs, clarifications and
   design decisions, the agent asks focused rounds of questions with recommended options rather
   than expecting the owner to supply everything up front.
