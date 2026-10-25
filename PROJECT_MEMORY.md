@@ -10,18 +10,21 @@ Update this as decisions get made — treat it as the source of truth alongside
      A new session reads this first; the owner only needs to type "continue". -->
 
 - **Status (2026-10-25, midday):** **the maintainability review is done**
-  (`001-maintainability-review` PR, docs only). The owner picked all ten findings.
+  (PR #65, merged). The owner picked all ten findings, grouped into five PRs
+  (`001-refactor-grouping` PR).
   - **Next session:**
-    1. **Check the `001-maintainability-review` PR merged** (and its checks are green); if not,
+    1. **Check the `001-refactor-grouping` PR merged** (and its checks are green); if not,
        remind the owner once.
-    2. **Refactor session 1 of 4: tests first.** Follow
-       `specs/001-running-section/maintainability-review.md` *Owner picks and order*: finding 5
-       (Playwright: full axe sweeps in the phone project only, the stale drill in desktop only,
-       shared a11y helpers), then 10 (archive test at 1,001 objects), then 9 (dead code). Each
-       is its own PR. Measure Playwright's CI time before and after #5 (it averaged 4 min 16 s
-       over 10 runs).
-       Sessions 2–4: storage out of shared (1, two PRs); shims and loaders (2, 3); tidy-ups
-       (4, 6, 7 with a computed-style check, 8).
+    2. **Refactor session 1 of 3** (grouped plan, owner 2026-10-25; see
+       `specs/001-running-section/maintainability-review.md` *Owner picks and order*). Two PRs,
+       which can run side by side:
+       - **Tests:** finding 5 (Playwright: full axe sweeps in the phone project only, the stale
+         drill in desktop only, shared a11y helpers) + 10 (archive test at 1,001 objects).
+         Measure Playwright's CI time before and after (it averaged 4 min 16 s over 10 runs).
+       - **Remove `backfill`:** finding 8.
+
+       Session 2: Running owns its data (1 + 4). Session 3: simplify the section (2 + 3), then
+       tidy-ups (6 + 7 with a computed-style check + 9).
     3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
     4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
@@ -34,7 +37,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **Planned order** (owner, 2026-10-24):
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
     2. ~~Harvest lessons again~~ (sdd-playbook#12, reinstalled as 0.10.0).
-    3. **Maintainability review** (done, 2026-10-25) **and refactor** (BACKLOG, four sessions).
+    3. **Maintainability review** (done, 2026-10-25) **and refactor** (BACKLOG, three sessions).
     4. **Repo README** (BACKLOG).
     5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
        (fundraising, journey story or CV & Blog).
@@ -1155,7 +1158,10 @@ project-specific notes.
     type would (e.g. fundraising), and a before/after computed-style check removes the risk.
   - **Checked and fine:** the READMEs match the code, the ingest package and domain code are
     cleanly split, the workflows explain every step, and no schema transition shims remain.
-  - **Refactor order:** four sessions, tests first.
+  - **Refactor order, grouped** (owner, after asking about overlaps): findings that change the
+    same files share a PR, so nothing is reworked twice. That's five PRs over three sessions:
+    tests (5 + 10) and `backfill` removal (8); Running owns its data (1 + 4); simplify the section
+    (2 + 3) and tidy-ups (6 + 7 + 9). Each PR reports its `dist/` diff against `main`.
 
 ## Upstream candidates
 

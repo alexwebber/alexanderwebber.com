@@ -12,10 +12,10 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   - **Review: done** (2026-10-25):
     [`specs/001-running-section/maintainability-review.md`](specs/001-running-section/maintainability-review.md).
     It found ten things, and the owner picked all ten.
-  - **Now small refactor PRs** over four sessions, in the review's order: tests first, then
-    storage out of shared, then the section's shims and loaders, then the tidy-ups. One concern
-    per PR, with no change visitors can see. The built `dist/` is diffed against `main`'s, and
-    published data doesn't change.
+  - **Now five refactor PRs** over three sessions, in the review's order. Findings that change
+    the same files are grouped: tests and `backfill` removal first, then Running owns its data,
+    then the section's shims and loaders, then the tidy-ups. None changes what visitors see: the
+    built `dist/` is diffed against `main`'s, and published data doesn't change.
 - **Repo README: how this site was built** (owner, 2026-10-25). **Next after the refactor**,
   so it describes the simplified code; before the next spec. Today's `README.md` is 7 lines. It
   should be a showcase a recruiter or engineer can follow, and it feeds the repo-visibility

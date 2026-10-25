@@ -16,14 +16,18 @@ net.
 ## Owner picks and order
 
 The owner picked **all ten** (2026-10-25). Finding 7 was added once a before/after computed-style
-check removed its risk. The work is small PRs, one concern each, over four sessions:
+check removed its risk. Findings that change the same files are grouped, so no file is reworked
+twice (owner, 2026-10-25). That makes five PRs over three sessions:
 
-1. **Tests first**, so every later PR runs the faster Playwright job: 5 (Playwright), 10 (archive
-   test), then 9 (dead code).
-2. **Storage out of shared:** 1, as two PRs (the store, then validate-data).
-3. **Simplify the section:** 2 (page-by-page shims), then 3 (loaders).
-4. **Tidy-ups:** 4 (distances), 6 (number formatting), 7 (goal-card CSS, with the computed-style
-   check), 8 (remove `backfill`).
+| Session | PR | Findings | Why grouped |
+|---|---|---|---|
+| 1 | Tests | 5 (Playwright) + 10 (archive test) | Test-only. First, so every later PR runs the faster Playwright job. |
+| 1 | Remove `backfill` | 8 | Ingest only and independent, so it can run alongside the tests PR. |
+| 2 | Running owns its data | 1 (store, file map, schema list, validate-data's checks, `formatPace`, the `XYChart` default) + 4 (one distance table for both languages) | 1 moves the distances out of `shared/format/parse.ts`, and 4 reworks the same table, so together they're moved once. |
+| 3 | Simplify the section | 2 (page-by-page shims) + 3 (loaders and defaults) | One theme: the section's data and link layer. |
+| 3 | Tidy-ups | 6 (number formatting) + 7 (goal-card CSS, with the computed-style check) + 9 (dead code) | Last, because 1 and 3 reshape the files 9 touches, so some dead code may already be gone. |
+
+Each PR branches from `main` after the one before it merges.
 
 For every PR: the built `dist/` is diffed against `main`'s, and any difference is explained.
 Published data doesn't change. All checks must be green before the PR is called ready.
