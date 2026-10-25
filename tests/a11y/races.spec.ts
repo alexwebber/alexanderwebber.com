@@ -2,30 +2,20 @@
 // and on the race preview's races page and race pages (synthetic races, SHELL_PREVIEW=1), in light
 // and dark, with every table open; a sound heading outline; the static map exposed as an image
 // with its text alternative; and the map button reachable and operable from the keyboard.
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { axe, fullSweep, outline, sweepOnlyInDark } from '../helpers/a11y.ts';
 
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const PAGES = ['/running/races/', '/race-preview/', '/race-preview/riverside-half-2026/', '/race-preview/indoor-5k-2026/', '/race-preview/2019-example-10k/'];
-
-async function axe(page: Page) {
-  const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-  return results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
-}
-
-async function outline(page: Page) {
-  const levels = await page.locator('main :is(h1, h2, h3, h4, h5, h6):visible').evaluateAll((els) => els.map((el) => Number(el.tagName[1])));
-  expect(levels[0]).toBe(1);
-  for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1);
-}
 
 for (const colorScheme of ['light', 'dark'] as const) {
   test(`the races pages and race pages pass axe in ${colorScheme} mode, with the tables open`, async ({ page }) => {
+    sweepOnlyInDark(colorScheme);
     test.slow();
     await page.emulateMedia({ colorScheme });
     for (const path of PAGES) {
       await page.goto(path);
       expect(await axe(page), path).toEqual([]);
+      if (!fullSweep()) continue;
       for (const summary of await page.locator('details summary:visible').all()) await summary.click();
       expect(await axe(page), `${path} (tables open)`).toEqual([]);
     }

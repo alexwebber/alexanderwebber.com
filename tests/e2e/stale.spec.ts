@@ -52,6 +52,9 @@ const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css'
 test.describe.configure({ mode: 'serial' });
 
 test.beforeAll(async ({}, testInfo) => {
+  // Playwright runs beforeAll once per project, and the drill checks built HTML and gate results,
+  // which don't depend on the viewport, so it builds once.
+  test.skip(testInfo.project.name !== 'desktop', 'builds once, not per device');
   testInfo.setTimeout(240_000);
   root = testInfo.outputPath('stale-site');
   rmSync(root, { recursive: true, force: true });

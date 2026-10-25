@@ -3,11 +3,10 @@
 // and the freshness script's three outcomes. /shell-preview/ exists only in a build made with
 // SHELL_PREVIEW=1 (astro.config.mjs; tests.yml builds that way). Its data is all synthetic,
 // including a fixed build-time freshness, so results don't depend on what the repo has published.
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { axe, fullSweep, sweepOnlyInDark } from '../helpers/a11y.ts';
 
 const PREVIEW = '/shell-preview/';
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 async function open(page: Page, path: string) {
   const response = await page.goto(path);
@@ -15,8 +14,7 @@ async function open(page: Page, path: string) {
 }
 
 async function expectNoAxeViolations(page: Page) {
-  const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-  expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  expect(await axe(page)).toEqual([]);
 }
 
 for (const colorScheme of ['light', 'dark'] as const) {
@@ -25,12 +23,14 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
     for (const path of ['/', PREVIEW]) {
       test(`${path} passes axe`, async ({ page }) => {
+        sweepOnlyInDark(colorScheme);
         await open(page, path);
         await expectNoAxeViolations(page);
       });
     }
 
     test('axe also passes with the data table open and another range chosen', async ({ page }) => {
+      test.skip(!fullSweep(), 'swept in the phone project');
       await open(page, PREVIEW);
       await page.getByText('All time', { exact: true }).click();
       await page.getByText('Show the data').first().click();

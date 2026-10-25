@@ -187,14 +187,15 @@ def test_a_failed_write_leaves_the_old_object_intact(store, monkeypatch):
         assert leftovers == []
 
 
-def test_listing_5000_objects(store):
+def test_listing_crosses_a_page(store):
+    # S3 and R2 return at most 1,000 keys a page, so 1,001 objects need a second page.
     if store.kind == "r2-live":
-        pytest.skip("5,000 writes to real R2 cost time and Class A operations")
+        pytest.skip("1,001 writes to real R2 cost time and Class A operations")
     a, k = store.archive, store.k
-    for i in range(5000):
+    for i in range(1001):
         a.put(k(f"raw/intervals/activities/{i:05d}/summary.json"), b"{}")
     keys = [o.key for o in a.list(k("raw/intervals/activities/"))]
-    assert len(keys) == 5000
+    assert len(keys) == 1001
     assert keys == sorted(keys)
 
 
