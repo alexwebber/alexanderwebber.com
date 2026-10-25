@@ -1,7 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "node_modules", "ingest", "spikes"],
+  "exclude": ["dist", "node_modules", "ingest", "spikes", "test-results", "playwright-report"],
   "compilerOptions": {
     // scripts/*.ts run under Node's type stripping, which only removes erasable syntax.
     "erasableSyntaxOnly": true

@@ -882,7 +882,7 @@ stress or Body Battery data appears anywhere.
 
 ## Phase 9: Polish and cross-cutting concerns
 
-- [ ] T145 [P] Create the SC-003 resilience drill `tests/e2e/stale.spec.ts`. Using a fixture whose `last_success` is 7 days old:
+- [x] T145 [P] Create the SC-003 resilience drill `tests/e2e/stale.spec.ts`. Using a fixture whose `last_success` is 7 days old:
   - The gate and build still pass.
   - Every page renders with its last-updated time and the stale notice.
   - The Worker's 503 path keeps the build-time text.
