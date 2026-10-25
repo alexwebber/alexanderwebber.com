@@ -13,8 +13,16 @@ Update this as decisions get made — treat it as the source of truth alongside
   (#72; the owner ticked wording and licence). The follow-up PR (`001-readme-effort`) changes
   the README's "21 days" to "3 days", per the owner's PR #72 comment.
   - **Next session:**
-    1. **Check the `001-readme-effort` PR merged** and every check is green; if not merged,
-       remind the owner once. It changes no site files, so there's no deploy to wait for.
+    1. **Check the `001-readme-effort` PR (#73) merged** and every check is green; if not
+       merged, remind the owner once. It changes no site files, so there's no deploy to wait for.
+       **Ask whether the README's diagrams render now.** On 25 Oct GitHub showed "Unable to
+       render rich display" for every diagram, on `main` (plain) and the branch (coloured)
+       alike, after the plain ones had rendered earlier. The diagrams are valid: Mermaid 9.4 to
+       12 renders them, and GitHub's own renderer drew all of them when fed them directly from a
+       github.com page (Playwright replay into `viewscreen.githubusercontent.com`). GitHub's
+       status was green. So it's GitHub's private-repo rendering or the owner's browser (an
+       extension blocking viewscreen); the test is whether the public Mermaid README
+       (github.com/mermaid-js/mermaid) renders for them. Don't change the diagrams for this.
     2. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. It covers the README too (e.g. whether
        links into `PROJECT_MEMORY.md` stay). After it, ask the owner which spec comes next:
