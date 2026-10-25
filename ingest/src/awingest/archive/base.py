@@ -38,7 +38,7 @@ class ArchiveConflict(ArchiveError):
     likely_cause = "Another writer changed a state object (cursor or run-ID map) concurrently."
     action = (
         "Runs are serialised by the refresh concurrency group, so the agent checks for a run "
-        "outside it (e.g. a local backfill) and re-runs."
+        "outside it (e.g. a local fetch) and re-runs."
     )
 
 

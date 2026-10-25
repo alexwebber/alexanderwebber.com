@@ -31,7 +31,6 @@ raw/intervals/wellness/<yyyy-mm-dd>.json            # one day; APPROVED keys onl
 state/run-ids.json                                  # {<intervalsActivityId>: "<YYYY-MM-DD-xxxx>"} APPEND-ONLY;
                                                     #   the ONLY place provider IDs meet public run IDs
 state/cursor.json                                   # {activities:{last_date}, wellness:{last_date}} (date windows)
-state/backfill.json                                 # resumable backfill progress
 state/fetch-status.json                             # last attempt, last_success per source, failure class,
                                                     #   rate_limited_until, consecutive_failures
 public/freshness.json                               # ONLY non-sensitive: last_success_at per source (+ generated_at)

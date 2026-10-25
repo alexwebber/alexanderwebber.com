@@ -1,4 +1,4 @@
-"""The CLI wiring for fetch and backfill (contracts/pipeline.md exit codes)."""
+"""The CLI wiring (contracts/pipeline.md exit codes)."""
 
 import json
 
@@ -41,13 +41,6 @@ def test_a_missing_api_key_exits_10_and_is_recorded(monkeypatch, tmp_path, capsy
     assert summary["code"] == "auth_rejected" and summary["outcome"] == "failed"
     status = json.loads((tmp_path / "state/fetch-status.json").read_text())
     assert status["intervals"]["code"] == "auth_rejected"
-
-
-def test_backfill_is_wired(monkeypatch, tmp_path, capsys):
-    monkeypatch.delenv("INTERVALS_API_KEY", raising=False)
-    code = cli.main(["backfill", "--archive", "local", "--archive-dir", str(tmp_path), "--resume"])
-    assert code == 10
-    assert json.loads(capsys.readouterr().out)["complete"] is False
 
 
 def test_process_and_publish_check_are_wired(filled_archive, repo, capsys):
