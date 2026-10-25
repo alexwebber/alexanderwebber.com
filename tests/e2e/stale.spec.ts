@@ -67,7 +67,8 @@ test.beforeAll(async ({}, testInfo) => {
   writeFileSync(refreshFile, JSON.stringify(refresh));
 
   const issues = validateData(root);
-  const env = { ...process.env, CLAUDECODE: '', AI_AGENT: '' };
+  // A deploy build: no test-only preview pages.
+  const env: NodeJS.ProcessEnv = { ...process.env, CLAUDECODE: '', AI_AGENT: '' };
   delete env.SHELL_PREVIEW;
   await promisify(execFile)(process.execPath, [join(REPO, 'node_modules/astro/bin/astro.mjs'), 'build'], { cwd: root, env, maxBuffer: 64 * 1024 * 1024 });
   gate = {
