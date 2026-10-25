@@ -17,9 +17,86 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   - **Then small refactor PRs:** one concern each, with no change visitors can see. The existing
     tests and the gate are the safety net, and published data must not change unless a finding
     says why.
-- **Decide repo visibility (public vs private)** — a public repo showing a spec-first, AI-built
-  site could be a CV piece. Deferred by owner; constitution Principle VI already requires the
-  repo be kept safe to publish.
+- **Repo README: how this site was built** (owner, 2026-10-25). **Next after the refactor**,
+  so it describes the simplified code; before the next spec. Today's `README.md` is 7 lines. It
+  should be a showcase a recruiter or engineer can follow, and it feeds the repo-visibility
+  decision below. It covers:
+  - **Architecture**, with a diagram (Mermaid, which GitHub renders): every component in every
+    workflow. That includes Garmin devices → Garmin Connect → intervals.icu, the fetch stage →
+    private R2, the publish stage → the gate → git, Cloudflare Workers static assets, the
+    freshness Worker and its cron dispatch, the backup schedule and guard, the alert issues, the
+    nightly Quality run, the PR checks and the OpenFreeMap tiles. It also shows what is public
+    and what stays private.
+  - **Tech stack and why**: Astro, TypeScript, build-time SVG charts, Python ingest, JSON
+    Schema, Cloudflare, intervals.icu over Garmin direct and Strava, MapLibre and OpenFreeMap.
+    Each comes with the one-line reason and a link to the decision.
+  - **Features and roadmap**: what's live (landing, goals, training, run pages, races and PBs,
+    health), with links, then what's next (fundraising, journey story, CV & Blog) from
+    BACKLOG.
+  - **Also:**
+    - How it was built: spec-driven with Spec Kit and the sdd-playbook, AI agents doing the
+      work under the constitution, with links to the spec, plan, tasks and constitution.
+    - Privacy by design: race-only maps, opaque run IDs, raw data never in git, the privacy
+      scan.
+    - Quality gates and tests: the build gate, the test suites, Lighthouse and axe budgets,
+      and the stale-data drill.
+    - Graceful degradation, running costs (about $0, plus the intervals.icu support), repo
+      layout, local development and how to run the checks.
+    - Data sources and attribution (Garmin, intervals.icu, OpenFreeMap), and a licence
+      decision if the repo goes public.
+  - Keep the detail in the existing docs (plan, quickstart, section README) and link to them,
+    so the README stays an overview that doesn't drift.
+- **Public-readiness sweep, then make the repo public** (owner, 2026-10-25: the repo will go
+  public). **Next after the README**, as the last check before the switch, so it covers the
+  README too. It must be very thorough. Principle VI has kept the tree safe by design, but a
+  public repo exposes much more than today's files.
+  - **First, a read-only sweep with a findings report.** Each finding gets its severity, where
+    it is (file and commit, or GitHub object) and the fix options.
+    - **Secrets in all history:** gitleaks and trufflehog over every commit on every branch and
+      tag, plus GitHub's PR refs (`refs/pull/*`), which keep old commits even after a branch
+      is deleted. Check for `.env` files, keys and tokens ever committed. The R2 keys, Cloudflare
+      token and intervals.icu key were printed in a session transcript (2026-10-18), never the
+      repo, so confirm that.
+    - **Personal data in history:** provider IDs (intervals.icu and Garmin activity or athlete
+      IDs), coordinates or GPS from training runs, raw provider responses (especially under
+      `spikes/`), start times, and email addresses. Also check the two junior parkruns with the
+      owner's son, which were published before `run-overrides.yaml` hid them (2026-10-23).
+      Run the privacy scan over every historical version of `data/`, not just today's.
+    - **Commit metadata:** author and committer emails, so the personal email isn't exposed
+      if a noreply address is wanted.
+    - **Docs as public prose:** `PROJECT_MEMORY.md`, `BACKLOG.md`, `canaries.md` and the specs
+      hold weight history, family details, billing amounts, kit, account and bucket names, the
+      dispatch token's expiry and session notes. The owner reads a summary of what's there and
+      decides what stays. Infrastructure identifiers (bucket name, workers.dev subdomain,
+      Cloudflare account ID if present) are judged too.
+    - **GitHub objects that go public with the repo:** issue and PR bodies and comments, closed
+      alert issues, Actions run logs (including spike, probe and throwaway workflows from
+      2026-10-17 on, run before the log-scrubbing rules existed), and uploaded artifacts.
+      Delete old logs and artifacts that aren't needed.
+    - **Workflow security once anyone can fork:**
+      - no `pull_request_target`, and no secrets reachable from fork PRs;
+      - "require approval for fork PR workflows" on;
+      - least-privilege `permissions:` on every job;
+      - SHA-pinned actions (already done);
+      - `workflow_dispatch` inputs safe, since only collaborators can dispatch;
+      - the ingest bot's push to `main` keeps working.
+  - **Fixes, as PRs.** If history holds anything that shouldn't be public, the choice is between
+    rewriting history and a new public repo with a fresh squashed history. With
+    `git filter-repo`, GitHub keeps the old commits behind PR refs until GitHub Support removes
+    them, so a fresh repo is often the cleaner option. That's the owner's call, with a
+    recommendation.
+  - **Public-repo setup:**
+    - turn on secret scanning with push protection, Dependabot alerts and code scanning (all
+      free on public repos);
+    - add branch protection or a ruleset for `main` (available once public), with a bypass for
+      the ingest bot;
+    - choose a licence (owner);
+    - add `SECURITY.md`;
+    - turn off unused features (wiki, projects).
+  - **The switch itself is the owner's**, or the agent's only on their explicit go-ahead, once
+    every finding is closed. Then the agent checks the public view logged out.
+  - **Side benefit:** Actions minutes on standard runners are free for public repos, which
+    ends the 2,000-minute watch.
 - **Set up Martlets fundraising page** for Brighton Marathon (2027-04-04) —
   https://www.martlets.org.uk/set-up-fundraiser/. Owner action; needed before the fundraising
   provider can be built.
