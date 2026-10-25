@@ -9,11 +9,11 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, evening):** **refactor session 2 of 3 is done**: the
-  `001-running-owns-data` PR (findings 1 + 4) is raised. PRs #67 and #68 (session 1) merged green.
+- **Status (2026-10-25, evening):** **refactor session 2 of 3 is done**:
+  PR #69 (`001-running-owns-data`, findings 1 + 4) is raised. PRs #67 and #68 (session 1)
+  merged green.
   - **Next session:**
-    1. **Check the `001-running-owns-data` PR merged** (and every check is green); if not, remind
-       the owner once.
+    1. **Check PR #69 merged** (and every check is green); if not, remind the owner once.
     2. **Refactor session 3 of 3** (see `specs/001-running-section/maintainability-review.md`
        *Owner picks and order*): simplify the section (findings 2 + 3) as one PR, then the
        tidy-ups (6 + 7 with a before/after computed-style check, + 9) as a second, each from
@@ -1168,8 +1168,8 @@ project-specific notes.
   - **`backfill` removed (finding 8):** history comes from `refresh.yml` re-import windows,
     now documented in quickstart §2. `state/backfill.json` is no longer used.
 
-- **2026-10-25** — **Refactor session 2 of 3: Running owns its data** (`001-running-owns-data`
-  PR, findings 1 + 4). Choices later work builds on:
+- **2026-10-25** — **Refactor session 2 of 3: Running owns its data** (PR #69,
+  `001-running-owns-data`, findings 1 + 4). Choices later work builds on:
   - **Running's store is in the section:** `src/sections/running/data/store/` holds the
     `RunningStore` interface, `JsonFileStore`, the file map (`files.ts`, the former
     `shared/storage/load.ts`), the schema list (`RUNNING_SCHEMAS`) and the generated types
