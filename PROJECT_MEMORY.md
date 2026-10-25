@@ -9,27 +9,28 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, morning):** **Phase 9 (Polish) is built** in the `001-polish` PR
-  (T145–T147; T148 skipped by the owner). Phase 8 is live (#59 checked: 3 months and 1 year
-  only until 16–20 Nov 2026).
+- **Status (2026-10-25, mid-morning):** **Phase 9 is live** (#60, plus the planning PRs #61 and
+  #62, all deployed). **T158's harvest is raised**:
+  [sdd-playbook#12](https://github.com/alexwebber/sdd-playbook/pull/12) (house-process 0.10.0),
+  with this project's `001-harvest-4` PR logging it.
   - **Next session:**
-    1. ~~Check #60 deployed~~: done 2026-10-25. The 404 page is live (status 404), and the
-       freshness endpoint answers browser navigations. Ask whether the owner tried the 404
-       page on their phone, and about PR #60's unticked wording box if it's still open.
-    2. **T158: harvest lessons** (`/speckit-house-process-harvest-lessons`, main conversation).
-    3. **Then the maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s).
-    4. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
-    5. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
+    1. **Check sdd-playbook#12 merged**, then reinstall house-process 0.10.0 in dev mode from the
+       playbook's pulled `main` (PLAYBOOK > Dev-mode installs) on a branch, and raise it as a PR.
+       The template's PR norm gains the "green checks before ready" sentence; copy it into this
+       file's working norms. That finishes T158.
+    2. **Then the maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s).
+    3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
+    4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
        next: fundraising, journey story or CV & Blog.
-    6. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    7. Remember that the lab wording is decided at the first lab result.
+    5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    6. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
   - **Planned order** (owner, 2026-10-24):
-    1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (`001-polish` PR), each in its own session(s).
-    2. **Harvest lessons again** once Phase 9 is done.
+    1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (PR #60), each in its own session(s).
+    2. ~~Harvest lessons again~~ (sdd-playbook#12; the reinstall is left).
     3. **Maintainability review and refactor** (BACKLOG).
     4. **Repo README** (BACKLOG).
     5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
@@ -1123,105 +1124,18 @@ project-specific notes.
   after Phase 9: lesson harvest, maintainability review and refactor, the "how this site was
   built" README, the sweep, then the switch, then the next spec. Making it public is the
   owner's action, or the agent's only on their explicit go-ahead.
+- **2026-10-25** — **Harvested 19 lessons upstream** (T158, Phases 6–9):
+  [sdd-playbook#12](https://github.com/alexwebber/sdd-playbook/pull/12) (house-process 0.10.0).
+  Owner picks, on the agent's recommendation:
+  - **Template PR norm:** check every PR check is green before saying "ready" and after merge.
+  - **PLAYBOOK:** confirmation boxes about not-yet-visible features say so with an example, and a
+    lesson on test-only preview routes over synthetic data.
+  - **AGENT_TIPS:** the rest, including new *Providers and file formats*, *End-to-end testing*
+    and *Maps* sections.
+  - **Not sent:** "per-phase live reviews made the hallway test unnecessary" (one judgement
+    call, not a pattern). The one canary in `canaries.md` is still no pattern.
 
 ## Upstream candidates
-
-- 2026-10-25 — PR #59 merged with its Playwright check red: a keyboard test expected an "All time"
-  radio that the PR itself had made data-dependent. Playbook lesson: before telling the owner a PR
-  is ready, and again after it merges, check every PR check is green (`gh pr checks`); and
-  end-to-end tests over real data derive what to expect from the data or the page, never a fixed
-  list of options.
-- 2026-10-25 — Workers static assets answer an address with no asset with an empty-body 404 by
-  default, so the live site showed a blank page for mistyped or stale links until T147. Agent tip
-  (Cloudflare, go-live): add a 404 page and `assets.not_found_handling: "404-page"` at go-live.
-  With a Worker, browser navigations to unmatched paths then skip the Worker (an API path opened
-  in the address bar shows the 404 page), while `fetch()` and curl still reach it. Add
-  `assets.run_worker_first: ["/api/path/*"]` for the Worker's paths, and check with
-  `wrangler dev` and `Sec-Fetch-Mode: navigate`.
-- 2026-10-25 — Local `wrangler dev` (workerd) refused to start the Worker because its entry module
-  also exports string constants ("Incorrect type for map entry 'FRESHNESS_KEY'"), although
-  production deploys it fine. Workaround: a throwaway entry file that only re-exports `default`,
-  passed as `wrangler dev <file>`. Agent tip (Cloudflare): keep a Worker entry's exports to
-  handlers, and put shared constants in another module.
-- 2026-10-25 — An end-to-end check that needs its own build (the SC-003 stale drill) can copy
-  `src/`, `public/`, `schemas/`, `data/` and the root configs into the test's output folder inside
-  the repo: node_modules then resolves by walking up, Astro and Vite keep their caches beside the
-  copy, and `astro build` alone takes seconds. Exclude that folder in `tsconfig.json`. Agent tip
-  (testing, Astro).
-
-- 2026-10-24 — A PR checkbox about a feature with no data yet (lab tests) left the owner
-  confused, because the PR didn't say the feature was for later. Playbook lesson (PR
-  confirmations): when a confirmation covers something not visible yet, say so in the box
-  ("for when you send your first lab result") and give an example of what it will look like.
-
-- 2026-10-24 — Astro adds its scoped-style attribute (`data-astro-cid-…`) to every element of a
-  component that has a `<style>` block, so a data table of ~1,800 rows carried it on every cell:
-  40% of the health page's HTML. Put styles for heavily repeated markup in a global stylesheet
-  under a class prefix. Agent tip (Astro).
-- 2026-10-24 — Dots on a stretched SVG (`preserveAspectRatio="none"`): draw each as a zero-length
-  segment (`M x y h0`) with round caps and `vector-effect: non-scaling-stroke`, all in one path.
-  They stay round at any aspect ratio, and hundreds of readings cost one element, not one HTML
-  span each. Agent tip (UI, charts).
-- 2026-10-24 — Playwright's `webServer` (`npm run preview`) failed to start when the tests were
-  run from the agent's Git Bash tool on Windows (exit code 3221226505), while the same command from
-  PowerShell worked. Run Playwright from PowerShell on Windows. Agent tip (Windows).
-
-- 2026-10-24 — maplibre-gl 6 loads its worker from `./maplibre-gl-worker.mjs` beside its own
-  module, which a bundler moves. Import the worker and stylesheet with Vite's `?url`, call
-  `setWorkerUrl()`, and lazy-import the library on click; the page then loads only a ~1.6 KB
-  gzip loader. Agent tip (Astro, maps).
-- 2026-10-24 — sharp's file cache keeps images open on Windows, so a Vitest temp folder couldn't
-  be deleted (EPERM). Call `sharp.cache(false)` in tests that write images to temp folders.
-  Agent tip (Windows).
-- 2026-10-24 — A test-only preview route over synthetic fixture data, rendering the same page
-  components as the real pages, let race pages, maps and photos be built and tested end to end
-  before any real race existed, without putting invented data in the real tree (Principle
-  VIII). Playbook lesson (testing features whose data doesn't exist yet).
-- 2026-10-24 — The agent's Bash tool turned `\\n` in a quoted heredoc into `\n`, so Python
-  string edits written in it got real newlines and broke a test file. Use the Edit tool for
-  edits whose text holds backslashes. Agent tip (shell).
-
-- 2026-10-24 — A new published field passed every local check, but its first real publish
-  failed the gate's privacy scan (a `name` key). Locally, the published data still had the old
-  shape, so the scan never saw the new field. Agent tip (pipelines): when a change adds fields to
-  published data, put a sample of the new shape into a real data file temporarily and run the
-  full gate (validate, build, scan-privacy) before the PR.
-
-- 2026-10-24 — intervals.icu's `/activity/{id}/fit-file` is a FIT file intervals.icu generates,
-  not Garmin's original, and it drops Garmin-only messages such as `time_in_zone` (216). Use
-  `/activity/{id}/file` for the original. Agent tip (intervals.icu): archive the original, and
-  check which endpoint a "FIT" download really is before relying on device-specific messages.
-- 2026-10-24 — The common `.visually-hidden:not(:focus):not(:active)` rule (meant for skip
-  links) reveals a hidden radio when its label is clicked, since the radio takes focus. A
-  native radio popped into CSS-only toggles and shifted the options. Locally it went unnoticed
-  (the subagent ran only one Playwright project). On CI's 360 px project with different fonts,
-  the shift moved the next option from under the pointer ("fieldset intercepts pointer events",
-  about 165 retries). Agent tips (UI, testing): always hide `input.visually-hidden`, even when
-  focused; run every Playwright project locally before a PR; when a CI click retries on
-  "intercepts pointer events", look for a layout shift, not slowness.
-- 2026-10-24 — `fitparse` (last release 2020) reads message 216 as `unknown_216` with no fields;
-  Garmin's own `garmin-fit-sdk` decodes it. Agent tip (FIT files): use Garmin's SDK for newer
-  messages.
-
-- 2026-10-24 — Cloudflare switched on Real User Monitoring by default for a new Free zone,
-  excluding EU/UK visitors, so it injected a third-party beacon (`static.cloudflareinsights.com`)
-  into pages served to everyone else. Fetches from the UK and the workers.dev address never
-  showed it, the account's Web Analytics page said "Get started", and the Observatory opened
-  with a welcome offering to *enable* RUM. Only a production Lighthouse run from a US runner
-  caught it, and a throwaway branch workflow curling from there confirmed it. Agent tip
-  (Cloudflare, go-live): after attaching a domain, check the live HTML from outside Europe
-  (a branch workflow) for injected scripts, and turn RUM off explicitly in *Speed →
-  Observatory* if the site promises no third-party requests. Run production budget checks from
-  a non-EU location.
-
-- 2026-10-24 — When an ingest adapter adds a raw part, version the bundle layout in each item's
-  fetch marker and let the fetch stage top up older items with just the new parts. A full
-  re-import of history would have re-fetched five parts per run; the top-up is one call per run
-  (about 7 minutes for 200 runs instead of an hour of Actions minutes). Agent tip (pipelines).
-- 2026-10-24 — Git Bash: with `MSYS_NO_PATHCONV=1` (needed to pass `/running/...` URL paths to
-  node), a `/c/Users/...` argument reaches node unconverted and resolves to `C:\c\Users\...`,
-  so a script wrote its output into a stray `C:\c\` tree. Pass Windows-style `C:/...` paths
-  whenever path conversion is off. Agent tip (Windows).
 
 ## Open questions
 
