@@ -54,7 +54,12 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   watch didn't record it (FR-048).
 - **Stale data says so.** "Last updated" and the stale notice are decided at build time, then
   corrected by the freshness script. If `/running/api/freshness` fails, the build-time text
-  stays (FR-005/006/074).
+  stays (FR-005/006/074). The SC-003 drill (`tests/e2e/stale.spec.ts`) builds a scratch copy of
+  the site with 7-day-old freshness and checks the gate passes, every Running page carries the
+  notice in its HTML, and a 503 or no JS keeps the build-time text.
+- **A missing page is the site's own 404** (`src/pages/404.astro`, served with a 404 status by
+  `not_found_handling` in `wrangler.jsonc`), with links home and to Running. A run the owner hides
+  (`run-overrides.yaml`) or a mistyped address lands there, not on a blank page.
 - **Day-based text follows the UK date.** The 00:17 UTC refresh deploys daily (T105), and
   `Countdown` corrects the day count in the browser.
 - **Without JavaScript** every figure, chart table and goal is still there. JS only refreshes
@@ -78,6 +83,21 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   then the tables (or the all-time charts) need bounding, e.g. weekly rows past a year.
 - **Gate:** the site build, `validate-data`, `check-boundaries`, `scan-images` and
   `scan-privacy`, on every push and every bot commit.
+- **Final graduation review (T147, 2026-10-25), the whole section:**
+  - **Lighthouse (mobile, local, deploy build):** every page type scored 100 for performance and
+    accessibility, with no script files and no third-party requests. HTML+CSS+JS gzip and LCP:
+    site home 2.3 KB (0.91 s), landing 11.6 KB (1.06 s), goals 6.6 KB, training 16.0 KB, a year
+    page 7.5 KB, a run page 14.2 KB, races 5.6 KB (each 0.90-0.91 s), health 45.7 KB (1.05 s).
+    There is no real race page yet; the race preview pages scored 100 at 25-26 KB with the 1.6 KB
+    map loader (LCP 1.21 s), and the health preview 100 at 80.6 KB (its synthetic data is denser).
+  - **axe (WCAG 2.2 AA tags) on every built page**, not one per type: 216 pages (the deploy pages
+    plus the test previews), with every data table open, at 360 px in light and dark and on
+    desktop in light: 648 checks, 0 violations. No page logged a console error or a failed request.
+  - **SEO:** all 207 deploy pages have a unique title and description, a canonical URL on the
+    domain and a share image that exists in `dist/`.
+  - **Privacy:** `scan-privacy` 0 findings on the deploy build (CI also checks the R2 run-ID map).
+  - **Found and fixed:** a blank 404 on the live site (now the 404 page above), and the health
+    keyboard test still expecting "All time" after #59 (it now walks the ranges on offer).
 
 - **Scale (SC-011, T124):** `tests/fixtures/generate-runs.ts` writes 5,000 synthetic runs (every
   series at the 600-point cap) into a scratch copy of the repo, never this one. On 2026-10-24:
@@ -88,9 +108,13 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
 
 - **Share images are built daily.** Messaging apps cache them, so a shared link can show an
   older day count.
-- **Share previews can't be checked until go-live.** Canonical and `og:image` URLs point at
-  `alexanderwebber.com`, so the two-app check (T111) runs after the domain is live (T112).
-- **The screen-reader pass** of the progress bar and the bar chart is the owner's check (T111).
+- **Share previews and the screen-reader pass** were the owner's checks at go-live (T111,
+  2026-10-24), and both were fine. The fuller hallway test (T148) was skipped: the phase-by-phase
+  live reviews on phone and desktop covered it.
+- **Training runs share one share image** (`/og/running-run.png`), by design: a per-run image
+  would add a file per run for little gain.
+- **The health page grows** by roughly 40 KB gzip a year (see the budgets above); bounding its
+  tables is in `BACKLOG.md`.
 
 - `components/SectionLayout.astro`: the layout for every Running page. Shared `Base` in the warm
   Running theme (`styles/theme.css`), the section nav from the route registry, the page heading,
@@ -151,9 +175,8 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   `RacesPage` and `RacePage` over the synthetic races in `tests/fixtures/race-preview/`
   (`generate.ts` writes them), so race pages, maps and photos are tested before there is a real
   race. Deploy builds never include it.
-- **Runs published before processor version 4** carry intervals.icu's zone times; run pages show
-  no zones for them until the refresh republishes them with Garmin's (T159). The run schema still
-  accepts the old shape until then.
+- **Heart-rate zones** are Garmin's on every published run since the refresh after #53 (T159);
+  the run schema's transitional old-zone shape was removed in #54.
 - Dates: pages are built for today in Europe/London. The 00:17 UTC refresh run deploys every day
   (T105), so countdowns and "New" badges follow the UK date; `Countdown` corrects the day count
   in the browser.
