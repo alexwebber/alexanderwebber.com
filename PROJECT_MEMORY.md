@@ -13,24 +13,23 @@ Update this as decisions get made — treat it as the source of truth alongside
   (T145–T147; T148 skipped by the owner). Phase 8 is live (#59 checked: 3 months and 1 year
   only until 16–20 Nov 2026).
   - **Next session:**
-    1. Check that the `001-polish` PR merged and deployed, then confirm on the live site that
-       `/running/no-such-page/` shows the 404 page (status 404) and that
-       `https://alexanderwebber.com/running/api/freshness` still returns JSON, including when
-       opened in a browser. Ask about any unticked PR boxes.
+    1. ~~Check #60 deployed~~: done 2026-10-25. The 404 page is live (status 404), and the
+       freshness endpoint answers browser navigations. Ask whether the owner tried the 404
+       page on their phone, and about PR #60's unticked wording box if it's still open.
     2. **T158: harvest lessons** (`/speckit-house-process-harvest-lessons`, main conversation).
-    3. **Then the maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s),
-       before the next spec. After it, ask the owner which spec comes next: fundraising,
-       journey story or CV & Blog.
-    4. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    5. Remember that the lab wording is decided at the first lab result.
+    3. **Then the maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s).
+    4. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session. After it, ask
+       the owner which spec comes next: fundraising, journey story or CV & Blog.
+    5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    6. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
   - **Planned order** (owner, 2026-10-24):
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (`001-polish` PR), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done.
-    3. **Maintainability review and refactor** (BACKLOG), then the next spec (fundraising,
-       journey story or CV & Blog).
+    3. **Maintainability review and refactor** (BACKLOG).
+    4. **Repo README** (BACKLOG), then the next spec (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
     was re-enabled). Minutes: 995 used by about 19:30 UTC on 2026-10-24; October should end
     around 1,400–1,500 with Phase 8's PR checks.
