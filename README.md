@@ -263,7 +263,7 @@ totals, individual runs, and approved health and performance metrics.
 ## Running costs
 
 About **$0 a month**: Cloudflare Workers and R2 sit inside their free tiers, and GitHub Actions
-inside GitHub Free's minutes. The owner also supports intervals.icu (£9 a quarter), though the
+is free for a public repo. The owner also supports intervals.icu (£9 a quarter), though the
 site uses no supporter-only features.
 
 ## Repo layout
