@@ -18,10 +18,12 @@ Update this as decisions get made — treat it as the source of truth alongside
        page on their phone, and about PR #60's unticked wording box if it's still open.
     2. **T158: harvest lessons** (`/speckit-house-process-harvest-lessons`, main conversation).
     3. **Then the maintainability review** (BACKLOG, owner 2026-10-25), in its own session(s).
-    4. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session. After it, ask
-       the owner which spec comes next: fundraising, journey story or CV & Blog.
-    5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    6. Remember that the lab wording is decided at the first lab result.
+    4. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
+    5. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
+       ending with the owner making the repo public. After it, ask the owner which spec comes
+       next: fundraising, journey story or CV & Blog.
+    6. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    7. Remember that the lab wording is decided at the first lab result.
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
@@ -29,7 +31,9 @@ Update this as decisions get made — treat it as the source of truth alongside
     1. ~~Phase 6~~, ~~Phase 7~~, ~~Phase 8~~ (PR #57), ~~Phase 9~~ (`001-polish` PR), each in its own session(s).
     2. **Harvest lessons again** once Phase 9 is done.
     3. **Maintainability review and refactor** (BACKLOG).
-    4. **Repo README** (BACKLOG), then the next spec (fundraising, journey story or CV & Blog).
+    4. **Repo README** (BACKLOG).
+    5. **Public-readiness sweep, then the repo goes public** (BACKLOG), then the next spec
+       (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
     was re-enabled). Minutes: 995 used by about 19:30 UTC on 2026-10-24; October should end
     around 1,400–1,500 with Phase 8's PR checks.
@@ -1114,6 +1118,11 @@ project-specific notes.
     scan-privacy found nothing. The quickstart was corrected where it had fallen behind
     (scenario 2's target, the dropped Garmin import, gate and Playwright build modes).
   - **Not built:** security headers (CSP etc.) and a favicon, both in BACKLOG.
+- **2026-10-25** — **The repo will go public** (owner; settles the 2026-10-03 visibility
+  question). It goes public after a very thorough public-readiness sweep (BACKLOG). The order
+  after Phase 9: lesson harvest, maintainability review and refactor, the "how this site was
+  built" README, the sweep, then the switch, then the next spec. Making it public is the
+  owner's action, or the agent's only on their explicit go-ahead.
 
 ## Upstream candidates
 
