@@ -37,8 +37,8 @@ jobs:
           match() { printf '%s\n' "$changed" | grep -qE "$1" && echo true || echo false; }
           {
             echo "pytest=$(match '^(ingest|schemas)/')"
-            echo "vitest=$(match '^((src|schemas|scripts|tests/unit|tests/contract|tests/helpers)/|vitest\.config\.ts$|astro\.config\.mjs$)')"
-            echo "playwright=$(match '^((src|public|data/running/owner|tests/e2e|tests/a11y|tests/fixtures|tests/helpers)/|playwright\.config\.ts$|astro\.config\.mjs$)')"
+            echo "vitest=$(match '^((src|schemas|scripts|tests/unit|tests/contract|tests/helpers)/|vitest\.config\.ts$|astro\.config\.mjs$|package(-lock)?\.json$)')"
+            echo "playwright=$(match '^((src|public|data/running/owner|tests/e2e|tests/a11y|tests/fixtures|tests/helpers)/|playwright\.config\.ts$|astro\.config\.mjs$|package(-lock)?\.json$)')"
           } >> "$GITHUB_OUTPUT"
 
   pytest:
