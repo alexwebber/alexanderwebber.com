@@ -180,7 +180,7 @@ src/
 │   ├── layout/                #   Base.astro, Nav.astro, Footer.astro, meta/OG helpers
 │   ├── design/                #   tokens.css (colour, type, space, dark mode), components
 │   ├── charts/                #   SVG chart primitives + a11y table + range toggle
-│   ├── storage/               #   RunningStore-style read interfaces, JsonFileStore, validation (ajv)
+│   ├── storage/               #   generic: SchemaSet (ajv), data errors, JSON/YAML file reading
 │   └── format/                #   UK dates/units/durations, Europe/London week maths
 ├── pages/index.astro          # site home -> leads to /running until CV/Blog exist
 ├── worker/freshness.ts        # GET /running/api/freshness (reads R2 public/freshness.json)
@@ -190,7 +190,7 @@ src/
         ├── pages/             #   landing, goals, training, runs/[id], races, races/[slug], health
         ├── components/        #   Hero, GoalCard, RunCard, SplitsTable, RaceMap, PBTable, GarminAttribution, AsOf ...
         ├── domain/            #   goals.ts, best-effort lookup, pbs.ts, weeks.ts, races.ts (link + upcoming-race state machine)
-        ├── data/              #   section loader over shared storage (typed, validated)
+        ├── data/              #   section loader; store/ (RunningStore, JsonFileStore, file map, types)
         └── og/                #   OG templates: landing, hub pages, race (unique); run + year list (shared card)
 data/running/
 ├── published/                 # MACHINE-WRITTEN, SANITISED, committed by the gated bot only

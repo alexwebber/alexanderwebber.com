@@ -1,7 +1,8 @@
 # Running section
 
 A self-contained section (constitution Principle VII): it owns its pages, components, data
-loader and share images, and uses only `src/shared/` (layout, design system, charts, storage).
+store, validation and share images, and uses only `src/shared/` (layout, design system, charts,
+formatting and the generic storage machinery).
 `integration.ts` injects the routes of each shipped area; `astro.config.mjs` is the one line that
 adds the section to the site.
 
@@ -121,11 +122,18 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   Garmin attribution (below) and "Last updated".
 - `components/LastUpdated.astro`: FR-005/006. It shows the build-time value from `refresh.json`,
   then fetches the live one from `/running/api/freshness`.
+- `data/store/`: Running's store (contracts/storage.md). `running-store.ts` is the `RunningStore`
+  interface, `json-file-store.ts` implements it over `data/running/`, `files.ts` maps each file
+  to its schema and loads it, and `schemas.ts` lists the schemas (`RUNNING_SCHEMAS`), whose types
+  `scripts/gen-types.ts` writes into `generated/` (gitignored).
+- `validate.ts`: the referential checks of contracts/data-files.md on top of the schemas.
+  `scripts/validate-data.ts` runs it in the gate.
 - `data/load.ts`: the only way Running code reads data (`runningStore()`, `sectionSettings()`,
   `buildFreshness()`), memoised per build. `data/goals.ts` (`loadGoals()`) evaluates every goal
   for today from it.
-- `domain/`: pure functions, unit-tested with "today" passed in. `efforts.ts` (the Best Effort
-  index), `composition.ts` (body fat's build-time 7-day mean), `manual-metrics.ts` (the owner's
+- `domain/`: pure functions, unit-tested with "today" passed in. `distances.ts` (the named race
+  distances, from `schemas/distances.json`, which ingest reads too), `pace.ts` (`formatPace`),
+  `efforts.ts` (the Best Effort index), `composition.ts` (body fat's build-time 7-day mean), `manual-metrics.ts` (the owner's
   Garmin training status and race predictions, latest per distance), `goals.ts` (goal status and
   progress, data-model §5) and `goal-text.ts` (the words and figures cards show).
 - `links.ts`: links to another area (e.g. a run page) only once that area has shipped.
