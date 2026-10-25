@@ -1247,6 +1247,11 @@ project-specific notes.
     started properly on Friday 23 Oct; earlier effort was minor. Git agrees: apart from bot
     commits, 3–4 and 17–18 Oct were setup, spec, plan and foundations, and every page, go-live
     and the refactor came on 23–25 Oct (`001-readme-effort` PR).
+  - **Coloured diagrams** (owner, same PR): one colour key across all three, stated in the
+    text. Zones: red private, blue Actions, green public. Boxes: grey third-party, amber data
+    stores, purple triggers, blue checks, green live, orange alert issues, pink people. Each box
+    sets its own dark text, and edges are mid-grey, so they read in GitHub's light and dark
+    themes (both rendered before pushing).
   - **Detail stays in the existing docs**; the README links to them (research R0–R10, the
     contracts, quickstart, section READMEs) so it doesn't drift.
 
