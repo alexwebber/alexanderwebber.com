@@ -9,22 +9,19 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, midday):** **the maintainability review is done**
-  (PR #65, merged). The owner picked all ten findings, grouped into five PRs
-  (`001-refactor-grouping` PR).
+- **Status (2026-10-25, afternoon):** **refactor session 1 of 3 is done**: PR #67 (tests,
+  findings 5 + 10) and the `001-remove-backfill` PR (finding 8) are raised.
   - **Next session:**
-    1. **Check the `001-refactor-grouping` PR merged** (and its checks are green); if not,
-       remind the owner once.
-    2. **Refactor session 1 of 3** (grouped plan, owner 2026-10-25; see
-       `specs/001-running-section/maintainability-review.md` *Owner picks and order*). Two PRs,
-       which can run side by side:
-       - **Tests:** finding 5 (Playwright: full axe sweeps in the phone project only, the stale
-         drill in desktop only, shared a11y helpers) + 10 (archive test at 1,001 objects).
-         Measure Playwright's CI time before and after (it averaged 4 min 16 s over 10 runs).
-       - **Remove `backfill`:** finding 8.
+    1. **Check PR #67 and the `001-remove-backfill` PR merged** (and every check is green); if
+       not, remind the owner once.
+    2. **Refactor session 2 of 3: Running owns its data** (findings 1 + 4, one PR; see
+       `specs/001-running-section/maintainability-review.md` *Owner picks and order*): move the
+       store, file map, schema list, validate-data's checks, `formatPace` and the `XYChart`
+       default out of `src/shared/`, with one distance table for both languages. Report the
+       `dist/` diff against `main`.
 
-       Session 2: Running owns its data (1 + 4). Session 3: simplify the section (2 + 3), then
-       tidy-ups (6 + 7 with a computed-style check + 9).
+       Session 3: simplify the section (2 + 3), then tidy-ups (6 + 7 with a computed-style
+       check + 9).
     3. **Then the repo README** (BACKLOG, owner 2026-10-25), in its own session.
     4. **Then the public-readiness sweep** (BACKLOG, owner 2026-10-25), in its own session(s),
        ending with the owner making the repo public. After it, ask the owner which spec comes
@@ -1162,8 +1159,25 @@ project-specific notes.
     same files share a PR, so nothing is reworked twice. That's five PRs over three sessions:
     tests (5 + 10) and `backfill` removal (8); Running owns its data (1 + 4); simplify the section
     (2 + 3) and tidy-ups (6 + 7 + 9). Each PR reports its `dist/` diff against `main`.
+- **2026-10-25** — **Refactor session 1 of 3** (PR #67 and the `001-remove-backfill` PR):
+  - **Tests (findings 5 + 10):** the full axe sweeps (dark mode, every range or toggle, tables
+    open) run in the phone project only. Desktop runs axe once per page as it loads, in light
+    mode (`fullSweep()`, `sweepOnlyInDark()` in `tests/helpers/a11y.ts`, with the shared `axe`
+    and `outline`). The stale drill builds in the desktop project only. `tests/helpers/` joined
+    the Vitest and Playwright path filters. The archive listing test writes 1,001 objects.
+  - **Measured on one CI runner, back to back:** 414 s on `main`'s specs, 287 s after (−31%).
+    The PR's own job (about 300 s twice) didn't show it, because runners vary: the same `main`
+    specs took 292 s on another. CI runs Playwright on one worker. The archive test went from
+    38.5 s to 6.7 s.
+  - **`backfill` removed (finding 8):** history comes from `refresh.yml` re-import windows,
+    now documented in quickstart §2. `state/backfill.json` is no longer used.
 
 ## Upstream candidates
+
+- **Measure CI speed-ups on one runner, back to back:** GitHub-hosted runners differ enough
+  (the same Playwright suite took 292 s and 414 s) that a PR's own job time can't show a 30%
+  gain. A throwaway branch workflow that runs the old and new versions in one job can
+  (AGENT_TIPS, *Actions*).
 
 - **Playwright `beforeAll` runs once per project (and worker):** expensive setup (building a site
   copy) and viewport-independent checks (full axe sweeps) double with a phone and a desktop

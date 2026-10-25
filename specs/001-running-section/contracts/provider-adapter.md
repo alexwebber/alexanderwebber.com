@@ -91,8 +91,8 @@ class Provider(ActivityProvider, HealthProvider):
    hash changed; wellness is re-fetched over the same window. `--reimport-from/--reimport-to`
    override the window.
 5. **Pacing**: >= 1 s with jitter between provider calls; on 429 honour `Retry-After` and record
-   `rate_limited_until` in `state/fetch-status.json`. Backfill is chunked and resumable via
-   `state/backfill.json`.
+   `rate_limited_until` in `state/fetch-status.json`. History is fetched in re-import windows
+   (`fetch --reimport-from/--reimport-to`), each sized to finish in one run.
 6. **Provider quirks are adapter-private**: the User-Agent, Basic-auth details and the HTML-vs-JSON
    403 distinction live only in `providers/intervals/client.py`.
 7. **Partial failure**: a failure on one activity records it and continues; nothing already in the

@@ -3,9 +3,9 @@
 Provider -> raw archive, incrementally by date window:
 
 - **Window**: from each cursor's ``last_date`` minus 14 days (FR-008: recent edits are picked up)
-  to today (Europe/London). With no cursor yet, the window is the last 14 days; history comes
-  from ``backfill``. ``--reimport-from``/``--reimport-to`` override the window, re-fetch every
-  activity in it and leave the cursors alone.
+  to today (Europe/London). With no cursor yet, the window is the last 14 days; older history
+  comes from re-import windows. ``--reimport-from``/``--reimport-to`` override the window,
+  re-fetch every activity in it and leave the cursors alone.
 - **Change detection**: an activity's parts are fetched only when it is new or its list row
   changed. Its ``fetch.json`` marker (row hash, part names and the adapter's bundle layout) is
   written after all its parts, so a marker means a complete set.

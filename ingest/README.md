@@ -15,7 +15,7 @@ alerts, freshness), [provider adapter](../specs/001-running-section/contracts/pr
 
 Two stages that meet only in the archive:
 
-1. **Fetch** (`fetch.py`, `backfill.py`) calls the provider and archives raw parts. It never
+1. **Fetch** (`fetch.py`) calls the provider and archives raw parts. It never
    writes published data. Wellness is reduced to the approved keys *before* it is archived, so
    sleep, steps and SpO2 never reach R2.
 2. **Process** (`process/pipeline.py`) never calls the provider. It reads the archive, normalises
@@ -77,7 +77,7 @@ Without `--archive r2` the archive is the local folder in `AWINGEST_ARCHIVE_DIR`
   both implementations (`test_raw_archive.py`, plus real R2 with `AWINGEST_TEST_R2_LIVE=1`), the
   writer, alerts against a fake GitHub API, and the shared schema fixtures.
 - `tests/unit/`: the sanitiser (including a property test over random sentinel-laden payloads),
-  run IDs, best efforts, plausibility, health, overrides, fetch, backfill, the CLI and the
+  run IDs, best efforts, plausibility, health, overrides, fetch, the CLI and the
   pipeline end to end over the fixture archive.
 - `tests/fixtures/intervals/` is synthetic: `make_fixtures.py` writes it and every value is
   invented. The privacy tests look for its sentinels.

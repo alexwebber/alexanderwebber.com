@@ -51,16 +51,28 @@ deployed; 20,001 files were refused (the Free limit is 20,000 per version, so ~6
 5,000 runs is ~30% of it). 5,000 worst-case runs are ~109 MB as compact JSON, so the writer
 emits compact JSON and the 600-point cap stays.
 
-## 2. Backfill and first publish
+## 2. History and first publish
 
 History is what intervals.icu holds (owner decision, 2026-10-23: the Garmin export was audited,
 not imported, T150). Runs start on 7 Oct 2025 (four treadmill runs from before intervals.icu's
-own history were uploaded as FIT files), and wellness on 7 Oct 2025. The backfill (T085) is done;
-re-run it only to rebuild the archive.
+own history were uploaded as FIT files), and wellness on 7 Oct 2025. The history import (T085) is
+done, through `refresh.yml` re-import windows.
+
+To fetch history again (for example to rebuild the raw archive), dispatch `refresh.yml` on `main`
+with `reimport_from`/`reimport_to`, one window at a time. Size each window under the fetch step's
+25-minute limit: about 10 runs a minute, so six months of runs took 19 minutes. Add
+`missing_only` to fetch only what is new, changed or missing a part, rather than everything in the
+window. Each run then publishes as usual.
+
+```text
+gh workflow run refresh.yml --ref main -f reimport_from=2025-10-01 -f reimport_to=2026-04-30
+```
+
+The same window locally (owner's `R2_*`/`INTERVALS_API_KEY` env vars):
 
 ```text
 cd ingest && uv sync
-uv run awingest backfill            # agent-run locally (owner's R2_*/INTERVALS_API_KEY env vars), resumable
+uv run awingest fetch --reimport-from 2025-10-01 --reimport-to 2026-04-30
 uv run awingest process --all       # R2 raw -> data/running/published/
 uv run awingest publish-check
 ```

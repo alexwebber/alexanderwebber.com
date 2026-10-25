@@ -2,7 +2,7 @@
 summary of counts to stdout; the exit code is the failure class's (0 for ok or partial, 2 for
 bad arguments).
 
-- ``fetch``, ``backfill``: intervals.icu -> raw archive.
+- ``fetch``: intervals.icu -> raw archive.
 - ``process [--all]``, ``reprocess --run RUN_ID``: raw archive -> ``data/running/published/``.
 - ``publish-check``: validates the published tree and its manifest (no archive needed).
 - ``alert``: keeps the ``ingest-failing`` issue in step with ``state/fetch-status.json``.
@@ -20,7 +20,6 @@ from awingest.alerts import GitHubError, GitHubIssues, default_run_url, run_aler
 from awingest.archive.base import ArchiveError, RawArchive
 from awingest.archive.local import LocalArchive
 from awingest.archive.r2 import R2Archive
-from awingest.backfill import run_backfill
 from awingest.fetch import run_fetch
 from awingest.logging import Logger
 from awingest.process.pipeline import PUBLISHED, run_process
@@ -75,11 +74,6 @@ def _parser() -> argparse.ArgumentParser:
         "archived ones (e.g. after the adapter adds a part), not everything in the window",
     )
     with_archive(fetch)
-
-    backfill = commands.add_parser("backfill", help="whole history, paced and resumable")
-    backfill.add_argument("--from", dest="start", type=_date)
-    backfill.add_argument("--resume", action="store_true")
-    with_archive(backfill)
 
     def with_repo(sub: argparse.ArgumentParser) -> None:
         sub.add_argument(
@@ -155,18 +149,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(processed.summary(), sort_keys=True))
         return processed.exit_code
-    if args.command == "fetch":
-        result = run_fetch(
-            provider,
-            archive,
-            log=log,
-            reimport_from=args.reimport_from,
-            reimport_to=args.reimport_to,
-            health_only=args.health_only,
-            missing_only=args.missing_only,
-        )
-    else:
-        result = run_backfill(provider, archive, log=log, start=args.start, resume=args.resume)
+    result = run_fetch(
+        provider,
+        archive,
+        log=log,
+        reimport_from=args.reimport_from,
+        reimport_to=args.reimport_to,
+        health_only=args.health_only,
+        missing_only=args.missing_only,
+    )
     print(json.dumps(result.summary(), sort_keys=True))
     return result.exit_code
 
