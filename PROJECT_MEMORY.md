@@ -16,7 +16,8 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **Next session:**
     1. **Check the `001-public-sweep` PR merged** and every check is green, including `main`'s
        Gate run and the refresh its `run-overrides.yaml` change triggers (both to the end). If
-       not merged, remind the owner once.
+       not merged, remind the owner once. Check its box: the owner deletes PR #44's earlier
+       description revisions (GitHub shows edit history to every reader of a public repo).
     2. **Rotate credentials with the owner** (guided, one at a time; **never print a value**:
        the owner pastes new values into the GitHub secret form and their local environment
        variables themselves, and the agent checks only that a run works):
