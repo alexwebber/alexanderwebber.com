@@ -46,7 +46,7 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   changed, and rewrote 356 of 383 wellness days. Something in intervals.icu's rows (probably
   recomputed fields) changes after the fact. Check which fields change, and leave volatile ones
   out of the row hash if they don't affect what's published. Deferred: correct, just slower.
-- **Fundraising spec (Running)** — Martlets via JustGiving for Brighton Marathon: total vs
+- **Fundraising spec (Running)** — in progress as `specs/002-fundraising` (2026-10-26). Martlets via JustGiving for Brighton Marathon: total vs
   target, donate link, cached with last-known fallback. Next spec after Running; the Running
   landing page reserves a slot beside the Brighton hero.
 - **Journey/story spec (Running)** — motivational/educational "couch potato to runner" story and
