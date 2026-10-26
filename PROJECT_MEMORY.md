@@ -13,11 +13,14 @@ Update this as decisions get made — treat it as the source of truth alongside
   branch `002-fundraising`). #78 merged and deployed, and Dependabot shows no open alerts. The bot
   push under the ruleset is proven (00:19 UTC on 26 Oct).
   - **Next session: JustGiving page set-up and the story** (one session, owner input throughout):
-    1. **Check the spec PR merged** and ask any of its checkbox questions left unanswered.
+    1. #79 merged and its checkboxes are settled (logo: decisions log, 2026-10-26).
     2. **Guide the owner through creating the JustGiving page** for Martlets (Brighton
        Marathon 2027), one step at a time; start from https://www.martlets.org.uk/set-up-fundraiser/.
        First ask whether they hold their own entry or a Martlets charity place (£50 fee, £500
-       minimum), and what target they want on the page (the site reads it from there).
+       minimum), and what target they want on the page (the site reads it from there). Draft a
+       short email for the owner to send to fundraising@martlets.org.uk asking for the
+       "I'm supporting" logo and any conditions for using it on a personal website; it can go
+       with any other questions for Martlets.
     3. **Story question round, then draft** "Why I'm running for Martlets" (spec US3, FR-050–055):
        ask a few questions, draft from the answers only, the owner edits and approves it in the
        session. Raw answers and drafts never go in the repo. Create `VOICE.md` from their edits,
@@ -1379,6 +1382,15 @@ project-specific notes.
     stories, 39 FRs, 10 SCs. The agent changed two things after review: neutral pronouns for
     the owner, and story drafts are approved in the session, so only the approved text reaches
     the public repo.
+- **2026-10-26** — **#79 merged; the Martlets logo is fine** (owner, PR comment; the one
+  unticked box). The other 13 confirmations were ticked. Martlets'
+  [fundraising toolkit](https://www.martlets.org.uk/fundraising-toolkit/) offers print PDFs
+  (totaliser, posters, bunting, invitations, sponsorship form, fundraising and PR guides), none
+  of them suited to the site. The logo for fundraisers is the "I'm supporting" logo, supplied on
+  request from fundraising@martlets.org.uk ("Our brand is really important to us"). So the
+  site uses that logo as supplied, with any conditions they give, and names the charity in text
+  until it arrives (spec assumption *Charity branding* amended). Registered charity number:
+  256789 (whether to show it is a plan question).
 
 ## Upstream candidates
 
