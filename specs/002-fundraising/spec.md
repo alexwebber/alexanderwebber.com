@@ -473,8 +473,12 @@ current with no change other than the site's files.
   kept as the first example for the suite the CV & Blog spec will need.
 - **Raw answers stay private**: the repository is public, so the owner's answers and drafts are not
   committed unless they agree; `VOICE.md` records style lessons, not private facts.
-- **Charity branding**: the charity is named in text (with a link to its website where given); no
-  charity logo is used unless the owner supplies one with the charity's permission.
+- **Charity branding**: the charity is named in text (with a link to its website where given). The
+  owner approves using the charity's logo (PR #79). Martlets supplies its "I'm supporting" logo to
+  fundraisers on request (fundraising@martlets.org.uk; it is not a public download, and the toolkit
+  says "Our brand is really important to us"), so the site uses that logo as supplied, following
+  any conditions Martlets gives, on the card and the fundraising page. Until it arrives, the
+  charity is named in text only.
 - **Share image**: the fundraising page's share image shows the charity, race and total raised at
   the time of the site update, because a figure helps fundraising (social apps may show an older
   cached image). The landing page's existing share image is unchanged.
