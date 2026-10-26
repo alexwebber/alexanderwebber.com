@@ -9,22 +9,28 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-25, evening):** **the repo is public** and hardened (decisions log,
-  2026-10-25, "Repo public"). The `001-security-alerts` PR fixes the Dependabot alerts.
-  - **Next session:**
-    1. **Check the `001-security-alerts` PR merged**, its `main` Gate run finished green
-       (deploy included), and Dependabot shows no open alerts. If not merged, remind the owner
-       once.
-    2. **Bot-push proof under the ruleset:** a refresh commit (`data: publish running data`)
-       landed on `main` after 2026-10-25 16:55 UTC. The 00:17 refresh has committed every
-       night so far. If its push was rejected, the ruleset is the first suspect.
-    3. **Garmin two-step verification proof:** the owner's next weigh-in (Index S2, Wi-Fi) and
-       next run (Venu X1, via the Garmin Connect app) reach intervals.icu and a refresh
-       publishes them. The 25 Oct weigh-in probably came before two-step verification. If
-       either stops, it's the first suspect.
-    4. **Ask the owner which spec comes next:** fundraising, journey story or CV & Blog.
-    5. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    6. Remember that the lab wording is decided at the first lab result.
+- **Status (2026-10-26):** **the fundraising spec is written** (`specs/002-fundraising`, PR on
+  branch `002-fundraising`). #78 merged and deployed, and Dependabot shows no open alerts. The bot
+  push under the ruleset is proven (00:19 UTC on 26 Oct).
+  - **Next session: JustGiving page set-up and the story** (one session, owner input throughout):
+    1. **Check the spec PR merged** and ask any of its checkbox questions left unanswered.
+    2. **Guide the owner through creating the JustGiving page** for Martlets (Brighton
+       Marathon 2027), one step at a time; start from https://www.martlets.org.uk/set-up-fundraiser/.
+       First ask whether they hold their own entry or a Martlets charity place (£50 fee, £500
+       minimum), and what target they want on the page (the site reads it from there).
+    3. **Story question round, then draft** "Why I'm running for Martlets" (spec US3, FR-050–055):
+       ask a few questions, draft from the answers only, the owner edits and approves it in the
+       session. Raw answers and drafts never go in the repo. Create `VOICE.md` from their edits,
+       commit the approved story and `VOICE.md` in a PR, and the owner pastes the story into
+       JustGiving.
+    4. **Then `/speckit-plan`** in its own session, with the real page address, so its research
+       can test reading the total, target and supporters (JustGiving is moving its API to
+       Blackbaud SKY API; the old platform ends 30 June 2027).
+    5. **Garmin two-step verification proof** (still open): the watch's wellness synced on
+       26 Oct, but the next weigh-in (Index S2) and next run (Venu X1) still need to reach the
+       site. If either stops, two-step verification is the first suspect.
+    6. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+    7. Remember that the lab wording is decided at the first lab result.
   - **Secrets from the owner** come through a local file outside the repo
     (`C:\temp\keys.txt`, `NAME: value` lines) that the agent pipes into `gh secret set` and the
     user environment, printing nothing (owner, 2026-10-25).
@@ -1345,8 +1351,44 @@ project-specific notes.
     wrangler ships the fixed version (session-start update check).
   - **Logged out**, the repo page, README, MIT licence, security policy, Actions and PRs all
     load; Projects is gone and the wiki redirects to the repo.
+- **2026-10-26** — **#78 deployed and the ruleset doesn't block the bot.** `main`'s Gate run
+  after #78 passed (deploy included), all nine Dependabot alerts closed, and the 00:17 refresh
+  pushed `data: publish running data` as github-actions[bot] under the `main` ruleset.
+- **2026-10-26** — **Fundraising is the next spec** (owner pick, over the journey story and
+  CV & Blog, because donations build over the months before Brighton). Owner answers from three
+  question rounds, all on the agent's recommendation unless noted:
+  - **JustGiving**, page not created yet; the agent guides the owner through creating it
+    (owner's suggestion) before the plan. Nothing shows on the site until it exists.
+  - **Shown:** total against target with a bar, and the supporter count. Not shown: donor
+    names and messages, individual amounts, Gift Aid.
+  - **Target:** whatever the JustGiving page says (owner pick), so it's set in one place.
+  - **Placement:** a landing card in the slot beside the Brighton hero, plus
+    `/running/fundraising/` in the Running menu.
+  - **Story:** "Why I'm running for Martlets", AI-drafted from the owner's answers and approved
+    by them; it starts `VOICE.md`, and the same text goes on JustGiving.
+  - **Freshness:** within about 2 hours, on the existing refresh (no second live path).
+  - **History:** the total is stored at each change and charted over time.
+  - **After race day:** kept as a record ("Raised £X for Martlets" with the result).
+  - **Campaigns:** many, each linked to a race; Brighton is the first.
+  - **Not a goal:** the target has its own card, not a Goals-page goal.
+  - **Research (2026-10-25):** JustGiving's developer site says its APIs have moved to
+    Blackbaud SKY API, and the current API platform (3scale) ends on 30 June 2027. Whether an
+    individual fundraiser can read a page's figures is a plan question. Most charities' Brighton
+    2027 pages are on JustGiving. Martlets lists a £50 fee and £500 minimum for its places.
+  - **Spec written** (`specs/002-fundraising`, specify subagent about 152k tokens): 4 user
+    stories, 39 FRs, 10 SCs. The agent changed two things after review: neutral pronouns for
+    the owner, and story drafts are approved in the session, so only the approved text reaches
+    the public repo.
 
 ## Upstream candidates
+
+- **Tell spec-writing subagents how to refer to the owner:** the specify subagent wrote
+  "he/his/him" for the owner seven times from their name alone. Brief subagents to write "the
+  owner" or "they", and grep the output for pronouns before raising the PR (PLAYBOOK, subagent
+  briefs).
+- **Story drafts stay out of a public repo's PRs:** a spec had the owner editing an AI draft in a
+  pull request, which would keep the unapproved draft in the PR's history forever. Draft and
+  approve in the session; commit only approved text (PLAYBOOK, Authentic Voice).
 
 - **A personal repo's ruleset can't exempt GitHub Actions:** naming the GitHub Actions app
   (integration 15368) as a bypass actor answers 422 outside organisations. So a bot that pushes
