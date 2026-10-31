@@ -139,6 +139,7 @@ test('US1.5: this week and the latest run, which links to its run page', async (
 });
 
 test('run pages show the date only, no time of day or map, and label treadmill runs (FR-011, FR-058)', async ({ page }) => {
+  test.setTimeout(240_000); // every published run, so it grows with the data
   for (const run of runs) {
     const response = await page.goto(`/running/runs/${run.id}/`);
     expect(response?.status(), run.id).toBe(200);
