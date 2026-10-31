@@ -17,7 +17,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-10-23T13:24:44.418125+00:00"
+      "installed_at": "2026-10-31T19:30:21.404102+00:00"
     },
     "house-process": {
       "version": "0.10.0",
@@ -33,7 +33,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-10-25T08:37:47.643229+00:00"
+      "installed_at": "2026-10-31T19:30:23.627107+00:00"
     }
   }
 }
