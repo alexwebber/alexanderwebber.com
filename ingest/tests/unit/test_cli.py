@@ -210,7 +210,7 @@ def test_fundraising_commands_need_r2_settings(monkeypatch, repo, capsys, comman
     assert json.loads(capsys.readouterr().out)["code"] == "archive_unavailable"
 
 
-def test_fundraising_alert_with_nothing_failing_needs_no_github_calls_to_fail(
+def test_fundraising_alert_needs_a_github_token(
     fundraising, capsys, monkeypatch, real_provider_on_fake_api
 ):
     assert cli.main(["fundraising-read", *fundraising]) == 0

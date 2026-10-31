@@ -48,13 +48,13 @@ class PageNotFound(ProviderError):
     likely_cause = "The address in `campaigns.yaml` is mistyped, or the page has closed or expired."
     action = (
         "The agent checks `page_url` with the owner. If the campaign has ended, it marks it "
-        "`finished`."
+        "`finished`. Alerted at once (FR-006)."
     )
 
 
 class JustGivingChanged(ProviderChanged):
     code = "justgiving_changed"
-    likely_cause = "JustGiving's response changed shape."
+    likely_cause = "The response changed shape."
     action = (
         "The agent checks the API reference and changelog and fixes `providers/justgiving/`. The "
         "site stays on the last good figures."
@@ -63,7 +63,7 @@ class JustGivingChanged(ProviderChanged):
 
 class SuspectFigures(JustGivingChanged):
     code = "suspect_figures"
-    likely_cause = "A partial failure at JustGiving, or every donation was refunded."
+    likely_cause = "A partial failure, or every donation was refunded."
     action = (
         "The agent compares with the JustGiving page and asks the owner if they really are zero."
     )
@@ -71,8 +71,8 @@ class SuspectFigures(JustGivingChanged):
 
 class PageNotActive(IngestError):
     code = "page_not_active"
-    likely_cause = "The JustGiving page has expired or closed."
-    action = "The agent asks the owner whether to mark the campaign finished."
+    likely_cause = "The page has expired or closed."
+    action = "The agent asks the owner whether to mark the campaign finished. Alerted at once."
 
 
 class FiguresUnpublished(IngestError):

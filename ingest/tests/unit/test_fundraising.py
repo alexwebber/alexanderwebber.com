@@ -15,7 +15,7 @@ from awingest.fundraising.publish import run_fundraising_publish
 from awingest.fundraising.read import published_path, run_fundraising_read
 from awingest.logging import Logger
 from awingest.process.overrides import OwnerDataInvalid
-from awingest.process.pipeline import PUBLISHED
+from awingest.process.pipeline import PUBLISHED, run_process
 from awingest.providers.base import AuthRejected, FundraisingSnapshot, RateLimited, Transient
 from awingest.providers.justgiving.errors import PageNotFound, QuotaExhausted
 from awingest.publish.manifest import check_published
@@ -365,6 +365,32 @@ def test_a_failing_read_leaves_running_state_alone(alpha, archive):
     assert archive.get(FETCH_STATUS) == b"{}" and archive.get(FRESHNESS) == b"{}"
 
 
+def test_a_failing_read_leaves_the_process_stage_unaffected(alpha, filled_archive, provider):
+    read(FakeProvider(AuthRejected("401")), filled_archive, alpha)
+    processed = run_process(
+        provider, filled_archive, repo_root=alpha, log=Logger("process", stream=io.StringIO())
+    )
+    assert (processed.outcome, processed.exit_code) == ("ok", 0)
+
+
+def test_corrupt_fundraising_state_leaves_the_process_stage_unaffected(
+    alpha, filled_archive, provider
+):
+    filled_archive.put(FUNDRAISING_STATE, b"{not json")
+    processed = run_process(
+        provider, filled_archive, repo_root=alpha, log=Logger("process", stream=io.StringIO())
+    )
+    assert (processed.outcome, processed.exit_code) == ("ok", 0)
+
+
+def test_a_failed_running_fetch_does_not_stop_a_read(alpha, archive, provider, api):
+    api.fail("/activities", (401, {}, b"{}"), times=5)
+    fetched = run_fetch(provider, archive, log=Logger("fetch", stream=io.StringIO()), now=NOW)
+    assert fetched.exit_code == 10
+    result = read(FakeProvider(), archive, alpha)
+    assert (result.outcome, result.read, result.exit_code) == ("ok", 1, 0)
+
+
 def test_a_failing_running_fetch_leaves_fundraising_alone(alpha, archive, provider, api):
     read(FakeProvider(), archive, alpha)
     state, freshness = archive.get(FUNDRAISING_STATE), archive.get(FUNDRAISING_FRESHNESS)
@@ -691,8 +717,8 @@ def test_no_sentinel_reaches_state_freshness_published_or_logs(
     )
     assert result.read == 1
     publish(archive, alpha)
-    write_published_again = read(FakeProvider(snapshot(3000, 50000, 2)), archive, alpha)
-    assert write_published_again.read == 1
+    # A matching read, so the freshness file holds a live time too.
+    assert read(FakeProvider(snapshot(3000, 50000, 2)), archive, alpha).changed == 0
 
     stored = b"".join(archive.get(info.key) for info in archive.list()).decode()
     outputs = {
