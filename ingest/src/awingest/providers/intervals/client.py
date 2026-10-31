@@ -16,18 +16,14 @@ or library exception escapes: everything maps to the failure taxonomy in ``provi
 """
 
 import base64
-import email.utils
-import http.client
 import json
 import os
 import random
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
-from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
 from awingest.providers.base import (
@@ -37,6 +33,13 @@ from awingest.providers.base import (
     RateLimited,
     Transient,
 )
+from awingest.providers.http import (
+    USER_AGENT,
+    Response,  # noqa: F401 - re-exported for the fake API in the tests
+    Transport,
+    retry_after,
+    urllib_transport,
+)
 
 BASE_URL = "https://intervals.icu/api/v1"
 ATHLETE = "0"  # the API key's own athlete
@@ -44,56 +47,9 @@ KEY_ENV = "INTERVALS_API_KEY"
 TIMEOUT_S = 60
 
 
-def _version() -> str:
-    try:
-        return version("awingest")
-    except PackageNotFoundError:
-        return "0"
-
-
-USER_AGENT = f"alexanderwebber.com-ingest/{_version()} (+https://alexanderwebber.com)"
-
-# A response as the transport returns it: status, headers (lower-cased names), body.
-Response = tuple[int, Mapping[str, str], bytes]
-Transport = Callable[[urllib.request.Request], Response]
-
-
 class ResourceMissing(ProviderChanged):
     """A 404. Callers that treat a part as optional (a FIT file, HR time) catch this; anywhere
     else it means the API moved, so it stays a ``ProviderChanged``."""
-
-
-def _urllib_transport(request: urllib.request.Request) -> Response:
-    try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_S) as resp:
-            headers = {k.lower(): v for k, v in resp.headers.items()}
-            return resp.status, headers, resp.read()
-    except urllib.error.HTTPError as exc:
-        headers = {k.lower(): v for k, v in (exc.headers or {}).items()}
-        try:
-            body = exc.read()
-        except OSError:
-            body = b""
-        return exc.code, headers, body
-    except (OSError, http.client.HTTPException) as exc:  # URLError, timeouts, resets
-        reason = getattr(exc, "reason", exc)
-        raise Transient(f"network error: {type(reason).__name__}") from None
-
-
-def _retry_after(value: str | None, now: datetime) -> float | None:
-    """Seconds from a ``Retry-After`` header (delta-seconds or an HTTP date)."""
-    if not value:
-        return None
-    value = value.strip()
-    if value.isdigit():
-        return float(value)
-    try:
-        when = email.utils.parsedate_to_datetime(value)
-    except (TypeError, ValueError):
-        return None
-    if when.tzinfo is None:
-        when = when.replace(tzinfo=UTC)
-    return max(0.0, (when - now).total_seconds())
 
 
 def _is_html(headers: Mapping[str, str], body: bytes) -> bool:
@@ -122,7 +78,7 @@ class IntervalsClient:
             raise AuthRejected(f"{KEY_ENV} is not set")
         token = base64.b64encode(f"API_KEY:{api_key}".encode()).decode()
         self._auth = f"Basic {token}"
-        self._transport = transport or _urllib_transport
+        self._transport = transport or urllib_transport(TIMEOUT_S)
         self._min_interval = min_interval
         self._max_jitter = max_jitter
         self._sleep = sleep
@@ -182,14 +138,14 @@ class IntervalsClient:
             if status == 404:
                 raise ResourceMissing(f"{label} returned 404")
             if status == 429:
-                retry_after = _retry_after(resp_headers.get("retry-after"), self._now())
+                wait = retry_after(resp_headers.get("retry-after"), self._now())
                 # A short wait is cheaper than failing the run; anything longer is recorded
                 # as rate_limited_until by the fetch stage and waited out between runs.
-                if retry_after is not None and retry_after <= 60 and attempt < self._retries:
+                if wait is not None and wait <= 60 and attempt < self._retries:
                     attempt += 1
-                    self._sleep(retry_after)
+                    self._sleep(wait)
                     continue
-                raise RateLimited(f"{label} returned 429", retry_after=retry_after)
+                raise RateLimited(f"{label} returned 429", retry_after=wait)
             if status >= 500 and attempt < self._retries:
                 attempt += 1
                 self._sleep(2.0**attempt)
