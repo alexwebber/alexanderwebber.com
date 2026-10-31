@@ -16,15 +16,11 @@ Update this as decisions get made — treat it as the source of truth alongside
   the reviewers the owner chose** (they write a passage and approve); it lives only in
   `C:\temp\story-draft.md`, outside the repo. Garmin two-step verification is proven (the
   31 Oct run and weigh-ins reached the site) and the 5k's "New" window ended as tested.
-  **The fundraising data slice is built** (`specs/002-fundraising/`, T001–T036, the
-  `002-fundraising-data` PR): reads through JustGiving's official API, the publish and alert
-  stages, and Brighton in `campaigns.yaml`. A local read returned £0 of £500 and 0 supporters. The
-  key is set as `JUSTGIVING_SUBSCRIPTION_KEY`.
-  - **Next session: check the `002-fundraising-data` PR merged, then T037** (wait for `main`'s Gate
-    run to finish, then quickstart.md §5: the push-triggered refresh's first publish, the bot's
-    commit of `data/running/published/fundraising/brighton-2027.json`, then a dispatched refresh
-    that stays idle). **Then harvest lessons (T038; over 30 candidates are waiting)**, in the main
-    conversation. Point the owner at the live hero only after the deploy.
+  **The fundraising data slice is live** (`specs/002-fundraising/`, T001–T037, #85): each refresh
+  reads the page through JustGiving's official API, and the bot published
+  `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). No page
+  shows it yet.
+  - **Next: harvest lessons (T038; about 50 candidates are waiting)**, in the main conversation.
   - **After that: Phase 3, the staging check** (`specs/002-fundraising/tasks.md`, T039 on; about 15
     minutes of the owner's time, guided), in its own session.
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
@@ -42,8 +38,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
   - Remember that the lab wording is decided at the first lab result.
   - **Secrets from the owner** come through a local file outside the repo
-    (`C:\temp\keys.txt`, `NAME: value` lines) that the agent pipes into `gh secret set` and the
-    user environment, printing nothing (owner, 2026-10-25).
+    (`C:\temp\keys.txt`, `NAME: value` lines) that the agent passes to `gh secret set --body` and
+    the user environment, printing nothing (owner, 2026-10-25). Never a PowerShell pipe, which
+    adds a BOM to the secret (2026-10-31).
   - **Race pages, maps and photos** are only on the test preview (`/race-preview/` in a
     `SHELL_PREVIEW=1` build) until Brighton. Real OpenFreeMap tiles are unseen; check them on
     Brighton's page after race day.
@@ -1498,8 +1495,33 @@ project-specific notes.
     label now right-aligns to its bar (`BarChart.astro`), and `training.spec.ts` checks that labels
     stay inside the plot in any font. Playwright only runs on PRs touching UI paths, so bot data
     can break a layout check unseen until the next such PR (BACKLOG).
+- **2026-10-31** — **T037 done, after one failure** (`002-key-shape-check` PR).
+  - **The first read on Actions failed**, though the run was green (`continue-on-error`, as
+    designed) and alert issue #86 opened. The GitHub secret held a BOM from a PowerShell pipe, so
+    the header failed to encode (`UnicodeEncodeError`); the local copy was clean. A dummy key with
+    a BOM reproduced the same error through the real client. Re-setting the secret with `--body`
+    fixed it, and #86 closed itself.
+  - **Proven on Actions:** the R2 path, the alert opening and closing against real GitHub, the bot's
+    commit and the deploy. The "fundraising figures changed" publish reason was proven early, by the
+    first good read, so it needn't wait for a donation. A second dispatch found the same figures: no
+    publish, no commit. The key appears only in the read step's `env`.
+  - **A key a header can't carry is now `justgiving_key_rejected`**, not `transient`. Issue #86 had
+    said "Action: None: retried on the next run" for a fault no retry could clear.
 
 ## Upstream candidates
+
+- **A PowerShell pipe corrupts secrets silently:** PowerShell 5.1 adds a BOM to a native stdin, so
+  `... | gh secret set` stored the key with U+FEFF. `gh` reports success and the secret can't be
+  read back, so only the first real use shows it. Use `--body` or a BOM-less file (AGENT_TIPS,
+  *Secrets*; this corrects the "pipes it" wording in the rotation candidate below).
+- **Check a malformed credential before the request:** a catch-all around the transport turned it
+  into a retryable error, so the alert said no action was needed (AGENT_TIPS, *Providers and file
+  formats*).
+- **`continue-on-error` makes a green run prove nothing about that step:** check what the step
+  should have left behind (a commit, a file), not the run's colour (AGENT_TIPS, *Actions*).
+- **`gh api --jq` with double quotes fails from PowerShell 5.1** ("accepts 1 arg(s), received 3"),
+  as native arguments split at embedded `"`. Run those from the Bash tool (PLAYBOOK, Windows
+  gotchas).
 
 - **Path-filtered test jobs don't watch bot-published data:** a layout check failed on the first
   UI PR in six days, because the week's data had changed under it. Run layout checks on a schedule
