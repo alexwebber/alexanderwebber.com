@@ -9,31 +9,31 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-26):** **the fundraising spec is written** (`specs/002-fundraising`, PR on
-  branch `002-fundraising`). #78 merged and deployed, and Dependabot shows no open alerts. The bot
-  push under the ruleset is proven (00:19 UTC on 26 Oct).
-  - **Next session: JustGiving page set-up and the story** (one session, owner input throughout):
-    1. #79 merged and its checkboxes are settled (logo: decisions log, 2026-10-26).
-    2. **Guide the owner through creating the JustGiving page** for Martlets (Brighton
-       Marathon 2027), one step at a time; start from https://www.martlets.org.uk/set-up-fundraiser/.
-       First ask whether they hold their own entry or a Martlets charity place (£50 fee, £500
-       minimum), and what target they want on the page (the site reads it from there). Draft a
-       short email for the owner to send to fundraising@martlets.org.uk asking for the
-       "I'm supporting" logo and any conditions for using it on a personal website; it can go
-       with any other questions for Martlets.
-    3. **Story question round, then draft** "Why I'm running for Martlets" (spec US3, FR-050–055):
-       ask a few questions, draft from the answers only, the owner edits and approves it in the
-       session. Raw answers and drafts never go in the repo. Create `VOICE.md` from their edits,
-       commit the approved story and `VOICE.md` in a PR, and the owner pastes the story into
-       JustGiving.
-    4. **Then `/speckit-plan`** in its own session, with the real page address, so its research
-       can test reading the total, target and supporters (JustGiving is moving its API to
-       Blackbaud SKY API; the old platform ends 30 June 2027).
-    5. **Garmin two-step verification proof** (still open): the watch's wellness synced on
-       26 Oct, but the next weigh-in (Index S2) and next run (Venu X1) still need to reach the
-       site. If either stops, two-step verification is the first suspect.
-    6. **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
-    7. Remember that the lab wording is decided at the first lab result.
+- **Status (2026-10-31):** **the JustGiving page exists**:
+  https://www.justgiving.com/page/alexanderwebber-brighton-2027 (Southern Hospice Group's
+  Martlets campaign, event Brighton Marathon 2027, £500 target, holding story). The owner has
+  emailed fundraising@martlets.org.uk (introduction and the logo request). **Story draft 2 is with
+  the reviewers the owner chose** (they write a passage and approve); it lives only in
+  `C:\temp\story-draft.md`, outside the repo. Garmin two-step verification is proven (the
+  31 Oct run and weigh-ins reached the site) and the 5k's "New" window ended as tested.
+  - **Next session: `/speckit-plan` for `specs/002-fundraising`** (its own session; Opus override,
+    as it's foundational for fundraising). Research must test reading the real page's total,
+    target and supporters: the target isn't in the page's raw HTML (probably filled in by script),
+    JustGiving is moving its API to Blackbaud SKY API, and the old platform ends 30 June 2027.
+    Also check JustGiving's display terms, and whether to show the charity number (spec
+    assumption *Charity on JustGiving*).
+  - **When the story reviewers reply** (ask at each session start until then): take their
+    passage into the draft, the owner approves the final text, then create `VOICE.md` (lessons so
+    far: personal or family passages are written by the people they belong to, and the agent's
+    draft covers framing and facts; the owner keeps their own fitness journey out of it). Re-check
+    Martlets' figures (almost £12 million a year, NHS grant around 22%,
+    https://www.martlets.org.uk/give-in-your-will/) before committing. Commit the approved story
+    and `VOICE.md` in a PR; the owner pastes the story into JustGiving and may retitle the page
+    after it. Nothing from the draft goes in the repo, PRs or commit messages before approval.
+  - **When Martlets replies:** record the "I'm supporting" logo's conditions; the logo files
+    arrive with the build.
+  - **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
+  - Remember that the lab wording is decided at the first lab result.
   - **Secrets from the owner** come through a local file outside the repo
     (`C:\temp\keys.txt`, `NAME: value` lines) that the agent pipes into `gh secret set` and the
     user environment, printing nothing (owner, 2026-10-25).
@@ -49,10 +49,6 @@ Update this as decisions get made — treat it as the source of truth alongside
        (fundraising, journey story or CV & Blog).
   - **Check first:** the nightly Quality run is still green (a Cloudflare RUM beacon means RUM
     was re-enabled).
-  - **T105's no-change path** was never seen: every 00:17 refresh so far committed new data.
-    That's fine, and the owner has been told; stop looking for it.
-  - **31 Oct:** the 5k's "New" window ends; check the landing page falls back to priority order
-    (unit-tested, not yet seen live).
   - **Dispatch token expiry:** 2027-10-17 23:00 UTC. Raise a new token with the owner in the
     week of 2027-10-11.
 - **Sessions are local again (Windows)** (owner, 2026-10-18). Run `check-versions.ps1` at the
@@ -1390,9 +1386,49 @@ project-specific notes.
   request from fundraising@martlets.org.uk ("Our brand is really important to us"). So the
   site uses that logo as supplied, with any conditions they give, and names the charity in text
   until it arrives (spec assumption *Charity branding* amended). Registered charity number:
-  256789 (whether to show it is a plan question).
+  256789 (whether to show it is a plan question; it is the Southern Hospice Group's, see
+  2026-10-31).
+- **2026-10-31** — **JustGiving page created** (guided with the owner, one step at a time):
+  https://www.justgiving.com/page/alexanderwebber-brighton-2027. Owner answers:
+  - **Own entry**, not a Martlets charity place, so there's no Martlets minimum. **Target £500**
+    (owner pick), set on the page; the site reads it from there.
+  - **Charity:** JustGiving has no separate Martlets charity. Martlets is part of the
+    **Southern Hospice Group** (registered charity 256789; formed when Martlets merged with
+    St Barnabas Hospices in 2024; Martlets' own former number is 802145). The page was started
+    from the group's **Martlets** campaign (`justgiving.com/campaign/shg-martlets`), and
+    JustGiving linked the event, **Brighton Marathon 2027, 4 April 2027**. The site names
+    Martlets, with "part of Southern Hospice Group" on the fundraising page (spec assumption
+    *Charity on JustGiving*).
+  - **Address** `alexanderwebber-brighton-2027`: it names the race, so later campaigns get
+    their own pages. Title "Alexander's Brighton Marathon for Martlets" was suggested; the
+    cover photo is the campaign's own.
+  - **Holding story:** JustGiving requires a story, so the page has a factual holding line until
+    the real story is approved. "Skip for now" was avoided, as it might have dropped the address.
+  - **Martlets has no sign-up form** for fundraisers with their own place (the set-up page's form
+    is for paying money in). The owner emailed fundraising@martlets.org.uk instead, introducing
+    themselves and asking for the "I'm supporting" logo and its conditions.
+  - **Story:** drafted from the owner's answers and Martlets' published figures. Before approval,
+    the people close to the story review it and write the personal passage themselves (owner);
+    the draft stays outside the repo until then (spec assumption *Story process* amended).
+    The owner wants the story to be about Martlets, not their own fitness journey.
 
 ## Upstream candidates
+
+- **WebFetch summaries can misdescribe a page's purpose:** a summary called Martlets' pay-in
+  form a fundraiser sign-up form, and the owner was sent to it. Before sending the owner to a
+  form or step, fetch the page with a prompt that asks what the form is for and quotes its
+  fields, or say it's unverified (AGENT_TIPS, *Research*).
+- **A charity's JustGiving name may be its parent group's:** after a merger, Martlets' pages sit
+  under "Southern Hospice Group" with a Martlets campaign, and its registered number belongs to
+  the group. Look up the charity on JustGiving and the Charity Commission before guiding the
+  owner, and start the page from the charity's own campaign (PLAYBOOK, project lessons).
+- **Personal stories involving other people need their review, across sessions:** the owner's
+  fundraising story is about someone else's family, so those people write that passage and
+  approve the text. Plan for approval in a later session, with the draft kept outside the repo
+  (PLAYBOOK, Authentic Voice).
+- **Python written through the Bash heredoc again lost a backslash:** `C:\\temp` became a tab.
+  Even "small" scripts with a Windows path go through the Write tool (AGENT_TIPS, *Shell*;
+  reinforces the earlier candidate).
 
 - **Tell spec-writing subagents how to refer to the owner:** the specify subagent wrote
   "he/his/him" for the owner seven times from their name alone. Brief subagents to write "the

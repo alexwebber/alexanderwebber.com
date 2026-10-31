@@ -446,6 +446,14 @@ current with no change other than the site's files.
 - **Target**: whatever the JustGiving page says, set by the owner there only. Martlets' Brighton
   Marathon 2027 charity places list a £50 registration fee and a £500 fundraising minimum, but the
   owner may hold their own entry, so the site doesn't assume either; it uses the page's target.
+  (The owner holds their own entry, and set a £500 target when creating the page on 2026-10-31.)
+- **Charity on JustGiving**: the Brighton page
+  (`justgiving.com/page/alexanderwebber-brighton-2027`, created 2026-10-31) sits in the **Martlets**
+  campaign of the **Southern Hospice Group** (registered charity 256789), the charity Martlets
+  joined when it merged with St Barnabas Hospices in 2024. JustGiving lists no separate Martlets
+  charity, so donors see "Southern Hospice Group" as the charity. The site names the charity as
+  Martlets ("For Martlets"), and the fundraising page adds "part of Southern Hospice Group", so it
+  matches what donors see on JustGiving. Whether to show the charity number is a plan question.
 - **Currency**: pounds sterling only.
 - **History granularity**: a new history point is kept only when a read finds changed figures (FR-008);
   an unchanged read only moves the last-read time, matching how Running's idle refreshes change
@@ -463,8 +471,11 @@ current with no change other than the site's files.
 - **No campaign pages of their own**: past campaigns are a list on the fundraising page, each linking
   to its JustGiving page, not separate site pages.
 - **Story process**: the agent asks the owner a few questions, drafts from the answers only, and the
-  owner edits and approves it in the session; only the approved text goes into a pull request, so
-  drafts never reach the public repo's history (FR-055). The story can be drafted before any site work, as soon
+  owner edits it in the session. Before approving, the owner may have people close to the story
+  review it, and write passages about their own experience; personal or family passages are
+  theirs to write, and the agent's draft covers the framing and the facts. Until then the draft is
+  kept outside the repository, so approval may come in a later session. Only the approved text
+  goes into a pull request, so drafts never reach the public repo's history (FR-055). The story can be drafted before any site work, as soon
   as the JustGiving page is being set up, because JustGiving needs it too. The owner pastes the
   approved text into JustGiving; the site never writes to JustGiving.
 - **Eval suite (Principle II(b))**: nothing on the live site drafts text automatically; the story is a
