@@ -142,8 +142,9 @@ Why this holds up against FR-003, in both directions:
   touched. Fundraising has `state/fundraising.json` and `public/fundraising-freshness.json`, so
   corrupt fundraising state can't stop a running fetch.
 - **Separate processes.** `fundraising-publish` is its own command with its own `PublishedWriter`,
-  which writes nothing unless the whole result is valid, so an import error or crash can't take
-  `process` with it.
+  which writes nothing unless the whole result is valid, so a crash can't take `process` with it.
+  An import error in the JustGiving package would stop every command, because `cli.py` loads it through
+  `alerts.py`; pytest catches that on every ingest PR.
 
 **One limit**: if `process` itself fails (R2 unreachable, an invalid owner file), the `publish` job
 stops before fundraising publishes. Those aren't provider read failures: R2 being down stops both
@@ -322,14 +323,21 @@ fine-grained history would publish them by subtraction: total +£20 and supporte
 reads is a £20 donation at a known time. JustGiving lets donors hide their amount, so this could
 expose something a donor chose to keep private.
 
-**Decision**: the published history has **one point per UK day**, with a date and no time of day.
-A later change the same day replaces that day's point. The chart is by day anyway, so nothing is
-lost, and a day with several donations shows only their sum. FR-008 and the spec's *History
-granularity* assumption are amended.
+**Decision**: the published file has **one point per UK day**, with a date and no time of day. A
+later change the same day replaces that day's point. The chart is by day anyway, so nothing is lost. FR-008
+and the spec's *History granularity* assumption are amended.
 
-**What remains**: on a day with exactly one donation the amount can still be worked out. Nothing can
-remove that while a total is public, and JustGiving's own page total allows the same subtraction.
-Whether that's acceptable is the owner's call, so it is raised as a question in the plan.
+**What remains**: this limits the file, not the history. A changed read makes the run publish, so each
+change becomes a bot commit in a public repo, and git keeps every version with its time. Total +£20 and
+supporters +1 between two commits is a £20 donation at about that time, even on a day with several
+donations. Anyone watching JustGiving's own public total can do the same subtraction, but git keeps a
+permanent record of it.
+
+**Owner decision (2026-10-31, after `/speckit-analyze`)**: accept it. The alternatives were committing once
+a day and serving intra-day figures from R2 through the Worker (a redesign that leaves no-JS figures up to
+a day old, and the live figure could still be polled), or publishing less often (which misses SC-002 and
+still shows single donations on a quiet page). Commits hold only the total, target and supporter count,
+never a name, message or donation record, so FR-010 and FR-011 hold as written.
 
 ---
 

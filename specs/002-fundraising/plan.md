@@ -22,8 +22,9 @@ feature extends the existing refresh rather than adding a pipeline:
 3. **render**: the card and page are built from those files, with a freshness route and script for the
    last-read time, separate from Running's.
 
-Both new steps are `continue-on-error` and share no state with Running, so neither side's failures reach
-the other (FR-003). An unchanged read makes no commit. There are no new dependencies and no recurring
+Both new steps are `continue-on-error` and share no state with Running, so a failed read on either side
+can't reach the other (FR-003). The gate is shared, and a failed `process` stops fundraising's publish step
+(research.md R4). An unchanged read makes no commit. There are no new dependencies and no recurring
 cost.
 
 ## Technical Context
@@ -79,10 +80,10 @@ R8).
 | II(a) Contract tests at graduation | PASS | Adapter, read and publish rules, schemas, referential checks, Worker route, workflow isolation |
 | II(b) Eval suite for AI decisions | N/A, by spec assumption | Nothing on the live site drafts text. The story is a one-off drafted in a session and approved by the owner. The CV & Blog spec needs the suite; if the owner agrees, this pair can be its first example |
 | II(c) Error handling and logging | PASS | Classified failures, each with cause and action; JSON-lines logs; the new secret added to the scrubber; on a parse failure, key names only |
-| III. Own your data | PASS, one note | Ingest, store, render; no visitor request touches JustGiving; Donate is a plain link. History is retained at **daily** granularity, not every change: a deliberate privacy choice (research.md R11), and intraday figures aren't kept |
+| III. Own your data | PASS, one note | Ingest, store, render; no visitor request touches JustGiving; Donate is a plain link. The published file keeps one point a day, because the chart is by day; earlier figures from the same day stay in git history (research.md R11) |
 | IV. Pluggable providers and storage | PASS | `FundraisingProvider` protocol, one adapter folder; existing storage abstractions; a provider failure only causes staleness. The adapter contract's Rule 1 (raw archived verbatim) is replaced for this provider by "no raw stored", for FR-011 |
 | V. Serverless, gracefully degrading | PASS | **The rule on live-ish values applies directly**: figures are cached in git and fall back to the last known. No new server. Reads ride the 2-hourly refresh and manual trigger. Every view shows its own last-read time, with a stale notice at 12 hours, and renders without JS |
-| VI. Privacy by default | PASS | New public figures approved in the spec. Allow-list adapter, no raw storage, strict schema, scan rules, sentinel test. Secret in one step. History published by day. Nothing from JustGiving but three figures reaches git. Repo stays publishable: story text enters only after approval |
+| VI. Privacy by default | PASS | New public figures approved in the spec. Allow-list adapter, no raw storage, strict schema, scan rules, sentinel test. Secret in one step. Figure changes stay in public git history, accepted by the owner (research.md R11). Nothing from JustGiving but three figures reaches git. Repo stays publishable: story text enters only after approval |
 | VII. Modular sections | PASS | Inside Running (FR-064): its data tree, store, validation, routes, components. `src/shared/` gains nothing. Schemas sit in top-level `schemas/`, the accepted bend from 2026-10-04 |
 | VIII. Authentic voice | PASS | The story is published only with a recorded approval tied to its text by a hash, enforced in the gate. Facts come from the owner or stored data. `VOICE.md` is created at approval. Family passages are written by the people they belong to |
 | Mobile-first and fast | PASS (budget set) | Budgets above. The freshness script changes text only when the build's value is out of date |
@@ -92,15 +93,16 @@ R8).
 | Visualisations first | PASS | Progress bar and chart lead; text supports |
 | Tech constraints | PASS | Astro on Cloudflare; Python ingest on Actions; recurring cost noted ($0) |
 | Build gate from day one | PASS | New schema, referential and privacy rules run in the existing gate. An invalid campaign or unapproved story stops the update |
-| Broader CI deferred | PASS | Existing path-filtered `tests.yml`; no change |
+| Broader CI deferred | PASS | Existing path-filtered `tests.yml`; its Vitest filter gains `.github/workflows` for the workflow check |
 
 **Gate result: PASS, no violations.** Complexity Tracking lists the choices worth the owner's eye.
 
 ### Post-design re-check (after Phase 1)
 
 Re-checked against [data-model.md](data-model.md) and [contracts/](contracts/): all rows still PASS.
-Design tightened three points. The published history became daily after finding that a per-change history
-would reveal individual donations by subtraction (FR-010). The live last-read time moves only once the
+Design tightened three points. The published file became daily, because a per-change history would
+reveal individual donations by subtraction (FR-010). `/speckit-analyze` later found that git history records
+each change anyway, and the owner accepted that (research.md R11). The live last-read time moves only once the
 site shows those figures, so a failed publish can't claim fresh data (SC-005). And story approval is tied
 to the text by a hash, so an edit after approval stops the gate (SC-007).
 
@@ -189,7 +191,8 @@ ingest/src/awingest/
 └── publish/manifest.py                   # LAYOUT gains fundraising/
 src/worker/
 ├── freshness.ts                          # dispatches the new route
-└── fundraising-freshness.ts              # new
+├── fundraising-freshness.ts              # new
+└── respond.ts                            # new: shared by both routes, so neither imports the other
 src/sections/running/
 ├── integration.ts                        # the conditional fundraising area
 ├── validate.ts                           # the referential checks
@@ -219,7 +222,7 @@ data/running/owner/
 └── stories/                              # empty until a story is approved
 tests/
 ├── fixtures/fundraising-preview/         # new
-├── e2e/{fundraising,stale}.spec.ts       # new; the drill extended
+├── e2e/{fundraising,fundraising-none,stale}.spec.ts   # new; the drill extended
 ├── a11y/fundraising.spec.ts              # new
 ├── contract/refresh-workflow.test.ts     # new
 └── unit/                                 # domain, validation, Worker, card states
@@ -228,6 +231,7 @@ ingest/tests/
 ├── unit/test_fundraising.py              # new
 └── fixtures/justgiving/                  # new, synthetic
 .github/workflows/refresh.yml             # three steps, one decide reason
+.github/workflows/tests.yml               # the Vitest filter covers workflows
 astro.config.mjs                          # the preview routes
 ```
 
@@ -274,9 +278,11 @@ What the plan needs from the owner, folded into reviews:
 
 Settled by the owner on 2026-10-31, each on the recommendation.
 
-1. **The chart shows one total per day.** A day with one donation can be worked out by subtraction, as it
-   can from JustGiving's own public total. Publishing by day blurs the rest, and a chart by week would
-   cost detail without removing the risk.
+1. **The chart shows one total per day, and figure changes stay in public git history.** Each change the
+   2-hourly read finds becomes a bot commit, so a commit's diff can show a single donation by subtraction,
+   as watching JustGiving's own public total can. The owner accepted this rather than commit once a day
+   (a redesign, with figures up to a day old without JS) or publish less often (which misses SC-002).
+   Commits hold the total, target and supporter count only (research.md R11).
 2. **`section.yaml`'s charity name changes from "Martlets hospice" to "Martlets"**, so FR-024's agreement
    holds and the card reads "For Martlets". The hero's text and the landing description change slightly.
 3. **The card goes live as soon as it's built**, at "£0 raised of £500" and "No supporters yet", because a

@@ -25,7 +25,7 @@ stored.
 | Field | Type | Rule |
 |---|---|---|
 | `raised_pence` | int >= 0 | From `grandTotalRaisedExcludingGiftAid`, parsed strictly (research.md R7) |
-| `target_pence` | int > 0, or `None` | From `fundraisingTarget`; `null`, `""` or `"0"` means no target; a missing key is a failed read |
+| `target_pence` | int > 0, or `None` | From `fundraisingTarget`; `null`, `""` or any value equal to zero (`"0"`, `"0.00"`) means no target; a missing key is a failed read |
 | `supporters` | int >= 0 | From `donationCount` |
 | `page_status` | str | From `status`. Private: never published |
 
@@ -109,7 +109,8 @@ Worker re-shapes it to these fields (contracts/pipeline.md).
 | `points[].target_pence` | Integer > 0; omitted when the page has no target |
 
 **FR-010 and the schema**: only these fields can validate, so a donor name, amount, message, Gift Aid
-figure or account identifier can't be written.
+figure or account identifier can't be written. The file holds a point a day, but git history keeps every
+committed version, which the owner accepted ([research.md](research.md) R11).
 
 **Writing rules** (`fundraising-publish`, per active campaign with a `latest`):
 
@@ -121,6 +122,9 @@ figure or account identifier can't be written.
 | Figures differ, a later day | Append a point; set `last_read_at` |
 | Same figures, committed `last_read_at` at least 6 hours old | Set `last_read_at` only |
 | Same figures, younger | Nothing |
+
+Setting `last_read_at` means setting it to `latest.read_at`, never the clock, so a failed read can't claim
+fresh figures (SC-005). The age in the 6-hour rule is `now` minus the committed value.
 
 "Figures" means raised, target and supporters together, so a target change alone makes a point. A
 total that goes down is written as it is (the spec's refund edge case).
@@ -219,7 +223,7 @@ JustGiving by hand (FR-054).
   | `finished` | `finished: true`, whatever the race state | The same, marked "Final total", last-read date, no Donate |
 
 - **Progress** (FR-032): `percent = floor(raised * 100 / target)` in integers. `fraction = percent /
-  100`, capped at 1. `beaten` when raised >= target. No target gives no progress at all.
+  100`, capped at 1. `reached` when raised equals the target, `beaten` when it's above. No target gives no progress at all.
 - **Pounds** (FR-063): `floor(pence / 100)`, with thousands separators.
 - **Stale** (FR-005): active campaign, and `now - last_read_at > stale_after_hours`. Never for a
   finished campaign.

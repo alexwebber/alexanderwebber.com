@@ -32,7 +32,7 @@ handles money.
 The figures follow the Running section's rules: the site keeps its own copy, refreshed with the
 existing scheduled refresh, so no page depends on JustGiving being available; every view says when
 its figures were last updated; and if JustGiving can't be read, the last known figures stay up. The
-site keeps the total at each change, so it can chart the fundraising over time.
+site keeps the total for each day, so it can chart the fundraising over time.
 
 A fundraiser is a **campaign** linked to a race. Brighton is the first. After race day the
 campaign stays on the site as a record, and later charity runs are added as new campaigns without
@@ -211,7 +211,7 @@ current with no change other than the site's files.
 
 - **JustGiving unavailable, slow, or changing how it can be read**: pages keep rendering from the
   last stored figures with their last-updated time; a staleness notice appears once the figures
-  are more than 12 hours old; the owner is alerted within 24 hours with the likely cause and the
+  are more than 12 hours old; the owner is alerted at the first refresh after 24 hours, with the likely cause and the
   action needed. Running data keeps refreshing and publishing regardless.
 - **A change in how JustGiving provides its figures**: the site reads them through JustGiving's
   current developer platform (Blackbaud SKY API), so the old platform's end on 30 June 2027 doesn't
@@ -244,7 +244,7 @@ current with no change other than the site's files.
 - **The story contains a statement the owner didn't supply**: it is a defect; the owner's approval
   step is where it is caught, and the drafting instructions forbid it.
 - **Very long campaign history** (years of totals): the chart and its table stay quick to load
-  (a total changes at most a few times a day).
+  (at most one point a day).
 - **Interactive enhancements fail**: all figures, the Donate link and the chart's text summary and
   table are still available.
 
@@ -343,7 +343,7 @@ current with no change other than the site's files.
   last-updated time, and a Donate button; after race day it follows the card's "Raised £X" form
   (FR-033).
 - **FR-042**: The page MUST show a chart of the current campaign's total over time, by day, from
-  the first stored total to the last, with the target marked, once there are totals from at least
+  the first stored total to today, with the target marked, once there are totals from at least
   two days.
 - **FR-043**: The page MUST list past campaigns, most recent race first, each with its race and
   date, charity, final or latest total (and target, where there was one), and a link to its
@@ -417,7 +417,7 @@ current with no change other than the site's files.
 - **SC-003**: With JustGiving deliberately unreadable for 7 days, 100% of pages still load with the
   last known figures and their last-updated time, the staleness notice appears after 12 hours, the
   Donate link works, running data keeps updating, no site update fails because of it, and the
-  owner is alerted within 24 hours.
+  owner is alerted at the first refresh after 24 hours.
 - **SC-004**: An automated check across every published page and public file finds zero donor
   names, donor messages, individual donation amounts and Gift Aid figures.
 - **SC-005**: On 10 separate spot checks, the total, target and supporter count on the site match
@@ -467,10 +467,12 @@ current with no change other than the site's files.
 - **Currency**: pounds sterling only.
 - **History granularity**: a history point changes only when a read finds changed figures, and
   each day keeps only its latest figures (FR-008); an unchanged read only moves the last-read time,
-  matching how Running's idle refreshes change nothing. The chart is by day. Keeping days rather
-  than individual changes publishes no more than the chart needs, and blurs individual donations;
-  on a day with one donation its amount can still be worked out by subtraction, as it can from
-  JustGiving's own public total.
+  matching how Running's idle refreshes change nothing. The chart and the published file hold days,
+  because that's what the chart needs. This isn't a privacy guarantee: the repo is public, so each bot
+  commit that changes the figures stays in git history with its time, and the difference between two
+  commits can show a single donation by subtraction, as watching JustGiving's own public total can.
+  The owner accepted this on 2026-10-31. Commits hold only the total, target and supporter count,
+  never a name, message or donation record (research.md R11).
 - **Staleness**: the same 12-hour threshold as the Running section; a finished campaign is never
   "stale".
 - **Current campaign**: the one linked to the focus race. Switching the focus race (Running's

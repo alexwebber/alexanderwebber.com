@@ -16,11 +16,12 @@ Update this as decisions get made — treat it as the source of truth alongside
   the reviewers the owner chose** (they write a passage and approve); it lives only in
   `C:\temp\story-draft.md`, outside the repo. Garmin two-step verification is proven (the
   31 Oct run and weigh-ins reached the site) and the 5k's "New" window ended as tested.
-  **The fundraising plan is written** (`specs/002-fundraising/plan.md`), reading figures through
-  JustGiving's official API. The key is set as `JUSTGIVING_SUBSCRIPTION_KEY`.
-  - **Next session: `/speckit-tasks` then `/speckit-analyze` for `specs/002-fundraising`**, in its
-    own session, on the plan's delivery order. Check the plan PR merged first, and its checks.
-    Harvest lessons after the first implement slice (over 25 candidates are waiting).
+  **The fundraising plan and tasks are written** (`specs/002-fundraising/`, 121 tasks), reading
+  figures through JustGiving's official API. The key is set as `JUSTGIVING_SUBSCRIPTION_KEY`.
+  - **Next session: `/speckit-implement` for Phases 1 and 2 of `specs/002-fundraising/tasks.md`
+    (T001–T038)**, in its own session and one PR. Check the tasks PR merged first, and its checks.
+    Then harvest lessons (T038; over 25 candidates are waiting). Nothing visitors see changes but
+    the hero's charity name.
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -1446,9 +1447,37 @@ project-specific notes.
   - **Chart:** daily totals, accepting that a one-donation day can be worked out by subtraction.
   - **Name:** `section.yaml`'s "Martlets hospice" becomes "Martlets".
   - **Hero:** drops its "For Martlets" line while the card is showing.
+- **2026-10-31** — **Fundraising tasks and analysis done** (`specs/002-fundraising/tasks.md`, 121
+  tasks in eight phases plus standing follow-ups; tasks subagent about 399k tokens, analyze
+  subagent about 417k). Analyze found 1 critical, 3 high, 7 medium and 14 low issues; all are fixed
+  in the tasks and design documents except the critical one, which was the owner's call:
+  - **Figure changes stay in public git history** (owner pick, on the recommendation). The published
+    file keeps one point a day, but each change a read finds becomes a bot commit, so a commit's
+    diff can show a single donation by subtraction at about that time, even for a donor who hid
+    their amount on JustGiving. Watching JustGiving's total shows the same, but git keeps it. The
+    alternatives were rejected: committing once a day (a redesign, with no-JS figures up to a day
+    old) and publishing less often (misses SC-002). Commits hold only the total, target and
+    supporter count. The docs no longer claim the repo holds daily data only (research.md R11).
+  - **The first-screen test gives way when a card shows:** the card takes this week's distance
+    below the first screen on a phone (about 903 px against the test's 780). The owner confirms it
+    at the Phase 4 review (T062).
+  - **New store methods must reach the six hand-written fakes** in `tests/unit/`, because
+    `astro check` covers `tests/` and is part of the build: T006 would otherwise have turned the
+    gate red and blocked every refresh.
 
 ## Upstream candidates
 
+- **`/speckit-analyze` needs code-level claims to check:** it found the critical and high issues
+  because its brief named risky interactions and told it to open the code, not only cross-read the
+  documents (PLAYBOOK, Spec Kit steps).
+- **Git history is a publishing channel:** rounding what a public repo's current files show hides
+  nothing if each change is a commit. Judge a privacy rule against the history, not just the latest
+  file (PLAYBOOK, privacy; AGENT_TIPS, *Privacy and data pipelines*).
+- **Adding a required method to a store interface needs a task for hand-written fakes:** where
+  type-checking covers tests and runs in the build, a missed fake turns the gate red (AGENT_TIPS,
+  *Testing*).
+- **A `jq` check of an empty file passes silently:** `jq -r` on an empty file prints nothing and
+  exits 0, so `[ "$(jq ...)" != 0 ]` is true. Use `jq -e` with a comparison (AGENT_TIPS, *Actions*).
 - **A platform's general sign-up docs may not apply to its products:** SKY's getting-started said
   "Standard APIs", but JustGiving needs its own "JustGiving APIs" subscription, stated only inside a
   developer guide. Before guiding the owner to a key, find the product's own subscription steps
@@ -1458,7 +1487,8 @@ project-specific notes.
   call, printing only allow-listed fields and never the key, corrected the contract (AGENT_TIPS,
   *Providers and file formats*).
 - **Running totals published per change reveal individual donations by subtraction:** a privacy
-  rule on individual amounts covers derived values too. Publish by day (PLAYBOOK, privacy).
+  rule on individual amounts covers derived values too. Show them by day, and say plainly what git
+  history still holds (PLAYBOOK, privacy).
 
 - **Check a platform's terms before testing a technical read:** the handoff asked whether
   JustGiving's page could be read, and it could, but its terms ban scripts extracting data from
