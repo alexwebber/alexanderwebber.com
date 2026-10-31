@@ -1411,9 +1411,26 @@ project-specific notes.
     the people close to the story review it and write the personal passage themselves (owner);
     the draft stays outside the repo until then (spec assumption *Story process* amended).
     The owner wants the story to be about Martlets, not their own fitness journey.
+- **2026-10-31** — Upgraded Spec Kit 1.2.3 → 1.2.5, following PLAYBOOK > Upgrading Spec Kit. The
+  process: re-init, reinstall `git` 1.0.1, `house-constitution` 0.1.1 and `house-process` 0.10.0,
+  then restore the constitution, `feature.json`, `git-config.yml` and `extensions.yml` (the hooks
+  were identical when parsed). What reaches us: nothing changes in the skills or scripts; only
+  version stamps and install times moved. The release notes' relevant items are stricter hook
+  validation and preserved feature numbering on re-init.
 
 ## Upstream candidates
 
+- **Check a platform's terms before testing a technical read:** the handoff asked whether
+  JustGiving's page could be read, and it could, but its terms ban scripts extracting data from
+  the website (even from your own page). Read the terms first, and look for an official route
+  the same day; here it was free and better (AGENT_TIPS, *Research*).
+- **Blackbaud's docs need a real browser:** `developer.blackbaud.com` and the SKY API reference
+  return an empty shell to WebFetch and curl. Render them with Playwright's Chromium to read the
+  text; the reference is at `developer.sky.blackbaud.com/api#api=<id>`. PDFs saved by WebFetch
+  can be read with `uv run --with pypdf` when poppler isn't installed (AGENT_TIPS, *Research*).
+- **A handoff's technical claim can be wrong:** "the target isn't in the page's raw HTML" was
+  false, and the raw HTML held it. Re-check a stated fact before planning around it (PLAYBOOK,
+  session handoffs).
 - **WebFetch summaries can misdescribe a page's purpose:** a summary called Martlets' pay-in
   form a fundraiser sign-up form, and the owner was sent to it. Before sending the owner to a
   form or step, fetch the page with a prompt that asks what the form is for and quotes its
