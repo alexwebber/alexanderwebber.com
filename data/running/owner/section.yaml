@@ -6,7 +6,7 @@ focus_race:
   # The owner's Garmin Coach plan started on 5 Sep 2026.
   build_start: 2026-09-05
   charity:
-    name: Martlets hospice
+    name: Martlets
 
 garmin_devices:
   # Behind weight and body fat; it has always been the Index S2.
