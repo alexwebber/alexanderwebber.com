@@ -39,6 +39,8 @@ Layout: `providers/justgiving/__init__.py`, `client.py` (the HTTP request and er
   staging checks. Never set in a workflow.
 - **Timeout** 20 s. One retry, 2 s later, on a network error or 5xx. One wait on a 429 whose
   `Retry-After` is 60 s or less. At most 1 call a second across campaigns.
+- **Redirects aren't followed.** `urllib` copies request headers to a redirect's target, which would
+  carry the key, so a 3xx comes back as a status and is a failed read.
 
 ## Fields read (the allow-list)
 
