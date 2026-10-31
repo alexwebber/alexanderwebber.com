@@ -85,6 +85,33 @@ describe('privacy by construction', () => {
     });
   }
 
+  it('published/fundraising-campaign: no donor, Gift Aid or account key validates anywhere', () => {
+    const name = 'published/fundraising-campaign';
+    const docs = fixtures.filter((f) => f.startsWith(`schemas/fixtures/${name}/valid/`)).map(load);
+    const keys = [
+      'donor', 'donorName', 'donor_name', 'donation', 'donations', 'donationAmount', 'giftaid', 'gift_aid', 'giftAid',
+      'totalEstimatedGiftAid', 'message', 'owner', 'ownerGuid', 'consumer', 'consumerId', 'pageid', 'page_id', 'pageId',
+      'pageguid', 'page_guid', 'pageGuid',
+    ];
+    for (const doc of docs) {
+      for (const key of keys) {
+        for (const variant of withKeyInjected(doc, key)) {
+          expect(schemas.validate(name, variant), `${key} accepted`).not.toEqual([]);
+        }
+      }
+    }
+  });
+
+  it('published/fundraising-campaign: a date with a time of day does not validate', () => {
+    const name = 'published/fundraising-campaign';
+    const doc = load(`schemas/fixtures/${name}/valid/with-target.json`) as { points: { date: string }[] };
+    for (const date of ['2026-11-09T09:17:03Z', '2026-11-09T09:17', '2026-11-09 09:17']) {
+      const copy = structuredClone(doc);
+      copy.points[0]!.date = date;
+      expect(schemas.validate(name, copy), date).not.toEqual([]);
+    }
+  });
+
   it('published/run: no name or description key validates anywhere', () => {
     const docs = fixtures.filter((f) => f.startsWith('schemas/fixtures/published/run/valid/')).map(load);
     for (const doc of docs) {

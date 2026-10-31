@@ -314,6 +314,7 @@ describe('SectionLayout', () => {
       getRaceTrack: async () => undefined,
       getHealthSeries: async () => [],
       getRefreshRecord: async () => refresh,
+      getCampaignFigures: async () => [],
       getOwner: async () => ({
         section: section as SectionSettings | undefined,
         goals: [],
@@ -323,6 +324,7 @@ describe('SectionLayout', () => {
         exclusions: [],
         lab: [],
         manualMetrics: { training_status: [], race_predictions: [] },
+        campaigns: [],
       }),
     };
   }

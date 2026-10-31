@@ -16,7 +16,7 @@ import type { Race, Run, UpcomingRace } from '../../src/sections/running/data/st
 import { run } from '../helpers/temp-repo.ts';
 
 const brighton: UpcomingRace = { id: 'brighton-2027', name: 'Brighton Marathon', date: '2027-04-04', distance: 'marathon', target_time: '3:30:00' };
-const section = { focus_race: { race_id: 'brighton-2027', build_start: '2026-11-16', charity: { name: 'Martlets hospice' } } };
+const section = { focus_race: { race_id: 'brighton-2027', build_start: '2026-11-16', charity: { name: 'Martlets' } } };
 
 describe('days remaining', () => {
   it('counts 182 days from 4 Oct 2026 to 4 Apr 2027 (US1.1)', () => {

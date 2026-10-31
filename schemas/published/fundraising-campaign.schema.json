@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/published/fundraising-campaign.schema.json",
+  "title": "CampaignFigures",
+  "description": "data/running/published/fundraising/<campaign-id>.json: one campaign's daily figures. Only these fields can validate, so a donor name, amount, message, Gift Aid figure or account identifier can't be written (FR-008, FR-010).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "campaign_id", "last_read_at", "points"],
+  "properties": {
+    "schema_version": { "$ref": "../defs.schema.json#/$defs/publishedSchemaVersion" },
+    "campaign_id": {
+      "description": "Equals the file name.",
+      "type": "string",
+      "$ref": "../defs.schema.json#/$defs/slug",
+      "maxLength": 30
+    },
+    "last_read_at": {
+      "description": "The figures were last seen to match JustGiving at this time.",
+      "$ref": "../defs.schema.json#/$defs/utcTimestamp"
+    },
+    "points": {
+      "description": "At least one, sorted by date, unique per day. The last point is the current figures.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "title": "CampaignPoint",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["date", "raised_pence", "supporters"],
+        "properties": {
+          "date": {
+            "description": "Europe/London date of the read. No time of day.",
+            "$ref": "../defs.schema.json#/$defs/date"
+          },
+          "raised_pence": { "type": "integer", "minimum": 0 },
+          "supporters": { "type": "integer", "minimum": 0 },
+          "target_pence": {
+            "description": "Omitted when the page has no target.",
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        }
+      }
+    }
+  }
+}

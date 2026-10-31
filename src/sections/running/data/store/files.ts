@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fieldPath, listDataFiles, parseDataFile, SchemaSet, type DataIssue } from '../../../../shared/storage/index.ts';
 import type {
+  Campaign,
+  CampaignFigures,
   Goal,
   HealthExclusion,
   HealthSeries,
@@ -37,6 +39,7 @@ export interface RunningData {
   health: Loaded<HealthSeries>[];
   refresh: Loaded<RefreshRecord> | undefined;
   manifest: Loaded<Manifest> | undefined;
+  fundraising: Loaded<CampaignFigures>[];
   section: Loaded<SectionSettings> | undefined;
   goals: Loaded<Goal[]> | undefined;
   upcomingRaces: Loaded<UpcomingRace[]> | undefined;
@@ -45,6 +48,7 @@ export interface RunningData {
   exclusions: Loaded<HealthExclusion[]> | undefined;
   lab: Loaded<LabMeasurement>[];
   manualMetrics: Loaded<ManualMetrics> | undefined;
+  campaigns: Loaded<Campaign[]> | undefined;
   /** Every file under data/running/, repo-relative (photos included). */
   files: string[];
 }
@@ -59,6 +63,7 @@ const LIST_NOUNS: Partial<Record<RunningSchema, string>> = {
   'owner/upcoming-races': 'upcoming race',
   'owner/run-overrides': 'override',
   'owner/health-exclusions': 'exclusion',
+  'owner/campaigns': 'campaign',
 };
 
 const MANUAL_NOUNS: Record<string, string> = {
@@ -93,6 +98,7 @@ export function locate(schema: RunningSchema, value: unknown, path: Path): { ent
     'published/run': ['run', 'id'],
     'published/race-track': ['race track', 'id'],
     'published/health-series': ['health series', 'metric'],
+    'published/fundraising-campaign': ['campaign figures', 'campaign_id'],
     'owner/race': ['race', 'slug'],
   };
   const entry = named[schema];
@@ -112,12 +118,14 @@ function schemaForFile(file: string): RunningSchema | undefined {
     [/^published\/health\/[^/]+\/\d{4}\.json$/, 'published/health-series'],
     [/^published\/state\/refresh\.json$/, 'published/refresh'],
     [/^published\/state\/manifest\.json$/, 'published/manifest'],
+    [/^published\/fundraising\/[^/]+\.json$/, 'published/fundraising-campaign'],
     [/^owner\/section\.yaml$/, 'owner/section'],
     [/^owner\/goals\.yaml$/, 'owner/goals'],
     [/^owner\/upcoming-races\.yaml$/, 'owner/upcoming-races'],
     [/^owner\/run-overrides\.yaml$/, 'owner/run-overrides'],
     [/^owner\/health-exclusions\.yaml$/, 'owner/health-exclusions'],
     [/^owner\/manual-metrics\.yaml$/, 'owner/manual-metrics'],
+    [/^owner\/campaigns\.yaml$/, 'owner/campaigns'],
     [/^owner\/races\/[^/]+\/race\.yaml$/, 'owner/race'],
     [/^owner\/lab\/[^/]+\.yaml$/, 'owner/lab'],
   ];
@@ -150,6 +158,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     health: [],
     refresh: undefined,
     manifest: undefined,
+    fundraising: [],
     section: undefined,
     goals: undefined,
     upcomingRaces: undefined,
@@ -158,6 +167,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     exclusions: undefined,
     lab: [],
     manualMetrics: undefined,
+    campaigns: undefined,
     files: listDataFiles(root, DATA_DIR),
   };
 
@@ -187,6 +197,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
   data.runs.sort((a, b) => b.value.date.localeCompare(a.value.date) || b.value.id.localeCompare(a.value.id));
   data.races.sort((a, b) => b.value.date.localeCompare(a.value.date) || a.value.slug.localeCompare(b.value.slug));
   data.lab.sort((a, b) => a.value.date.localeCompare(b.value.date) || a.value.type.localeCompare(b.value.type));
+  data.fundraising.sort((a, b) => a.value.campaign_id.localeCompare(b.value.campaign_id));
   return { data, issues };
 }
 
@@ -197,6 +208,7 @@ function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>
     case 'published/health-series': data.health.push(loaded as Loaded<HealthSeries>); break;
     case 'published/refresh': data.refresh = loaded as Loaded<RefreshRecord>; break;
     case 'published/manifest': data.manifest = loaded as Loaded<Manifest>; break;
+    case 'published/fundraising-campaign': data.fundraising.push(loaded as Loaded<CampaignFigures>); break;
     case 'owner/section': data.section = loaded as Loaded<SectionSettings>; break;
     case 'owner/goals': data.goals = loaded as Loaded<Goal[]>; break;
     case 'owner/upcoming-races': data.upcomingRaces = loaded as Loaded<UpcomingRace[]>; break;
@@ -205,5 +217,6 @@ function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>
     case 'owner/health-exclusions': data.exclusions = loaded as Loaded<HealthExclusion[]>; break;
     case 'owner/lab': data.lab.push(loaded as Loaded<LabMeasurement>); break;
     case 'owner/manual-metrics': data.manualMetrics = loaded as Loaded<ManualMetrics>; break;
+    case 'owner/campaigns': data.campaigns = loaded as Loaded<Campaign[]>; break;
   }
 }

@@ -23,6 +23,7 @@ function fakeStore(section?: Partial<SectionSettings>): RunningStore {
     getRaceTrack: async () => undefined,
     getHealthSeries: async () => [],
     getRefreshRecord: async () => undefined,
+    getCampaignFigures: async () => [],
     getOwner: async () => ({
       section: section as SectionSettings | undefined,
       goals: [],
@@ -32,6 +33,7 @@ function fakeStore(section?: Partial<SectionSettings>): RunningStore {
       exclusions: [],
       lab: [],
       manualMetrics: { training_status: [], race_predictions: [] },
+      campaigns: [],
     }),
   };
 }

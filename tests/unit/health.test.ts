@@ -285,8 +285,9 @@ function store(owner: Partial<OwnerData> = {}): RunningStore {
     getRaceTrack: async () => undefined,
     getHealthSeries: async (metric, range = {}) => (SERIES[metric] ?? []).filter((p) => (!range.from || p.date >= range.from) && (!range.to || p.date <= range.to)),
     getRefreshRecord: async () => ({ schema_version: 1, generated_at: '2026-10-24T08:00:00Z', sources: { intervals: { last_data_change_at: '2026-10-24T08:00:00Z', last_success_at_build: '2026-10-24T08:00:00Z' } } }),
+    getCampaignFigures: async () => [],
     getOwner: async () => ({
-      section: { focus_race: { race_id: 'brighton-2027', build_start: '2026-09-05', charity: { name: 'Martlets hospice' } }, garmin_devices: { scale: 'Index S2' } },
+      section: { focus_race: { race_id: 'brighton-2027', build_start: '2026-09-05', charity: { name: 'Martlets' } }, garmin_devices: { scale: 'Index S2' } },
       goals: GOALS,
       upcomingRaces: [{ id: 'brighton-2027', name: 'Brighton Marathon', date: '2027-04-04', distance: 'marathon', target_time: '3:20:00' }],
       races: [],
@@ -294,6 +295,7 @@ function store(owner: Partial<OwnerData> = {}): RunningStore {
       exclusions: [],
       lab: [],
       manualMetrics: { training_status: [{ as_of: '2026-10-23', status: 'productive' }], race_predictions: [{ as_of: '2026-10-23', '5k': '19:31', '10k': '40:56', half: '1:32:01', marathon: '3:25:18' }] },
+      campaigns: [],
       ...owner,
     }) as OwnerData,
   };

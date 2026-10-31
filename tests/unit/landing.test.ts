@@ -18,7 +18,7 @@ beforeAll(async () => {
 });
 
 const SECTION: SectionSettings = {
-  focus_race: { race_id: 'brighton-2027', build_start: '2026-09-14', charity: { name: 'Martlets hospice' } },
+  focus_race: { race_id: 'brighton-2027', build_start: '2026-09-14', charity: { name: 'Martlets' } },
   garmin_devices: { scale: 'Index S2' },
   stale_after_hours: 12,
   featured_goal_limit: 6,
@@ -66,6 +66,7 @@ function store(f: Fixture = {}): RunningStore {
     getHealthSeries: async (metric) => (f.health ?? { weight_avg7: [{ date: '2026-10-03', value: 103.0 }] })[metric] ?? [],
     getRefreshRecord: async () =>
       f.refresh ?? { schema_version: 1, generated_at: '2026-10-04T08:00:00Z', sources: { intervals: { last_data_change_at: '2026-10-04T08:00:00Z', last_success_at_build: '2026-10-04T08:00:00Z' } } },
+    getCampaignFigures: async () => [],
     getOwner: async () => ({
       section: 'section' in f ? f.section : SECTION,
       goals: f.goals ?? GOALS,
@@ -75,6 +76,7 @@ function store(f: Fixture = {}): RunningStore {
       exclusions: [],
       lab: [],
       manualMetrics: { training_status: [], race_predictions: f.predictions ?? [{ as_of: '2026-10-01', marathon: '3:28:40', '10k': '44:10' }] },
+      campaigns: [],
     }),
   };
 }
@@ -113,7 +115,7 @@ describe('landing page (US1)', () => {
     expect(t).toContain('182 days to go');
     expect(t).toContain('Target: sub-3:30');
     expect(t).toContain('Garmin predicts 3:28:40 at current fitness (1 Oct 2026)');
-    expect(t).toContain('For Martlets hospice');
+    expect(t).toContain('For Martlets');
   });
 
   it('US1.2: shows a tightened target and no longer the old one', async () => {
@@ -247,7 +249,7 @@ describe('landing page (US1)', () => {
   it('has its own title, description and share image', async () => {
     const html = await page();
     expect(html).toContain('<title>Running · Alexander Webber</title>');
-    expect(html).toContain(`<meta name="description" content="Alexander Webber's running: Brighton Marathon on 4 Apr 2027: 182 days to go, aiming for sub-3:30, for Martlets hospice. Goals, this week's training and the latest run.">`);
+    expect(html).toContain(`<meta name="description" content="Alexander Webber's running: Brighton Marathon on 4 Apr 2027: 182 days to go, aiming for sub-3:30, for Martlets. Goals, this week's training and the latest run.">`);
     expect(html).toContain('/og/running.png');
   });
 });
@@ -255,7 +257,7 @@ describe('landing page (US1)', () => {
 describe('landing share image (FR-072)', () => {
   it('says how many days to Brighton, with the target and the charity', async () => {
     const card = landingCard((await loadLanding('2026-10-04')).focus);
-    expect(card).toMatchObject({ eyebrow: 'Running', title: '182 days to Brighton', subtitle: 'Target: sub-3:30 · For Martlets hospice' });
+    expect(card).toMatchObject({ eyebrow: 'Running', title: '182 days to Brighton', subtitle: 'Target: sub-3:30 · For Martlets' });
     expect(card.attribution).toBeUndefined();
   });
 

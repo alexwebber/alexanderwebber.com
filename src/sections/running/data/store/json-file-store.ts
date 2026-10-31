@@ -4,6 +4,7 @@
 import { DataValidationError } from '../../../../shared/storage/index.ts';
 import { loadRunningData, type RunningData } from './files.ts';
 import type {
+  CampaignFigures,
   DateRange,
   HealthMetric,
   HealthPoint,
@@ -70,6 +71,7 @@ export class JsonFileStore implements RunningStore {
           training_status: data.manualMetrics?.value.training_status ?? [],
           race_predictions: data.manualMetrics?.value.race_predictions ?? [],
         },
+        campaigns: data.campaigns?.value ?? [],
       },
     };
     return this.#indexed;
@@ -96,6 +98,10 @@ export class JsonFileStore implements RunningStore {
 
   async getRefreshRecord(): Promise<RefreshRecord | undefined> {
     return this.#load().data.refresh?.value;
+  }
+
+  async getCampaignFigures(): Promise<CampaignFigures[]> {
+    return this.#load().data.fundraising.map((f) => f.value);
   }
 
   async getOwner(): Promise<OwnerData> {

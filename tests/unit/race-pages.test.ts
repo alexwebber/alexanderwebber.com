@@ -22,7 +22,7 @@ beforeAll(async () => {
 const effort = (distance_m: number, time_s: number) => ({ distance_m, label: String(distance_m), time_s, plausible: true });
 const run = (id: string, extra: Record<string, unknown> = {}): Run => runFixture(id, { device: 'Venu X1', ...extra }) as unknown as Run;
 const BRIGHTON: UpcomingRace = { id: 'brighton-2027', name: 'Brighton Marathon', date: '2027-04-04', distance: 'marathon', target_time: '3:20:00', url: 'https://example.org/brighton' };
-const SECTION = { focus_race: { race_id: 'brighton-2027', build_start: '2026-09-05', charity: { name: 'Martlets hospice' } } };
+const SECTION = { focus_race: { race_id: 'brighton-2027', build_start: '2026-09-05', charity: { name: 'Martlets' } } };
 
 // Today's shape: no races, a 5k track session (a week ago), a 10k inside a tempo run, a half.
 const TODAY_RUNS: Run[] = [
@@ -38,7 +38,8 @@ function store(runs: Run[], owner: Partial<OwnerData> = {}, tracks: RaceTrack[] 
     getRaceTrack: async (id) => tracks.find((t) => t.id === id),
     getHealthSeries: async () => [],
     getRefreshRecord: async () => ({ schema_version: 1, generated_at: '2026-10-24T08:00:00Z', sources: { intervals: { last_data_change_at: '2026-10-24T08:00:00Z', last_success_at_build: '2026-10-24T08:00:00Z' } } }),
-    getOwner: async () => ({ section: SECTION, goals: [], upcomingRaces: [BRIGHTON], races: [], overrides: [], exclusions: [], lab: [], manualMetrics: { training_status: [], race_predictions: [] }, ...owner }),
+    getCampaignFigures: async () => [],
+    getOwner: async () => ({ section: SECTION, goals: [], upcomingRaces: [BRIGHTON], races: [], overrides: [], exclusions: [], lab: [], manualMetrics: { training_status: [], race_predictions: [] }, campaigns: [], ...owner }),
   };
 }
 

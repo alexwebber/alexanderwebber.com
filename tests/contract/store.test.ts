@@ -21,6 +21,38 @@ describe('JsonFileStore', () => {
     expect(owner.section).toBeUndefined();
     expect(owner.goals).toEqual([]);
     expect(owner.manualMetrics).toEqual({ training_status: [], race_predictions: [] });
+    expect(owner.campaigns).toEqual([]);
+    expect(await store.getCampaignFigures()).toEqual([]);
+  });
+
+  it('loads campaigns and their published figures', async () => {
+    repo = tempRepo();
+    repo.write(
+      'data/running/owner/campaigns.yaml',
+      '- { id: beta-2027, race_id: beta, charity: { name: Beta }, page_url: https://www.justgiving.com/page/example-beta }\n- { id: alpha-2027, race_id: alpha, charity: { name: Alpha }, page_url: https://www.justgiving.com/page/example-alpha, finished: true }\n',
+    );
+    const figures = (id: string) => ({
+      schema_version: 1,
+      campaign_id: id,
+      last_read_at: '2026-11-10T09:17:03Z',
+      points: [{ date: '2026-11-09', raised_pence: 12500, target_pence: 50000, supporters: 3 }],
+    });
+    repo.write('data/running/published/fundraising/beta-2027.json', figures('beta-2027'));
+    repo.write('data/running/published/fundraising/alpha-2027.json', figures('alpha-2027'));
+    const store = new JsonFileStore(repo.root);
+    expect((await store.getOwner()).campaigns.map((c) => [c.id, c.finished])).toEqual([
+      ['beta-2027', false],
+      ['alpha-2027', true],
+    ]);
+    const loaded = await store.getCampaignFigures();
+    expect(loaded.map((f) => f.campaign_id)).toEqual(['alpha-2027', 'beta-2027']);
+    expect(loaded[0]?.points[0]?.raised_pence).toBe(12500);
+  });
+
+  it('refuses a campaign figures file that fails its schema', async () => {
+    repo = tempRepo();
+    repo.write('data/running/published/fundraising/a.json', { schema_version: 1, campaign_id: 'a', last_read_at: '2026-11-10T09:17:03Z', points: [] });
+    await expect(new JsonFileStore(repo.root).getCampaignFigures()).rejects.toBeInstanceOf(DataValidationError);
   });
 
   it('lists runs newest first and finds them by id', async () => {
@@ -60,7 +92,7 @@ describe('JsonFileStore', () => {
     repo = tempRepo();
     repo.write(
       'data/running/owner/section.yaml',
-      'focus_race: { race_id: brighton-2027, build_start: 2026-11-16, charity: { name: Martlets hospice } }\n',
+      'focus_race: { race_id: brighton-2027, build_start: 2026-11-16, charity: { name: Martlets } }\n',
     );
     repo.write('data/running/owner/races/hove-10k/race.yaml', 'slug: hove-10k\ndate: 2026-06-07\ndistance: 10k\n');
     const owner = await new JsonFileStore(repo.root).getOwner();
