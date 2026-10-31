@@ -16,12 +16,17 @@ Update this as decisions get made — treat it as the source of truth alongside
   the reviewers the owner chose** (they write a passage and approve); it lives only in
   `C:\temp\story-draft.md`, outside the repo. Garmin two-step verification is proven (the
   31 Oct run and weigh-ins reached the site) and the 5k's "New" window ended as tested.
-  **The fundraising plan and tasks are written** (`specs/002-fundraising/`, 121 tasks), reading
-  figures through JustGiving's official API. The key is set as `JUSTGIVING_SUBSCRIPTION_KEY`.
-  - **Next session: `/speckit-implement` for Phases 1 and 2 of `specs/002-fundraising/tasks.md`
-    (T001–T038)**, in its own session and one PR. Check the tasks PR merged first, and its checks.
-    Then harvest lessons (T038; over 25 candidates are waiting). Nothing visitors see changes but
-    the hero's charity name.
+  **The fundraising data slice is built** (`specs/002-fundraising/`, T001–T036, the
+  `002-fundraising-data` PR): reads through JustGiving's official API, the publish and alert
+  stages, and Brighton in `campaigns.yaml`. A local read returned £0 of £500 and 0 supporters. The
+  key is set as `JUSTGIVING_SUBSCRIPTION_KEY`.
+  - **Next session: check the `002-fundraising-data` PR merged, then T037** (wait for `main`'s Gate
+    run to finish, then quickstart.md §5: the push-triggered refresh's first publish, the bot's
+    commit of `data/running/published/fundraising/brighton-2027.json`, then a dispatched refresh
+    that stays idle). **Then harvest lessons (T038; over 30 candidates are waiting)**, in the main
+    conversation. Point the owner at the live hero only after the deploy.
+  - **After that: Phase 3, the staging check** (`specs/002-fundraising/tasks.md`, T039 on; about 15
+    minutes of the owner's time, guided), in its own session.
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -1464,8 +1469,54 @@ project-specific notes.
   - **New store methods must reach the six hand-written fakes** in `tests/unit/`, because
     `astro check` covers `tests/` and is part of the build: T006 would otherwise have turned the
     gate red and blocked every refresh.
+- **2026-10-31** — **Fundraising Phases 1 and 2 built** (T001–T036, `002-fundraising-data` PR;
+  implement subagent about 471k tokens). The only visible change is "For Martlets" in the hero and
+  landing description. Choices later tasks build on:
+  - **First real read** (local, not R2): `outcome: ok`, raised 0, target 50000 pence, supporters 0,
+    page status `Active`. Nothing but the data model's fields reached `.archive/`.
+  - **Live response:** 48 keys, matching research.md R2; `TargetAmount` and `errorMessage` are
+    absent. Non-zero formats and a real 404 stay unproven until Phase 3.
+  - **Redirects aren't followed for JustGiving**, because `urllib` copies the key's header to a
+    redirect's target. A 3xx is `justgiving_changed`. intervals.icu is unchanged.
+  - **Unclassified read errors keep only their type name**, because their text could quote what
+    was being read. The code is the base `ingest_error`, so the alert uses generic texts.
+  - **A published file that fails its schema stops the publish** (exit 20) rather than being
+    replaced, which would lose its history.
+  - **With no active campaigns but existing state**, the read still rewrites the freshness file, so
+    a finished campaign drops out. With no state at all, nothing is written.
+  - **Issue titles:** the "since" date is the last success, else first unpublished, else last
+    attempt. Finished or removed campaigns close with "Closed at <time>: the campaign …".
+  - **Known divergence, left alone:** an empty or all-comment owner YAML is "absent" on the site
+    but invalid (exit 20) in Python's `read_owner_file`. It already applied to every owner file.
+  - **Playwright:** the landing check that visits every run took 26 s of its 30 s limit and timed
+    out once under load, so it now has 240 s, like `run-detail.spec.ts`.
+  - **Not proven until T037:** the R2 path, a real Actions run and the alert against real GitHub.
+    The `decide` branch waits for the first real figure change.
 
 ## Upstream candidates
+
+- **A test that loops over all published data outgrows the default timeout silently:** set a
+  generous limit when writing it (AGENT_TIPS, *End-to-end testing*).
+- **Run nothing else during a local Playwright run:** a first-run timeout coincided with pytest
+  and git. Rerun alone with the JSON reporter before judging; its durations and skip reasons
+  separate a growing test from a flake (AGENT_TIPS, *End-to-end testing*).
+- **`urllib` copies custom headers to redirect targets:** a client with its key in a custom header
+  needs a no-redirect handler (AGENT_TIPS, *Providers and file formats*).
+- **ajv strict mode needs `type` beside `$ref` when adding `maxLength`** (AGENT_TIPS, *Testing*).
+- **Python `Decimal` arithmetic rounds at context precision:** a long string with a stray digit past
+  the pence passed `* 100` until precision was set from the input's length (AGENT_TIPS, *Providers
+  and file formats*).
+- **`\d` in Python `str` regexes matches Unicode digits, and `$` allows a trailing newline:** use
+  `[0-9]` and `fullmatch` for strict parsing (AGENT_TIPS, *Providers and file formats*).
+- **`sed -i` across a glob marks untouched files as modified on Windows with autocrlf:** it rewrites
+  line endings, so target only files that match (AGENT_TIPS, *Shell*).
+- **Replacing a class with a lambda in a test breaks attribute reads:** subclass it instead
+  (AGENT_TIPS, *Testing*).
+- **"Print only X" throwaway scripts drift:** a keys-only probe of a live API also printed value
+  types and a status code. No value leaked, but write the print statement to exactly what the rule
+  allows (AGENT_TIPS, *Secrets*).
+- **`git checkout -b x origin/main` tracks `origin/main`:** a bare `git push` then targets `main`.
+  Use `git push -u origin x`, or `--no-track` when branching (AGENT_TIPS, *Git*).
 
 - **`/speckit-analyze` needs code-level claims to check:** it found the critical and high issues
   because its brief named risky interactions and told it to open the code, not only cross-read the
