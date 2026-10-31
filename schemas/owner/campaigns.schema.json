@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/campaigns.schema.json",
+  "title": "Campaigns",
+  "description": "data/running/owner/campaigns.yaml: fundraising campaigns, each linked to a race. List files carry no schema_version; they are always the current version.",
+  "type": "array",
+  "items": {
+    "title": "Campaign",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "race_id", "charity", "page_url"],
+    "properties": {
+      "id": {
+        "description": "Slug, at most 30 characters (it forms a GitHub label).",
+        "type": "string",
+        "$ref": "../defs.schema.json#/$defs/slug",
+        "maxLength": 30
+      },
+      "race_id": {
+        "description": "An id in upcoming-races.yaml, or a slug under races/.",
+        "$ref": "../defs.schema.json#/$defs/slug"
+      },
+      "charity": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "description": "Must equal section.yaml focus_race.charity.name when race_id is the focus race (FR-024).",
+            "$ref": "../defs.schema.json#/$defs/text"
+          },
+          "url": { "$ref": "../defs.schema.json#/$defs/url" },
+          "registered": {
+            "description": "The legal charity: name and number together.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "number"],
+            "properties": {
+              "name": { "$ref": "../defs.schema.json#/$defs/text" },
+              "number": {
+                "description": "The registered number, as a string, e.g. \"256789\".",
+                "type": "string",
+                "pattern": "^[0-9]+$",
+                "x-error": "is not a charity number (digits only, in quotes)"
+              }
+            }
+          }
+        }
+      },
+      "page_url": {
+        "description": "The JustGiving page: https://www.justgiving.com/page/<name>. A typing mistake that keeps this shape is caught by the first read (404, alert).",
+        "type": "string",
+        "pattern": "^https://www\\.justgiving\\.com/page/[a-z0-9-]+$",
+        "x-error": "is not a JustGiving page address (expected https://www.justgiving.com/page/<name>, lowercase, no trailing slash)"
+      },
+      "finished": {
+        "description": "Stops reads and shows \"Final total\" (FR-023).",
+        "type": "boolean",
+        "default": false
+      },
+      "target": {
+        "description": "Never set: FR-021.",
+        "not": {},
+        "x-error": "is not set here: the target is read from the JustGiving page (FR-021)",
+        "tsType": "never"
+      }
+    }
+  }
+}

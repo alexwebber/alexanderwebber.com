@@ -284,3 +284,24 @@ class Provider(ActivityProvider, HealthProvider, Protocol):
     def session(self) -> AbstractContextManager[Self]:
         """Open the HTTP client (credentials from the environment) for a block of calls."""
         ...
+
+
+# --- Fundraising (specs/002-fundraising/contracts/provider-adapter.md) ---
+
+
+@dataclass(frozen=True)
+class FundraisingSnapshot:
+    """The only thing that leaves a fundraising adapter. No raw payload is kept (FR-011)."""
+
+    raised_pence: int  # >= 0
+    target_pence: int | None  # > 0, or None when the page has no target
+    supporters: int  # >= 0
+    page_status: str = field(repr=False)  # private: never published
+
+
+class FundraisingProvider(Protocol):
+    name: str
+
+    def read_page(self, page_url: str) -> FundraisingSnapshot:
+        """One call. Raises only ProviderError subclasses. Nothing but the snapshot leaves."""
+        ...

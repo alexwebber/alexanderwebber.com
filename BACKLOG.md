@@ -4,9 +4,6 @@ Deferred or future work, tracked here so it doesn't get lost or buried in the de
 Each item: what it is, and why it's deferred. When something is picked up, move its entry to
 the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
 
-- **Set up Martlets fundraising page** for Brighton Marathon (2027-04-04) —
-  https://www.martlets.org.uk/set-up-fundraiser/. Owner action; needed before the fundraising
-  provider can be built.
 - **Broader CI: full lint on every change.** Path-filtered PR test jobs were adopted on
   2026-10-04 (see the decisions log). Lint and the remaining full-suite runs are still deferred
   per the house default. Revisit once the shared surface area grows.
@@ -66,3 +63,7 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   OpenFreeMap tiles and a worker. Could be a `_headers` file in `public/`.
 - **Favicon** (T147 review). There is none, so browsers request `/favicon.ico` and get the 404
   page. Pick one when the CV & Blog section sets the site-wide identity.
+- **Check layouts against real data nightly.** Playwright only runs on PRs touching UI paths, so a
+  layout check can break on bot-published data and stay unseen until the next such PR (PR #85's
+  320 px overflow). Add a small overflow check at 320 px to the nightly Quality run, against the
+  live pages. Deferred to keep the fundraising slice focused.

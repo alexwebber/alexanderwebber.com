@@ -126,6 +126,13 @@ const height = (value: number) => percent(PLOT - y(Math.max(0, value)));
     color: var(--color-text-secondary);
   }
 
+  /* Centred on the last column, a value would hang past the plot, and at 320px past the page. */
+  .bars li:last-child .bar-value {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+
   .bar-labels li {
     padding-top: var(--space-1);
     white-space: nowrap;

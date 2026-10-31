@@ -2,6 +2,8 @@
 // on this, so a future database-backed store is a drop-in replacement for JsonFileStore.
 import type {
   BodyCompositionGoal,
+  Campaign,
+  CampaignFigures,
   Goal,
   HealthExclusion,
   HealthSeries,
@@ -22,6 +24,8 @@ import type {
 
 export type {
   BodyCompositionGoal,
+  Campaign,
+  CampaignFigures,
   Goal,
   HealthExclusion,
   HealthSeries,
@@ -66,6 +70,8 @@ export interface OwnerData {
     training_status: TrainingStatusEntry[];
     race_predictions: RacePredictionEntry[];
   };
+  /** Empty until campaigns.yaml exists. */
+  campaigns: Campaign[];
 }
 
 export interface RunningStore {
@@ -78,5 +84,7 @@ export interface RunningStore {
   getHealthSeries(metric: HealthMetric, range?: DateRange): Promise<HealthPoint[]>;
   /** Undefined before the first publish. */
   getRefreshRecord(): Promise<RefreshRecord | undefined>;
+  /** One per published campaign file. Empty before the first read is published. */
+  getCampaignFigures(): Promise<CampaignFigures[]>;
   getOwner(): Promise<OwnerData>;
 }

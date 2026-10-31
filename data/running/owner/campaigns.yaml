@@ -1,0 +1,14 @@
+# Fundraising campaigns, each linked to a race (schemas/owner/campaigns.schema.json). The target
+# isn't set here: it is read from the JustGiving page. charity.name must match section.yaml's
+# focus_race.charity.name for the focus race's campaign.
+
+- id: brighton-2027
+  race_id: brighton-2027
+  charity:
+    name: Martlets
+    url: https://www.martlets.org.uk/
+    registered:
+      name: Southern Hospice Group
+      number: "256789"
+  page_url: https://www.justgiving.com/page/alexanderwebber-brighton-2027
+  # finished: true    # stops reads; shows "Final total" (FR-023)

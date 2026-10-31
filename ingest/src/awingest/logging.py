@@ -30,6 +30,7 @@ REDACTED = "[redacted]"
 
 SECRET_ENV = (
     "INTERVALS_API_KEY",
+    "JUSTGIVING_SUBSCRIPTION_KEY",
     "R2_ACCESS_KEY_ID",
     "R2_SECRET_ACCESS_KEY",
     "CLOUDFLARE_API_TOKEN",
@@ -41,6 +42,9 @@ _REDACT_KEYS = {
     "authorization",
     "apikey",
     "intervalsapikey",
+    "justgivingsubscriptionkey",
+    "subscriptionkey",
+    "bbapisubscriptionkey",
     "password",
     "secret",
     "secretaccesskey",

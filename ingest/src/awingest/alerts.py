@@ -1,7 +1,8 @@
 """Failed-refresh alerts (T065; FR-010, SC-012; contracts/pipeline.md "Alert contract").
 
-``run_alert`` reads ``state/fetch-status.json`` and keeps one GitHub issue, labelled
-``ingest-failing``, in step with it:
+``sync_issue`` is the open, comment and close logic, shared with ``fundraising/alerts.py``, which
+keeps one issue per campaign. ``run_alert`` reads ``state/fetch-status.json`` and keeps one GitHub
+issue, labelled ``ingest-failing``, in step with it:
 
 - **Failing** means the last successful fetch is more than 24 hours old (or there has never
   been one, and a failure is recorded). With no open issue, one is opened, titled
@@ -26,13 +27,15 @@ from typing import Any
 
 # The pipeline import registers every failure class (provider, archive, owner data, publish)
 # as an IngestError subclass before failure_class looks one up.
-import awingest.process.pipeline  # noqa: F401
+import awingest.process.pipeline
+import awingest.providers.justgiving.errors  # noqa: F401
 from awingest.archive.base import RawArchive
 from awingest.errors import IngestError
 from awingest.logging import Logger, scrub
 from awingest.state import FETCH_STATUS, StateDoc, parse_utc, utc_iso
 
 LABEL = "ingest-failing"
+LABEL_DESCRIPTION = "Running data refresh failing"
 STALE_AFTER = timedelta(hours=24)
 COMMENT_EVERY = timedelta(hours=24)
 SOURCE_NAMES = {"intervals": "intervals.icu"}
@@ -59,7 +62,7 @@ def _urlopen(request: urllib.request.Request) -> tuple[int, bytes]:
 
 
 class GitHubIssues:
-    """The few issue endpoints the alert needs, for one repository."""
+    """The few issue endpoints the alert needs, for one repository and one label."""
 
     def __init__(
         self,
@@ -68,19 +71,29 @@ class GitHubIssues:
         *,
         api_url: str = "https://api.github.com",
         transport: Transport = _urlopen,
+        label: str = LABEL,
+        label_description: str = LABEL_DESCRIPTION,
     ) -> None:
         self._token = token
         self._base = f"{api_url.rstrip('/')}/repos/{repository}"
         self._transport = transport
+        self.label = label
+        self._label_description = label_description
 
     @classmethod
-    def from_env(cls) -> "GitHubIssues":
+    def from_env(
+        cls, label: str = LABEL, label_description: str = LABEL_DESCRIPTION
+    ) -> "GitHubIssues":
         token = os.environ.get("GITHUB_TOKEN", "")
         repository = os.environ.get("GITHUB_REPOSITORY", "")
         if not token or not repository:
             raise GitHubError("GITHUB_TOKEN and GITHUB_REPOSITORY must be set")
         return cls(
-            token, repository, api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com")
+            token,
+            repository,
+            api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+            label=label,
+            label_description=label_description,
         )
 
     def request(
@@ -109,16 +122,16 @@ class GitHubIssues:
 
     def ensure_label(self) -> None:
         try:
-            self.request("GET", f"/labels/{LABEL}")
+            self.request("GET", f"/labels/{self.label}")
         except GitHubError:
             self.request(
                 "POST",
                 "/labels",
-                {"name": LABEL, "color": "d93f0b", "description": "Running data refresh failing"},
+                {"name": self.label, "color": "d93f0b", "description": self._label_description},
             )
 
     def open_issue(self) -> dict[str, Any] | None:
-        issues = self.request("GET", f"/issues?labels={LABEL}&state=open&per_page=10")
+        issues = self.request("GET", f"/issues?labels={self.label}&state=open&per_page=10")
         issues = [i for i in issues or [] if "pull_request" not in i]
         return min(issues, key=lambda i: i["number"]) if issues else None
 
@@ -127,7 +140,8 @@ class GitHubIssues:
         return self.request("GET", f"/issues/{number}/comments?{query}") or []
 
     def create(self, title: str, body: str) -> dict[str, Any]:
-        return self.request("POST", "/issues", {"title": title, "body": body, "labels": [LABEL]})
+        issue = {"title": title, "body": body, "labels": [self.label]}
+        return self.request("POST", "/issues", issue)
 
     def comment(self, number: int, body: str) -> None:
         self.request("POST", f"/issues/{number}/comments", {"body": body})
@@ -234,6 +248,39 @@ class AlertResult:
         }
 
 
+def sync_issue(
+    github: GitHubIssues,
+    result: AlertResult,
+    *,
+    failing: bool,
+    title: str,
+    body: str,
+    closing: str,
+    now: datetime,
+) -> None:
+    """Keeps one label's issue in step: opened when failing, a comment at most once a day while
+    it lasts, and ``closing`` as the last comment when it ends."""
+    result.failing = failing
+    issue = github.open_issue()
+    result.issue = issue["number"] if issue else None
+    if failing and issue is None:
+        github.ensure_label()
+        created = github.create(title, body)
+        result.action, result.issue = "opened", created.get("number")
+    elif failing:
+        opened = parse_utc(issue.get("created_at"))
+        recent = github.comments_since(issue["number"], now - COMMENT_EVERY)
+        if not recent and (opened is None or now - opened >= COMMENT_EVERY):
+            github.comment(issue["number"], f"Still failing at {utc_iso(now)}.\n\n{body}")
+            result.action = "commented"
+        else:
+            result.action = "waiting"
+    elif issue is not None:
+        github.comment(issue["number"], closing)
+        github.close(issue["number"])
+        result.action = "closed"
+
+
 def run_alert(
     archive: RawArchive,
     github: GitHubIssues,
@@ -250,34 +297,15 @@ def run_alert(
         entry = status.get(source)
         entry = entry if isinstance(entry, dict) else {}
         assessment = assess(entry, now)
-        result.failing = assessment.failing
-        issue = github.open_issue()
-        result.issue = issue["number"] if issue else None
-        if assessment.failing and issue is None:
-            github.ensure_label()
-            created = github.create(
-                issue_title(source, assessment), issue_body(source, entry, assessment, run_url)
-            )
-            result.action, result.issue = "opened", created.get("number")
-        elif assessment.failing:
-            opened = parse_utc(issue.get("created_at"))
-            recent = github.comments_since(issue["number"], now - COMMENT_EVERY)
-            if not recent and (opened is None or now - opened >= COMMENT_EVERY):
-                github.comment(
-                    issue["number"],
-                    f"Still failing at {utc_iso(now)}.\n\n"
-                    + issue_body(source, entry, assessment, run_url),
-                )
-                result.action = "commented"
-            else:
-                result.action = "waiting"
-        elif issue is not None:
-            github.comment(
-                issue["number"],
-                f"Recovered at {_when(assessment.last_success)}: the last refresh succeeded.",
-            )
-            github.close(issue["number"])
-            result.action = "closed"
+        sync_issue(
+            github,
+            result,
+            failing=assessment.failing,
+            title=issue_title(source, assessment),
+            body=issue_body(source, entry, assessment, run_url),
+            closing=f"Recovered at {_when(assessment.last_success)}: the last refresh succeeded.",
+            now=now,
+        )
     except IngestError as exc:
         log.error("alert_failed", exc=exc)
         result.exit_code, result.code = exc.exit_code, exc.code

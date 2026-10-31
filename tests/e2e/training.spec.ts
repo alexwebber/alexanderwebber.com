@@ -101,5 +101,10 @@ test('lists show the date only, never a time of day (FR-011), and fit 320px', as
     expect(await page.content(), path).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, path).toBeLessThanOrEqual(0);
+    // Whatever the font: a column's value label stays inside its plot, so it can't reach the page edge.
+    const escaped = await page.locator('.bar-value:visible').evaluateAll((els) =>
+      els.filter((el) => el.getBoundingClientRect().right > el.closest('.chart-plot')!.getBoundingClientRect().right + 0.5).map((el) => el.textContent),
+    );
+    expect(escaped, path).toEqual([]);
   }
 });

@@ -272,6 +272,58 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
     }
   }
 
+  // --- Fundraising (specs/002-fundraising/contracts/data-files.md) ------------------------------
+  const campaigns = data.campaigns?.value ?? [];
+  const campaignIds = new Set<string>();
+  const campaignRaces = new Set<string>();
+  const campaignPages = new Set<string>();
+  campaigns.forEach((campaign, i) => {
+    const file = data.campaigns!.file;
+    const { entry } = where('owner/campaigns', campaigns, [i]);
+    if (campaignIds.has(campaign.id)) error(file, entry, 'id', 'is used by another campaign');
+    campaignIds.add(campaign.id);
+    if (campaignRaces.has(campaign.race_id)) {
+      error(file, entry, 'race_id', `"${campaign.race_id}" has another campaign (both would be current)`);
+    }
+    campaignRaces.add(campaign.race_id);
+    if (campaignPages.has(campaign.page_url)) error(file, entry, 'page_url', 'is used by another campaign');
+    campaignPages.add(campaign.page_url);
+    if (!upcomingIds.has(campaign.race_id) && !raceSlugs.has(campaign.race_id)) {
+      error(file, entry, 'race_id', `"${campaign.race_id}" is not an id in upcoming-races.yaml or a race under ${OWNER_DIR}/races/`);
+    }
+    const focus = section?.value.focus_race;
+    if (focus && campaign.race_id === focus.race_id && campaign.charity.name !== focus.charity.name) {
+      error(
+        file,
+        entry,
+        'charity.name',
+        `"${campaign.charity.name}" differs from section.yaml focus_race.charity.name "${focus.charity.name}"; the hero and the card would name different charities`,
+      );
+    }
+  });
+
+  const publishedCampaigns = new Set<string>();
+  for (const { file, value: figures } of data.fundraising) {
+    const entry = `campaign figures "${figures.campaign_id}"`;
+    const name = /([^/]+)\.json$/.exec(file)?.[1];
+    if (figures.campaign_id !== name) error(file, entry, 'campaign_id', `does not match the file name "${name}"`);
+    publishedCampaigns.add(figures.campaign_id);
+    figures.points.forEach((point, i) => {
+      const previous = figures.points[i - 1];
+      if (previous && previous.date >= point.date) {
+        error(file, entry, `points[${i}].date`, `"${point.date}" is not after the previous point (${previous.date}); points must be sorted, one per day`);
+      }
+      if (point.date > today) error(file, entry, `points[${i}].date`, `${point.date} is in the future`);
+    });
+    if (!campaignIds.has(figures.campaign_id)) warning(file, entry, '', 'has no campaign in campaigns.yaml: its history is kept and not shown');
+  }
+  campaigns.forEach((campaign, i) => {
+    if (campaign.finished && !publishedCampaigns.has(campaign.id)) {
+      const { entry } = where('owner/campaigns', campaigns, [i]);
+      warning(data.campaigns!.file, entry, 'finished', 'is set but the campaign has no published figures, so it would never appear');
+    }
+  });
+
   // Provider IDs never belong in owner files: runs are referenced by their public ID.
   for (const file of data.files.filter((f) => f.startsWith(`${OWNER_DIR}/`) && f.endsWith('.yaml'))) {
     readFileSync(join(root, file), 'utf8')

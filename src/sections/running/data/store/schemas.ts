@@ -7,6 +7,7 @@ export const RUNNING_SCHEMAS = [
   'published/health-series',
   'published/refresh',
   'published/manifest',
+  'published/fundraising-campaign',
   'owner/section',
   'owner/goals',
   'owner/upcoming-races',
@@ -15,5 +16,6 @@ export const RUNNING_SCHEMAS = [
   'owner/health-exclusions',
   'owner/lab',
   'owner/manual-metrics',
+  'owner/campaigns',
 ] as const;
 export type RunningSchema = (typeof RUNNING_SCHEMAS)[number];

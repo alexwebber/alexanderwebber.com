@@ -13,6 +13,7 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass, field
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,7 @@ LAYOUT: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^runs/\d{4}/\d{4}-\d{2}-\d{2}-[a-z2-7]{4}\.json$"), "published/run"),
     (re.compile(r"^race-tracks/\d{4}-\d{2}-\d{2}-[a-z2-7]{4}\.json$"), "published/race-track"),
     (re.compile(r"^health/[a-z0-9_]+/\d{4}\.json$"), "published/health-series"),
+    (re.compile(r"^fundraising/[a-z0-9-]+\.json$"), "published/fundraising-campaign"),
     (re.compile(r"^state/refresh\.json$"), "published/refresh"),
     (re.compile(r"^state/manifest\.json$"), "published/manifest"),
 )
@@ -116,6 +118,13 @@ def check_published(root: Path, schemas: SchemaSet) -> list[str]:
             not p["date"].startswith(year + "-") for p in series["points"]
         ):
             problems.append(f"{rel}: metric or point dates don't match the path")
+    for rel, figures in docs.items():
+        if rel.startswith("fundraising/"):
+            if figures["campaign_id"] != rel.removeprefix("fundraising/").removesuffix(".json"):
+                problems.append(f"{rel}: campaign_id doesn't match the file name")
+            dates = [p["date"] for p in figures["points"]]
+            if any(a >= b for a, b in pairwise(dates)):
+                problems.append(f"{rel}: points must be sorted, one per day")
 
     manifest = docs.get(MANIFEST)
     if manifest is None:

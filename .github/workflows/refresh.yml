@@ -1,6 +1,12 @@
 # Running data refresh (T067; contracts/pipeline.md "Workflows"): intervals.icu -> R2 -> published
 # JSON -> gate -> bot commit to main -> deploy, with the ingest-failing alert after every fetch.
 #
+# Fundraising figures ride the same run (specs/002-fundraising/contracts/pipeline.md): JustGiving ->
+# R2 in the fetch job, R2 -> published JSON in the publish job, and the gate, commit and deploy are
+# shared. Its three steps are continue-on-error, because decide skips an idle publish only after a
+# green run: a red run would publish every time and look like a running failure. The JustGiving key
+# is in the read step's env and nowhere else (tests/contract/refresh-workflow.test.ts).
+#
 # Owner decision 1 (2026-10-04): the bot commits sanitised data straight to main, only after the
 # gate passes, and only paths under data/running/published/. The publish job builds and gates the
 # new tree with read-only permissions (it runs npm and ingest code); the commit job, the only one
@@ -140,6 +146,22 @@ jobs:
 
       - run: uv sync --locked --no-dev
 
+      # Before the intervals.icu fetch, so a stalled or failed fetch can't stop it. The summary on
+      # stdout is what the decide step reads.
+      - name: Read fundraising figures (JustGiving -> R2)
+        id: fundraising
+        if: ${{ github.ref == 'refs/heads/main' }} # a branch run must not write campaign state
+        continue-on-error: true # FR-003: never turns the run red or stops a fetch
+        timeout-minutes: 2 # the job's 30 minutes also hold the 25-minute fetch
+        shell: bash # -eo pipefail, so a failed read isn't hidden by tee
+        env:
+          JUSTGIVING_SUBSCRIPTION_KEY: ${{ secrets.JUSTGIVING_SUBSCRIPTION_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: uv run --no-sync awingest fundraising-read --archive r2 | tee "$RUNNER_TEMP/fundraising-summary.json"
+
       # stdout is the one-line JSON summary (logs go to stderr); the decide step reads it.
       - name: Fetch (intervals.icu -> R2)
         id: fetch
@@ -173,11 +195,25 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: uv run --no-sync awingest alert --archive r2
 
+      # No JustGiving key here, so the key and the GitHub token never share a step.
+      - name: Fundraising alert
+        if: ${{ always() && github.ref == 'refs/heads/main' }}
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: uv run --no-sync awingest fundraising-alert --archive r2
+
       # Publishing is skipped only when this run is provably idle: a clean fetch that archived
       # nothing new, after a refresh that succeeded, outside the daily catch-all (the 00:17 UTC
       # slot, which reprocesses after a processor change even on a day with no new data). Anything
       # unexpected publishes. `daily` marks the catch-all, whose gated build deploys even when no
-      # published data changed (T105).
+      # published data changed (T105). A fundraising read whose figures differ from the published
+      # file publishes too; a missing or empty read summary doesn't, and the rest carries on.
       - name: Decide whether to publish
         id: decide
         if: ${{ always() }}
@@ -196,6 +232,8 @@ jobs:
           elif [ "$FETCH" != success ]; then reason="the fetch step's outcome was $FETCH"
           elif [ -n "$REIMPORT_FROM" ]; then reason='a re-import'
           elif [ "$daily" = true ]; then reason='the daily catch-all'
+          elif jq -e '(.changed // 0) > 0' "$RUNNER_TEMP/fundraising-summary.json" >/dev/null 2>&1; then
+            reason='fundraising figures changed'
           elif ! idle=$(jq -r '.outcome == "ok" and .activities.fetched == 0 and .activities.topped_up == 0 and .wellness.written == 0' "$summary"); then
             reason="the fetch summary couldn't be read"
           elif [ "$idle" != true ]; then reason='the fetch archived new data or was partial'
@@ -251,6 +289,17 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: uv run --no-sync awingest process --archive r2
+
+      - name: Publish fundraising figures (R2 -> data/running/published/fundraising/)
+        working-directory: ingest
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: uv run --no-sync awingest fundraising-publish --archive r2
 
       - name: Publish check
         working-directory: ingest

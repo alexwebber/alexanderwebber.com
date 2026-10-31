@@ -3,7 +3,8 @@
 The Python half of the Running pipeline (constitution Principles III, IV and VI): intervals.icu →
 private raw archive (R2) → sanitised JSON in `data/running/published/`. GitHub Actions runs it
 every 2 hours (`.github/workflows/refresh.yml`, dispatched by the site Worker's Cloudflare cron,
-with a guarded 6-hourly `schedule` as backup). The site never calls a provider.
+with a guarded 6-hourly `schedule` as backup). The site never calls a provider. Fundraising
+figures from JustGiving ride the same run; see [Fundraising](#fundraising).
 
 Contracts: [pipeline](../specs/001-running-section/contracts/pipeline.md) (CLI, workflows,
 alerts, freshness), [provider adapter](../specs/001-running-section/contracts/provider-adapter.md),
@@ -57,6 +58,34 @@ stage run on what is already archived. A process failure stops before the publis
 touched, so nothing is committed or deployed. The `ingest-failing` issue opens after 24 hours
 without a successful fetch and closes on recovery.
 
+## Fundraising
+
+Three commands with the same split between provider, stage and storage, sharing no state or exit
+paths with Running's, so a failed read on either side can't reach the other. Contracts:
+[provider adapter](../specs/002-fundraising/contracts/provider-adapter.md) and
+[pipeline](../specs/002-fundraising/contracts/pipeline.md).
+
+- **Read** (`fundraising/read.py`, `fundraising-read`) calls JustGiving's official API once per
+  active campaign, through `providers/justgiving/`, the only code that knows how JustGiving provides
+  its figures. It writes `state/fundraising.json` and `public/fundraising-freshness.json` in R2. The
+  JustGiving key is in this workflow step's `env` and nowhere else.
+- **Publish** (`fundraising/publish.py`, `fundraising-publish`) applies the writing rules in
+  [data-model.md](../specs/002-fundraising/data-model.md) §4 to
+  `data/running/published/fundraising/<id>.json`, one point per UK day, through `PublishedWriter`.
+  An unchanged read in an idle run commits nothing.
+- **Alert** (`fundraising/alerts.py`, `fundraising-alert`) keeps one issue per campaign, labelled
+  `fundraising-failing-<id>`, on the logic it shares with `ingest-failing`.
+
+**No raw response is stored, anywhere, unlike Running.** Reprocessing brings nothing here, because
+each read is three whole figures that can always be read again, and a stored response would hold the
+owner's account identifiers and whatever JustGiving adds later (FR-011). The adapter builds a
+`FundraisingSnapshot` field by field from an allow-list in memory and drops the rest. A parse failure
+logs only the response's sorted key names and the field that failed.
+
+**A failed read changes no figure.** All three steps are `continue-on-error`, because `decide` skips
+an idle publish only after a green run: a red run would publish every time and look like a running
+failure.
+
 ## Running it
 
 ```sh
@@ -64,6 +93,9 @@ uv sync
 uv run awingest fetch --archive r2       # needs INTERVALS_API_KEY and R2_* in the environment
 uv run awingest process --archive r2     # add --all to redo everything
 uv run awingest publish-check            # validates data/running/published/, no archive needed
+uv run awingest fundraising-read --archive local  # needs JUSTGIVING_SUBSCRIPTION_KEY
+uv run awingest fundraising-publish --archive local
+uv run awingest fundraising-alert --archive local  # needs GITHUB_TOKEN and GITHUB_REPOSITORY
 uv run pytest                            # contract and unit tests (no network)
 uv run ruff check . && uv run ruff format --check .
 ```
@@ -73,11 +105,13 @@ Without `--archive r2` the archive is the local folder in `AWINGEST_ARCHIVE_DIR`
 
 ## Tests
 
-- `tests/contract/`: the adapter (`test_intervals_adapter.py`), the archive suite run against
-  both implementations (`test_raw_archive.py`, plus real R2 with `AWINGEST_TEST_R2_LIVE=1`), the
-  writer, alerts against a fake GitHub API, and the shared schema fixtures.
+- `tests/contract/`: the adapters (`test_intervals_adapter.py`, `test_justgiving_adapter.py`), the
+  archive suite run against both implementations (`test_raw_archive.py`, plus real R2 with
+  `AWINGEST_TEST_R2_LIVE=1`), the writer, alerts against a fake GitHub API, and the shared schema
+  fixtures.
 - `tests/unit/`: the sanitiser (including a property test over random sentinel-laden payloads),
-  run IDs, best efforts, plausibility, health, overrides, fetch, the CLI and the
-  pipeline end to end over the fixture archive.
-- `tests/fixtures/intervals/` is synthetic: `make_fixtures.py` writes it and every value is
-  invented. The privacy tests look for its sentinels.
+  run IDs, best efforts, plausibility, health, overrides, fetch, fundraising's read and publish
+  rules (`test_fundraising.py`), the CLI and the pipeline end to end over the fixture archive.
+- `tests/fixtures/intervals/` and `tests/fixtures/justgiving/` are synthetic: each folder's
+  `make_fixtures.py` writes it and every value is invented. The privacy tests look for their
+  sentinels.

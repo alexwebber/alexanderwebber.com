@@ -81,6 +81,73 @@ describe('scan-privacy', () => {
     for (const value of ['50.8231', '07:15', '17234567890']) expect(printed).not.toContain(value);
   });
 
+  describe('fundraising', () => {
+    const FIGURES = 'data/running/published/fundraising/brighton-2027.json';
+    const OWNER_YAML = 'data/running/owner/campaigns.yaml';
+    const PAGE = 'dist/running/index.html';
+    const IN_DATA = 'donor, Gift Aid or JustGiving account key in data';
+    const ON_PAGE = 'donor, Gift Aid or JustGiving account key on a page';
+    const FIGURE = 'Gift Aid figure on a page';
+    const KEYS = [
+      'donor', 'donorName', 'donor_display_name', 'donation', 'donations', 'donationAmount', 'donation_amount', 'giftAid', 'gift_aid',
+      'gift_aid_total', 'totalEstimatedGiftAid', 'ownerGuid', 'owner_guid', 'pageGuid', 'page_guid', 'campaignGuid', 'campaign_guid',
+      'consumerId', 'consumer_id', 'pageId', 'page_id', 'eventId', 'event_id',
+    ];
+
+    it.each(KEYS)('finds %s in published JSON, owner YAML and quoted on a page', (name) => {
+      expect(rules(FIGURES, `{"${name}":"x"}`)).toEqual([IN_DATA]);
+      expect(rules(OWNER_YAML, `- ${name}: x\n`)).toEqual([IN_DATA]);
+      expect(rules(PAGE, `<script>{"${name}":"x"}</script>`)).toEqual([ON_PAGE]);
+      expect(rules(PAGE, `<script>{'${name}' : 'x'}</script>`)).toEqual([ON_PAGE]);
+    });
+
+    it('fails a quoted key on a page but not a bare one, or a sentence', () => {
+      expect(rules(PAGE, '<p>Donations: thank you to everyone</p>')).toEqual([]);
+      expect(rules(PAGE, '<p>Donor: anonymous</p>')).toEqual([]);
+      expect(rules(PAGE, '<script>const a = {pageId: 1}</script>')).toEqual([]);
+    });
+
+    it('leaves the figures the file really holds alone', () => {
+      const clean = '{"campaign_id":"brighton-2027","last_read_at":"2026-11-10T09:17:03Z","points":[{"date":"2026-11-10","raised_pence":100,"supporters":1,"target_pence":50000}],"schema_version":1}\n';
+      expect(rules(FIGURES, clean)).toEqual([]);
+    });
+
+    it('leaves bundled library code alone', () => {
+      expect(rules('dist/_astro/maplibre.js', '{"pageId":1,"donor":2}')).toEqual([]);
+    });
+
+    it('exempts approved stories from the key rule', () => {
+      expect(rules('data/running/owner/stories/brighton-2027.yaml', 'text: |\n  Donations: every one helps.\n')).toEqual([]);
+      expect(rules(OWNER_YAML, '# donations: a note\n')).toEqual([IN_DATA]);
+    });
+
+    it('finds a Gift Aid figure on a page, either way round', () => {
+      expect(rules(PAGE, '<p>Gift Aid adds £312 to this</p>')).toEqual([FIGURE]);
+      expect(rules(PAGE, '<p>£312.50 more with gift aid</p>')).toEqual([FIGURE]);
+      expect(rules(PAGE, '<p>Gift Aid</p>\n<span>£1,250</span>')).toEqual([FIGURE]);
+    });
+
+    it('allows Gift Aid as a word, and a figure further away', () => {
+      expect(rules(PAGE, '<p>Gift Aid makes every donation go further.</p>')).toEqual([]);
+      expect(rules(PAGE, `<p>Gift Aid helps.${' '.repeat(41)}£1,250 raised</p>`)).toEqual([]);
+      expect(rules(PAGE, `<p>£1,250 raised.${' '.repeat(41)}Gift Aid helps</p>`)).toEqual([]);
+      expect(rules(PAGE, '<p>£1,250 raised of £2,000</p>')).toEqual([]);
+    });
+
+    it('only applies the page rules to pages', () => {
+      expect(rules('data/running/owner/stories/a.yaml', 'text: Gift Aid adds £312\n')).toEqual([]);
+      expect(rules('dist/_astro/x.js', 'Gift Aid adds £312')).toEqual([]);
+    });
+
+    it('never reports the matched value', () => {
+      const [figure] = scanText(PAGE, '<p>Gift Aid adds £312 to this</p>');
+      expect(figure).toMatchObject({ line: 1, column: 4, excerpt: expect.stringMatching(/^\[\d+ chars redacted\]$/) });
+      const [key] = scanText(FIGURES, '{"donorName":"A Person"}');
+      expect(key).toMatchObject({ line: 1, column: 2, excerpt: '"donorName":' });
+      expect(JSON.stringify([figure, key])).not.toMatch(/312|A Person/);
+    });
+  });
+
   it('finds image metadata in dist/ and owner photos that break the rules', async () => {
     repo = tempRepo();
     const pixel = { create: { width: 10, height: 10, channels: 3 as const, background: '#c33' } };

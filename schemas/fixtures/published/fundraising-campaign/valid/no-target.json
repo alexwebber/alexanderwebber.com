@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "campaign_id": "example-2027",
+  "last_read_at": "2026-11-10T09:17:03Z",
+  "points": [
+    {
+      "date": "2026-11-09",
+      "raised_pence": 12500,
+      "supporters": 3
+    }
+  ]
+}

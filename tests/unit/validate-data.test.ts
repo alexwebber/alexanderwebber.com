@@ -17,7 +17,7 @@ const warnings = () =>
     .filter((i) => i.severity === 'warning')
     .map(formatIssue);
 
-const SECTION = 'focus_race: { race_id: brighton-2027, build_start: 2026-11-16, charity: { name: Martlets hospice } }\n';
+const SECTION = 'focus_race: { race_id: brighton-2027, build_start: 2026-11-16, charity: { name: Martlets } }\n';
 const UPCOMING = '- { id: brighton-2027, name: Brighton Marathon, date: 2027-04-04, distance: marathon, target_time: "3:30:00" }\n';
 
 function owner() {

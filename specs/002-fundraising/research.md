@@ -122,7 +122,7 @@ This answers the spec assumption *JustGiving's terms*, which is amended to say s
 
 | Stage | New step | Job | Does |
 |---|---|---|---|
-| read | `awingest fundraising-read` | `fetch`, before the intervals.icu fetch, `main` only, 3-minute limit | JustGiving -> allow-listed snapshot in R2 |
+| read | `awingest fundraising-read` | `fetch`, before the intervals.icu fetch, `main` only, 2-minute limit | JustGiving -> allow-listed snapshot in R2 |
 | publish | `awingest fundraising-publish` | `publish`, after `process`, before `publish-check` | R2 snapshot -> `data/running/published/fundraising/<id>.json` |
 | alert | `awingest fundraising-alert` | `fetch`, after the existing `Alert` step | Opens, updates and closes each campaign's issue |
 

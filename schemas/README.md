@@ -8,7 +8,7 @@ are in [contracts/data-files.md](../specs/001-running-section/contracts/data-fil
   `schema_version` is required.
 - `owner/*.schema.json`: hand-edited YAML in `data/running/owner/`. Mapping files may set
   `schema_version` (default: current). List files (goals, upcoming races, run overrides, health
-  exclusions) can't carry it, so they are always the current version.
+  exclusions, campaigns) can't carry it, so they are always the current version.
 - `defs.schema.json`: shared building blocks (dates, run IDs, owner times and distances), used
   through `$ref: ../defs.schema.json#/$defs/...`.
 - `distances.json`: each named race distance in metres, the one table for both languages
