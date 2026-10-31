@@ -38,7 +38,9 @@ story text or identifier. Before the first donation the figures are 0, 500 and 0
 
 ## 3. A mistyped page
 
-Point a temporary local `campaigns.yaml` at a page address that doesn't exist, then read once.
+Make a scratch repo root outside the repo (a `schemas/` junction plus a temporary
+`data/running/owner/campaigns.yaml`), point it at a page address that doesn't exist, and read once with
+`--repo-root <scratch>`.
 
 Expected: `page_not_found`, exit 15, and state records the failure with no `latest`. If the real status
 isn't 404, change the adapter's mapping and its test (research.md R1).
@@ -49,7 +51,7 @@ isn't 404, change the adapter's mapping and its test (research.md R1).
 £1,000, with two from one donor. A second staging page with no target.
 
 ```text
-$env:JUSTGIVING_REALM = 'staging'; cd ingest; uv run awingest fundraising-read --archive local --archive-dir .archive/staging
+$env:JUSTGIVING_REALM = 'staging'; cd ingest; uv run awingest fundraising-read --archive local --archive-dir .archive/staging --repo-root <scratch>
 ```
 
 | Check | Expected | If not |
@@ -64,18 +66,23 @@ gitignored; remove `staging` from it afterwards, and clear `JUSTGIVING_REALM`.
 
 ## 5. The pipeline on `main`
 
-After the workflow change merges and `campaigns.yaml` holds Brighton:
+The merge changes `data/running/owner/**`, which starts a refresh by itself. That run does the first
+publish, with the reason "owner files changed":
+
+- The fetch job's fundraising step passes, the bot commits
+  `data/running/published/fundraising/brighton-2027.json`, and the deploy runs.
+
+Then prove the idle case:
 
 ```text
 gh workflow run refresh.yml --ref main
 ```
 
-Expected:
-
-- The fetch job's fundraising step passes, the run publishes with "fundraising figures changed", the bot
-  commits `data/running/published/fundraising/brighton-2027.json`, and the deploy runs.
-- The next run finds the same figures: no publish, no commit, and
-  `GET /running/api/fundraising-freshness` shows a later `last_read_at`.
+- The run finds the same figures: no publish and no commit.
+- Once the route exists (the landing card's slice), `GET /running/api/fundraising-freshness` shows a later
+  `last_read_at` after each read.
+- The "fundraising figures changed" reason can only be proven by a real change, so it is checked at the
+  first donation.
 - **FR-003**: breaking the live key on `main` to test this isn't worth the risk, so the static workflow
   check and the failing-provider pytest cover it. A real run's log confirms the key is only in the read
   step's `env`.
@@ -104,15 +111,17 @@ Expected, on the landing and fundraising pages:
 - With Running's freshness fresh and fundraising's stale, only the fundraising notice shows, and the
   reverse holds too.
 
-The alert within 24 hours and the 12-hour threshold are pytest cases with a fixed clock, including
+The alert at the first refresh after 24 hours is a pytest case with a fixed clock, as are
 `state/fetch-status.json` staying untouched and a running fetch carrying on with corrupt fundraising state.
+The 12-hour threshold is a Vitest case.
 
 ## 8. SC-006: nothing before figures
 
 The drill builds a site copy with `campaigns.yaml` but no published file.
 
 Expected: no `/running/fundraising/`, no `/og/running-fundraising.png`, no "Fundraising" in any nav, no
-sitemap entry, and no `fundraising-card` in any page.
+sitemap entry, and no `<article class="fundraising-card"` element in any page. The class name itself is in
+the inlined CSS of two pages, so check for the element, not the string.
 
 ## 9. SC-007: the story gate
 

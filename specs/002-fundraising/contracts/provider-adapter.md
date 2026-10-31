@@ -45,7 +45,7 @@ Layout: `providers/justgiving/__init__.py`, `client.py` (the HTTP request and er
 | Field | Becomes | Rule |
 |---|---|---|
 | `grandTotalRaisedExcludingGiftAid` | `raised_pence` | Required. Strict money string |
-| `fundraisingTarget` | `target_pence` | Key required. `null`, `""` or `"0"` is `None`; otherwise a strict money string |
+| `fundraisingTarget` | `target_pence` | Key required. `null`, `""` or any value equal to zero (`"0"`, `"0.00"`) is `None`; otherwise a strict money string |
 | `donationCount` | `supporters` | Required. String of digits only |
 | `currencyCode` | checked | Must be `GBP` |
 | `status` | `page_status` | Required, a non-empty string |
@@ -100,7 +100,7 @@ Running's rules 3 to 7 apply. Rules 1 and 2 are replaced by:
 - **Shape**: `"500"`, `"1335.00"` and `"0"` parse; `TargetAmount` alone doesn't count as a target.
 - **Failed reads**: each of `""`, `null`, a number type, `"£5"`, `"1,335.00"`, `"-1"`, `"NaN"`, `"1e3"`,
   a missing key and non-JSON raises `JustGivingChanged`, never a zero.
-- **No target**: `null`, `""` and `"0"` give `None`.
+- **No target**: `null`, `""`, `"0"` and `"0.00"` give `None`.
 - **Errors**: every row above, including 401 quoting **JustGiving APIs** in its action, 403 with and
   without `Retry-After`, and HTML bodies.
 - **Requests**: only the one URL is called; the header and User-Agent are set; the realm header is
