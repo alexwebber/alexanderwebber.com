@@ -16,12 +16,13 @@ Update this as decisions get made — treat it as the source of truth alongside
   the reviewers the owner chose** (they write a passage and approve); it lives only in
   `C:\temp\story-draft.md`, outside the repo. Garmin two-step verification is proven (the
   31 Oct run and weigh-ins reached the site) and the 5k's "New" window ended as tested.
-  - **Next session: `/speckit-plan` for `specs/002-fundraising`** (its own session; Opus override,
-    as it's foundational for fundraising). Research must test reading the real page's total,
-    target and supporters: the target isn't in the page's raw HTML (probably filled in by script),
-    JustGiving is moving its API to Blackbaud SKY API, and the old platform ends 30 June 2027.
-    Also check JustGiving's display terms, and whether to show the charity number (spec
-    assumption *Charity on JustGiving*).
+  **The fundraising plan is written** (`specs/002-fundraising/plan.md`), reading figures through
+  JustGiving's official API. The key is set as `JUSTGIVING_SUBSCRIPTION_KEY`.
+  - **Next session: `/speckit-tasks` then `/speckit-analyze` for `specs/002-fundraising`**, in its
+    own session, on the plan's delivery order. Check the plan PR merged first, and its checks.
+    Harvest lessons after the first implement slice (over 25 candidates are waiting).
+  - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
+    by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
     passage into the draft, the owner approves the final text, then create `VOICE.md` (lessons so
     far: personal or family passages are written by the people they belong to, and the agent's
@@ -1417,8 +1418,47 @@ project-specific notes.
   were identical when parsed). What reaches us: nothing changes in the skills or scripts; only
   version stamps and install times moved. The release notes' relevant items are stricter hook
   validation and preserved feature numbering on re-init.
+- **2026-10-31** — **Fundraising reads JustGiving's official API, never the website** (owner
+  pick; `specs/002-fundraising/plan.md`, plan subagent about 403k tokens on Opus).
+  - **The website is ruled out:** its terms ban scripts extracting data from it, including from
+    the owner's own page, even though the figures are in the page's HTML.
+  - **API:** Blackbaud SKY API, *JustGiving Consumer Public*,
+    `GET /jg/consumer/app/consumer/v1/fundraising/pages/page/<name>` on `api.sky.blackbaud.com`.
+    Header `Bb-Api-Subscription-Key` only; no OAuth or registered application. Proven live on the
+    real page. It isn't the platform that ends on 30 June 2027, so that date doesn't affect us.
+  - **The key is for the "JustGiving APIs" product, not "Standard APIs".** A Standard APIs key gets
+    401 "invalid subscription key" from JustGiving's endpoints, while passing general SKY ones.
+    Free tier: 1,000 calls a day across the JustGiving APIs; a campaign uses about 12. The owner
+    created the account and accepted the SKY API terms (including an indemnity) knowingly.
+  - **The live response differs from the reference:** figures are strings, and `TargetAmount` is
+    missing (`fundraisingTarget` holds the target). Non-zero formats and whether `donationCount`
+    equals the supporters JustGiving shows are unproven until a staging test or a first donation.
+  - **Plan:** a read step in `fetch` and a publish step, both `continue-on-error`; no raw response
+    stored; separate R2 state and freshness route; one history point per UK day, because
+    per-change points would reveal each donation; story approval tied to its text by a hash;
+    one alert issue per campaign. No new dependencies, $0.
+  - **Page expiry:** the Brighton page expires on 3 July 2027. Ask the owner about marking the
+    campaign finished in June 2027.
+- **2026-10-31** — **Plan decisions** (owner, each on the recommendation):
+  - **Charity number:** on the fundraising page only, "Part of Southern Hospice Group, registered
+    charity 256789".
+  - **Card timing:** live as soon as it's built, at £0 of £500, before the story if need be.
+  - **Chart:** daily totals, accepting that a one-donation day can be worked out by subtraction.
+  - **Name:** `section.yaml`'s "Martlets hospice" becomes "Martlets".
+  - **Hero:** drops its "For Martlets" line while the card is showing.
 
 ## Upstream candidates
+
+- **A platform's general sign-up docs may not apply to its products:** SKY's getting-started said
+  "Standard APIs", but JustGiving needs its own "JustGiving APIs" subscription, stated only inside a
+  developer guide. Before guiding the owner to a key, find the product's own subscription steps
+  (AGENT_TIPS, *Research*).
+- **Prove a provider's response with a live call before planning:** the API reference showed a
+  numeric `TargetAmount` that the real response doesn't have, and every figure was a string. One
+  call, printing only allow-listed fields and never the key, corrected the contract (AGENT_TIPS,
+  *Providers and file formats*).
+- **Running totals published per change reveal individual donations by subtraction:** a privacy
+  rule on individual amounts covers derived values too. Publish by day (PLAYBOOK, privacy).
 
 - **Check a platform's terms before testing a technical read:** the handoff asked whether
   JustGiving's page could be read, and it could, but its terms ban scripts extracting data from
