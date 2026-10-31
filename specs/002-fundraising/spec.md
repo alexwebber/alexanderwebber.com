@@ -213,12 +213,17 @@ current with no change other than the site's files.
   last stored figures with their last-updated time; a staleness notice appears once the figures
   are more than 12 hours old; the owner is alerted within 24 hours with the likely cause and the
   action needed. Running data keeps refreshing and publishing regardless.
-- **JustGiving's planned change of access** (its current developer access is being moved to a new
-  platform, with the old one ending on 30 June 2027, after race day): if the change breaks reading,
-  the site degrades to staleness as above, never an outage, and the fix is made in the one place
-  that reads JustGiving.
+- **A change in how JustGiving provides its figures**: the site reads them through JustGiving's
+  current developer platform (Blackbaud SKY API), so the old platform's end on 30 June 2027 doesn't
+  affect it. Any later change that breaks reading degrades to staleness as above, never an outage,
+  and the fix is made in the one place that reads JustGiving.
 - **A misconfigured campaign** (e.g. a mistyped JustGiving page address): no card or page appears
   for it (there are no figures to show), and the owner is alerted that the page can't be found.
+- **The JustGiving page expires** (the Brighton page's expiry date is 3 July 2027, 90 days after
+  the race): whether figures can still be read after that isn't known. If they can, reads carry
+  on until the owner marks the campaign finished. If the page stops being active or can't be
+  found, the owner is alerted at once with the action "mark the campaign finished", and the last
+  figures stay.
 - **The JustGiving page has no target**: the card and page show the total and supporters without a
   bar or percentage, rather than a bar against nothing.
 - **The total goes down** (a refunded or cancelled donation): the site shows what JustGiving
@@ -267,14 +272,14 @@ current with no change other than the site's files.
   have been failing for more than 24 hours, or a configured campaign's page can't be found, with
   the likely cause and the action needed.
 - **FR-007**: Only the part of the site that reads JustGiving may depend on how JustGiving provides
-  its figures, so a change on JustGiving's side (including the planned move of its developer
-  access, whose current platform ends on 30 June 2027) is repaired in one place and, until then,
-  only makes the figures stale. Another fundraising platform could be added the same way, though
-  none is in scope.
-- **FR-008**: The site MUST keep a dated history of each campaign's figures, starting from the
-  first successful read after the campaign is configured (no backfill), and MUST keep it even after
-  the campaign finishes or JustGiving stops providing it. A read that finds the same figures adds
-  no new history point beyond updating the last-read time.
+  its figures, so a change on JustGiving's side is repaired in one place and, until then, only
+  makes the figures stale. Another fundraising platform could be added the same way, though none
+  is in scope.
+- **FR-008**: The site MUST keep a dated history of each campaign's figures, at most one point per
+  day (that day's latest figures), starting from the first successful read after the campaign is
+  configured (no backfill), and MUST keep it even after the campaign finishes or JustGiving stops
+  providing it. A read that finds the same figures adds no new history point beyond updating the
+  last-read time.
 
 #### Privacy
 
@@ -389,9 +394,9 @@ current with no change other than the site's files.
 - **Campaign**: a fundraiser linked to one race. Linked race, charity name (and optional website),
   JustGiving page, finished flag, and its story. The target is not stored here; it is read from
   JustGiving. Current when linked to the focus race; otherwise past.
-- **Fundraising Snapshot**: the figures read for a campaign at one time: when read, total raised
-  (excluding Gift Aid), target (if any), supporter count. The latest is the campaign's current
-  figures; earlier ones form its history and chart. Nothing about individual donations or donors.
+- **Fundraising Snapshot**: a campaign's figures on one day: the day, total raised (excluding Gift
+  Aid), target (if any), supporter count. The latest is the campaign's current figures; earlier
+  ones form its history and chart. Nothing about individual donations or donors.
 - **Campaign Story**: the approved "why I'm running" text for a campaign, with the date the owner
   approved it. Drafts and the owner's raw answers are not part of what is published.
 - **Voice Style Guide** (`VOICE.md`): the living record of how the owner writes, built from their
@@ -440,7 +445,11 @@ current with no change other than the site's files.
 - **No donor data kept at all**: stricter than the Running section, which archives raw provider data
   privately. Donor details are other people's data and the site never needs them, so they are not
   stored anywhere (FR-011).
-- **Supporters** means JustGiving's own supporter count for the page, as JustGiving shows it.
+- **Supporters** means JustGiving's own supporter count for the page, as JustGiving shows it. The
+  API's nearest figure is `donationCount`. Whether it equals the number JustGiving displays (for
+  example with a repeat donor) isn't proven yet, because the page has no donations; the plan tests
+  it on JustGiving's staging environment and at the first real donation, and if the two differ the
+  site calls the figure "donations" rather than show a wrong count of supporters.
 - **Total** means JustGiving's own page total, excluding Gift Aid, including any offline amounts the
   owner records on JustGiving. Shown to the whole pound, rounded down (FR-063).
 - **Target**: whatever the JustGiving page says, set by the owner there only. Martlets' Brighton
@@ -452,12 +461,16 @@ current with no change other than the site's files.
   campaign of the **Southern Hospice Group** (registered charity 256789), the charity Martlets
   joined when it merged with St Barnabas Hospices in 2024. JustGiving lists no separate Martlets
   charity, so donors see "Southern Hospice Group" as the charity. The site names the charity as
-  Martlets ("For Martlets"), and the fundraising page adds "part of Southern Hospice Group", so it
-  matches what donors see on JustGiving. Whether to show the charity number is a plan question.
+  Martlets ("For Martlets"), and the fundraising page adds "Part of Southern Hospice Group,
+  registered charity 256789" (owner, 2026-10-31), so it matches what donors see on JustGiving. The
+  number is not shown on the landing card.
 - **Currency**: pounds sterling only.
-- **History granularity**: a new history point is kept only when a read finds changed figures (FR-008);
-  an unchanged read only moves the last-read time, matching how Running's idle refreshes change
-  nothing. The chart is by day (each day's latest total).
+- **History granularity**: a history point changes only when a read finds changed figures, and
+  each day keeps only its latest figures (FR-008); an unchanged read only moves the last-read time,
+  matching how Running's idle refreshes change nothing. The chart is by day. Keeping days rather
+  than individual changes publishes no more than the chart needs, and blurs individual donations;
+  on a day with one donation its amount can still be worked out by subtraction, as it can from
+  JustGiving's own public total.
 - **Staleness**: the same 12-hour threshold as the Running section; a finished campaign is never
   "stale".
 - **Current campaign**: the one linked to the focus race. Switching the focus race (Running's
@@ -493,11 +506,15 @@ current with no change other than the site's files.
 - **Share image**: the fundraising page's share image shows the charity, race and total raised at
   the time of the site update, because a figure helps fundraising (social apps may show an older
   cached image). The landing page's existing share image is unchanged.
-- **JustGiving's terms**: any attribution or display conditions JustGiving sets for showing its
-  figures are followed; they are checked at plan time.
-- **No manual fallback for the total**: if JustGiving can't be read for a long time (e.g. after its
-  June 2027 access change), the figures go stale and the owner is alerted; a hand-entered total is
-  not built now and could be added then if needed.
+- **JustGiving's terms** (checked at plan time; research.md R3): the website's terms forbid
+  scraping or extracting its content, including from the owner's own page, so the site reads the
+  official API (Blackbaud SKY API, "JustGiving Consumer Public"). The SKY API Terms of Use set no
+  attribution or display conditions on the figures. They grant no right to Blackbaud's or
+  JustGiving's marks, so the site uses no logo of theirs, and plain text such as "Donate on
+  JustGiving" names the destination. The owner accepted these terms on 2026-10-31.
+- **No manual fallback for the total**: if JustGiving can't be read for a long time, the figures go
+  stale and the owner is alerted; a hand-entered total is not built now and could be added then if
+  needed.
 - **Units and locale**: pounds sterling, UK date format, UK local time.
 
 ### Out of scope
@@ -514,11 +531,10 @@ current with no change other than the site's files.
 
 ### Dependencies
 
-- The owner creating the JustGiving page for Martlets (Brighton Marathon 2027), with the agent's
-  guidance, between this spec and the plan; nothing appears on the site until then.
-- A way for the site to read a JustGiving page's total, target and supporter count that is
-  available to an individual fundraiser, and its route through JustGiving's move to its new
-  developer platform (current access ends 30 June 2027); researched at plan time.
+- The owner's JustGiving page for Martlets (Brighton Marathon 2027), created on 2026-10-31.
+- A Blackbaud SKY API subscription to the **JustGiving APIs** product (free tier, 1,000 calls a day
+  across all JustGiving APIs), created by the owner on 2026-10-31. Its key reads a page's total,
+  target and supporter count with no further authorisation (proven live, 2026-10-31).
 - The Running section (spec 001): the focus race and its hero (with the reserved fundraising place),
   race results, the scheduled refresh and "refresh now", the owner alerts, the goal-card look, the
   Running menu and the site's quality bars.
