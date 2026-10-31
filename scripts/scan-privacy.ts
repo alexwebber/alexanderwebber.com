@@ -3,6 +3,7 @@
 // - coordinates outside race tracks and race pages;
 // - unapproved categories (sleep, stress, Body Battery, steps, SpO2);
 // - provider activity links and ID keys, and name/description keys in published runs;
+// - donor, Gift Aid and JustGiving account keys, and Gift Aid figures on pages;
 // - image metadata in dist/;
 // - with --provider-ids=<file> (R2 state/run-ids.json, fetched by the gate when it has R2
 //   credentials): any known provider activity ID anywhere.
@@ -48,6 +49,11 @@ const anywhere = () => true;
 
 // A JSON or YAML key: "key": / 'key': / key: at the start of a YAML line or after { or ,
 const key = (names: string) => new RegExp(`(?:["'](?:${names})["']\\s*:|(?:^|[\\s{,])(?:${names})\\s*:(?=\\s))`, 'im');
+
+const FUNDRAISING_KEYS =
+  'donor\\w*|donations?|donation_?amount|gift_?aid\\w*|totalEstimatedGiftAid|owner_?guid|page_?guid|campaign_?guid|consumer_?id|page_?id|event_?id';
+// An approved story is the owner's own text and may say "Gift Aid: ...".
+const STORY_FILE = /^data\/running\/owner\/stories\//;
 
 export const RULES: Rule[] = [
   {
@@ -97,6 +103,24 @@ export const RULES: Rule[] = [
     name: 'name or description key in a published run (titles use "title")',
     pattern: /["'](?:name|description)["']\s*:/,
     applies: (f) => RUN_FILE.test(f),
+  },
+  {
+    name: 'donor, Gift Aid or JustGiving account key in data',
+    pattern: key(FUNDRAISING_KEYS),
+    applies: (f) => inData(f) && !STORY_FILE.test(f),
+  },
+  {
+    // Quoted keys only: key() also matches a bare word before a colon, so a sentence such as
+    // "Donations: ..." would fail the gate.
+    name: 'donor, Gift Aid or JustGiving account key on a page',
+    pattern: new RegExp(`["'](?:${FUNDRAISING_KEYS})["']\\s*:`, 'i'),
+    applies: inDist,
+  },
+  {
+    name: 'Gift Aid figure on a page',
+    pattern: /£\s?\d[\s\S]{0,40}?\bgift aid\b|\bgift aid\b[\s\S]{0,40}?£\s?\d/i,
+    applies: inDist,
+    redact: true,
   },
 ];
 

@@ -1,10 +1,11 @@
-"""Pipeline state in the raw archive (data-model §1): cursors, fetch status and the public
-freshness record.
+"""Pipeline state in the raw archive (data-model §1): cursors, fetch status, fundraising's read
+status and the two public freshness records.
 
-Everything here except ``public/freshness.json`` is private. State objects are small JSON
-documents written with ``if_match`` set to the ETag they were read with, so a concurrent writer
-(a local fetch during a scheduled run) shows up as an ``ArchiveConflict`` instead of a lost
-update.
+Everything here except ``public/freshness.json`` and ``public/fundraising-freshness.json`` is
+private. Fundraising has its own two objects, so it shares no state with Running (FR-003). State
+objects are small JSON documents written with ``if_match`` set to the ETag they were read with,
+so a concurrent writer (a local fetch during a scheduled run) shows up as an ``ArchiveConflict``
+instead of a lost update.
 """
 
 import json
@@ -16,6 +17,8 @@ from awingest.archive.base import ABSENT, ArchiveUnavailable, RawArchive, etag_o
 CURSOR = "state/cursor.json"
 FETCH_STATUS = "state/fetch-status.json"
 FRESHNESS = "public/freshness.json"
+FUNDRAISING_STATE = "state/fundraising.json"
+FUNDRAISING_FRESHNESS = "public/fundraising-freshness.json"
 
 
 def utc_iso(when: datetime) -> str:

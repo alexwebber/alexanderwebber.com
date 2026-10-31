@@ -6,6 +6,12 @@ bad arguments).
 - ``process [--all]``, ``reprocess --run RUN_ID``: raw archive -> ``data/running/published/``.
 - ``publish-check``: validates the published tree and its manifest (no archive needed).
 - ``alert``: keeps the ``ingest-failing`` issue in step with ``state/fetch-status.json``.
+- ``fundraising-read``: JustGiving -> ``state/fundraising.json`` (allow-listed figures only).
+- ``fundraising-publish``: ``state/fundraising.json`` -> ``data/running/published/fundraising/``.
+- ``fundraising-alert``: keeps each campaign's issue in step with ``state/fundraising.json``.
+
+The fundraising commands are dispatched before anything touches intervals.icu, and none of them
+constructs ``IntervalsProvider``, so a Running fault can't reach them (FR-003).
 """
 
 import argparse
@@ -21,14 +27,19 @@ from awingest.archive.base import ArchiveError, RawArchive
 from awingest.archive.local import LocalArchive
 from awingest.archive.r2 import R2Archive
 from awingest.fetch import run_fetch
+from awingest.fundraising.alerts import LABEL_DESCRIPTION, run_fundraising_alert
+from awingest.fundraising.publish import run_fundraising_publish
+from awingest.fundraising.read import run_fundraising_read
 from awingest.logging import Logger
 from awingest.process.pipeline import PUBLISHED, run_process
 from awingest.providers.intervals import IntervalsProvider
+from awingest.providers.justgiving import JustGivingProvider
 from awingest.publish.manifest import check_published
 from awingest.schemas import SchemaSet, find_repo_root
 
 LOCAL_ARCHIVE_ENV = "AWINGEST_ARCHIVE_DIR"
 DEFAULT_LOCAL_ARCHIVE = ".archive"
+FUNDRAISING_COMMANDS = ("fundraising-read", "fundraising-publish", "fundraising-alert")
 
 
 def _date(value: str) -> date:
@@ -97,6 +108,15 @@ def _parser() -> argparse.ArgumentParser:
 
     alert = commands.add_parser("alert", help="open, update or close the ingest-failing issue")
     with_archive(alert)
+
+    for name, description in (
+        ("fundraising-read", "JustGiving -> state/fundraising.json, allow-listed figures only"),
+        ("fundraising-publish", "state/fundraising.json -> published campaign files"),
+        ("fundraising-alert", "open, update or close each campaign's issue"),
+    ):
+        fundraising = commands.add_parser(name, help=description)
+        with_archive(fundraising)
+        with_repo(fundraising)
     return parser
 
 
@@ -109,9 +129,29 @@ def _publish_check(args: argparse.Namespace, log: Logger) -> int:
     return 20 if problems else 0
 
 
+def _campaign_issues(label: str) -> GitHubIssues:
+    return GitHubIssues.from_env(label=label, label_description=LABEL_DESCRIPTION)
+
+
+def _fundraising(args: argparse.Namespace, archive: RawArchive, log: Logger) -> int:
+    root = args.repo_root or find_repo_root()
+    if args.command == "fundraising-read":
+        result = run_fundraising_read(JustGivingProvider(), archive, repo_root=root, log=log)
+    elif args.command == "fundraising-publish":
+        result = run_fundraising_publish(archive, repo_root=root, log=log)
+    else:
+        result = run_fundraising_alert(
+            archive, _campaign_issues, repo_root=root, log=log, run_url=default_run_url()
+        )
+    print(json.dumps(result.summary(), sort_keys=True))
+    return result.exit_code
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    log = Logger(args.command, provider=IntervalsProvider.name)
+    fundraising = args.command in FUNDRAISING_COMMANDS
+    name = JustGivingProvider.name if fundraising else IntervalsProvider.name
+    log = Logger(args.command, provider=name)
     if args.command == "publish-check":
         return _publish_check(args, log)
     window = (args.reimport_from, args.reimport_to) if args.command == "fetch" else (None, None)
@@ -127,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
         log.error("archive_unavailable", exc=exc)
         print(json.dumps({"outcome": "failed", "code": exc.code, "exit_code": exc.exit_code}))
         return exc.exit_code
+    if fundraising:
+        return _fundraising(args, archive, log)
     if args.command == "alert":
         try:
             github = GitHubIssues.from_env()

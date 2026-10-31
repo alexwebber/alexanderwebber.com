@@ -110,7 +110,11 @@ def _entry(value: Any, path: str) -> tuple[str, str]:
     return "", path
 
 
-def _read(path: Path, schema: str, schemas: SchemaSet, problems: list[str], rel: str) -> Any:
+def read_owner_file(
+    path: Path, schema: str, schemas: SchemaSet, problems: list[str], rel: str
+) -> Any:
+    """The validated contents of an owner file, or ``None`` if it is missing or has problems,
+    which are added to ``problems`` as file / entry / field messages."""
     if not path.is_file():
         return None
     try:
@@ -131,7 +135,7 @@ def load_owner(
 ) -> OwnerInputs:
     problems: list[str] = []
     files = {
-        name: _read(owner_dir / name, schema, schemas, problems, f"{rel_root}/{name}")
+        name: read_owner_file(owner_dir / name, schema, schemas, problems, f"{rel_root}/{name}")
         for name, schema in OWNER_FILES.items()
     }
 
@@ -158,7 +162,7 @@ def load_owner(
     races: dict[str, RaceLink] = {}
     for path in sorted(owner_dir.glob("races/*/race.yaml")):
         rel = f"{rel_root}/{path.relative_to(owner_dir).as_posix()}"
-        race = _read(path, "owner/race", schemas, problems, rel)
+        race = read_owner_file(path, "owner/race", schemas, problems, rel)
         if race is None or "run_id" not in race:
             continue  # hand-entered races don't touch published runs
         run_id = race["run_id"]
