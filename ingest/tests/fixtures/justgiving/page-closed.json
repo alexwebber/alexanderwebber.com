@@ -1,0 +1,65 @@
+{
+  "activityCharityCreated": false,
+  "activityId": "0000000",
+  "activityType": "Example",
+  "attribution": "",
+  "branding": {
+    "thermometerFillColor": "000000",
+    "thermometerTextColor": "ffffff"
+  },
+  "campaignGuid": "00000000-0000-4000-8000-000000000001",
+  "charity": {
+    "id": 1,
+    "name": "Example Hospice Group",
+    "registrationNumber": "000000"
+  },
+  "companyAppealId": 0,
+  "consumerId": 1000001,
+  "currencyCode": "GBP",
+  "currencySymbol": "?",
+  "domain": "www.example.org",
+  "donationCount": "0",
+  "eventCategory": "Example",
+  "eventDate": "/Date(1800000000000)/",
+  "eventId": 1000002,
+  "eventName": "Example Marathon",
+  "expiryDate": "/Date(1810000000000)/",
+  "fundraisingTarget": "500",
+  "grandTotalRaisedExcludingGiftAid": "0",
+  "image": {
+    "caption": "",
+    "url": "https://images.example.org/cover.jpg"
+  },
+  "imageCount": "1",
+  "inMemoriam": false,
+  "media": {
+    "images": [],
+    "videos": []
+  },
+  "organisation": null,
+  "owner": "Sam Example",
+  "ownerGuid": "00000000-0000-4000-8000-000000000002",
+  "ownerProfileImageUrls": {
+    "small": "https://images.example.org/owner.jpg"
+  },
+  "pageCreatedDate": "/Date(1790000000000)/",
+  "pageGuid": "00000000-0000-4000-8000-000000000003",
+  "pageId": "1000003",
+  "pageShortName": "example-runner-2027",
+  "pageSummary": "Example page summary.",
+  "pageSummaryWhat": null,
+  "pageSummaryWhy": null,
+  "rememberedPersonSummary": null,
+  "showEventDate": "true",
+  "showExpiryDate": "true",
+  "smsCode": null,
+  "status": "Expired",
+  "story": "<p>Example story text.</p>",
+  "teams": [],
+  "title": "Example fundraising page",
+  "totalEstimatedGiftAid": "0",
+  "totalRaisedOffline": "0",
+  "totalRaisedOnline": "0",
+  "totalRaisedPercentageOfFundraisingTarget": "0",
+  "totalRaisedSms": "0"
+}

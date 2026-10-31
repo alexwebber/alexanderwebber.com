@@ -13,6 +13,7 @@ from builders import garmin_fit
 
 from awingest.providers.intervals import IntervalsProvider
 from awingest.providers.intervals.client import IntervalsClient, Response
+from awingest.providers.justgiving import JustGivingProvider
 
 INTERVALS_FIXTURES = Path(__file__).parent / "fixtures" / "intervals"
 TEST_KEY = "test-intervals-key-5f3a9c"
@@ -120,6 +121,57 @@ class FakeClock:
     def sleep(self, seconds: float) -> None:
         self.sleeps.append(seconds)
         self.t += seconds
+
+
+JUSTGIVING_FIXTURES = Path(__file__).parent / "fixtures" / "justgiving"
+TEST_JUSTGIVING_KEY = "test-justgiving-key-7c1e4b"
+
+
+class FakeJustGivingApi:
+    """A stand-in for the SKY API, as the client's transport, so it sees every request as sent.
+    It serves ``page`` until ``respond`` queues other responses."""
+
+    def __init__(self) -> None:
+        self.requests: list[urllib.request.Request] = []
+        self.page = (JUSTGIVING_FIXTURES / "page.json").read_bytes()
+        self._queue: list[Response | Exception] = []
+
+    def serve(self, fixture: str) -> None:
+        self.page = (JUSTGIVING_FIXTURES / fixture).read_bytes()
+
+    def respond(
+        self, status: int, body: bytes = b"", headers: dict[str, str] | None = None
+    ) -> None:
+        self._queue.append((status, headers or {}, body))
+
+    def fail_with(self, error: Exception) -> None:
+        self._queue.append(error)
+
+    def __call__(self, request: urllib.request.Request) -> Response:
+        self.requests.append(request)
+        if self._queue:
+            next_up = self._queue.pop(0)
+            if isinstance(next_up, Exception):
+                raise next_up
+            return next_up
+        return 200, {"content-type": "application/json"}, self.page
+
+
+@pytest.fixture
+def justgiving_api() -> FakeJustGivingApi:
+    return FakeJustGivingApi()
+
+
+@pytest.fixture
+def justgiving_key(monkeypatch) -> str:
+    monkeypatch.setenv("JUSTGIVING_SUBSCRIPTION_KEY", TEST_JUSTGIVING_KEY)
+    monkeypatch.delenv("JUSTGIVING_REALM", raising=False)
+    return TEST_JUSTGIVING_KEY
+
+
+@pytest.fixture
+def justgiving(justgiving_api, justgiving_key, clock) -> JustGivingProvider:
+    return JustGivingProvider(transport=justgiving_api, sleep=clock.sleep)
 
 
 @pytest.fixture

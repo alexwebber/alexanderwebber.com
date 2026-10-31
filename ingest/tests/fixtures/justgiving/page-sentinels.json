@@ -1,0 +1,63 @@
+{
+  "activityCharityCreated": "SENTINEL-activityCharityCreated",
+  "activityId": "SENTINEL-activityId",
+  "activityType": "SENTINEL-activityType",
+  "attribution": "SENTINEL-attribution",
+  "branding": "SENTINEL-branding",
+  "campaignGuid": "SENTINEL-campaignGuid",
+  "charity": {
+    "name": "SENTINEL-charity-name",
+    "registrationNumber": "SENTINEL-charity-no"
+  },
+  "companyAppealId": "SENTINEL-companyAppealId",
+  "consumerId": "SENTINEL-consumerId",
+  "currencyCode": "GBP",
+  "currencySymbol": "SENTINEL-currencySymbol",
+  "domain": "SENTINEL-domain",
+  "donationCount": "2",
+  "eventCategory": "SENTINEL-eventCategory",
+  "eventDate": "SENTINEL-eventDate",
+  "eventId": "SENTINEL-eventId",
+  "eventName": "SENTINEL-eventName",
+  "expiryDate": "SENTINEL-expiryDate",
+  "fundraisingTarget": "500",
+  "grandTotalRaisedExcludingGiftAid": "30.00",
+  "image": "SENTINEL-image",
+  "imageCount": "SENTINEL-imageCount",
+  "inMemoriam": "SENTINEL-inMemoriam",
+  "media": "SENTINEL-media",
+  "organisation": "SENTINEL-organisation",
+  "owner": {
+    "name": "SENTINEL-owner-name",
+    "email": "sentinel-owner@example.org"
+  },
+  "ownerGuid": "SENTINEL-ownerGuid",
+  "ownerProfileImageUrls": "SENTINEL-ownerProfileImageUrls",
+  "pageCreatedDate": "SENTINEL-pageCreatedDate",
+  "pageGuid": "SENTINEL-pageGuid",
+  "pageId": "SENTINEL-pageId",
+  "pageShortName": "SENTINEL-pageShortName",
+  "pageSummary": "SENTINEL-pageSummary",
+  "pageSummaryWhat": "SENTINEL-pageSummaryWhat",
+  "pageSummaryWhy": "SENTINEL-pageSummaryWhy",
+  "rememberedPersonSummary": "SENTINEL-rememberedPersonSummary",
+  "showEventDate": "SENTINEL-showEventDate",
+  "showExpiryDate": "SENTINEL-showExpiryDate",
+  "smsCode": "SENTINEL-smsCode",
+  "status": "Active",
+  "story": "SENTINEL-story",
+  "teams": "SENTINEL-teams",
+  "title": "SENTINEL-title",
+  "totalEstimatedGiftAid": "SENTINEL-totalEstimatedGiftAid",
+  "totalRaisedOffline": "SENTINEL-totalRaisedOffline",
+  "totalRaisedOnline": "SENTINEL-totalRaisedOnline",
+  "totalRaisedPercentageOfFundraisingTarget": "SENTINEL-totalRaisedPercentageOfFundraisingTarget",
+  "totalRaisedSms": "SENTINEL-totalRaisedSms",
+  "donations": [
+    {
+      "donorDisplayName": "SENTINEL-donor-name",
+      "message": "SENTINEL-donor-message",
+      "amount": "SENTINEL-donor-amount"
+    }
+  ]
+}
