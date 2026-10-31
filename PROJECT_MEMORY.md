@@ -1492,9 +1492,22 @@ project-specific notes.
     out once under load, so it now has 240 s, like `run-detail.spec.ts`.
   - **Not proven until T037:** the R2 path, a real Actions run and the alert against real GitHub.
     The `decide` branch waits for the first real figure change.
+  - **A column's value label could leave the page** (found by #85's CI, not caused by it). The
+    latest week's "57.3 km" sat centred on the last of 26 columns, so at 320 px it passed the page
+    edge by 1 px on CI's Linux font (7 px in Verdana, none on Windows' font). The last column's
+    label now right-aligns to its bar (`BarChart.astro`), and `training.spec.ts` checks that labels
+    stay inside the plot in any font. Playwright only runs on PRs touching UI paths, so bot data
+    can break a layout check unseen until the next such PR (BACKLOG).
 
 ## Upstream candidates
 
+- **Path-filtered test jobs don't watch bot-published data:** a layout check failed on the first
+  UI PR in six days, because the week's data had changed under it. Run layout checks on a schedule
+  against real data too (AGENT_TIPS, *Testing*).
+- **Layout checks that depend on the browser's font pass on one OS and fail on another:** a 1 px
+  overflow appeared only on CI's Linux font. Assert the geometry that causes it (a label inside its
+  plot), which fails on any font, and show that it fails before fixing (AGENT_TIPS, *End-to-end
+  testing*).
 - **A test that loops over all published data outgrows the default timeout silently:** set a
   generous limit when writing it (AGENT_TIPS, *End-to-end testing*).
 - **Run nothing else during a local Playwright run:** a first-run timeout coincided with pytest
