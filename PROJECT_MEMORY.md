@@ -20,15 +20,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   reads the page through JustGiving's official API, and the bot published
   `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). No page
   shows it yet.
-  - **Next session, first:** check that #87 (`002-key-shape-check`) merged and `main`'s Gate run
-    finished; the next refresh then runs the new key check, so its fundraising step must still pass.
-    Check that sdd-playbook#13 merged, and reinstall house-process 0.11.0 here (a small PR, with
-    `sdd-playbook` on an up-to-date `main` first). Both PRs still open means wait, or carry on with
-    Phase 3 and do these after.
+  - **Next session, first:** check that the house-process 0.11.0 PR merged (`house-process-0.11.0`).
   - **Then: Phase 3, the staging check** (`specs/002-fundraising/tasks.md`, T039 on; about 15
     minutes of the owner's time, guided), in its own session.
-  - **Stray local branch:** `harvest-alexanderwebber-5` in `C:\Projects\sdd-playbook` was never
-    pushed and is superseded by #13. Delete it after #13 merges.
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -127,6 +121,7 @@ project-specific notes.
   checkbox question. If the PR merges with any left unanswered, the next session asks them
   before building on them. Before telling the owner a PR is ready, and again after it merges,
   the agent checks that every check on it is green (`gh pr checks`), not just the required ones.
+  After a merge, that includes `main`'s own run, which it waits for to the end.
 - **Draw requirements out with questions.** For specs, clarifications and design decisions, the
   agent asks focused rounds of questions with recommended options rather than expecting the
   owner to supply everything up front.
@@ -1526,8 +1521,17 @@ project-specific notes.
     so GitHub's email-privacy setting refused the push (GH007). Its `user.email` is now the noreply
     address, as here, and `new-project.ps1` defaults to it. `--amend` was blocked by the permission
     check, so the fix is a fresh commit on a new branch.
+- **2026-11-01** — Reinstalled house-process 0.11.0 from the playbook's `main` after
+  sdd-playbook #13 merged. The PR norm gains the template's sentence about waiting for `main`'s own
+  run. `extensions.yml` is unchanged. #87's key check is proven: `main`'s Gate run finished, and a
+  dispatched refresh's fundraising step read `outcome: ok`, with no alert issue. The stray
+  `harvest-alexanderwebber-5` branch is deleted.
 
 ## Upstream candidates
+
+- `gh run list` and `gh run view` showed `createdAt` an hour ahead of the run's own log timestamps
+  (09:24:08Z listed, 08:24:16Z logged, 1 Nov 2026), which looked like a missed refresh slot. Check
+  a run's log before trusting a gap in the listing.
 
 ## Open questions
 
