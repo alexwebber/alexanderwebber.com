@@ -1,9 +1,9 @@
 ---
 // /running/ (T101, US1; contracts/routes.md): "how is Alex doing and what is he aiming for?". In
-// order: the focus-race hero (countdown, target, Garmin prediction "as of" its date, charity,
-// training build), the featured goals in priority order, this week and the latest run, the story
-// link (only once it exists), and links to the section's other areas. "Last updated" and the stale
-// notice come from SectionLayout.
+// order: the focus-race hero (countdown, target, Garmin prediction "as of" its date, the fundraising
+// card or else the charity, training build), the featured goals in priority order, this week and
+// the latest run, the story link (only once it exists), and links to the section's other areas.
+// "Last updated" and the stale notice come from SectionLayout.
 //
 // Featured goals (owner picks, 2026-10-23): one column on phones. Wider, newly achieved goals
 // (FR-042) lead for recent_highlight_days.goal days as full-width celebration cards, then the
@@ -16,6 +16,7 @@
 import { formatDate } from '../../../shared/format/dates.ts';
 import { ogPath } from '../../../shared/og/render.ts';
 import AchievedGoalCard from '../components/AchievedGoalCard.astro';
+import FundraisingCard from '../components/FundraisingCard.astro';
 import GoalCard from '../components/GoalCard.astro';
 import Hero from '../components/Hero.astro';
 import RunCard from '../components/RunCard.astro';
@@ -31,7 +32,7 @@ import { countdownText } from '../domain/races.ts';
 const PATH = '/running/';
 const data = await loadLanding();
 const settings = await sectionSettings();
-const { focus, week, weekRuns, lastWeekRuns, latest, featured, today } = data;
+const { focus, week, weekRuns, lastWeekRuns, latest, featured, fundraising, today } = data;
 // Which featured cards span both columns on wider screens.
 const leadIndex = featured.findIndex((e) => !e.newlyAchieved);
 const pairedCount = leadIndex < 0 ? 0 : featured.length - leadIndex - 1;
@@ -55,7 +56,13 @@ const description = `Alexander Webber's running: ${raceLine}Goals, this week's t
   imageAlt={focus ? `${focus.race.name}: ${count} ${unit}`.trim() : "Alexander Webber's running"}
   garmin={attribution ?? false}
 >
-  {focus ? <Hero focus={focus} today={today} /> : null}
+  {
+    focus ? (
+      <Hero focus={focus} today={today} hasCard={fundraising !== undefined}>
+        {fundraising && <FundraisingCard slot="fundraising" campaign={fundraising} />}
+      </Hero>
+    ) : null
+  }
 
   <section class="landing-section" aria-labelledby="featured-goals" data-featured>
     <div class="landing-section-header">

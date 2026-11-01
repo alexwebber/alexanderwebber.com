@@ -1,0 +1,26 @@
+---
+// /fundraising-preview/<state>/ (SHELL_PREVIEW=1 only): each synthetic state through the real
+// SectionLayout and FundraisingCard, for tests/e2e/fundraising.spec.ts and
+// tests/a11y/fundraising.spec.ts.
+import type { GetStaticPaths } from 'astro';
+import FundraisingCard from '../../../src/sections/running/components/FundraisingCard.astro';
+import SectionLayout from '../../../src/sections/running/components/SectionLayout.astro';
+import { loadFundraising } from '../../../src/sections/running/data/fundraising.ts';
+import { PREVIEW_NOW, PREVIEW_STATES, PREVIEW_TODAY, previewStore, type PreviewState } from './store.ts';
+
+export const getStaticPaths = (() => PREVIEW_STATES.map((state) => ({ params: { state }, props: { state } }))) satisfies GetStaticPaths;
+
+interface Props {
+  state: PreviewState;
+}
+
+const { state } = Astro.props;
+const { current } = await loadFundraising(PREVIEW_TODAY, previewStore(state));
+---
+
+<SectionLayout heading="Fundraising preview" title={`Fundraising preview: ${state} (synthetic data)`} description="The fundraising card over synthetic data." image="/og/running.png" imageAlt="Preview card">
+  <section aria-labelledby="preview-race">
+    <h2 id="preview-race">{current!.race.name}</h2>
+    <FundraisingCard campaign={current!} now={PREVIEW_NOW} />
+  </section>
+</SectionLayout>

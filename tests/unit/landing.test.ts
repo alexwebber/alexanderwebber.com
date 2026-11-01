@@ -6,8 +6,9 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadLanding } from '../../src/sections/running/data/landing.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
-import type { Goal, HealthMetric, OwnerData, RefreshRecord, Run, RunningStore, SectionSettings, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
+import type { Campaign, CampaignFigures, Goal, HealthMetric, OwnerData, RefreshRecord, Run, RunningStore, SectionSettings, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { landingCard } from '../../src/sections/running/og/landing.ts';
+import GoalsPage from '../../src/sections/running/pages/goals.astro';
 import Landing from '../../src/sections/running/pages/index.astro';
 import RunPage from '../../src/sections/running/pages/runs/[id].astro';
 import { run as runFixture } from '../helpers/temp-repo.ts';
@@ -55,6 +56,8 @@ interface Fixture {
   refresh?: RefreshRecord;
   predictions?: OwnerData['manualMetrics']['race_predictions'];
   health?: Partial<Record<HealthMetric, { date: string; value: number }[]>>;
+  campaigns?: Campaign[];
+  figures?: CampaignFigures[];
 }
 
 function store(f: Fixture = {}): RunningStore {
@@ -66,7 +69,7 @@ function store(f: Fixture = {}): RunningStore {
     getHealthSeries: async (metric) => (f.health ?? { weight_avg7: [{ date: '2026-10-03', value: 103.0 }] })[metric] ?? [],
     getRefreshRecord: async () =>
       f.refresh ?? { schema_version: 1, generated_at: '2026-10-04T08:00:00Z', sources: { intervals: { last_data_change_at: '2026-10-04T08:00:00Z', last_success_at_build: '2026-10-04T08:00:00Z' } } },
-    getCampaignFigures: async () => [],
+    getCampaignFigures: async () => f.figures ?? [],
     getOwner: async () => ({
       section: 'section' in f ? f.section : SECTION,
       goals: f.goals ?? GOALS,
@@ -76,7 +79,7 @@ function store(f: Fixture = {}): RunningStore {
       exclusions: [],
       lab: [],
       manualMetrics: { training_status: [], race_predictions: f.predictions ?? [{ as_of: '2026-10-01', marathon: '3:28:40', '10k': '44:10' }] },
-      campaigns: [],
+      campaigns: f.campaigns ?? [],
     }),
   };
 }
@@ -107,6 +110,63 @@ const text = (html: string) =>
     .trim();
 const page = async () => clean(await container.renderToString(Landing, { request: new Request('https://alexanderwebber.com/running/') }));
 const ids = (html: string, list: string) => [...(html.match(new RegExp(`${list}[\\s\\S]*?</ol>`))?.[0] ?? '').matchAll(/data-goal-id="([^"]+)"/g)].map((m) => m[1]);
+
+const CAMPAIGN: Campaign = {
+  id: 'brighton-2027',
+  race_id: 'brighton-2027',
+  charity: { name: 'Martlets' },
+  page_url: 'https://www.justgiving.com/page/example-brighton-2027',
+};
+const FIGURES: CampaignFigures = {
+  schema_version: 1,
+  campaign_id: 'brighton-2027',
+  last_read_at: '2026-10-04T08:17:00Z',
+  points: [{ date: '2026-10-04', raised_pence: 125000, target_pence: 200000, supporters: 37 }],
+};
+
+describe('the fundraising card on the landing page (US1)', () => {
+  it('sits after the hero\'s facts, before the training build and the goals (FR-030, FR-034)', async () => {
+    use({ campaigns: [CAMPAIGN], figures: [FIGURES] });
+    const html = await page();
+    const at = (needle: string) => html.indexOf(needle);
+    expect(at('class="fundraising-card"')).toBeGreaterThan(at('data-target'));
+    expect(at('class="fundraising-card"')).toBeGreaterThan(at('data-prediction'));
+    expect(at('class="fundraising-card"')).toBeLessThan(at('class="hero-build"'));
+    expect(at('class="hero-build"')).toBeLessThan(at('data-featured'));
+    expect(text(html)).toContain('£1,250 raised of £2,000');
+    expect(html).toContain('href="https://www.justgiving.com/page/example-brighton-2027"');
+  });
+
+  it('takes over the hero\'s charity line, so "For Martlets" shows once (owner decision, 2026-10-31)', async () => {
+    use({ campaigns: [CAMPAIGN], figures: [FIGURES] });
+    const html = await page();
+    expect(html).not.toContain('data-charity');
+    expect(text(html.match(/data-hero[\s\S]*?<\/section>/)![0]).match(/For Martlets/g)).toHaveLength(1);
+  });
+
+  it.each([
+    ['no campaign', {}],
+    ['a campaign with no published figures yet', { campaigns: [CAMPAIGN] }],
+    ['figures with no campaign', { figures: [FIGURES] }],
+  ])('with %s: the hero keeps its charity line, and the slot is empty (US1.3)', async (_, fixture) => {
+    use(fixture);
+    const html = await page();
+    expect(text(html.match(/<li[^>]*data-charity[\s\S]*?<\/li>/)![0])).toBe('For Martlets');
+    expect(html).not.toContain('fundraising-card');
+    expect(html).not.toContain('Donate');
+  });
+
+  it('is not a goal: neither on the Goals page nor among the featured goals, and the count is unchanged (US1.8, FR-025)', async () => {
+    const before = (await loadLanding('2026-10-04', store())).featured.map((e) => e.goal.id);
+    const withCampaign = store({ campaigns: [CAMPAIGN], figures: [FIGURES] });
+    const landing = await loadLanding('2026-10-04', withCampaign);
+    expect(landing.fundraising?.campaign.id).toBe('brighton-2027');
+    expect(landing.featured.map((e) => e.goal.id)).toEqual(before);
+    setRunningStore(withCampaign);
+    const goals = clean(await container.renderToString(GoalsPage, { request: new Request('https://alexanderwebber.com/running/goals/') }));
+    expect(goals).not.toMatch(/fundraising-card|Donate|raised/);
+  });
+});
 
 describe('landing page (US1)', () => {
   it('US1.1: leads with the Brighton hero: date, 182 days, target, the Garmin prediction as of its date, the charity', async () => {

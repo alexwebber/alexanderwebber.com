@@ -6,9 +6,11 @@
 //   with no other change (US1.2);
 // - the owner's latest Garmin prediction at the race distance "as of" its date (AsOf), or nothing
 //   when none is recorded;
-// - "For Martlets" as plain text;
-// - a reserved place for the fundraising feature (FR-025): the named slot "fundraising", which
-//   nothing fills yet, so nothing is shown;
+// - "For Martlets" as plain text, unless the fundraising card shows, which says the same directly
+//   below it (owner decision, 2026-10-31);
+// - the fundraising card (T053), in the named slot "fundraising", when the focus race's campaign
+//   has figures (FR-030); otherwise nothing. The `hasCard` prop says so, because Astro.slots.has
+//   is true for a conditional child even when its condition is false;
 // - the training build chart (TrainingBuild).
 // Garmin attribution sits under the heading when the hero shows a Garmin prediction, and at the
 // chart's title for the runs behind the build (FR-077). No client JS beyond Countdown's.
@@ -24,9 +26,11 @@ export interface Props {
   focus: FocusRaceView;
   /** Europe/London YYYY-MM-DD (the build day). */
   today: string;
+  /** The "fundraising" slot holds a card. */
+  hasCard?: boolean;
 }
 
-const { focus, today } = Astro.props;
+const { focus, today, hasCard = false } = Astro.props;
 const { race, state, prediction, result } = focus;
 ---
 
@@ -68,7 +72,7 @@ const { race, state, prediction, result } = focus;
           </li>
         )
       }
-      <li data-charity>For {focus.charity}</li>
+      {!hasCard && <li data-charity>For {focus.charity}</li>}
     </ul>
     <slot name="fundraising" />
   </div>

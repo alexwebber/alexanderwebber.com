@@ -3,7 +3,8 @@
   "name": "alexanderwebber",
   "main": "src/worker/freshness.ts",
   "compatibility_date": "2026-10-12",
-  // Static assets serve first; the Worker only handles /running/api/* (GET /running/api/freshness).
+  // Static assets serve first; the Worker only handles /running/api/* (GET /running/api/freshness
+  // and /running/api/fundraising-freshness).
   // An address with no page gets dist/404.html (src/pages/404.astro) with a 404 status.
   // `run_worker_first` sends the API path straight to the Worker: with `not_found_handling` set,
   // a browser navigation to an address with no asset would otherwise get the 404 page and never
@@ -37,7 +38,8 @@
     "REFRESH_REPO": "alexwebber/alexanderwebber.com",
     "REFRESH_WORKFLOW": "refresh.yml"
   },
-  // The Worker reads only public/freshness.json from the private bucket.
+  // The Worker reads only public/freshness.json and public/fundraising-freshness.json from the
+  // private bucket.
   "r2_buckets": [
     {
       "binding": "FRESHNESS",

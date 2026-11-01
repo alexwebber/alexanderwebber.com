@@ -1,0 +1,28 @@
+---
+// The fundraising card in the hero's "fundraising" slot (T051; FR-030, FR-031, FR-034, FR-062;
+// specs/002-fundraising/contracts/routes.md): the total against the target, the bar, the supporters
+// and charity, Donate, and when the figures were last read. It looks like a goal card but isn't
+// one (FR-025): it has its own class, and its target never joins the Goals page or the featured
+// goals. The page renders it only with a current campaign with figures, so without one the slot
+// holds nothing at all. Every figure is in the built HTML, and the only client JS is
+// FundraisingUpdated's.
+import type { CampaignView } from '../data/fundraising.ts';
+import FundraisingFigures from './FundraisingFigures.astro';
+import FundraisingUpdated from './FundraisingUpdated.astro';
+import '../styles/goal-card.css';
+
+export interface Props {
+  campaign: CampaignView;
+  /** The build time; tests and previews pin it. */
+  now?: Date;
+}
+
+const { campaign, now } = Astro.props;
+const id = `fundraising-${campaign.campaign.id}`;
+---
+
+<article class="fundraising-card" aria-labelledby={id} data-campaign-id={campaign.campaign.id}>
+  <h3 class="fundraising-card-title" id={id}>Fundraising</h3>
+  <FundraisingFigures campaign={campaign} />
+  <FundraisingUpdated campaignId={campaign.campaign.id} lastReadAt={campaign.lastReadAt} staleAfterHours={campaign.staleAfterHours} {...now ? { now } : {}} />
+</article>
