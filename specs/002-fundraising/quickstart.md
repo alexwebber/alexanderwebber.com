@@ -47,6 +47,23 @@ isn't 404, change the adapter's mapping and its test (research.md R1).
 
 ## 4. Staging: the two unproven points (research.md R8)
 
+**Result (2026-11-01):**
+
+| Check | Result |
+|---|---|
+| Figures with pence and thousands | Plain strings with no comma: `'630.50'`, then `'1030.75'`, read as 103,075 pence |
+| `donationCount` against the supporters shown | Equal: 7 before the test, 9 after, and the page also says "9 donations" |
+| Online, offline and SMS totals | They sum, with the whole total online |
+| A total over target | No problem, at 103% |
+| A hidden donation amount | Counted in the total and the count |
+| A page with no target | **Not tested**: no such page could be made. It fails safely if the field surprises us |
+
+The two test donations came from one owner under different display names, so one name repeated isn't
+tested (T117). A page created on staging opened in its dashboard, then gave a 404 everywhere within
+minutes, so the check used an existing shared test page. A donation reaches the API at once, and the
+public page within a few minutes. The page rounds to the nearest pound (£1,031), while this site rounds
+down (£1,030, FR-063).
+
 **Owner**, guided: a page on JustGiving's staging environment, and test-card donations totalling over
 £1,000, with two from one donor. A second staging page with no target.
 

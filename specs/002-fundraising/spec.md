@@ -446,10 +446,10 @@ current with no change other than the site's files.
   privately. Donor details are other people's data and the site never needs them, so they are not
   stored anywhere (FR-011).
 - **Supporters** means JustGiving's own supporter count for the page, as JustGiving shows it. The
-  API's nearest figure is `donationCount`. Whether it equals the number JustGiving displays (for
-  example with a repeat donor) isn't proven yet, because the page has no donations; the plan tests
-  it on JustGiving's staging environment and at the first real donation, and if the two differ the
-  site calls the figure "donations" rather than show a wrong count of supporters.
+  API's nearest figure is `donationCount`. On JustGiving's staging environment it equalled the
+  number displayed, at 7 and at 9 donations (2026-11-01). The plan checks it again at the first real
+  donation, and if the two differ the site calls the figure "donations" rather than show a wrong
+  count of supporters.
 - **Total** means JustGiving's own page total, excluding Gift Aid, including any offline amounts the
   owner records on JustGiving. Shown to the whole pound, rounded down (FR-063).
 - **Target**: whatever the JustGiving page says, set by the owner there only. Martlets' Brighton
