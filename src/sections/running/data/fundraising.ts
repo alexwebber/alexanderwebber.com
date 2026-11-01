@@ -1,9 +1,11 @@
-// Campaigns as the pages show them (T046, T065, T085; specs/002-fundraising/data-model.md §7). A campaign
-// with figures is one whose published file exists; others appear nowhere (FR-022). The current
+// Campaigns as the pages show them (T046, T065, T085, T095; specs/002-fundraising/data-model.md §7). A
+// campaign with figures is one whose published file exists; others appear nowhere (FR-022). The current
 // campaign is the one linked to the focus race, and every other is past, most recent race first
-// (FR-043). Memoised per store and day.
+// (FR-043). Each carries its phase (before or after its race, or finished) and its race result once
+// recorded (FR-033). Memoised per store and day.
 import { today as londonToday } from '../../../shared/format/dates.ts';
-import { campaignProgress, storyParagraphs, type CampaignProgress } from '../domain/fundraising.ts';
+import { campaignPhase, campaignProgress, storyParagraphs, type CampaignPhase, type CampaignProgress } from '../domain/fundraising.ts';
+import { raceResult, type RaceResult } from '../domain/races.ts';
 import { runningStore, sectionSettings } from './load.ts';
 import { perStoreAndDay } from './memo.ts';
 import type { Campaign, CampaignFigures, CampaignStory, OwnerData, Run, RunningStore, UpcomingRace } from './store/index.ts';
@@ -23,6 +25,13 @@ export interface CampaignView {
   progress?: CampaignProgress;
   /** The owner marked it finished: its last figures are final (FR-023). */
   finished: boolean;
+  /** Before or after its race, or finished (FR-023, FR-033). */
+  phase: CampaignPhase;
+  /**
+   * The race result once the owner records it: the official time, else the watch time, as the hero
+   * shows it (FR-033). Undefined before then, or when neither time is known.
+   */
+  result?: RaceResult;
   staleAfterHours: number;
   /** The approved story's paragraphs. Undefined until the campaign has one (FR-044). */
   story?: string[];
@@ -39,19 +48,31 @@ export function loadFundraising(today: string = londonToday(), store: RunningSto
   return load(today, store);
 }
 
-/** A campaign's race: upcoming-races.yaml by id, else races/<slug>/race.yaml, named as raceHistory() does. */
-function campaignRace(raceId: string, owner: OwnerData, runs: readonly Run[]): CampaignView['race'] | undefined {
+interface CampaignRace {
+  race: CampaignView['race'];
+  /** The race as raceState() and raceResult() take it. */
+  state: Pick<UpcomingRace, 'date' | 'result_ref'>;
+}
+
+/**
+ * A campaign's race: upcoming-races.yaml by id, else races/<slug>/race.yaml, named as raceHistory()
+ * does. A race known only under races/ has been run and recorded, so it is passed on as
+ * `{ date, result_ref: slug }`, which reads as completed (T094).
+ */
+function campaignRace(raceId: string, owner: OwnerData, runs: readonly Run[]): CampaignRace | undefined {
   const upcoming = owner.upcomingRaces.find((r) => r.id === raceId);
-  if (upcoming) return { name: upcoming.name, date: upcoming.date };
+  if (upcoming) return { race: { name: upcoming.name, date: upcoming.date }, state: upcoming };
   const entry = owner.races.find((r) => r.slug === raceId);
   if (!entry) return undefined;
   const run = entry.run_id ? runs.find((r) => r.id === entry.run_id) : undefined;
-  return { name: entry.name ?? run?.title ?? 'Race', date: entry.date };
+  return { race: { name: entry.name ?? run?.title ?? 'Race', date: entry.date }, state: { date: entry.date, result_ref: entry.slug } };
 }
 
-function campaignView(campaign: Campaign, race: CampaignView['race'], file: CampaignFigures, staleAfterHours: number, story: CampaignStory | undefined): CampaignView {
+function campaignView(campaign: Campaign, { race, state }: CampaignRace, file: CampaignFigures, today: string, owner: OwnerData, runs: readonly Run[], staleAfterHours: number, story: CampaignStory | undefined): CampaignView {
   const figures = file.points.at(-1)!;
   const progress = campaignProgress(figures.raised_pence, figures.target_pence);
+  const finished = campaign.finished === true;
+  const result = raceResult(state, owner.races, runs);
   return {
     campaign,
     race,
@@ -59,7 +80,9 @@ function campaignView(campaign: Campaign, race: CampaignView['race'], file: Camp
     lastReadAt: file.last_read_at,
     points: file.points,
     ...(progress ? { progress } : {}),
-    finished: campaign.finished === true,
+    finished,
+    phase: campaignPhase(state, finished, today),
+    ...(result?.time_s !== undefined ? { result } : {}),
     staleAfterHours,
     ...(story ? { story: storyParagraphs(story.text) } : {}),
   };
@@ -71,7 +94,7 @@ const load = perStoreAndDay(async (today, store): Promise<FundraisingData> => {
     const file = published.find((f) => f.campaign_id === campaign.id);
     const race = campaignRace(campaign.race_id, owner, runs);
     const story = owner.stories.find((s) => s.campaign === campaign.id);
-    return file && race ? [campaignView(campaign, race, file, settings.stale_after_hours, story)] : [];
+    return file && race ? [campaignView(campaign, race, file, today, owner, runs, settings.stale_after_hours, story)] : [];
   });
   const current = views.find((view) => view.campaign.race_id === settings.focus_race?.race_id);
   return {
