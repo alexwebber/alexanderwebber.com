@@ -26,10 +26,10 @@ Update this as decisions get made — treat it as the source of truth alongside
   campaigns is merged** (Phase 7, T094–T102, #95, all four boxes ticked, `main`'s Gate and deploy
   green), with nothing visible before race day. **Phase 8 (Polish, T103–T110) is in review** on the
   `claude/optimistic-gauss-cco16n` PR (cloud session), with nothing visible changing.
-  - **Next session: finish Phase 8 after the owner's review.** Ask about the PR's boxes, including
-    the T112 usability check (run it, or skip it as with 001's hallway test), and record the answer.
-    After the merge: wait for `main`'s Gate to finish, deploy included; read the next nightly Quality
-    run (the landing page sat near 90 on the 2-core runner); then tick T111 and T112, move
+  - **Next session: finish Phase 8 after the owner's review.** Ask about any of the PR's three boxes
+    left unticked (T112 is settled: skipped). After the merge: wait for `main`'s Gate to finish,
+    deploy included; read the next nightly Quality run (the landing page sat near 90 on the 2-core
+    runner); then tick T111, move
     fundraising's status to shipped here, and ask the owner which spec comes next (journey story or
     CV & Blog).
   - **Fundraising triggers to check at each session start** (T113–T121): the story reviewers' reply
@@ -1775,6 +1775,8 @@ project-specific notes.
     ruff and `astro check` clean, gate green on a deploy build (scan-privacy without the R2 map).
     quickstart §1, §6–§10 and §12 ran and passed; §5 needs Actions and secrets (proven earlier on
     `main`).
+- **2026-11-01** — **T112's usability check skipped** (owner, PR #98 comment), as with 001's hallway
+  test: the phase-by-phase live reviews covered it. SC-001 stays unmeasured.
 
 ## Upstream candidates
 
