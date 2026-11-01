@@ -1,0 +1,91 @@
+---
+// Past campaigns on the fundraising page (T067; FR-043, US2.5; specs/002-fundraising/contracts/routes.md):
+// most recent race first, each with its race and date, charity, final or latest total, target if
+// any, and a link to its JustGiving page. A finished one reads "Final total" with the date it was
+// last read, and nothing can go stale. An unfinished one is still being read, so it shows its
+// updated line and, past the threshold, the notice. No client JS but FundraisingUpdated's.
+import { formatDate, formatLongDate, londonDate } from '../../../shared/format/dates.ts';
+import type { CampaignView } from '../data/fundraising.ts';
+import { poundsText } from '../domain/fundraising.ts';
+import FundraisingUpdated from './FundraisingUpdated.astro';
+
+export interface Props {
+  campaigns: readonly CampaignView[];
+  /** The build time; tests and previews pin it. */
+  now?: Date;
+}
+
+const { campaigns, now } = Astro.props;
+---
+
+<section class="past-campaigns" aria-labelledby="past-campaigns-title" data-past-campaigns>
+  <h2 id="past-campaigns-title">Past campaigns</h2>
+  <ul>
+    {
+      campaigns.map(({ campaign, race, figures, lastReadAt, finished, staleAfterHours }) => (
+        <li class="past-campaign" data-past-campaign={campaign.id}>
+          <h3>{race.name} <span class="past-campaign-date">· {formatLongDate(race.date)}</span></h3>
+          <p>For {campaign.charity.name}</p>
+          <p class="past-campaign-total" data-past-total>
+            {finished && 'Final total: '}
+            <strong>{poundsText(figures.raised_pence)}</strong> raised
+            {figures.target_pence !== undefined && <> of {poundsText(figures.target_pence)}</>}
+          </p>
+          {finished ? (
+            <p class="past-campaign-read" data-past-read>Last updated {formatDate(londonDate(new Date(lastReadAt)))}</p>
+          ) : (
+            <FundraisingUpdated campaignId={campaign.id} lastReadAt={lastReadAt} staleAfterHours={staleAfterHours} {...now ? { now } : {}} />
+          )}
+          <p class="past-campaign-link">
+            <a href={campaign.page_url}>JustGiving page<span class="visually-hidden"> for {race.name}</span></a>
+          </p>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  ul {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .past-campaign {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  h3 {
+    margin: 0 0 var(--space-1);
+    font-size: var(--step-1);
+    line-height: var(--leading-tight);
+  }
+
+  .past-campaign-date {
+    white-space: nowrap;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .past-campaign-total {
+    margin-top: var(--space-2);
+  }
+
+  .past-campaign-read {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
+  }
+
+  .past-campaign-link {
+    margin-top: var(--space-3);
+  }
+</style>

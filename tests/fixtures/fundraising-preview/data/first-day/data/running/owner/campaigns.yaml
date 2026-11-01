@@ -1,0 +1,9 @@
+- id: seaside-2027
+  race_id: seaside-2027
+  charity:
+    name: Example hospice
+    url: https://example.org/
+    registered:
+      name: Example hospice
+      number: "000000"
+  page_url: https://www.justgiving.com/page/example-seaside-2027

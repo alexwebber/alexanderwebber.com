@@ -1,7 +1,7 @@
 // Running's file map: reads and schema-validates every file under data/running/
 // (contracts/data-files.md layout). Shared by JsonFileStore (which throws on any problem) and
 // ../../validate.ts (which adds referential checks and reports everything at once).
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fieldPath, listDataFiles, parseDataFile, SchemaSet, type DataIssue } from '../../../../shared/storage/index.ts';
 import type {
@@ -26,6 +26,7 @@ import { RUNNING_SCHEMAS, type RunningSchema } from './schemas.ts';
 export const DATA_DIR = 'data/running';
 export const PUBLISHED_DIR = `${DATA_DIR}/published`;
 export const OWNER_DIR = `${DATA_DIR}/owner`;
+const CAMPAIGNS_FILE = `${OWNER_DIR}/campaigns.yaml`;
 
 /** A value and the repo-relative file it came from. */
 export interface Loaded<T> {
@@ -199,6 +200,22 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
   data.lab.sort((a, b) => a.value.date.localeCompare(b.value.date) || a.value.type.localeCompare(b.value.type));
   data.fundraising.sort((a, b) => a.value.campaign_id.localeCompare(b.value.campaign_id));
   return { data, issues };
+}
+
+/**
+ * The IDs of the campaigns with a published figures file (research.md R13), for integration.ts,
+ * which asks while the site's config loads: it reads the campaign list and tests for each file,
+ * rather than loading the whole data tree a second time. A list it can't read counts as none here,
+ * because the build's validation stops on it with the file/entry/field message.
+ */
+export function campaignsWithFigures(root: string = process.cwd()): string[] {
+  const path = join(root, CAMPAIGNS_FILE);
+  if (!existsSync(path)) return [];
+  const parsed = parseDataFile(CAMPAIGNS_FILE, readFileSync(path, 'utf8'));
+  if ('error' in parsed || !Array.isArray(parsed.value)) return [];
+  return parsed.value
+    .map((campaign) => at(campaign, 'id'))
+    .filter((id): id is string => typeof id === 'string' && existsSync(join(root, PUBLISHED_DIR, 'fundraising', `${id}.json`)));
 }
 
 function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>): void {

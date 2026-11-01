@@ -1,0 +1,13 @@
+---
+// /running/fundraising/ (T069, US2; specs/002-fundraising/contracts/routes.md): the current
+// campaign, the chart of its total by day and past campaigns. It exists only once a campaign has
+// figures (integration.ts). Built for today in Europe/London. See FundraisingPage.astro. No client
+// JS but the two freshness scripts.
+import { ogPath } from '../../../shared/og/render.ts';
+import FundraisingPage from '../components/FundraisingPage.astro';
+import { loadFundraising } from '../data/fundraising.ts';
+
+const data = await loadFundraising();
+---
+
+<FundraisingPage data={data} image={ogPath('/running/fundraising/')} />

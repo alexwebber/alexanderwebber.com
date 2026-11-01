@@ -8,8 +8,8 @@ import running from './src/sections/running/integration.ts';
 // the races page and race pages over synthetic races, with maps and photos (tests/e2e/races.spec.ts,
 // tests/a11y/races.spec.ts; there are no real races yet), /health-preview/, the health page over
 // synthetic data with lab results (tests/e2e/health.spec.ts, tests/a11y/health.spec.ts; there are
-// no real lab results yet), and /fundraising-preview/<state>/, the fundraising card over synthetic
-// campaigns, in the states the real one can't show yet (tests/e2e/fundraising.spec.ts,
+// no real lab results yet), and /fundraising-preview/<state>/, the fundraising page and card over
+// synthetic campaigns, in the states the real one can't show yet (tests/e2e/fundraising.spec.ts,
 // tests/a11y/fundraising.spec.ts). Deploy builds never set it.
 /** @type {import('astro').AstroIntegration} */
 const shellPreview = {

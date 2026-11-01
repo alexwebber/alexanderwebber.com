@@ -1,7 +1,8 @@
 ---
 // A campaign's figures, shared by the landing card and the fundraising page (T050; FR-030, FR-032,
 // FR-061, FR-063, FR-065; specs/002-fundraising/contracts/routes.md, the before-race rows): the
-// total against the target, the bar, the supporters and charity, and the Donate link.
+// total against the target, the bar, the supporters and charity, and the Donate link. The page
+// names the charity above these, with its link, so it passes showCharity={false}.
 //
 // Donate is a plain link, in the same tab, with no JustGiving or Blackbaud logo (research.md R3).
 // ProgressBar is given the floored fraction, because it rounds, and its aria-valuenow would
@@ -12,9 +13,11 @@ import { barValueText, poundsText, supportersText, targetNote } from '../domain/
 
 export interface Props {
   campaign: CampaignView;
+  /** false: the charity is named just above, so the secondary line leaves it out. */
+  showCharity?: boolean;
 }
 
-const { campaign: view } = Astro.props;
+const { campaign: view, showCharity = true } = Astro.props;
 const { campaign, figures, progress } = view;
 const target = figures.target_pence;
 const note = targetNote(progress);
@@ -31,8 +34,8 @@ const note = targetNote(progress);
 }
 <p class="fundraising-secondary" data-fundraising-secondary>
   {note && <><strong class="fundraising-note" data-fundraising-note>{note}</strong> ·{' '}</>}
-  <span data-supporters>{supportersText(figures.supporters)}</span> ·{' '}
-  <span data-fundraising-charity>For {campaign.charity.name}</span>
+  <span data-supporters>{supportersText(figures.supporters)}</span>
+  {showCharity && <>{' '}· <span data-fundraising-charity>For {campaign.charity.name}</span></>}
 </p>
 <a class="fundraising-donate" href={campaign.page_url}>Donate on JustGiving</a>
 

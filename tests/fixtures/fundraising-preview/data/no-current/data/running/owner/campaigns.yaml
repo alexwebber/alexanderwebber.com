@@ -1,0 +1,13 @@
+- id: seaside-2026
+  race_id: seaside-2026
+  charity:
+    name: Example hospice
+    url: https://example.org/
+  page_url: https://www.justgiving.com/page/example-seaside-2026
+  finished: true
+- id: harbour-2026
+  race_id: harbour-2026
+  charity:
+    name: Example shelter
+    url: https://example.org/
+  page_url: https://www.justgiving.com/page/example-harbour-2026

@@ -1,0 +1,133 @@
+---
+// The fundraising page body (T068; US2, FR-041, FR-042, FR-043; specs/002-fundraising/contracts/routes.md),
+// in order: the current campaign (race and date, charity, the figures, Donate), the chart of the
+// total by day from two points on, with its summary and table, then past campaigns. With no current
+// campaign the page leads with that list. Shared by the real page and the test-only previews, which
+// pass synthetic data; the default slot comes first, and only the previews fill it.
+//
+// The charity is named once, above the figures, where it links to the charity's site, so the
+// figures leave it out. Figures say "Figures updated", to stay apart from Running's "Last updated".
+// The registered charity is named here and not on the landing card. Donate stops at 20rem, because
+// here it spans a whole page rather than a hero's column. The chart's target label sits at the left,
+// because a total starts low and ends near its target, where the label would meet the last point.
+//
+// The chart's table lists the stored days, date and total only: the page has no need to show how
+// supporters changed by day. No client JS but FundraisingUpdated's.
+import ChartFigure from '../../../shared/charts/ChartFigure.astro';
+import LineChart from '../../../shared/charts/LineChart.astro';
+import { formatDate, formatLongDate } from '../../../shared/format/dates.ts';
+import type { FundraisingData } from '../data/fundraising.ts';
+import { chartPoints, chartSummary, poundsText, registeredText } from '../domain/fundraising.ts';
+import FundraisingFigures from './FundraisingFigures.astro';
+import FundraisingUpdated from './FundraisingUpdated.astro';
+import PastCampaigns from './PastCampaigns.astro';
+import SectionLayout from './SectionLayout.astro';
+
+export interface Props {
+  data: FundraisingData;
+  /** Share image path. */
+  image: string;
+  title?: string;
+  /** The build time; tests and previews pin it. */
+  now?: Date;
+}
+
+const { data, image, title, now } = Astro.props;
+const { current, past, today } = data;
+const lead = current ?? past[0];
+const description = lead
+  ? `Alexander Webber's fundraising for ${lead.campaign.charity.name} at the ${lead.race.name}, ${formatLongDate(lead.race.date)}: the total so far, and how to give.`
+  : "Alexander Webber's fundraising for charity: the total so far, and how to give.";
+const imageAlt = lead ? `Alexander Webber's fundraising for ${lead.campaign.charity.name}` : "Alexander Webber's fundraising";
+const registered = current && registeredText(current.campaign.charity);
+const target = current?.figures.target_pence;
+---
+
+<SectionLayout heading="Fundraising" title={title} description={description} image={image} imageAlt={imageAlt}>
+  <slot />
+  <div class="fundraising-page">
+    {
+      current && (
+        <section class="fundraising-current" aria-labelledby="fundraising-current-title" data-fundraising-current={current.campaign.id}>
+          <h2 id="fundraising-current-title">
+            {current.race.name} <span class="fundraising-race-date">· {formatLongDate(current.race.date)}</span>
+          </h2>
+          <div class="fundraising-who">
+            <p data-fundraising-for>For {current.campaign.charity.url ? <a href={current.campaign.charity.url}>{current.campaign.charity.name}</a> : current.campaign.charity.name}</p>
+            {registered && <p class="fundraising-registered" data-fundraising-registered>{registered}</p>}
+          </div>
+          <FundraisingFigures campaign={current} showCharity={false} />
+          <FundraisingUpdated campaignId={current.campaign.id} lastReadAt={current.lastReadAt} staleAfterHours={current.staleAfterHours} {...now ? { now } : {}} />
+        </section>
+      )
+    }
+    {/* The story goes here (T086): "Why I'm running for <charity>". */}
+    {
+      current && current.points.length >= 2 && (
+        <ChartFigure
+          title="The total so far"
+          summary={chartSummary(current.points)}
+          heading={2}
+          id="fundraising-total"
+          table={{ columns: ['Date', 'Total raised'], rows: current.points.toReversed().map((p) => [formatDate(p.date), poundsText(p.raised_pence)]) }}
+        >
+          <LineChart
+            id="fundraising-total-chart"
+            title="Total raised by day"
+            desc={chartSummary(current.points)}
+            series={[{ label: 'Total raised', points: chartPoints(current.points, today), color: 'var(--running-series)' }]}
+            format={poundsText}
+            {...target !== undefined ? { target: { value: target, label: `Target ${poundsText(target)}` } } : {}}
+            zero
+          />
+        </ChartFigure>
+      )
+    }
+    {past.length > 0 && <PastCampaigns campaigns={past} {...now ? { now } : {}} />}
+  </div>
+</SectionLayout>
+
+<style>
+  .fundraising-page > :global(*) {
+    margin-bottom: var(--space-6);
+  }
+
+  .fundraising-current {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+
+  .fundraising-current h2 {
+    margin: 0 0 var(--space-1);
+    font-size: var(--step-2);
+    line-height: var(--leading-tight);
+  }
+
+  .fundraising-race-date {
+    white-space: nowrap;
+  }
+
+  .fundraising-who {
+    margin-bottom: var(--space-3);
+  }
+
+  .fundraising-who p {
+    margin: 0;
+  }
+
+  .fundraising-registered {
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
+  }
+
+  .fundraising-current :global(.fundraising-donate) {
+    max-width: 20rem;
+  }
+
+  .fundraising-page :global(.chart-target span) {
+    right: auto;
+    left: 0;
+  }
+</style>
