@@ -1,8 +1,10 @@
-// Writes the fundraising preview's synthetic data trees (T054, T072, T088), one per state, under
+// Writes the fundraising preview's synthetic data trees (T054, T072, T088, T098), one per state, under
 // tests/fixtures/fundraising-preview/data/<state>/data/running/ (JsonFileStore expects
 // <root>/data/running/). None of it is real: the charities, races, totals, page addresses, charity
 // numbers, dates and story are all made up, so states the real campaign can't show yet (108%, no
-// target, stale, a chart with history, past campaigns, a story) can be tested end to end. The SHELL_PREVIEW=1 build
+// target, stale, a chart with history, past campaigns, a story, race day and after it) can be tested end
+// to end. Every state shares one pinned "today" (store.ts), so the race-day states put their made-up
+// races on or before it rather than moving the clock. The SHELL_PREVIEW=1 build
 // renders them at /fundraising-preview/<state>/ through the real components. Deterministic; the
 // output is committed.
 //
@@ -31,6 +33,11 @@ interface Race {
   distance: string;
   /** Written to races/<id>/race.yaml, as a finished race is, not to upcoming-races.yaml. */
   raced?: boolean;
+  /**
+   * A recorded official time: written to races/<id>/race.yaml, with the upcoming race's result_ref
+   * pointing at it, as the owner records a focus race's result.
+   */
+  result?: string;
 }
 
 interface PreviewCampaign {
@@ -57,6 +64,11 @@ const SEASIDE: Race = { id: 'seaside-2027', name: 'Seaside Marathon', date: '202
 const LAKESIDE: Race = { id: 'lakeside-2027', name: 'Lakeside Half', date: '2027-10-03', distance: 'half' };
 const SEASIDE_2026: Race = { id: 'seaside-2026', name: 'Seaside Marathon', date: '2026-04-05', distance: 'marathon', raced: true };
 const HARBOUR: Race = { id: 'harbour-2026', name: 'Harbour 10k', date: '2026-09-20', distance: '10k' };
+/** On the preview's "today", 10 Nov 2026. */
+const AUTUMN: Race = { id: 'autumn-2026', name: 'Autumn Marathon', date: '2026-11-10', distance: 'marathon' };
+/** Three weeks before the preview's "today", without a result, then with one. */
+const RIVERSIDE: Race = { id: 'riverside-2026', name: 'Riverside Marathon', date: '2026-10-18', distance: 'marathon' };
+const RIVERSIDE_RUN: Race = { ...RIVERSIDE, result: '3:18:42' };
 
 const point = (date: string, pounds: number, supporters: number, target?: number): Point => ({
   date,
@@ -86,6 +98,15 @@ const pastSeaside: PreviewCampaign = {
   points: [point('2026-02-01', 400, 12, 1500), point('2026-04-05', 1620, 44, 1500)],
 };
 
+/** A campaign past its race: still being read, and past its target. */
+const AFTER_RACE = (race: Race, extra: Partial<PreviewCampaign> = {}): PreviewCampaign => ({
+  race,
+  charity: 'Example hospice',
+  registered: 'Example hospice group',
+  points: [...HISTORY(2000), point('2026-11-10', 2340, 52, 2000)],
+  ...extra,
+});
+
 /** Made-up text: it says so, and shows how a story's plain text reaches the page. */
 const STORY = [
   'This is made-up preview text, so the layout can be checked before a real story exists. Nothing here is about a real person, charity or race.',
@@ -113,10 +134,15 @@ const STATES: Record<string, State> = {
     focus: LAKESIDE,
   },
   'with-story': { campaigns: [seaside([...HISTORY(2000), point('2026-11-10', 1250, 37, 2000)], { registered: 'Example hospice group', story: STORY })] },
+  'race-day': { campaigns: [{ race: AUTUMN, charity: 'Example hospice', registered: 'Example hospice group', points: [...HISTORY(2000), point('2026-11-10', 1250, 37, 2000)] }] },
+  'after-race': { campaigns: [AFTER_RACE(RIVERSIDE)] },
+  'after-result': { campaigns: [AFTER_RACE(RIVERSIDE_RUN)] },
+  // Its reads stopped four days ago, far past the 12-hour threshold, and it is never stale.
+  finished: { campaigns: [AFTER_RACE(RIVERSIDE_RUN, { finished: true, last_read_at: '2026-11-06T08:17:03Z', points: [...HISTORY(2000), point('2026-11-06', 2340, 52, 2000)] })] },
 };
 
-const raceYaml = ({ id, name, date, distance }: Race) => `slug: ${id}\nname: ${name}\ndate: ${date}\ndistance: ${distance}\nofficial_time: "3:40:00"\n`;
-const upcomingYaml = ({ id, name, date, distance }: Race) => `- { id: ${id}, name: ${name}, date: ${date}, distance: ${distance}, target_time: "3:20:00" }\n`;
+const raceYaml = ({ id, name, date, distance, result = '3:40:00' }: Race) => `slug: ${id}\nname: ${name}\ndate: ${date}\ndistance: ${distance}\nofficial_time: "${result}"\n`;
+const upcomingYaml = ({ id, name, date, distance, result }: Race) => `- { id: ${id}, name: ${name}, date: ${date}, distance: ${distance}, target_time: "3:20:00"${result ? `, result_ref: ${id}` : ''} }\n`;
 
 function campaignYaml({ race, charity, registered, noUrl, finished }: PreviewCampaign): string {
   const lines = [`- id: ${race.id}`, `  race_id: ${race.id}`, '  charity:', `    name: ${charity}`];
@@ -145,7 +171,7 @@ for (const [state, { campaigns, focus }] of Object.entries(STATES)) {
   write('owner/section.yaml', `focus_race: { race_id: ${focusRace.id}, build_start: 2026-09-05, charity: { name: ${focusCharity} } }\n`);
   const races = [...new Set([focusRace, ...campaigns.map((c) => c.race)])];
   write('owner/upcoming-races.yaml', races.filter((r) => !r.raced).map(upcomingYaml).join(''));
-  for (const race of races.filter((r) => r.raced)) write(`owner/races/${race.id}/race.yaml`, raceYaml(race));
+  for (const race of races.filter((r) => r.raced || r.result)) write(`owner/races/${race.id}/race.yaml`, raceYaml(race));
   write('owner/campaigns.yaml', campaigns.map(campaignYaml).join(''));
   for (const { race, last_read_at = LAST_READ, points, story } of campaigns) {
     write(`published/fundraising/${race.id}.json`, `${JSON.stringify({ schema_version: 1, campaign_id: race.id, last_read_at, points })}\n`);

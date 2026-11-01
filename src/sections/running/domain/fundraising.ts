@@ -4,9 +4,10 @@
 // Amounts and percentages round down (FR-032, FR-063): the site never overstates what was raised,
 // and 99.9% never shows as 100%. So £1,030.75 reads £1,030 here where JustGiving's page shows
 // £1,031, on purpose.
-import { addDays, formatDate } from '../../../shared/format/dates.ts';
-import { formatNumber } from '../../../shared/format/units.ts';
-import type { Campaign, CampaignFigures } from '../data/store/index.ts';
+import { addDays, formatDate, londonDate } from '../../../shared/format/dates.ts';
+import { formatDuration, formatNumber } from '../../../shared/format/units.ts';
+import type { Campaign, CampaignFigures, UpcomingRace } from '../data/store/index.ts';
+import { raceState } from './races.ts';
 
 /**
  * What a `donationCount` is called. JustGiving's count equalled the supporters its page shows, in
@@ -23,6 +24,50 @@ export interface CampaignProgress {
   reached: boolean;
   /** Raised is above the target. */
   beaten: boolean;
+}
+
+/**
+ * Where a campaign stands (data-model.md §7, FR-023, FR-033). Before its race, and on race day
+ * itself until a result is recorded, the card leads with the total against the target; once the day
+ * has passed or a result is recorded, with "Raised £X for <charity>"; once the owner marks it
+ * finished, the same with "Final total" and no Donate, whatever the race's date.
+ */
+export type CampaignPhase = 'before_race' | 'after_race' | 'finished';
+
+/**
+ * The phase from raceState(). A race known only from races/<slug>/race.yaml is passed as
+ * `{ date, result_ref: slug }`, so it reads as completed.
+ */
+export function campaignPhase(race: Pick<UpcomingRace, 'date' | 'result_ref'>, finished: boolean, today: string): CampaignPhase {
+  if (finished) return 'finished';
+  const state = raceState(race, today);
+  return state === 'upcoming' || state === 'race_day' ? 'before_race' : 'after_race';
+}
+
+/** "Raised £2,340 for Martlets": the lead after race day (FR-033, US4.1). */
+export function raisedForText(raisedPence: number, charity: string): string {
+  return `Raised ${poundsText(raisedPence)} for ${charity}`;
+}
+
+/** "Brighton Marathon: 3:18:42": the race result beside it, as the hero gives it (FR-033). */
+export function resultText(raceName: string, timeS: number): string {
+  return `${raceName}: ${formatDuration(timeS)}`;
+}
+
+/**
+ * The target as secondary detail after race day (FR-032, FR-033): "62% of the £2,000 target", or,
+ * once reached or beaten, "£2,000 target beaten: 117%", which still says so with the percentage.
+ */
+export function targetDetail(targetPence: number, progress: CampaignProgress): string {
+  const target = poundsText(targetPence);
+  if (progress.beaten) return `${target} target beaten: ${progress.percent}%`;
+  if (progress.reached) return `${target} target reached: ${progress.percent}%`;
+  return `${progress.percent}% of the ${target} target`;
+}
+
+/** "Final total, last updated 3 Jul 2027": a finished campaign's date is its last read (FR-023). */
+export function finalTotalText(lastReadAt: string): string {
+  return `Final total, last updated ${formatDate(londonDate(new Date(lastReadAt)))}`;
 }
 
 /** "£1,250", rounded down to the whole pound (FR-063). */

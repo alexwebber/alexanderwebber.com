@@ -1,9 +1,26 @@
-// Fundraising's pure rules (T056, T073, T091; FR-005, FR-022, FR-032, FR-042, FR-061, FR-063): amounts and
-// percentages round down, a target is only ever "reached" when it is, the staleness edge is exact,
-// and the chart holds a total until it changes.
+// Fundraising's pure rules (T056, T073, T091, T099; FR-005, FR-022, FR-023, FR-032, FR-033, FR-042, FR-061,
+// FR-063): amounts and percentages round down, a target is only ever "reached" when it is, the staleness
+// edge is exact, the chart holds a total until it changes, and a campaign's phase follows its race.
 import { afterEach, describe, expect, it } from 'vitest';
 import { campaignsWithFigures } from '../../src/sections/running/data/store/index.ts';
-import { barValueText, campaignProgress, chartPoints, chartSummary, isStale, poundsText, registeredText, storyParagraphs, supportersText, targetNote } from '../../src/sections/running/domain/fundraising.ts';
+import {
+  barValueText,
+  campaignPhase,
+  campaignProgress,
+  chartPoints,
+  chartSummary,
+  finalTotalText,
+  isStale,
+  poundsText,
+  raisedForText,
+  registeredText,
+  resultText,
+  storyParagraphs,
+  supportersText,
+  targetDetail,
+  targetNote,
+} from '../../src/sections/running/domain/fundraising.ts';
+import { raceState } from '../../src/sections/running/domain/races.ts';
 import { tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
 describe('poundsText (FR-063)', () => {
@@ -59,6 +76,63 @@ describe('barValueText and targetNote', () => {
   it('celebrates the target with the percentage', () => {
     expect(targetNote(campaignProgress(200000, 200000))).toBe('Target reached: 100%');
     expect(targetNote(campaignProgress(216000, 200000))).toBe('Target beaten: 108%');
+  });
+});
+
+describe('campaignPhase (data-model.md §7, FR-023, FR-033)', () => {
+  const TODAY = '2027-04-04';
+  const race = (date: string, result_ref?: string) => ({ date, ...(result_ref ? { result_ref } : {}) });
+
+  it.each([
+    ['upcoming', race('2027-04-05'), 'before_race'],
+    ['race_day', race('2027-04-04'), 'before_race'],
+    ['awaiting_result', race('2027-04-03'), 'after_race'],
+    ['completed', race('2027-04-03', 'brighton-2027'), 'after_race'],
+  ] as const)('race state %s gives %s', (state, given, phase) => {
+    expect(raceState(given, TODAY)).toBe(state);
+    expect(campaignPhase(given, false, TODAY)).toBe(phase);
+  });
+
+  it('switches on race day as soon as a result is recorded, not only once the day has passed', () => {
+    expect(campaignPhase(race('2027-04-04'), false, TODAY)).toBe('before_race');
+    expect(campaignPhase(race('2027-04-04', 'brighton-2027'), false, TODAY)).toBe('after_race');
+  });
+
+  it('switches the day after the race with no result', () => {
+    expect(campaignPhase(race('2027-04-04'), false, '2027-04-05')).toBe('after_race');
+  });
+
+  it.each([race('2027-04-05'), race('2027-04-04'), race('2027-04-03'), race('2027-04-03', 'brighton-2027')])('is finished whatever the race state (%o)', (given) => {
+    expect(campaignPhase(given, true, TODAY)).toBe('finished');
+  });
+
+  it('reads a race known only under races/ as completed, even if its date were still to come', () => {
+    expect(campaignPhase({ date: '2026-09-20', result_ref: 'harbour-2026' }, false, TODAY)).toBe('after_race');
+    expect(campaignPhase({ date: '2027-09-20', result_ref: 'harbour-2027' }, false, TODAY)).toBe('after_race');
+  });
+});
+
+describe('the after-race words (FR-023, FR-033)', () => {
+  it('US4.1: leads with the total raised for the charity, rounded down', () => {
+    expect(raisedForText(234000, 'Martlets')).toBe('Raised £2,340 for Martlets');
+    expect(raisedForText(234099, 'Martlets')).toBe('Raised £2,340 for Martlets');
+  });
+
+  it('US4.1: gives the result as the hero does', () => {
+    expect(resultText('Brighton Marathon', 11922)).toBe('Brighton Marathon: 3:18:42');
+    expect(resultText('Hove 10k', 2579)).toBe('Hove 10k: 42:59');
+  });
+
+  it('keeps the target as detail, and still says when it was reached or beaten (FR-032)', () => {
+    expect(targetDetail(200000, campaignProgress(125000, 200000)!)).toBe('62% of the £2,000 target');
+    expect(targetDetail(200000, campaignProgress(199999, 200000)!)).toBe('99% of the £2,000 target');
+    expect(targetDetail(200000, campaignProgress(200000, 200000)!)).toBe('£2,000 target reached: 100%');
+    expect(targetDetail(200000, campaignProgress(234000, 200000)!)).toBe('£2,000 target beaten: 117%');
+  });
+
+  it('dates the final total by the last read, in UK time', () => {
+    expect(finalTotalText('2027-07-03T08:17:00Z')).toBe('Final total, last updated 3 Jul 2027');
+    expect(finalTotalText('2027-07-02T23:30:00Z')).toBe('Final total, last updated 3 Jul 2027'); // 00:30 BST
   });
 });
 

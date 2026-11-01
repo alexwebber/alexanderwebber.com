@@ -21,15 +21,17 @@ Update this as decisions get made — treat it as the source of truth alongside
   `data/running/published/fundraising/brighton-2027.json` (£100 of £1,000, 1 supporter). **The staging
   check is done** (Phase 3): the parser needs no change, and the label stays "supporters". **The
   landing card is live** (Phase 4, T044–T063, #90), with Donate leading to the JustGiving page.
-  **The fundraising page is live** (Phase 5, T064–T080, #93). **The story section is PR #94** (Phase
-  6, T081–T093), with nothing visible until a story exists.
-  - **Next session: first check #94.** If it's merged, confirm `main`'s Gate finished and tick T093,
-    and ask about any box left unticked. The live page shouldn't change, so no guided review is
-    needed. If it isn't merged, ask what's holding it. **Then Phase 7, after race day and later
-    campaigns** (`specs/002-fundraising/tasks.md`, T094 on), built and tested on previews, because
-    the forms change by themselves on race day.
-  - **After #94's merge,** `002-story-screens` can go too (`002-page-screens` from #93 is still there:
-    the permission check refused the agent's delete).
+  **The fundraising page is live** (Phase 5, T064–T080, #93). **The story section is live** (Phase
+  6, T081–T093, #94), with nothing visible until a story exists. **After race day and later
+  campaigns is PR #95** (Phase 7, T094–T102), with nothing visible before race day.
+  - **Next session: first check #95.** If it's merged, confirm `main`'s Gate finished and tick T102,
+    and ask about any of its four boxes left unticked (the result line, the target wording, the
+    finished form, the charity named twice). The live pages shouldn't change, so no guided review is
+    needed. If it isn't merged, ask what's holding it. **Then Phase 8, Polish** (`tasks.md` T103–T112),
+    in its own session.
+  - **Old screenshot branches:** `002-story-screens` (#94) and `002-page-screens` (#93) are still
+    there, because the permission check refused the agent's delete. #95's screenshots are instead in
+    one commit on its own branch, removed by the next.
   - **T118's month of timing** (SC-002) runs to about 1 Dec 2026: compare each bot commit with the
     donation's time, using times the owner mentions in reviews. **T119's tally is 1 of 10.**
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
@@ -1667,6 +1669,36 @@ project-specific notes.
   - **Tests:** Vitest 776, Playwright 467 passed (37 skipped by design), pytest 661 passed (1 skipped),
     ruff and `astro check` clean, full gate green. Lighthouse 100 on the `with-story` preview.
 
+- **2026-11-01** — **#94 merged** with both boxes ticked and `main`'s Gate green (owner); T093 ticked.
+- **2026-11-01** — **Fundraising Phase 7 built** (T094–T101, cloud session, PR #95; implement subagent
+  about 315k tokens). Nothing visible before race day: the deploy build differs from `main` only by
+  two CSS rules that match nothing yet. The owner confirms four in the PR (the result line, the
+  target wording after the race, the finished form, the charity named twice). Choices later tasks
+  build on:
+  - **Phase:** `campaignPhase(race, finished, today)` is pure: `upcoming` or `race_day` give
+    `before_race`, `awaiting_result` or `completed` give `after_race`, and `finished: true` wins
+    whatever the race state. A race known only from `races/<slug>/race.yaml` is passed as
+    `{ date, result_ref: slug }`, so it reads as completed. It's worked out at build time, so the
+    card changes form with the 00:17 UTC daily deploy (until about 01:17 UK time on 5 April 2027).
+  - **`CampaignView`** gains `phase` and `result` (from `raceResult()`: official time, else watch
+    time), set only when a time is known. Past campaigns carry the same.
+  - **After the race:** the lead is "Raised £X for <charity>", with the result on its own line
+    ("Brighton Marathon: 3:18:42"; a visually hidden " · " keeps one sentence for screen readers).
+    The target becomes `targetDetail()`: "62% of the £1,000 target", "£1,000 target reached: 100%"
+    or "£1,000 target beaten: 117%". "For <charity>" leaves the secondary line.
+  - **Finished:** the result and bar stay, "Final total, last updated <UK date of last_read_at>"
+    replaces Donate, and there's no `FundraisingUpdated` or notice. The page's chart ends at the
+    last read's date, not today (data-model.md §7 and contracts/routes.md updated).
+  - **Previews:** `race-day`, `after-race`, `after-result` and `finished` complete the 13 states. They
+    keep the one pinned "today" (10 Nov 2026) and move made-up races around it.
+  - **SC-009 proved** by file edits in a temp repo (`fundraising-validate.test.ts`), and on the ingest
+    side a finished campaign's file stays byte-identical and its alert closes. `FakeGitHub` moved to
+    `ingest/tests/builders.py`.
+  - **Tests:** Vitest 813, Playwright 569 passed (45 skipped by design, both projects), pytest 667,
+    ruff and `astro check` clean, gate green on a deploy build (scan-privacy without the R2 map).
+  - **Screenshots** went in one commit on the PR's branch, removed by the next, because a cloud
+    session may push only to its own branch. They stay reachable by commit SHA.
+
 ## Upstream candidates
 
 - `gh` can't attach images to a PR. Commit them to a side branch that never merges, link
@@ -1721,6 +1753,16 @@ project-specific notes.
   phone-width viewport with `isMobile` off for that shot.
 - The auto-mode permission check refused `git push origin --delete` on the agent's own screenshot side
   branch, so the routine of deleting it after a merge needs the owner, or a permission rule.
+- Cloud image: the preinstalled Chromium (build 1243) didn't match the project's pinned Playwright
+  1.64.1 (wants 1248). Symlinking `/opt/pw-browsers/chromium*-1248` to the 1243 folders let the
+  whole suite run without `playwright install`.
+- A cloud session may push only to its own branch, so PR screenshots can't use a side branch: add
+  them in one commit, link by that SHA, remove them in the next. Convert to WebP first (1.6 MB of
+  PNG became 420 KB).
+- `pkill -f "astro preview"` inside a compound Bash command matched the tool's own shell and killed
+  the call (exit 144). Use `npx astro preview stop` on its own.
+- `spikes/<x>/out/` (gitignored, outside `tsconfig`) is a good home for a temporary `git worktree`
+  used to build `main` for a `dist/` comparison: `astro check` doesn't scan the copy.
 
 ## Open questions
 

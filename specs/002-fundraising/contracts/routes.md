@@ -41,9 +41,9 @@ directly below it.
 | Target beaten | **£2,160 raised of £2,000** | Full | "Target beaten: 108%" · 37 supporters · For Martlets | Yes |
 | No target | **£1,250 raised** | None | 37 supporters · For Martlets | Yes |
 | Nothing raised yet | **£0 raised of £500** | Empty | "No supporters yet" · For Martlets | Yes |
-| After race, no result yet | **Raised £2,340 for Martlets** | 117%, secondary | Target, supporters | Yes |
-| After race, result | **Raised £2,340 for Martlets** · Brighton Marathon: 3:18:42 | Secondary | Target, supporters | Yes |
-| Finished | **Raised £2,340 for Martlets** | Secondary | "Final total, last updated 3 Jul 2027" | **No** |
+| After race, no result yet | **Raised £2,340 for Martlets** | 117%, secondary | "£2,000 target beaten: 117%" (or "62% of the £2,000 target") · 52 supporters | Yes |
+| After race, result | **Raised £2,340 for Martlets** · Brighton Marathon: 3:18:42 (the result on its own line) | Secondary | As above | Yes |
+| Finished | **Raised £2,340 for Martlets**, with the result if recorded | Secondary | As above, then "Final total, last updated 3 Jul 2027" in Donate's place | **No** |
 
 Every active state also shows "Figures updated …", separate from the page's Running "Last updated"
 line (FR-004), and the stale notice past `stale_after_hours` (FR-005). A finished campaign shows neither.

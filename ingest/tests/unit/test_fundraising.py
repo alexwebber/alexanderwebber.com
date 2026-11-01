@@ -6,10 +6,13 @@ import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from builders import FakeGitHub
 
+from awingest.alerts import GitHubIssues
 from awingest.archive.base import ArchiveUnavailable
 from awingest.archive.local import LocalArchive
 from awingest.fetch import run_fetch
+from awingest.fundraising.alerts import run_fundraising_alert
 from awingest.fundraising.campaigns import load_campaigns
 from awingest.fundraising.publish import run_fundraising_publish
 from awingest.fundraising.read import published_path, run_fundraising_read
@@ -747,3 +750,52 @@ def test_a_read_failure_logs_key_names_and_stores_no_value(
     assert entry["code"] == "justgiving_changed"
     assert "owner" in entry["message"]
     assert "SENTINEL" not in stream.getvalue() and "SENTINEL" not in json.dumps(entry)
+
+
+# --- After the race: a second campaign, and the first marked finished (SC-009, US4.3, US4.4) ---
+
+
+def test_a_second_campaign_and_marking_the_first_finished_need_only_file_edits(repo, archive):
+    # The first campaign is read and published, then its page expires and the alert opens at once.
+    # The owner adds a campaign for a later race and marks the first finished, in campaigns.yaml
+    # only. From the next run the first is never read again, its published file stays byte for
+    # byte, its issue closes, and the second is read and published beside it.
+    issues = FakeGitHub(NOW)
+
+    def alert(now):
+        return run_fundraising_alert(
+            archive,
+            lambda label: GitHubIssues(
+                "ghs_test-token", "owner/repo", transport=issues, label=label
+            ),
+            repo_root=repo,
+            log=Logger("fundraising-alert", stream=io.StringIO()),
+            now=now,
+        )
+
+    write_campaigns(repo, "alpha")
+    read(FakeProvider(snapshot(raised=234000, target=200000, supporters=52)), archive, repo)
+    publish(archive, repo)
+    before = published_path(repo, "alpha").read_bytes()
+
+    expired = NOW + timedelta(hours=2)
+    read(FakeProvider(alpha=PageNotFound("404")), archive, repo, now=expired)
+    assert alert(expired).campaigns["alpha"].action == "opened"
+
+    write_campaigns(repo, "alpha", "beta", finished=("alpha",))
+    later = NOW + timedelta(hours=4)
+    provider = FakeProvider(snapshot(raised=8000, target=100000, supporters=3))
+    result = read(provider, archive, repo, now=later)
+    assert provider.calls == [PAGE.format("beta")]
+    assert (result.outcome, result.campaigns, result.changed) == ("ok", 1, 1)
+    assert publish(archive, repo, now=later).written == 1
+    assert published_path(repo, "alpha").read_bytes() == before
+    assert published(repo, "beta")["points"] == [
+        {"date": "2026-11-10", "raised_pence": 8000, "target_pence": 100000, "supporters": 3}
+    ]
+
+    actions = alert(later).campaigns
+    assert (actions["alpha"].action, actions["beta"].action) == ("closed", "none")
+    assert issues.issues[0]["state"] == "closed"
+    assert "marked finished" in issues.comments[1][-1]["body"]
+    assert "alpha" not in read_state(archive, FUNDRAISING_FRESHNESS)["campaigns"]

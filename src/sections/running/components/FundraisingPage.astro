@@ -1,12 +1,16 @@
 ---
-// The fundraising page body (T068, T086; US2, US3, FR-041 to FR-044; specs/002-fundraising/contracts/routes.md),
+// The fundraising page body (T068, T086, T097; US2, US3, US4, FR-041 to FR-044; specs/002-fundraising/contracts/routes.md),
 // in order: the current campaign (race and date, charity, the figures, Donate), its approved story if
 // it has one, the chart of the total by day from two points on, with its summary and table, then past
 // campaigns. With no current campaign the page leads with that list. Shared by the real page and the test-only previews, which
 // pass synthetic data; the default slot comes first, and only the previews fill it.
 //
+// After race day the current campaign follows the card's "Raised £X" form (FR-041), which
+// FundraisingFigures takes by itself; once finished it has "Final total" and no Donate, updated line
+// or notice (FR-023). A campaign that moves to past keeps its history in its file.
+//
 // The charity is named once, above the figures, where it links to the charity's site, so the
-// figures leave it out. Figures say "Figures updated", to stay apart from Running's "Last updated".
+// figures leave it out before the race. Figures say "Figures updated", to stay apart from Running's "Last updated".
 // The registered charity is named here and not on the landing card. Donate stops at 20rem, because
 // here it spans a whole page rather than a hero's column. The chart's target label sits at the left,
 // because a total starts low and ends near its target, where the label would meet the last point.
@@ -17,7 +21,7 @@
 // supporters changed by day. No client JS but FundraisingUpdated's.
 import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import LineChart from '../../../shared/charts/LineChart.astro';
-import { formatDate, formatLongDate } from '../../../shared/format/dates.ts';
+import { formatDate, formatLongDate, londonDate } from '../../../shared/format/dates.ts';
 import type { FundraisingData } from '../data/fundraising.ts';
 import { chartPoints, chartSummary, poundsText, registeredText } from '../domain/fundraising.ts';
 import CampaignStory from './CampaignStory.astro';
@@ -44,6 +48,9 @@ const description = lead
 const imageAlt = lead ? `Alexander Webber's fundraising for ${lead.campaign.charity.name}` : "Alexander Webber's fundraising";
 const registered = current && registeredText(current.campaign.charity);
 const target = current?.figures.target_pence;
+// A finished campaign's line ends at its last read, not today: its reads have stopped, and a line run
+// on to today would stretch the chart further every day for nothing.
+const chartEnd = current?.phase === 'finished' ? [londonDate(new Date(current.lastReadAt)), today].sort()[0]! : today;
 ---
 
 <SectionLayout heading="Fundraising" title={title} description={description} image={image} imageAlt={imageAlt}>
@@ -60,7 +67,7 @@ const target = current?.figures.target_pence;
             {registered && <p class="fundraising-registered" data-fundraising-registered>{registered}</p>}
           </div>
           <FundraisingFigures campaign={current} showCharity={false} />
-          <FundraisingUpdated campaignId={current.campaign.id} lastReadAt={current.lastReadAt} staleAfterHours={current.staleAfterHours} {...now ? { now } : {}} />
+          {current.phase !== 'finished' && <FundraisingUpdated campaignId={current.campaign.id} lastReadAt={current.lastReadAt} staleAfterHours={current.staleAfterHours} {...now ? { now } : {}} />}
         </section>
       )
     }
@@ -78,7 +85,7 @@ const target = current?.figures.target_pence;
             id="fundraising-total-chart"
             title="Total raised by day"
             desc={chartSummary(current.points)}
-            series={[{ label: 'Total raised', points: chartPoints(current.points, today), color: 'var(--running-series)' }]}
+            series={[{ label: 'Total raised', points: chartPoints(current.points, chartEnd), color: 'var(--running-series)' }]}
             format={poundsText}
             {...target !== undefined ? { target: { value: target, label: `Target ${poundsText(target)}` } } : {}}
             zero

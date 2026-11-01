@@ -1,5 +1,5 @@
-// The fundraising card and page in a real browser (T059, T076, T091; US1, US2, US3, FR-004, FR-005,
-// FR-040 to FR-044, FR-061, FR-062, FR-065):
+// The fundraising card and page in a real browser (T059, T076, T091, T100; US1, US2, US3, US4, FR-004,
+// FR-005, FR-023, FR-033, FR-040 to FR-044, FR-061, FR-062, FR-065):
 // - the test-only previews (SHELL_PREVIEW=1, tests/fixtures/fundraising-preview/): synthetic
 //   campaigns through the real components, in the states the real one can't show yet. Each preview
 //   renders the page, with the landing card above it. Their "today" is 10 Nov 2026;
@@ -26,10 +26,22 @@ const STATES = [
   { state: 'zero', lead: '£0 raised of £500', secondary: `No supporters yet · ${CHARITY}`, percent: '0' },
   { state: 'beaten', lead: '£2,160 raised of £2,000', secondary: `Target beaten: 108% · 37 supporters · ${CHARITY}`, percent: '100' },
   { state: 'stale', lead: '£1,250 raised of £2,000', secondary: `37 supporters · ${CHARITY}`, percent: '62' },
-  { state: 'second-campaign', lead: '£240 raised of £1,000', secondary: '8 supporters · For Example shelter', percent: '24' },
+  { state: 'race-day', lead: '£1,250 raised of £2,000', secondary: `37 supporters · ${CHARITY}`, percent: '62', href: 'https://www.justgiving.com/page/example-autumn-2026' },
+  { state: 'second-campaign', lead: '£240 raised of £1,000', secondary: '8 supporters · For Example shelter', percent: '24', href: 'https://www.justgiving.com/page/example-lakeside-2027' },
   { state: 'with-story', lead: '£1,250 raised of £2,000', secondary: `37 supporters · ${CHARITY}`, percent: '62' },
 ];
-const ALL_STATES = [...STATES.map((s) => s.state), 'no-current'];
+
+/** After race day (US4): the card's last three rows. The race was on 18 Oct 2026, three weeks before "today". */
+const RAISED = 'Raised £2,340 for Example hospice';
+const RESULT = 'Riverside Marathon: 3:18:42';
+const AFTER_STATES = [
+  { state: 'after-race', lead: RAISED, result: undefined, finished: false },
+  { state: 'after-result', lead: `${RAISED} · ${RESULT}`, result: RESULT, finished: false },
+  { state: 'finished', lead: `${RAISED} · ${RESULT}`, result: RESULT, finished: true },
+];
+const AFTER_SECONDARY = '£2,000 target beaten: 117% · 52 supporters';
+const AFTER_PAGE_URL = 'https://www.justgiving.com/page/example-riverside-2026';
+const ALL_STATES = [...STATES.map((s) => s.state), ...AFTER_STATES.map((s) => s.state), 'no-current'];
 
 async function open(page: Page, state: string) {
   const response = await page.goto(`/fundraising-preview/${state}/`);
@@ -49,14 +61,14 @@ const donate = (within: Locator) => within.getByRole('link', { name: 'Donate on 
 const live = (page: Page, last_read_at: string, ids = [CAMPAIGN]) =>
   page.route(API, (route) => route.fulfill({ json: { campaigns: Object.fromEntries(ids.map((id) => [id, { last_read_at }])), generated_at: last_read_at } }));
 
-for (const { state, lead, secondary, percent } of STATES) {
+for (const { state, lead, secondary, percent, href = PAGE_URL } of STATES) {
   test(`${state}: the card shows its row of contracts/routes.md`, async ({ page }) => {
     await open(page, state);
     await expect(card(page).locator('[data-fundraising-lead]')).toHaveText(lead);
     await expect(card(page).locator('[data-fundraising-secondary]')).toHaveText(secondary);
     if (percent === undefined) await expect(card(page).getByRole('meter')).toHaveCount(0);
     else await expect(card(page).getByRole('meter')).toHaveAttribute('aria-valuenow', percent);
-    await expect(donate(card(page))).toHaveAttribute('href', state === 'second-campaign' ? 'https://www.justgiving.com/page/example-lakeside-2027' : PAGE_URL);
+    await expect(donate(card(page))).toHaveAttribute('href', href);
     await expect(donate(card(page))).not.toHaveAttribute('target', /./);
     await expect(card(page).getByRole('link', { name: 'See the fundraising page' })).toHaveAttribute('href', '/running/fundraising/');
     await expect(updated(card(page))).toHaveText(/^Figures updated \d{1,2} Nov 2026, \d{2}:\d{2}$/);
@@ -88,6 +100,77 @@ for (const { state, lead, secondary, percent } of STATES) {
     });
   });
 }
+
+for (const { state, lead, result, finished } of AFTER_STATES) {
+  for (const [name, within] of [
+    ['card', card],
+    ['page', campaign],
+  ] as const) {
+    test(`${state}: the ${name} leads with "Raised £X for <charity>", the target and bar as detail (FR-033)`, async ({ page }) => {
+      await open(page, state);
+      await expect(within(page).locator('[data-fundraising-lead]')).toHaveText(lead);
+      await expect(within(page).locator('[data-fundraising-result]')).toHaveCount(result ? 1 : 0);
+      await expect(within(page).locator('[data-fundraising-secondary]')).toHaveText(AFTER_SECONDARY);
+      await expect(within(page).getByRole('meter')).toHaveAttribute('aria-valuetext', '£2,340 of £2,000, 117%');
+      await expect(within(page).locator('[data-fundraising-charity]')).toHaveCount(0);
+    });
+
+    test(`${state}: the ${name} ${finished ? 'shows the final total, with no Donate, updated line or notice (FR-023)' : 'keeps Donate and its updated line'}`, async ({ page }) => {
+      await open(page, state);
+      if (finished) {
+        await expect(within(page).locator('[data-fundraising-final]')).toHaveText('Final total, last updated 6 Nov 2026');
+        await expect(donate(within(page))).toHaveCount(0);
+        await expect(within(page).locator('[data-fundraising-updated]')).toHaveCount(0);
+        await expect(notice(within(page))).toHaveCount(0);
+      } else {
+        await expect(within(page).locator('[data-fundraising-final]')).toHaveCount(0);
+        await expect(donate(within(page))).toHaveAttribute('href', AFTER_PAGE_URL);
+        await expect(updated(within(page))).toHaveText('Figures updated 10 Nov 2026, 09:17');
+        await expect(notice(within(page))).toBeHidden();
+      }
+    });
+  }
+
+  test.describe('without JavaScript (FR-062)', () => {
+    test.use({ javaScriptEnabled: false });
+
+    test(`${state}: the lead, result and ${finished ? 'final total' : 'Donate'} all stay, on card and page`, async ({ page }) => {
+      await open(page, state);
+      for (const within of [card(page), campaign(page)]) {
+        await expect(within.locator('[data-fundraising-lead]')).toHaveText(lead);
+        if (finished) await expect(within.locator('[data-fundraising-final]')).toBeVisible();
+        else await expect(donate(within)).toBeVisible();
+      }
+    });
+  });
+}
+
+test('after-result: the result sits on its own line under "Raised £X", inside the card, on a phone and a desktop', async ({ page }) => {
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open(page, 'after-result');
+    const [amount, result, box] = await Promise.all([card(page).locator('.fundraising-amount').boundingBox(), card(page).locator('[data-fundraising-result]').boundingBox(), card(page).boundingBox()]);
+    expect(result!.y, `${width}px`).toBeGreaterThanOrEqual(amount!.y + amount!.height - 1);
+    expect(result!.x + result!.width, `${width}px`).toBeLessThanOrEqual(box!.x + box!.width);
+    await expect(card(page).locator('[data-fundraising-result]')).toBeVisible();
+  }
+});
+
+test('race-day: the page names the race and today\'s date, and the card keeps its pre-race form (spec edge case)', async ({ page }) => {
+  await open(page, 'race-day');
+  await expect(campaign(page).getByRole('heading', { level: 2 })).toHaveText('Autumn Marathon · 10 November 2026');
+  await expect(card(page).locator('[data-fundraising-result]')).toHaveCount(0);
+  await expect(card(page).locator('[data-fundraising-final]')).toHaveCount(0);
+});
+
+test('finished: the page keeps its chart, ending at the last read, and the final total never goes stale, whatever the clock', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2027-01-10T12:00:00Z'));
+  await open(page, 'finished');
+  await expect(chart(page).locator('.chart-figure-summary')).toHaveText('£2,340 raised since 12 Oct 2026, 117% of the £2,000 target');
+  await expect(chart(page).locator('.chart-dot')).toHaveAttribute('title', 'Total raised: £2,340, 6 Nov 2026'); // its last read, not today
+  await expect(page.locator('[data-fundraising-stale]')).toHaveCount(0);
+  await expect(page.locator('[data-fundraising-final]')).toHaveCount(2);
+});
 
 for (const state of ALL_STATES) {
   for (const width of [320, 360]) {
