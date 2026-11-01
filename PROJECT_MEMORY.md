@@ -20,9 +20,20 @@ Update this as decisions get made — treat it as the source of truth alongside
   reads the page through JustGiving's official API, and the bot published
   `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). No page
   shows it yet. **The staging check is done** (Phase 3): the parser needs no change, and the label
-  stays "supporters".
-  - **Next session: Phase 4, the landing-page card** (`specs/002-fundraising/tasks.md`, T044 on),
-    in its own session. It shows the owner the live card at the PR (T062).
+  stays "supporters". **The landing card is built** (Phase 4, T044–T061): the
+  `002-fundraising-card` PR is with the owner for review (T062).
+  - **Once that PR merges:** answer any unticked box, wait for `main`'s Gate run to the end, run
+    T063 (`curl https://alexanderwebber.com/running/api/fundraising-freshness` shows a
+    `last_read_at`, a later one after the next refresh, no commit from that refresh; Donate reaches
+    the page), and delete the `002-fundraising-card-screens` branch (the PR's screenshots).
+  - **Next session: a short guided review of the live card**, with a question round on what the
+    owner saw, then **Phase 5, the fundraising page** (`specs/002-fundraising/tasks.md`, T064 on),
+    in its own session. Donate spans its container, which suits the hero but is very wide on a
+    full page, so the fundraising page probably wants a `max-width`.
+  - **First real donation** (check at each session start, by whether the card's total is above
+    £0): T117 (the supporters check against the owner's view of the page, the number format, and a
+    run logging `Publishing: fundraising figures changed` for a real donation), then T118's month
+    of timing (SC-002) and T119's tally of 10 matches with the page (SC-005), folded into reviews.
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -1541,9 +1552,61 @@ project-specific notes.
     and the page within minutes.
   - **Rounding differs on purpose:** JustGiving showed £1,031, and this site will show £1,030
     (FR-063 rounds down, so it never overstates).
+- **2026-11-01** — **Fundraising Phase 4 built** (T044–T061, `002-fundraising-card` PR; implement
+  subagent about 370k tokens). Choices later tasks build on; the owner confirms three in the PR:
+  - **Astro 7.4.4** (from 7.4.2): none of its fixes touch us, but it's a core component, and the
+    deploy build came out byte-identical. wrangler stays on 4.152.0, because the latest miniflare
+    pins `undici` 7.28.0, below our override's fix. Both overrides stay (the latest satori still
+    pins `fflate` 0.7.3).
+  - **Card heading:** plain "Fundraising" (agent's choice, owner confirms). "For Martlets" stays in
+    the secondary line.
+  - **Stale notice:** "These figures may be out of date: they were last read from JustGiving more
+    than 12 hours ago." (owner confirms).
+  - **First screen on a phone:** the card moves this week's distance below it, and Donate is on it
+    at 360 x 780 (owner confirms). The first-screen test checks the card's lead line instead.
+  - **Hero takes a `hasCard` prop**, not `Astro.slots.has`, which reports `{cond && <C slot />}` as
+    filled when `cond` is false, so "For Martlets" would vanish with no card.
+  - **The card sets `height: auto`.** The goal-card shell's `height: 100%` resolved against the
+    stretched hero column and ran the card under the training build on a phone. Every test passed;
+    only a screenshot showed it, and `tests/e2e/landing.spec.ts` now checks the geometry.
+  - **`respond.ts` also holds `serveRecord`**, the read, re-shape and 503 flow both freshness routes
+    share. `/running/api/freshness` behaves as before.
+  - **The Worker drops a bad entry, not the record.** `campaigns: {}` is a valid 200; a non-object
+    `campaigns` or a bad `generated_at` is a 503.
+  - **`CampaignView` carries `staleAfterHours`**, so previews don't read the default store's settings.
+    With no matching upcoming race, `loadFundraising` returns `{ past: [] }` until T065.
+  - **`ago()` is copied from `LastUpdated`** on purpose: a module both scripts imported would become
+    a script file, which the "no script files" test forbids. The script (861 characters) changes the
+    page only when something changed.
+  - **Donate** is `--color-surface` on `--color-accent`, pairs the AA suite already covers, and lives
+    in `theme.css`, so the Phase 5 page gets it without the goal-card chunk.
+  - **A new stylesheet:** the goal-card chunk reached 4,112 bytes, over Vite's 4,096-byte inline
+    limit, so `/running/` and `/running/goals/` now load `GoalCard.*.css` as a file (4 stylesheets on
+    the landing page, not 3). The landing page's HTML is smaller, and it scores 100 with 0 ms
+    blocking time locally.
+  - **Tests:** Vitest 672, Playwright 303 passed (27 skipped by design, both projects), pytest 650
+    passed (1 skipped), ruff and `astro check` clean, full gate green. `dist/` against the Astro
+    bump: markup differs only on the landing page; 209 other pages differ only in CSS.
+  - **PR screenshots** live on a side branch that never merges, linked by commit, because `gh` can't
+    upload images and the Gate doesn't run on other branches.
 
 ## Upstream candidates
 
+- `gh` can't attach images to a PR. Commit them to a side branch that never merges, link
+  `raw.githubusercontent.com` by commit SHA, and delete the branch after the merge.
+- `Astro.slots.has('x')` is true for `{cond && <C slot="x" />}` even when `cond` is false. Test the
+  empty case, or pass a prop.
+- A percentage height shared from a card shell resolves against a stretched grid item, so a card
+  placed lower in it overflows. Every test passed; only a phone screenshot caught it.
+- Growing a shared stylesheet by a few bytes can pass Vite's 4 KB inline limit and turn inline CSS
+  into a new render-blocking file on some pages. Check `dist/`'s file list, not just the HTML.
+- For a before/after computed-style check, a temporary `git worktree` under a gitignored folder finds
+  `node_modules` by walking up. Run `gen-types` there, then call Astro's bin by its relative path.
+- A long `python - <<'EOF'` heredoc through the Bash tool failed with "unexpected EOF while looking
+  for matching quote". Write the script to a scratchpad file and run that.
+- `Remove-Item` on a variable-built scratchpad path was refused as a "system path", which rejected
+  the whole PowerShell call. Keep cleanup out of chained commands.
+- `gh run list --commit` needs the full SHA; a short one returns nothing, not an error.
 - JustGiving's staging: new pages can vanish minutes after creation, but existing shared test pages
   work and accept test-card donations, which reach the API at once (1 Nov 2026).
 - Before calling a third-party test environment broken, try something already in it. The agent
