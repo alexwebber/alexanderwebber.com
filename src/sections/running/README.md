@@ -105,6 +105,33 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   build 48 s for 5,019 pages, 5,032 deployed files (limit 20,000); Lighthouse 100 on the hub
   (LCP 1.15 s, 34.5 KB gzip), a year page (LCP 0.90 s) and a run page (LCP 1.06 s, 19.5 KB).
 
+## Campaign stories (FR-050 to FR-055)
+
+A campaign may have a story, "Why I'm running for <charity>", on the fundraising page. With no story
+the page has no section and no placeholder (FR-044). A story is text an AI helped draft, so it goes
+through the owner's approval (constitution Principle VIII):
+
+- **Drafts stay out of the repo.** The owner's raw answers and every unapproved draft stay outside
+  it, because the repo is public: not in a file, a PR, a commit message or a test. Previews and tests
+  use made-up text only.
+- **Facts come from the owner or the site's stored data** (FR-051). Where a draft would need a fact
+  neither holds, it asks the owner instead of inventing one.
+- **Only approved text enters a PR.** It goes in `data/running/owner/stories/<campaign-id>.yaml`, the
+  one place story text lives, as plain text: blank lines separate paragraphs, with no HTML or Markdown,
+  and the page renders it escaped.
+- **`scripts/approve-story.ts` records the approval, after the owner's explicit yes:**
+  `node scripts/approve-story.ts <campaign-id> [--date=YYYY-MM-DD]` writes the `approved` block, the
+  date and the sha256 of the text as parsed, and keeps the text and comments. It never prints the
+  text, and it reminds whoever runs it to update the JustGiving page.
+- **The gate refuses anything else.** `validate-data` stops the update, so the live site stays as it
+  was, when `approved` is missing, when the text no longer matches its hash, when the date is in the
+  future, or when the file name isn't a campaign's ID. The first two are in the loader, so the store
+  and a plain `astro build` refuse them too, before `dist/` is emptied.
+- **A revised text repeats all of it:** the owner's approval, the script, a PR, and the JustGiving
+  update (FR-054). The site never writes to JustGiving, so the owner pastes the approved text there.
+
+The owner's edits to a draft become lessons in `VOICE.md` when the first story is approved (FR-053).
+
 ## Known limits
 
 - **Share images are built daily.** Messaging apps cache them, so a shared link can show an
