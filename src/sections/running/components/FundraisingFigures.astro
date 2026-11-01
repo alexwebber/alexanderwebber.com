@@ -1,0 +1,57 @@
+---
+// A campaign's figures, shared by the landing card and the fundraising page (T050; FR-030, FR-032,
+// FR-061, FR-063, FR-065; specs/002-fundraising/contracts/routes.md, the before-race rows): the
+// total against the target, the bar, the supporters and charity, and the Donate link.
+//
+// Donate is a plain link, in the same tab, with no JustGiving or Blackbaud logo (research.md R3).
+// ProgressBar is given the floored fraction, because it rounds, and its aria-valuenow would
+// otherwise read 63 beside the words' 62%. No client JS.
+import ProgressBar from '../../../shared/charts/ProgressBar.astro';
+import type { CampaignView } from '../data/fundraising.ts';
+import { barValueText, poundsText, supportersText, targetNote } from '../domain/fundraising.ts';
+
+export interface Props {
+  campaign: CampaignView;
+}
+
+const { campaign: view } = Astro.props;
+const { campaign, figures, progress } = view;
+const target = figures.target_pence;
+const note = targetNote(progress);
+---
+
+<p class="fundraising-lead" data-fundraising-lead>
+  <span class="fundraising-amount">{poundsText(figures.raised_pence)}</span> raised
+  {target !== undefined && <> of <span class="fundraising-amount">{poundsText(target)}</span></>}
+</p>
+{
+  target !== undefined && progress && (
+    <ProgressBar label={`Fundraising target ${poundsText(target)}: progress`} fraction={progress.fraction} valueText={barValueText(figures.raised_pence, target, progress)} color="var(--running-series)" />
+  )
+}
+<p class="fundraising-secondary" data-fundraising-secondary>
+  {note && <><strong class="fundraising-note" data-fundraising-note>{note}</strong> ·{' '}</>}
+  <span data-supporters>{supportersText(figures.supporters)}</span> ·{' '}
+  <span data-fundraising-charity>For {campaign.charity.name}</span>
+</p>
+<a class="fundraising-donate" href={campaign.page_url}>Donate on JustGiving</a>
+
+<style>
+  .fundraising-lead {
+    margin: 0 0 var(--space-2);
+    font-size: var(--step-2);
+    font-weight: var(--weight-bold);
+    line-height: var(--leading-tight);
+    color: var(--color-accent-strong);
+  }
+
+  .fundraising-amount,
+  .fundraising-note,
+  [data-supporters] {
+    white-space: nowrap;
+  }
+
+  .fundraising-secondary {
+    margin: 0 0 var(--space-3);
+  }
+</style>

@@ -6,6 +6,7 @@ import { featuredGoals, type GoalEvaluation } from '../domain/goals.ts';
 import { latestManualMetrics, predictionDistanceFor, type Prediction } from '../domain/manual-metrics.ts';
 import { daysRemaining, focusRace, raceDistance, raceResult, raceState, targetLabel, type RaceResult, type RaceState } from '../domain/races.ts';
 import { latestRun, trainingBuild, weekSnapshot, type LatestRun, type TrainingBuild, type WeekSnapshot } from '../domain/weeks.ts';
+import { loadFundraising, type CampaignView } from './fundraising.ts';
 import { loadGoals } from './goals.ts';
 import { runningStore, sectionSettings } from './load.ts';
 import { perStoreAndDay } from './memo.ts';
@@ -39,6 +40,8 @@ export interface LandingData {
   lastWeekRuns: Run[];
   latest?: LatestRun<Run>;
   featured: GoalEvaluation[];
+  /** The focus race's campaign, once it has figures. It isn't a goal (FR-025). */
+  fundraising?: CampaignView;
 }
 
 export function loadLanding(today: string = londonToday(), store: RunningStore = runningStore()): Promise<LandingData> {
@@ -46,7 +49,7 @@ export function loadLanding(today: string = londonToday(), store: RunningStore =
 }
 
 const load = perStoreAndDay(async (today, store): Promise<LandingData> => {
-  const [owner, runs, settings, goals] = await Promise.all([store.getOwner(), store.listRuns(), sectionSettings(store), loadGoals(today, store)]);
+  const [owner, runs, settings, goals, fundraising] = await Promise.all([store.getOwner(), store.listRuns(), sectionSettings(store), loadGoals(today, store), loadFundraising(today, store)]);
   const week = weekSnapshot(runs, today);
   const inWeek = (w: { start: string; end: string }) => runs.filter((r) => r.date >= w.start && r.date <= w.end);
   const weekRuns = inWeek(week.thisWeek);
@@ -82,5 +85,6 @@ const load = perStoreAndDay(async (today, store): Promise<LandingData> => {
     lastWeekRuns,
     ...(latest ? { latest } : {}),
     featured: featuredGoals(goals.evaluations, settings.featured_goal_limit),
+    ...(fundraising.current ? { fundraising: fundraising.current } : {}),
   };
 });

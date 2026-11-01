@@ -3,8 +3,12 @@
  * description and facts grid (and the achieved card's accent edge, which overrides the shell's
  * border, so it sits here in a fixed order). Each card keeps its own differences in its scoped
  * styles; `.theme-running` gives these rules the same weight as those.
+ *
+ * FundraisingCard.astro shares the shell and title too, so it looks like a goal card, but it isn't
+ * a `.goal-card`: its left edge keeps it visibly its own (FR-031).
  */
-.theme-running .goal-card {
+.theme-running .goal-card,
+.theme-running .fundraising-card {
   height: 100%;
   padding: var(--space-4);
   border: 1px solid var(--color-border);
@@ -12,12 +16,14 @@
   background: var(--color-surface);
 }
 
-.theme-running .goal-card-achieved {
+.theme-running .goal-card-achieved,
+.theme-running .fundraising-card {
   border-left: 6px solid var(--color-accent);
 }
 
 @media (forced-colors: active) {
-  .theme-running .goal-card-achieved {
+  .theme-running .goal-card-achieved,
+  .theme-running .fundraising-card {
     border-left-color: Highlight;
   }
 }
@@ -26,10 +32,22 @@
   margin-bottom: var(--space-3);
 }
 
-.theme-running .goal-card-title {
+.theme-running .goal-card-title,
+.theme-running .fundraising-card-title {
   margin: 0;
   font-size: var(--step-1);
   line-height: var(--leading-tight);
+}
+
+/* Not the shell's 100%: on a phone that is the height of the stretched hero column, and the card
+   starts part-way down it, so it would run over the training build below. */
+.theme-running .fundraising-card {
+  height: auto;
+  margin-top: var(--space-4);
+}
+
+.theme-running .fundraising-card-title {
+  margin-bottom: var(--space-2);
 }
 
 .theme-running .goal-description {

@@ -1,0 +1,83 @@
+---
+// When a campaign's figures were last read, and the stale notice (T049; FR-004, FR-005;
+// specs/002-fundraising/contracts/pipeline.md "Freshness route"). Modelled on LastUpdated, with its
+// own words and attributes, so it stays apart from Running's "Last updated".
+//
+// Without JS it shows the last read known at build time, and the notice if that was already older
+// than stale_after_hours when the site was built. A small script then asks
+// /running/api/fundraising-freshness for the live time, because a read that finds the same figures
+// makes no commit. A newer time shows as "Figures updated 2 hours ago"; while the build's time is
+// still current the text is left alone. If the route fails (503 or offline), nothing changes.
+//
+// The instant is carried as epoch milliseconds, as in LastUpdated.
+import { formatDateTime } from '../../../shared/format/dates.ts';
+import { isStale } from '../domain/fundraising.ts';
+
+export interface Props {
+  campaignId: string;
+  /** UTC timestamp of the last read known at build time. */
+  lastReadAt: string;
+  staleAfterHours: number;
+  /** The build time; tests pin it. */
+  now?: Date;
+}
+
+const { campaignId, lastReadAt, staleAfterHours, now = new Date() } = Astro.props;
+const readMs = Date.parse(lastReadAt);
+if (!Number.isFinite(readMs)) throw new Error(`FundraisingUpdated: not a timestamp: ${lastReadAt}`);
+---
+
+<div class="fundraising-updated" data-fundraising-updated data-campaign={campaignId} data-read-ms={readMs} data-stale-ms={staleAfterHours * 3_600_000}>
+  <p data-fundraising-updated-text>Figures updated {formatDateTime(new Date(readMs))}</p>
+  <p class="stale-notice" data-fundraising-stale hidden={!isStale(lastReadAt, now, staleAfterHours)}>
+    <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16">
+      <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+      <path d="M8 4v5M8 11v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+    </svg>
+    <span>These figures may be out of date: they were last read from JustGiving more than {staleAfterHours} hours ago.</span>
+  </p>
+</div>
+
+<script>
+  // Under 1 KB minified. Reads the live time once per page, and touches the page only when
+  // something changed. ago() is LastUpdated's: a module both imported would become a script file.
+  const blocks = document.querySelectorAll<HTMLElement>('[data-fundraising-updated]');
+
+  function ago(ms: number): string {
+    const rtf = new Intl.RelativeTimeFormat('en-GB', { numeric: 'auto' });
+    const minutes = Math.round(ms / 60_000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return rtf.format(-minutes, 'minute');
+    const hours = Math.round(minutes / 60);
+    return hours < 48 ? rtf.format(-hours, 'hour') : rtf.format(-Math.round(hours / 24), 'day');
+  }
+
+  if (blocks.length > 0) {
+    fetch('/running/api/fundraising-freshness', { headers: { Accept: 'application/json' } })
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+      .then((body) => {
+        for (const block of blocks) {
+          const built = Number(block.dataset.readMs);
+          const read = Math.max(Date.parse(body?.campaigns?.[block.dataset.campaign!]?.last_read_at) || 0, built);
+          const age = Math.max(0, Date.now() - read);
+          if (read > built) block.querySelector('[data-fundraising-updated-text]')!.textContent = `Figures updated ${ago(age)}`;
+          const notice = block.querySelector<HTMLElement>('[data-fundraising-stale]')!;
+          const hidden = age <= Number(block.dataset.staleMs);
+          if (notice.hidden !== hidden) notice.hidden = hidden;
+        }
+      })
+      .catch(() => {});
+  }
+</script>
+
+<style>
+  .fundraising-updated {
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
+  }
+
+  .fundraising-updated p {
+    margin: 0;
+  }
+</style>
