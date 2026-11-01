@@ -6,9 +6,11 @@ import running from './src/sections/running/integration.ts';
 // SHELL_PREVIEW=1 adds test-only pages over synthetic data, for the browser and axe checks:
 // /shell-preview/, the shared shell's components (tests/a11y/shell.spec.ts), and /race-preview/,
 // the races page and race pages over synthetic races, with maps and photos (tests/e2e/races.spec.ts,
-// tests/a11y/races.spec.ts; there are no real races yet), and /health-preview/, the health page over
+// tests/a11y/races.spec.ts; there are no real races yet), /health-preview/, the health page over
 // synthetic data with lab results (tests/e2e/health.spec.ts, tests/a11y/health.spec.ts; there are
-// no real lab results yet). Deploy builds never set it.
+// no real lab results yet), and /fundraising-preview/<state>/, the fundraising card over synthetic
+// campaigns, in the states the real one can't show yet (tests/e2e/fundraising.spec.ts,
+// tests/a11y/fundraising.spec.ts). Deploy builds never set it.
 /** @type {import('astro').AstroIntegration} */
 const shellPreview = {
   name: 'alexanderwebber:shell-preview',
@@ -21,6 +23,7 @@ const shellPreview = {
       injectRoute({ pattern: '/race-preview/[slug]/route.json', entrypoint: `${races}/route.json.ts` });
       injectRoute({ pattern: '/og/race-preview-[slug].png', entrypoint: `${races}/og.ts` });
       injectRoute({ pattern: '/health-preview', entrypoint: './tests/fixtures/health-preview/index.astro' });
+      injectRoute({ pattern: '/fundraising-preview/[state]', entrypoint: './tests/fixtures/fundraising-preview/[state].astro' });
     },
   },
 };

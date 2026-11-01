@@ -3,9 +3,11 @@
 // refresh bot has published (an open PR's CI builds on the latest main data): the hero follows
 // section.yaml and upcoming-races.yaml, featured goals follow goals.yaml, the latest run links to a
 // run page with no time of day or map, treadmill runs are labelled, the page works without JS,
-// and the layout fits 360px and 320px. Card wording for pinned scenarios (US1.1-US1.7: 182 days,
-// "10.0 kg to go", a stale notice, the story link) is in tests/unit/landing.test.ts.
-import { readdirSync, readFileSync } from 'node:fs';
+// and the layout fits 360px and 320px. The fundraising card follows the same rule: its checks ask
+// whether the focus race's campaign has a published file, and never pin the bot's figures. Card
+// wording for pinned scenarios (US1.1-US1.7: 182 days, "10.0 kg to go", a stale notice, the story
+// link) is in tests/unit/landing.test.ts.
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { parse } from 'yaml';
@@ -39,6 +41,11 @@ interface PublishedRun {
   date: string;
   treadmill: boolean;
 }
+interface OwnerCampaign {
+  id: string;
+  race_id: string;
+  page_url: string;
+}
 
 const section = owner('section.yaml') as Section;
 const races = (owner('upcoming-races.yaml') ?? []) as UpcomingRace[];
@@ -49,6 +56,9 @@ const featured = goals
   .sort((a, b) => a.priority - b.priority)
   .slice(0, section.featured_goal_limit ?? 6)
   .map((g) => g.id);
+const campaign = ((owner('campaigns.yaml') ?? []) as OwnerCampaign[]).find((c) => c.race_id === section.focus_race.race_id);
+// The card shows once the focus race's campaign has a published file (FR-022, FR-030).
+const hasCard = campaign !== undefined && existsSync(join(REPO, 'data/running/published/fundraising', `${campaign.id}.json`));
 const runsDir = join(REPO, 'data/running/published/runs');
 const runs: PublishedRun[] = readdirSync(runsDir).flatMap((year) =>
   readdirSync(join(runsDir, year)).map((file) => JSON.parse(readFileSync(join(runsDir, year, file), 'utf8')) as PublishedRun),
@@ -89,13 +99,19 @@ test('US1.1/US1.2: the hero shows the focus race, its date, the days left, its t
     await expect(hero.locator('[data-countdown]')).toHaveText(`${value} ${unit}`.trim());
   }
   if (focus.target_time) await expect(hero.locator('[data-target]')).toHaveText(`Target: ${targetLabel(focus.target_time)}`);
-  await expect(hero.locator('[data-charity]')).toHaveText(`For ${section.focus_race.charity.name}`);
+  if (hasCard) {
+    await expect(hero.locator('[data-charity]')).toHaveCount(0);
+    const card = hero.locator('.fundraising-card');
+    await expect(card).toContainText(`For ${section.focus_race.charity.name}`);
+    await expect(card.getByRole('link', { name: 'Donate on JustGiving' })).toHaveAttribute('href', campaign!.page_url);
+  } else {
+    await expect(hero.locator('[data-charity]')).toHaveText(`For ${section.focus_race.charity.name}`);
+    await expect(page.getByText(/fundrais|donate/i)).toHaveCount(0);
+  }
   // A Garmin prediction always says "at current fitness" and carries the date it was read.
   for (const prediction of await hero.locator('[data-prediction]').all()) {
     await expect(prediction).toContainText(/^Garmin predicts \d{1,2}:\d{2}(:\d{2})? at current fitness \(\d{1,2} [A-Z][a-z]{2} \d{4}\)$/);
   }
-  // The fundraising place is reserved but shows nothing yet (FR-025).
-  await expect(page.getByText(/fundrais|donate/i)).toHaveCount(0);
 });
 
 test('US1.3: featured goals appear newly achieved first, then in priority order, each with progress or "no data yet"', async ({ page }) => {
@@ -215,11 +231,14 @@ test.describe('without JavaScript (FR-074)', () => {
 });
 
 test.describe('on a phone (SC-001, FR-073)', () => {
-  test('the race, days left, target and this week’s distance are on the first screen', async ({ page }) => {
+  // With a card, the total takes the place of this week's distance on the first screen, which 001's
+  // SC-001 doesn't need (the owner confirms it at T062).
+  test('the race, days left, target and the fundraising total, or else this week’s distance, are on the first screen', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 780 });
     await open(page);
     const bottom = (selector: string) => page.locator(selector).first().evaluate((el) => el.getBoundingClientRect().bottom + window.scrollY);
-    for (const selector of ['[data-hero] h2', '[data-countdown]', '[data-hero] [data-target]', '[data-training-build] .chart-figure-summary']) {
+    const last = hasCard ? '.fundraising-card [data-fundraising-lead]' : '[data-training-build] .chart-figure-summary';
+    for (const selector of ['[data-hero] h2', '[data-countdown]', '[data-hero] [data-target]', last]) {
       if ((await page.locator(selector).count()) === 0) continue;
       expect(await bottom(selector), selector).toBeLessThanOrEqual(780);
     }
@@ -233,6 +252,20 @@ test.describe('on a phone (SC-001, FR-073)', () => {
       expect(overflow).toBe(0);
       const lefts = await page.locator('[data-featured-goals] > li').evaluateAll((els) => [...new Set(els.map((el) => Math.round(el.getBoundingClientRect().left)))]);
       expect(lefts).toHaveLength(1);
+    });
+
+    test(`at ${width}px the fundraising card comes after the hero's facts, clear of the training build, before the goals (FR-034)`, async ({ page }) => {
+      test.skip(!hasCard, 'the focus race has no published campaign');
+      await page.setViewportSize({ width, height: 800 });
+      await open(page);
+      const box = (selector: string) => page.locator(selector).first().evaluate((el) => {
+        const { top, bottom } = el.getBoundingClientRect();
+        return { top: top + window.scrollY, bottom: bottom + window.scrollY };
+      });
+      const card = await box('.fundraising-card');
+      expect(card.top).toBeGreaterThanOrEqual((await box('[data-hero] .hero-facts')).bottom);
+      expect(card.bottom).toBeLessThanOrEqual((await box('[data-training-build]')).top);
+      expect((await box('[data-training-build]')).bottom).toBeLessThanOrEqual((await box('[data-featured]')).top);
     });
   }
 });
