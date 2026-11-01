@@ -24,21 +24,19 @@ Update this as decisions get made — treat it as the source of truth alongside
   **The fundraising page is live** (Phase 5, T064–T080, #93). **The story section is live** (Phase
   6, T081–T093, #94), with nothing visible until a story exists. **After race day and later
   campaigns is merged** (Phase 7, T094–T102, #95, all four boxes ticked, `main`'s Gate and deploy
-  green), with nothing visible before race day. **Phase 8 (Polish, T103–T110) is in review** on the
-  `claude/optimistic-gauss-cco16n` PR (cloud session), with nothing visible changing.
-  - **Next session: finish Phase 8 after the owner's review.** Ask about the PR's boxes, including
-    the T112 usability check (run it, or skip it as with 001's hallway test), and record the answer.
-    After the merge: wait for `main`'s Gate to finish, deploy included; read the next nightly Quality
-    run (the landing page sat near 90 on the 2-core runner); then tick T111 and T112, move
-    fundraising's status to shipped here, and ask the owner which spec comes next (journey story or
-    CV & Blog).
+  green), with nothing visible before race day. **Fundraising has shipped and graduated**: Phase 8
+  (Polish, T103–T112, #98) merged with all four boxes ticked, the usability check skipped, and
+  `main`'s Gate green, deploy included. What remains waits on others or on a date (T113–T121).
+  - **Next session: ask the owner which spec comes next** (the journey story or CV & Blog), then
+    run `/speckit-specify` with question rounds first. Check first that the nightly Quality run after
+    #98 is green (the landing page sat near 90 on the 2-core runner).
   - **Fundraising triggers to check at each session start** (T113–T121): the story reviewers' reply
     (T113–T115) and Martlets' reply (T116) are below; T117 is done; T118's timing month and T119's
     tally are below. **T120:** after 4 April 2027, check the card's and page's change of form on the
     live site, and once the owner records the result, that it shows beside "Raised £X for Martlets"
     (quickstart.md §13). **T121:** at a session in June 2027, before the page expires on 3 July
     2027, ask whether donations have stopped and whether to mark Brighton `finished`.
-  - **A failed deploy now triggers a redeploy** (T108, if the PR merges): the first refresh after a
+  - **A failed deploy now triggers a redeploy** (T108, #98): the first refresh after a
     `refresh.yml` deploy failure logs "Publishing: the last refresh's deploy didn't finish" and
     deploys its gated build. If a refresh run shows that line, check why the earlier deploy failed.
   - **Security alerts weren't read on 2026-11-01's cloud session** (no `gh api` there): read them
@@ -1738,9 +1736,9 @@ project-specific notes.
   setting.
 - **2026-11-01** — **The cloud hook works:** in the next cloud session, `node_modules/.session-start.sha256`
   existed and the full Playwright suite launched with no `playwright install`.
-- **2026-11-01** — **Fundraising Phase 8 built** (T103–T110, cloud session, the
-  `claude/optimistic-gauss-cco16n` PR; implement subagent about 371k tokens). Nothing visible changes.
-  Choices later work builds on; the owner confirms three in the PR:
+- **2026-11-01** — **Fundraising Phase 8 built** (T103–T110, cloud session, PR #98; implement
+  subagent about 371k tokens). Nothing visible changes. Choices later work builds on; the owner
+  ticked all three confirmations (the redeploy, the corrupt-state alert, leaving the low findings):
   - **Drills:** `tests/e2e/stale.spec.ts` gains fundraising (SC-003): a published file read 7 days ago
     with made-up figures, `/running/fundraising/` in `pageTypes()`, and five desktop-only tests (in the
     HTML, 503, JS off, and each notice alone). The new `tests/e2e/fundraising-none.spec.ts` (SC-006)
@@ -1775,6 +1773,8 @@ project-specific notes.
     ruff and `astro check` clean, gate green on a deploy build (scan-privacy without the R2 map).
     quickstart §1, §6–§10 and §12 ran and passed; §5 needs Actions and secrets (proven earlier on
     `main`).
+- **2026-11-01** — **T112's usability check skipped** (owner, PR #98 comment), as with 001's hallway
+  test: the phase-by-phase live reviews covered it. SC-001 stays unmeasured.
 
 ## Upstream candidates
 
