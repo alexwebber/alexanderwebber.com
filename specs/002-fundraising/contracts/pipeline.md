@@ -103,6 +103,7 @@ A campaign's issue opens when any of these holds:
 | Never read successfully, and the last attempt failed | At once (as Running) |
 | `now - last_success_at > 24 h` | The usual rule. This covers failing reads and figures that aren't reaching the site |
 | No `last_success_at`, and `now - first_unpublished_at > 24 h` | A first read that never published |
+| `state/fundraising.json` exists but isn't valid JSON | At once, for every active campaign, with the class `StateCorrupt` (code `archive_unavailable`, exit 14). Every read fails until it is fixed, and the read's step can't turn the run red, so nothing else would say so (T108) |
 
 - **Body**: as `ingest-failing`: failure class and code, last error (scrubbed), likely cause, action,
   last good time, consecutive failures, run link. The texts are in

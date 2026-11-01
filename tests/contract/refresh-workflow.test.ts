@@ -117,4 +117,20 @@ describe('refresh.yml fundraising steps', () => {
     expect(idle).toBeGreaterThan(figures);
     expect(decide).toContain(`jq -e '(.changed // 0) > 0' "$RUNNER_TEMP/fundraising-summary.json" >/dev/null 2>&1`);
   });
+
+  it('publishes and deploys after a refresh whose deploy failed, so the live time never runs ahead of the site (SC-005, T108)', () => {
+    // The read compares JustGiving with the repo, not the live site: after a commit whose deploy
+    // failed it would move "Figures updated" on while the site still showed the older figures.
+    const decide = steps('fetch').find((s) => s.id === 'decide')!.run!;
+    expect(decide).toContain('echo "redeploy=$redeploy" >> "$GITHUB_OUTPUT"');
+    expect(decide).toContain('skipped | \'\') continue ;;');
+    expect(decide).toContain('failure | cancelled | timed_out) redeploy=true ;;');
+    expect(decide.indexOf('reason="the last refresh\'s deploy didn\'t finish"')).toBeGreaterThan(decide.indexOf("reason='owner files changed'"));
+    expect(decide.indexOf('reason="the last refresh\'s deploy didn\'t finish"')).toBeLessThan(decide.indexOf("reason='the daily catch-all'"));
+    const fetch = workflow.jobs.fetch as Job & { outputs?: Record<string, string> };
+    expect(fetch.outputs?.redeploy).toBe('${{ steps.decide.outputs.redeploy }}');
+    const deploy = workflow.jobs.deploy as Job & { if?: string };
+    expect(deploy.if).toContain("needs.fetch.outputs.redeploy == 'true'");
+    expect(deploy.if).toContain("needs.publish.result == 'success'");
+  });
 });

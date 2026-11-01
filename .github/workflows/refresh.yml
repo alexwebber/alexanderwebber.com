@@ -131,6 +131,7 @@ jobs:
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
       daily: ${{ steps.decide.outputs.daily }}
+      redeploy: ${{ steps.decide.outputs.redeploy }}
     defaults:
       run:
         working-directory: ingest
@@ -214,6 +215,11 @@ jobs:
       # unexpected publishes. `daily` marks the catch-all, whose gated build deploys even when no
       # published data changed (T105). A fundraising read whose figures differ from the published
       # file publishes too; a missing or empty read summary doesn't, and the rest carries on.
+      # `redeploy` marks a run after one whose deploy failed (the latest refresh that reached deploy,
+      # so a backup run the guard skipped doesn't hide it): it publishes, and deploys its gated build
+      # even when no published data changed. Otherwise the live site would keep the older build until the next
+      # commit or the catch-all, while the fundraising read, which compares JustGiving with the
+      # repo rather than the live site, moved the live "Figures updated" time on (SC-005, T108).
       - name: Decide whether to publish
         id: decide
         if: ${{ always() }}
@@ -228,7 +234,19 @@ jobs:
           daily=false
           if [ "$(date -u +%H)" = 00 ]; then daily=true; fi
           echo "daily=$daily" >> "$GITHUB_OUTPUT"
+          redeploy=false
+          # The latest of the last five completed refreshes that reached deploy, if its deploy failed.
+          for id in $(gh run list --workflow refresh.yml --branch main --status completed --limit 5 --json databaseId --jq '.[].databaseId' || true); do
+            deployed=$(gh run view "$id" --json jobs --jq '[.jobs[] | select(.name == "deploy")][0].conclusion // ""') || break
+            case "$deployed" in
+              skipped | '') continue ;;
+              failure | cancelled | timed_out) redeploy=true ;;
+            esac
+            break
+          done
+          echo "redeploy=$redeploy" >> "$GITHUB_OUTPUT"
           if [ "$EVENT" = push ]; then reason='owner files changed'
+          elif [ "$redeploy" = true ]; then reason="the last refresh's deploy didn't finish"
           elif [ "$FETCH" != success ]; then reason="the fetch step's outcome was $FETCH"
           elif [ -n "$REIMPORT_FROM" ]; then reason='a re-import'
           elif [ "$daily" = true ]; then reason='the daily catch-all'
@@ -401,13 +419,15 @@ jobs:
           fi
 
   # Deploys the build the gate passed: after a bot commit; after an owner-file push to main (whose
-  # data the gate just built, even if no published file changed); or from the daily catch-all, so
-  # date-driven pages (the countdown, the landing share image) follow the UK date (T105).
+  # data the gate just built, even if no published file changed); from the daily catch-all, so
+  # date-driven pages (the countdown, the landing share image) follow the UK date (T105); or after a
+  # refresh whose deploy failed, so the live site catches up with main (T108).
   deploy:
     needs: [fetch, publish, commit]
     if: >-
       ${{ !cancelled() && needs.publish.result == 'success' && (needs.commit.result == 'success' ||
-      ((github.event_name == 'push' || needs.fetch.outputs.daily == 'true') && needs.commit.result == 'skipped')) }}
+      ((github.event_name == 'push' || needs.fetch.outputs.daily == 'true' || needs.fetch.outputs.redeploy == 'true') &&
+      needs.commit.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     concurrency:

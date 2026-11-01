@@ -3,8 +3,10 @@
 One issue per campaign, under its own label, ``fundraising-failing-<id>``, on the logic it shares
 with ``ingest-failing``, which is a separate issue: either can be open without the other. A page
 that can't be found or isn't active alerts at once, as does a campaign that has never been read;
-anything else alerts after 24 hours. An issue closes on recovery, when its campaign is marked
-finished, or when its campaign has left ``campaigns.yaml``.
+anything else alerts after 24 hours. A state file that isn't JSON alerts every active campaign at
+once: the read can't run until it is fixed, and its own step can't turn the run red (FR-003, FR-006).
+An issue closes on recovery, when its campaign is marked finished, or when its campaign has left
+``campaigns.yaml``.
 """
 
 from collections.abc import Callable
@@ -29,7 +31,7 @@ from awingest.logging import Logger, scrub
 from awingest.process.overrides import OwnerDataInvalid
 from awingest.providers.justgiving.errors import FiguresUnpublished, PageNotActive, PageNotFound
 from awingest.schemas import SchemaSet
-from awingest.state import FUNDRAISING_STATE, StateDoc, parse_utc, utc_iso
+from awingest.state import FUNDRAISING_STATE, StateCorrupt, StateDoc, parse_utc, utc_iso
 
 LABEL_PREFIX = "fundraising-failing-"
 LABEL_DESCRIPTION = "Fundraising figures failing"
@@ -71,7 +73,7 @@ def _texts(entry: dict[str, Any]) -> tuple[str, str, str, str]:
         code = PageNotActive.code
     elif not code and entry.get("outcome") == "unpublished":
         code = FiguresUnpublished.code
-    cls = failure_class(code)
+    cls = StateCorrupt if entry.get("error_class") == StateCorrupt.__name__ else failure_class(code)
     if cls is None:
         return (
             entry.get("error_class") or "none recorded",
@@ -170,9 +172,16 @@ def run_fundraising_alert(
     """``issues_for`` gives the issue client for a label."""
     now = now or datetime.now(UTC)
     result = FundraisingAlertResult()
+    corrupt: StateCorrupt | None = None
     try:
         campaigns = {c.id: c for c in load_campaigns(repo_root, SchemaSet(repo_root / "schemas"))}
         state = StateDoc(archive, FUNDRAISING_STATE).value
+    except StateCorrupt as exc:
+        # Every read fails until this is fixed, so each active campaign alerts now, and the run
+        # still exits 14.
+        log.error("alert_state_corrupt", exc=exc)
+        result.fail(exc)
+        corrupt, state = exc, {}
     except (OwnerDataInvalid, ArchiveError) as exc:
         log.error("alert_failed", exc=exc)
         result.fail(exc)
@@ -181,6 +190,13 @@ def run_fundraising_alert(
     for campaign_id in sorted(campaigns.keys() | state.keys()):
         entry = state.get(campaign_id)
         entry = entry if isinstance(entry, dict) else {}
+        if corrupt is not None:
+            entry = {
+                "outcome": "failed",
+                "error_class": StateCorrupt.__name__,
+                "code": corrupt.code,
+                "message": str(corrupt),
+            }
         try:
             result.campaigns[campaign_id] = _sync(
                 issues_for(label_for(campaign_id)),

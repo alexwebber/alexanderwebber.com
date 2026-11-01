@@ -9,6 +9,7 @@ import pytest
 from builders import FakeGitHub
 
 from awingest.alerts import LABEL, GitHubIssues, failure_class, run_alert
+from awingest.archive.base import ArchiveUnavailable
 from awingest.archive.local import LocalArchive
 from awingest.fundraising.alerts import run_fundraising_alert
 from awingest.logging import Logger
@@ -19,7 +20,7 @@ from awingest.providers.justgiving.errors import (
     PageNotActive,
     PageNotFound,
 )
-from awingest.state import FETCH_STATUS, FUNDRAISING_STATE
+from awingest.state import FETCH_STATUS, FUNDRAISING_STATE, StateCorrupt
 
 NOW = datetime(2026, 10, 17, 12, 0, tzinfo=UTC)
 TOKEN = "ghs_test-token-1234567890"
@@ -407,9 +408,30 @@ def test_a_github_failure_exits_1(campaigns, archive, fake):
     assert (result.exit_code, result.code) == (1, "github_unavailable")
 
 
-def test_an_unreadable_state_exits_14(campaigns, archive, fake):
+def test_an_unreadable_state_opens_each_active_campaigns_issue_at_once_and_exits_14(
+    campaigns, archive, fake
+):
+    # Every read fails until the file is fixed, and the read's step can't turn the run red, so
+    # without this the figures would go stale with no alert at all (FR-006, T108).
+    (campaigns / "data/running/owner/campaigns.yaml").write_text(
+        BRIGHTON % "" + OTHER.replace("beta }", "beta, finished: true }"), encoding="utf-8"
+    )
     archive.put(FUNDRAISING_STATE, b"{not json")
-    assert fundraising_alert(archive, campaigns, fake).exit_code == 14
+    result = fundraising_alert(archive, campaigns, fake)
+    assert (result.exit_code, result.code) == (14, "archive_unavailable")
+    assert result.summary()["actions"] == {"alpha": "opened", "beta": "none"}
+    body = fake.issues[0]["body"]
+    assert "`StateCorrupt` (code `archive_unavailable`)" in body
+    assert StateCorrupt.action in body and "state/fundraising.json is not valid JSON" in body
+
+
+def test_an_archive_outage_opens_nothing_and_exits_14(campaigns, archive, fake, monkeypatch):
+    def outage(key):
+        raise ArchiveUnavailable("R2 get failed")
+
+    monkeypatch.setattr(archive, "get", outage)
+    result = fundraising_alert(archive, campaigns, fake)
+    assert result.exit_code == 14 and result.campaigns == {} and fake.issues == []
 
 
 def test_an_invalid_campaigns_file_exits_20(campaigns, archive, fake):
