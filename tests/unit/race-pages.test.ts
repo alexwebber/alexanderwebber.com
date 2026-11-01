@@ -12,6 +12,7 @@ import { elevationByKm, markerStep, routeJson, staticMap } from '../../src/secti
 import { raceCard } from '../../src/sections/running/og/race.ts';
 import { racesCard } from '../../src/sections/running/og/races.png.ts';
 import Races from '../../src/sections/running/pages/races.astro';
+import { stripTags } from '../helpers/html.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;
@@ -55,10 +56,7 @@ afterEach(() => {
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
 const text = (html: string) =>
-  html
-    .replace(/<(style|script)[\s\S]*?<\/\1>/g, '')
-    .replace(/<caption[\s\S]*?<\/caption>/g, '')
-    .replace(/<[^>]+>/g, ' ')
+  stripTags(html, ['style', 'script', 'caption'])
     .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')
     .replace(/ ([,.)])/g, '$1')

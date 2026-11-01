@@ -8,6 +8,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import FundraisingCard from '../../src/sections/running/components/FundraisingCard.astro';
 import { loadFundraising } from '../../src/sections/running/data/fundraising.ts';
 import type { Campaign, CampaignFigures, RunningStore } from '../../src/sections/running/data/store/index.ts';
+import { stripTags } from '../helpers/html.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -53,9 +54,7 @@ async function html(from: RunningStore): Promise<string> {
 
 /** The visible text, whitespace collapsed. */
 const text = (rendered: string) =>
-  rendered
-    .replace(/<(style|script)[\s\S]*?<\/\1>/g, '')
-    .replace(/<[^>]+>/g, ' ')
+  stripTags(rendered)
     .replace(/\s+/g, ' ')
     .trim();
 
