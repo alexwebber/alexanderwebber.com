@@ -19,10 +19,10 @@ Update this as decisions get made — treat it as the source of truth alongside
   **The fundraising data slice is live** (`specs/002-fundraising/`, T001–T037, #85): each refresh
   reads the page through JustGiving's official API, and the bot published
   `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). No page
-  shows it yet.
-  - **Next session, first:** check that the house-process 0.11.0 PR merged (`house-process-0.11.0`).
-  - **Then: Phase 3, the staging check** (`specs/002-fundraising/tasks.md`, T039 on; about 15
-    minutes of the owner's time, guided), in its own session.
+  shows it yet. **The staging check is done** (Phase 3): the parser needs no change, and the label
+  stays "supporters".
+  - **Next session: Phase 4, the landing-page card** (`specs/002-fundraising/tasks.md`, T044 on),
+    in its own session. It shows the owner the live card at the PR (T062).
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -1526,9 +1526,32 @@ project-specific notes.
   run. `extensions.yml` is unchanged. #87's key check is proven: `main`'s Gate run finished, and a
   dispatched refresh's fundraising step read `outcome: ok`, with no alert issue. The stray
   `harvest-alexanderwebber-5` branch is deleted.
+- **2026-11-01** — **Fundraising Phase 3 done: the parser matches real figures, unchanged**
+  (`specs/002-fundraising/quickstart.md` §4; no secrets or page names recorded).
+  - **Format:** figures are plain strings with no comma (`'1030.75'`), and the real client and parser
+    read them correctly, also over target (103%). Online, offline and SMS sum to the total.
+  - **Supporters:** `donationCount` equalled the page at 7 and 9, and the page says "9 donations" too,
+    so the label stays "supporters". The two test donations carried different display names, so T117
+    still watches for a live repeat donor under one name.
+  - **404:** a mistyped page is a real 404 on staging and live, so `page_not_found` stands.
+  - **Not tested:** a page with no target. Our page has one, and an unexpected shape fails safely.
+  - **Staging's quirk:** the owner's new page opened in its dashboard, then gave a 404 everywhere
+    within minutes. The agent wrongly called staging unusable; the owner found a shared test page
+    still working, and two test-card donations on it did the job. A donation reaches the API at once
+    and the page within minutes.
+  - **Rounding differs on purpose:** JustGiving showed £1,031, and this site will show £1,030
+    (FR-063 rounds down, so it never overstates).
 
 ## Upstream candidates
 
+- JustGiving's staging: new pages can vanish minutes after creation, but existing shared test pages
+  work and accept test-card donations, which reach the API at once (1 Nov 2026).
+- Before calling a third-party test environment broken, try something already in it. The agent
+  gave up after one failed page, and the owner found a working one.
+- Removing a scratch folder that holds a Windows junction: delete the junction first with
+  `cmd /c rmdir`, as a recursive delete could reach the junction's target.
+- PowerShell 5.1 strips embedded double quotes from native arguments, so `python -c` with quotes
+  fails. Use a script file, and don't hide stderr while checking it.
 - `gh run list` and `gh run view` showed `createdAt` an hour ahead of the run's own log timestamps
   (09:24:08Z listed, 08:24:16Z logged, 1 Nov 2026), which looked like a missed refresh slot. Check
   a run's log before trusting a gap in the listing.

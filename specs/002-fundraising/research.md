@@ -266,6 +266,12 @@ offline and SMS totals sum to the grand total, and a mistyped page's status. It 
 JustGiving page, which is an owner action (see the plan's *Owner steps*). If staging can't be used,
 the first real donation settles both open points, and the parser still fails safely.
 
+**Result (2026-11-01):** both points are settled with no parser change. Figures are plain strings with
+no comma (`'1030.75'`). `donationCount` equalled the supporters shown, at 7 and then at 9, though the
+repeat donations carried different display names. Totals summed, a mistyped page is a real 404 on
+staging and live, and the `JustGiving-Realm` header does select separate data. A page with no target
+stays untested. Details are in quickstart.md §4.
+
 ---
 
 ## R9. Page expiry
