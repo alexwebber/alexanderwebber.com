@@ -83,6 +83,7 @@ function store(f: Fixture = {}): RunningStore {
       lab: [],
       manualMetrics: { training_status: [], race_predictions: f.predictions ?? [{ as_of: '2026-10-01', marathon: '3:28:40', '10k': '44:10' }] },
       campaigns: f.campaigns ?? [],
+      stories: [],
     }),
   };
 }

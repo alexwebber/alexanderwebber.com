@@ -1,4 +1,4 @@
-// The fundraising card and page's accessibility (T060, T077; FR-060, FR-061, SC-010; WCAG 2.2 AA),
+// The fundraising card and page's accessibility (T060, T077, T091; FR-060, FR-061, SC-010; WCAG 2.2 AA),
 // over the test-only previews and the real page: zero axe violations in every state, in light, dark
 // and forced colours, the chart's table open, a sound heading outline, and the bar exposed with its
 // figures in words. The real card is swept with the landing page in tests/a11y/landing.spec.ts.
@@ -7,7 +7,7 @@ import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { axe, fullSweep, outline, sweepOnlyInDark } from '../helpers/a11y.ts';
 
-const STATES = ['active', 'first-day', 'no-target', 'zero', 'beaten', 'stale', 'second-campaign', 'no-current'];
+const STATES = ['active', 'first-day', 'no-target', 'zero', 'beaten', 'stale', 'second-campaign', 'no-current', 'with-story'];
 const WITH_CARD = STATES.filter((state) => state !== 'no-current');
 const PAGES = STATES.map((state) => `/fundraising-preview/${state}/`);
 
@@ -78,6 +78,11 @@ test('the page\'s sections are named by their headings', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Lakeside Half · 3 October 2027' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Past campaigns' })).toBeVisible();
   await expect(page.getByRole('figure', { name: 'The total so far' })).toBeVisible();
+});
+
+test('the story is a section named by its heading', async ({ page }) => {
+  await open(page, '/fundraising-preview/with-story/');
+  await expect(page.getByRole('region', { name: "Why I'm running for Example hospice" })).toBeVisible();
 });
 
 test('the chart has a text alternative, and its table a caption (FR-061)', async ({ page }) => {

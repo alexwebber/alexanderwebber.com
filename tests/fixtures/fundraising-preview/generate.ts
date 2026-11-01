@@ -1,12 +1,13 @@
-// Writes the fundraising preview's synthetic data trees (T054, T072), one per state, under
+// Writes the fundraising preview's synthetic data trees (T054, T072, T088), one per state, under
 // tests/fixtures/fundraising-preview/data/<state>/data/running/ (JsonFileStore expects
 // <root>/data/running/). None of it is real: the charities, races, totals, page addresses, charity
-// numbers and dates are all made up, so states the real campaign can't show yet (108%, no target,
-// stale, a chart with history, past campaigns) can be tested end to end. The SHELL_PREVIEW=1 build
+// numbers, dates and story are all made up, so states the real campaign can't show yet (108%, no
+// target, stale, a chart with history, past campaigns, a story) can be tested end to end. The SHELL_PREVIEW=1 build
 // renders them at /fundraising-preview/<state>/ through the real components. Deterministic; the
 // output is committed.
 //
 //   node tests/fixtures/fundraising-preview/generate.ts
+import { createHash } from 'node:crypto';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
@@ -42,6 +43,8 @@ interface PreviewCampaign {
   finished?: boolean;
   last_read_at?: string;
   points: Point[];
+  /** Written to stories/<id>.yaml with its approval: the text as it parses, paragraphs and all. */
+  story?: string;
 }
 
 interface State {
@@ -83,6 +86,14 @@ const pastSeaside: PreviewCampaign = {
   points: [point('2026-02-01', 400, 12, 1500), point('2026-04-05', 1620, 44, 1500)],
 };
 
+/** Made-up text: it says so, and shows how a story's plain text reaches the page. */
+const STORY = [
+  'This is made-up preview text, so the layout can be checked before a real story exists. Nothing here is about a real person, charity or race.',
+  'A story is a few short paragraphs of plain text. A blank line starts a new paragraph, while a single line break\ninside a paragraph is only a space.',
+  'The paragraphs stop at a comfortable width on a desktop, and on a phone they wrap like any other text. A longer paragraph shows how that reads: it carries on for a few more made-up lines, with no real facts in them, until it has filled enough of the page to judge the line length and the gap before the next section.',
+  'Everything stays exactly as approved, so a <b>tag</b> or an & shows as typed.',
+].join('\n\n').concat('\n');
+
 const STATES: Record<string, State> = {
   active: { campaigns: [seaside([...HISTORY(2000), point('2026-11-10', 1250, 37, 2000)], { registered: 'Example hospice group' })] },
   'first-day': { campaigns: [seaside([point('2026-11-10', 1250, 37, 2000)], { registered: 'Example hospice' })] },
@@ -101,6 +112,7 @@ const STATES: Record<string, State> = {
     campaigns: [pastSeaside, { race: HARBOUR, charity: 'Example shelter', last_read_at: OLD_READ, points: [point('2026-09-20', 310, 14)] }],
     focus: LAKESIDE,
   },
+  'with-story': { campaigns: [seaside([...HISTORY(2000), point('2026-11-10', 1250, 37, 2000)], { registered: 'Example hospice group', story: STORY })] },
 };
 
 const raceYaml = ({ id, name, date, distance }: Race) => `slug: ${id}\nname: ${name}\ndate: ${date}\ndistance: ${distance}\nofficial_time: "3:40:00"\n`;
@@ -115,6 +127,13 @@ function campaignYaml({ race, charity, registered, noUrl, finished }: PreviewCam
   return `${lines.join('\n')}\n`;
 }
 
+/** A story as the approve-story script leaves it, with the hash of its text as parsed. */
+const storyYaml = (id: string, text: string) => {
+  const body = text.trimEnd().split('\n').map((line) => (line ? `  ${line}` : '')).join('\n');
+  const sha256 = createHash('sha256').update(text, 'utf8').digest('hex');
+  return `campaign: ${id}\ntext: |\n${body}\napproved:\n  date: 2026-11-01\n  text_sha256: ${sha256}\n`;
+};
+
 for (const [state, { campaigns, focus }] of Object.entries(STATES)) {
   const write = (path: string, content: string) => {
     const file = join(ROOT, state, 'data/running', path);
@@ -128,7 +147,8 @@ for (const [state, { campaigns, focus }] of Object.entries(STATES)) {
   write('owner/upcoming-races.yaml', races.filter((r) => !r.raced).map(upcomingYaml).join(''));
   for (const race of races.filter((r) => r.raced)) write(`owner/races/${race.id}/race.yaml`, raceYaml(race));
   write('owner/campaigns.yaml', campaigns.map(campaignYaml).join(''));
-  for (const { race, last_read_at = LAST_READ, points } of campaigns) {
+  for (const { race, last_read_at = LAST_READ, points, story } of campaigns) {
     write(`published/fundraising/${race.id}.json`, `${JSON.stringify({ schema_version: 1, campaign_id: race.id, last_read_at, points })}\n`);
+    if (story) write(`owner/stories/${race.id}.yaml`, storyYaml(race.id, story));
   }
 }

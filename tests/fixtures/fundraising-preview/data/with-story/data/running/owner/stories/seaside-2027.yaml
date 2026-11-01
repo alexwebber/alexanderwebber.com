@@ -1,0 +1,13 @@
+campaign: seaside-2027
+text: |
+  This is made-up preview text, so the layout can be checked before a real story exists. Nothing here is about a real person, charity or race.
+
+  A story is a few short paragraphs of plain text. A blank line starts a new paragraph, while a single line break
+  inside a paragraph is only a space.
+
+  The paragraphs stop at a comfortable width on a desktop, and on a phone they wrap like any other text. A longer paragraph shows how that reads: it carries on for a few more made-up lines, with no real facts in them, until it has filled enough of the page to judge the line length and the gap before the next section.
+
+  Everything stays exactly as approved, so a <b>tag</b> or an & shows as typed.
+approved:
+  date: 2026-11-01
+  text_sha256: 2b3f26d8828d009456ff48b158c19b1d91a32ca3eae8862766f48802e6b1ac7c

@@ -51,7 +51,7 @@ data/running/owner/stories/brighton-2027.yaml  field approved.text_sha256: the t
 | `charity.name` equals `focus_race.charity.name`, for the focus race's campaign | Error |
 | Story file name equals `campaign`, and that campaign exists | Error |
 | `approved.date` not in the future | Error |
-| `approved.text_sha256` equals the sha256 of `text` | Error |
+| `approved.text_sha256` equals the sha256 of `text` | Error, in the loader (`files.ts`), so the store and a plain build refuse it too |
 | `approved` missing | Error (schema), message: "needs the owner's approval before it can be published" |
 | Published file's `campaign_id` equals its file name | Error |
 | `points` sorted, one per date, none in the future | Error |

@@ -1,5 +1,5 @@
-// The fundraising card and page (T057, T074; US1.1, US1.6, US1.7, US2, FR-030, FR-032, FR-041 to
-// FR-043, FR-061, FR-063, FR-065), rendered with Astro's container API over the data loader: each
+// The fundraising card and page (T057, T074, T091; US1.1, US1.6, US1.7, US2, US3, FR-030, FR-032,
+// FR-041 to FR-044, FR-061, FR-063, FR-065), rendered with Astro's container API over the data loader: each
 // before-race row of specs/002-fundraising/contracts/routes.md, then the page's sections. The card's
 // place on the landing page is in tests/unit/landing.test.ts; browser checks (layout, axe, keyboard,
 // the freshness script) are in tests/e2e/fundraising.spec.ts and tests/a11y/fundraising.spec.ts.
@@ -9,7 +9,7 @@ import FundraisingCard from '../../src/sections/running/components/FundraisingCa
 import FundraisingPage from '../../src/sections/running/components/FundraisingPage.astro';
 import { loadFundraising } from '../../src/sections/running/data/fundraising.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
-import type { Campaign, CampaignFigures, OwnerData, Race, Run, RunningStore, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
+import type { Campaign, CampaignFigures, CampaignStory, OwnerData, Race, Run, RunningStore, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { fundraisingCard } from '../../src/sections/running/og/fundraising.png.ts';
 import { stripTags } from '../helpers/html.ts';
 
@@ -45,6 +45,7 @@ function store(point: Partial<CampaignFigures['points'][number]>, { lastReadAt =
       lab: [],
       manualMetrics: { training_status: [], race_predictions: [] },
       campaigns,
+      stories: [],
     }),
   };
 }
@@ -214,9 +215,10 @@ interface PageFixture {
   races?: Race[];
   runs?: Run[];
   section?: OwnerData['section'];
+  stories?: CampaignStory[];
 }
 
-function pageStore({ campaigns = [campaignOn('seaside-2027')], figures = [], upcoming = [FOCUS], races = [], runs = [], section }: PageFixture): RunningStore {
+function pageStore({ campaigns = [campaignOn('seaside-2027')], figures = [], upcoming = [FOCUS], races = [], runs = [], section, stories = [] }: PageFixture): RunningStore {
   return {
     listRuns: async () => runs,
     getRun: async () => undefined,
@@ -234,6 +236,7 @@ function pageStore({ campaigns = [campaignOn('seaside-2027')], figures = [], upc
       lab: [],
       manualMetrics: { training_status: [], race_predictions: [] },
       campaigns,
+      stories,
     }),
   };
 }
@@ -437,6 +440,62 @@ describe('the fundraising page (US2, FR-041 to FR-043)', () => {
 
   it('carries no Garmin attribution', async () => {
     expect(await pageHtml(ACTIVE)).not.toContain('data-garmin-attribution');
+  });
+});
+
+describe('the story (US3, FR-044)', () => {
+  const ACTIVE: PageFixture = {
+    figures: [figuresOf('seaside-2027', [point('2026-10-12', 100, 2, 2000), point('2026-11-10', 1250, 37, 2000)])],
+    races: [],
+  };
+  const story = (text: string, campaign = 'seaside-2027'): CampaignStory => ({ campaign, text, approved: { date: '2026-11-01', text_sha256: '0'.repeat(64) } });
+  const TEXT = 'A made-up first paragraph.\nStill the first.\n\nA made-up second paragraph.\n';
+
+  it('US3.2: shows the heading and exactly the approved paragraphs', async () => {
+    const html = await pageHtml({ ...ACTIVE, stories: [story(TEXT)] });
+    const section = html.match(/<section[^>]*data-campaign-story[\s\S]*?<\/section>/)?.[0] ?? '';
+    expect(text(section.match(/<h2[\s\S]*?<\/h2>/)?.[0] ?? '')).toBe("Why I'm running for Example hospice");
+    expect([...section.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/g)].map((m) => m[1])).toEqual(['A made-up first paragraph.\nStill the first.', 'A made-up second paragraph.']);
+  });
+
+  it('sits after the current campaign and before the chart', async () => {
+    const html = await pageHtml({ ...ACTIVE, stories: [story(TEXT)] });
+    const place = html.indexOf('data-campaign-story');
+    expect(place).toBeGreaterThan(html.indexOf('data-fundraising-current'));
+    expect(place).toBeGreaterThan(html.indexOf('Figures updated'));
+    expect(place).toBeLessThan(html.indexOf('<figure'));
+  });
+
+  it('escapes anything that looks like markup', async () => {
+    const html = await pageHtml({ ...ACTIVE, stories: [story('A <b>made-up</b> line & a <script>alert(1)</script>.\n')] });
+    const section = html.match(/<section[^>]*data-campaign-story[\s\S]*?<\/section>/)?.[0] ?? '';
+    expect(section).toContain('A &lt;b&gt;made-up&lt;/b&gt; line &amp; a &lt;script&gt;alert(1)&lt;/script&gt;.');
+    expect(section).not.toMatch(/<(b|script)\b/);
+  });
+
+  it('US3.5: with no story there is no section and no placeholder', async () => {
+    const html = await pageHtml(ACTIVE);
+    expect(html).not.toContain('data-campaign-story');
+    expect(html).not.toContain('Why I');
+    expect(html).not.toContain('campaign-story-title');
+  });
+
+  it('shows only the current campaign\'s story', async () => {
+    const data = { ...ACTIVE, stories: [story(TEXT, 'harbour-2026')] };
+    const html = await pageHtml({
+      ...data,
+      campaigns: [campaignOn('seaside-2027'), campaignOn('harbour-2026')],
+      figures: [...ACTIVE.figures!, figuresOf('harbour-2026', [point('2026-09-20', 310, 14)])],
+      races: [{ slug: 'harbour-2026', name: 'Harbour 10k', date: '2026-09-20', distance: '10k' } as Race],
+    });
+    expect(html).not.toContain('data-campaign-story');
+  });
+
+  it('stays off the landing card', async () => {
+    const { current } = await loadFundraising('2026-11-10', pageStore({ ...ACTIVE, stories: [story(TEXT)] }));
+    expect(current?.story).toEqual(['A made-up first paragraph.\nStill the first.', 'A made-up second paragraph.']);
+    const card = await container.renderToString(FundraisingCard, { props: { campaign: current, now: NOW } });
+    expect(card).not.toContain('A made-up');
   });
 });
 

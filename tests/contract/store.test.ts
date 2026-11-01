@@ -1,5 +1,6 @@
 // Contract tests for RunningStore via JsonFileStore (T083, contracts/storage.md).
 import { afterEach, describe, expect, it } from 'vitest';
+import { storySha256 } from '../../src/sections/running/data/store/files.ts';
 import { JsonFileStore } from '../../src/sections/running/data/store/index.ts';
 import { DataValidationError } from '../../src/shared/storage/index.ts';
 import { run, runPath, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
@@ -11,6 +12,12 @@ const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
 const suffix = (n: number) => Array.from({ length: 4 }, (_, i) => BASE32[(n >> (5 * i)) & 31]).join('');
 
 describe('JsonFileStore', () => {
+  it('refuses a story whose text changed after approval, as the build\'s first step does (SC-007)', async () => {
+    repo = tempRepo();
+    repo.write('data/running/owner/stories/a-2027.yaml', `campaign: a-2027\ntext: Changed made-up text.\napproved:\n  date: 2026-11-01\n  text_sha256: ${storySha256('Made-up text.')}\n`);
+    await expect(new JsonFileStore(repo.root).getOwner()).rejects.toThrow('field approved.text_sha256: the text has changed since it was approved');
+  });
+
   it('is empty, not broken, before any data exists', async () => {
     repo = tempRepo();
     const store = new JsonFileStore(repo.root);
@@ -22,7 +29,20 @@ describe('JsonFileStore', () => {
     expect(owner.goals).toEqual([]);
     expect(owner.manualMetrics).toEqual({ training_status: [], race_predictions: [] });
     expect(owner.campaigns).toEqual([]);
+    expect(owner.stories).toEqual([]);
     expect(await store.getCampaignFigures()).toEqual([]);
+  });
+
+  it('loads a story, by campaign', async () => {
+    repo = tempRepo();
+    const story = (id: string, text: string) => `campaign: ${id}\ntext: ${text}\napproved:\n  date: 2026-11-01\n  text_sha256: ${storySha256(text)}\n`;
+    repo.write('data/running/owner/stories/b-2027.yaml', story('b-2027', 'Made-up text.'));
+    repo.write('data/running/owner/stories/a-2027.yaml', story('a-2027', 'Other made-up text.'));
+    const { stories } = await new JsonFileStore(repo.root).getOwner();
+    expect(stories.map((s) => [s.campaign, s.text])).toEqual([
+      ['a-2027', 'Other made-up text.'],
+      ['b-2027', 'Made-up text.'],
+    ]);
   });
 
   it('loads campaigns and their published figures', async () => {

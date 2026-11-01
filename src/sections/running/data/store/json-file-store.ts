@@ -72,6 +72,7 @@ export class JsonFileStore implements RunningStore {
           race_predictions: data.manualMetrics?.value.race_predictions ?? [],
         },
         campaigns: data.campaigns?.value ?? [],
+        stories: data.stories.map((s) => s.value),
       },
     };
     return this.#indexed;

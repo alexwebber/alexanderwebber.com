@@ -16,6 +16,7 @@
     "scan-images": "node scripts/scan-images.ts",
     "check-boundaries": "node scripts/check-boundaries.ts",
     "scan-privacy": "node scripts/scan-privacy.ts",
+    "approve-story": "node scripts/approve-story.ts",
     "pretest": "npm run gen-types",
     "test": "vitest run",
     "e2e": "playwright test"

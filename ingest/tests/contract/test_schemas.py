@@ -10,6 +10,7 @@ from referencing import Registry, Resource
 
 from awingest import yaml12
 from awingest.distances import DISTANCES_M
+from awingest.schemas import SchemaSet
 
 REPO = Path(__file__).resolve().parents[3]
 SCHEMAS = REPO / "schemas"
@@ -66,6 +67,20 @@ def test_valid_fixture(name, path):
 @pytest.mark.parametrize(("name", "path"), fixtures("invalid"))
 def test_invalid_fixture(name, path):
     assert not validator(name).is_valid(load(path))
+
+
+def test_story_approval_is_required_and_its_message_reaches_python():
+    """No Python code reads a story: the gate's validate-data does (data-files.md). Python's own
+    reader reports a missing field by rule, so the x-error shows only for a value that's there."""
+    schemas = SchemaSet(SCHEMAS)
+    name = "owner/campaign-story"
+    missing = load(FIXTURES / name / "invalid" / "no-approved.yaml")
+    assert [(i.path, i.rule, i.hint) for i in schemas.issues(name, missing)] == [
+        ("", "required", None)
+    ]
+    wrong = load(FIXTURES / name / "invalid" / "approved-true.yaml")
+    hint = "needs the owner's approval before it can be published"
+    assert [(i.path, i.hint) for i in schemas.issues(name, wrong)] == [("approved", hint)]
 
 
 def _objects(value):

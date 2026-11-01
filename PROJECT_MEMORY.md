@@ -21,16 +21,17 @@ Update this as decisions get made — treat it as the source of truth alongside
   `data/running/published/fundraising/brighton-2027.json` (£100 of £1,000, 1 supporter). **The staging
   check is done** (Phase 3): the parser needs no change, and the label stays "supporters". **The
   landing card is live** (Phase 4, T044–T063, #90), with Donate leading to the JustGiving page.
-  **The fundraising page is PR #93** (Phase 5, T064–T078).
-  - **Next session: first check #93.** If it's merged, confirm `main`'s Gate finished, do T080's live
-    checks, and run a short guided review of `/running/fundraising/` with a question round on what
-    the owner saw (T079). Ask about any box left unticked. If it isn't merged, ask what's holding it.
-    **Then Phase 6, the story section** (`specs/002-fundraising/tasks.md`, T081 on), built and
-    tested on made-up text, because it doesn't wait for the reviewers.
-  - **First real donation, 1 Nov 2026:** the owner gave £100. T117 needs only the owner's view of the
-    page (a box on #93: JustGiving shows £100, the £1,000 target and 1 supporter). That box also
-    counts as T119's first match of 10. T118's month of timing (SC-002) runs to about 1 Dec 2026:
-    compare each bot commit with the donation's time, using times the owner mentions in reviews.
+  **The fundraising page is live** (Phase 5, T064–T080, #93). **The story section is PR #94** (Phase
+  6, T081–T093), with nothing visible until a story exists.
+  - **Next session: first check #94.** If it's merged, confirm `main`'s Gate finished and tick T093,
+    and ask about any box left unticked. The live page shouldn't change, so no guided review is
+    needed. If it isn't merged, ask what's holding it. **Then Phase 7, after race day and later
+    campaigns** (`specs/002-fundraising/tasks.md`, T094 on), built and tested on previews, because
+    the forms change by themselves on race day.
+  - **After #94's merge,** `002-story-screens` can go too (`002-page-screens` from #93 is still there:
+    the permission check refused the agent's delete).
+  - **T118's month of timing** (SC-002) runs to about 1 Dec 2026: compare each bot commit with the
+    donation's time, using times the owner mentions in reviews. **T119's tally is 1 of 10.**
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -1632,6 +1633,39 @@ project-specific notes.
     `last_read_at` until the next read, by design; the page takes the later of it and the build's.
 - **2026-11-01** — **Guided review of the live card** (owner, on phone and desktop): fine on both,
   nothing to change. Neither the story reviewers nor Martlets had replied yet.
+- **2026-11-01** — **Fundraising page live** (#93; T079, T080, T117). `main`'s Gate finished, deploy
+  included. The page answers 200 with its menu item and sitemap entry, and the share image reads
+  "£100 raised for Martlets". The owner reviewed it on a phone and a desktop: fine on both, and the
+  two-point chart stays. T119's tally of site-and-JustGiving matches is **1 of 10**.
+  - **Overrides stay:** the latest miniflare still pins `undici` 7.28.0 and the latest satori `fflate`
+    0.7.3. wrangler 4.156.0 depends on a miniflare 5 beta, so it stays on 4.152.0.
+- **2026-11-01** — **Fundraising Phase 6 built** (T081–T092, `002-fundraising-story`, PR #94; implement
+  subagent about 353k tokens). Nothing visible until a story file exists. Made-up text only: no real
+  story, `data/running/owner/stories/` or `VOICE.md`. The owner confirms two in the PR: the story sits
+  between the figures and the chart as plain text with no card, and its paragraphs stop at 40rem on a
+  desktop. Choices later tasks build on:
+  - **The hash check is in the loader** (`loadRunningData`, `files.ts`), not `validateRunning`.
+    Running quickstart §9 for real showed a plain `astro build` rendering text changed after approval,
+    because `astro:build:start` only loads the store. Now the store and a plain build refuse it too,
+    and `dist/` stays intact. The file-name, unknown-campaign and future-date checks stay in
+    `validateRunning`, which the gate runs first.
+  - **A missing `approved` says "needs the owner's approval before it can be published".** `toIssues`
+    says "is required" for any missing field and `src/shared/` stays unchanged, so `files.ts` swaps
+    the message, and a test holds it equal to the schema's `x-error`. Python reports a plain
+    `required`, which is fine because no Python code reads a story.
+  - **`text` has its own `\S` rule**, because defs `text` refuses the trailing line break of a `|` block.
+  - **`approve-story` hardening:** it writes with `lineWidth: 0`, re-parses what it would write and
+    refuses unless the text, date and hash survive, never prints parser messages (they quote the
+    file), and refuses a future date or a non-slug ID.
+  - **The 40rem rule is in `FundraisingPage.astro`**, because a `<style>` in `CampaignStory.astro`
+    reordered the page's inlined CSS even with no story rendered.
+  - **Python and `publish-check` need no registration:** ingest reads named owner files only, and
+    `scan-privacy` already exempts `owner/stories/`. A test hash mustn't be all digits, or the
+    provider-ID scan catches it; real sha256 output won't be.
+  - **Against `main`:** 234 files on both sides, CSS files identical, `/running/` byte-identical.
+    `/running/fundraising/` gains one CSS rule that matches nothing without a story.
+  - **Tests:** Vitest 776, Playwright 467 passed (37 skipped by design), pytest 661 passed (1 skipped),
+    ruff and `astro check` clean, full gate green. Lighthouse 100 on the `with-story` preview.
 
 ## Upstream candidates
 
@@ -1677,6 +1711,16 @@ project-specific notes.
   Scope each locator to its container.
 - PowerShell 5.1's `Invoke-WebRequest` shows a UTF-8 page's `£` as `Â£`, so a text pattern misses it
   and looks like a site bug. Check bytes or use `curl`.
+- Run a quickstart's failure scenario for real, not only as unit tests. A check in the validator isn't
+  a check in the build: a plain build rendered text the validator would have refused.
+- A `<style>` in a new component a page imports can reorder that page's inlined CSS even when the
+  component isn't rendered. Keep the rule on the page, or compare `dist/`.
+- A Bash-tool heredoc lost backslashes even with a quoted `'EOF'` (`\\S` became `\S`). Write such
+  files with the Write tool.
+- A full-page Playwright screenshot with `isMobile` failed with "Unable to capture screenshot". Use a
+  phone-width viewport with `isMobile` off for that shot.
+- The auto-mode permission check refused `git push origin --delete` on the agent's own screenshot side
+  branch, so the routine of deleting it after a merge needs the owner, or a permission rule.
 
 ## Open questions
 

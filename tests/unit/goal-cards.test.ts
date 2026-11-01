@@ -35,6 +35,7 @@ function fakeStore(section?: Partial<SectionSettings>): RunningStore {
       lab: [],
       manualMetrics: { training_status: [], race_predictions: [] },
       campaigns: [],
+      stories: [],
     }),
   };
 }

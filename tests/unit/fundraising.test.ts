@@ -1,9 +1,9 @@
-// Fundraising's pure rules (T056, T073; FR-005, FR-022, FR-032, FR-042, FR-061, FR-063): amounts and
+// Fundraising's pure rules (T056, T073, T091; FR-005, FR-022, FR-032, FR-042, FR-061, FR-063): amounts and
 // percentages round down, a target is only ever "reached" when it is, the staleness edge is exact,
 // and the chart holds a total until it changes.
 import { afterEach, describe, expect, it } from 'vitest';
 import { campaignsWithFigures } from '../../src/sections/running/data/store/index.ts';
-import { barValueText, campaignProgress, chartPoints, chartSummary, isStale, poundsText, registeredText, supportersText, targetNote } from '../../src/sections/running/domain/fundraising.ts';
+import { barValueText, campaignProgress, chartPoints, chartSummary, isStale, poundsText, registeredText, storyParagraphs, supportersText, targetNote } from '../../src/sections/running/domain/fundraising.ts';
 import { tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
 describe('poundsText (FR-063)', () => {
@@ -136,6 +136,20 @@ describe('chartPoints (FR-042)', () => {
     const points = [at('2026-10-01', 100), at('2026-10-20', 300)];
     chartPoints(points, '2026-11-10');
     expect(points).toEqual([at('2026-10-01', 100), at('2026-10-20', 300)]);
+  });
+});
+
+describe('storyParagraphs', () => {
+  it('splits on blank lines and keeps a single line break inside a paragraph', () => {
+    expect(storyParagraphs('One.\nStill one.\n\nTwo.\n')).toEqual(['One.\nStill one.', 'Two.']);
+  });
+
+  it('takes any number of blank lines, even ones holding spaces, and CRLF', () => {
+    expect(storyParagraphs('One.\n\n\n\nTwo.\n   \nThree.\r\n\r\nFour.')).toEqual(['One.', 'Two.', 'Three.', 'Four.']);
+  });
+
+  it('leaves no empty paragraph at either end', () => {
+    expect(storyParagraphs('\n\nOne.\n\n')).toEqual(['One.']);
   });
 });
 

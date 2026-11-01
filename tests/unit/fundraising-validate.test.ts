@@ -1,9 +1,14 @@
 // validate-data's fundraising checks (specs/002-fundraising/contracts/data-files.md): every
-// referential rule, with file, entry, field and severity.
+// referential rule, with file, entry, field and severity, and the story gate of quickstart.md §9
+// (SC-007). All story text here is made up.
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { formatIssue } from '../../src/shared/storage/errors.ts';
+import { JsonFileStore } from '../../src/sections/running/data/store/index.ts';
+import { DataValidationError, formatIssue } from '../../src/shared/storage/errors.ts';
 import { validateData } from '../../scripts/validate-data.ts';
-import { tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
+import { REPO_ROOT, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
 let repo: TempRepo;
 afterEach(() => repo?.cleanup());
@@ -156,5 +161,107 @@ describe('fundraising validation', () => {
     owner();
     repo.write(CAMPAIGNS, campaign('a', { charity: '{ name: Martlets, registered: { name: Southern Hospice Group, number: "256789" } }' }));
     expect(issues('error')).toEqual([]);
+  });
+});
+
+describe('the story gate (FR-052, SC-007, quickstart.md §9)', () => {
+  const STORY = `${OWNER}/stories/brighton-2027.yaml`;
+  const TEXT = 'A made-up first paragraph, £1 and all: café.\n\nA made-up second paragraph.\n';
+  const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
+  const body = (text: string) => `text: |\n${text.trimEnd().split('\n').map((line) => (line ? `  ${line}` : '')).join('\n')}\n`;
+  const approved = (text: string, date = '2026-11-09') => `approved:\n  date: ${date}\n  text_sha256: ${sha256(text)}\n`;
+  const story = (campaign = 'brighton-2027', text = TEXT) => `campaign: ${campaign}\n${body(text)}${approved(text)}`;
+
+  function withCampaign() {
+    owner();
+    repo.write(CAMPAIGNS, campaign('brighton-2027'));
+  }
+
+  it('passes a story whose text matches its approval', () => {
+    withCampaign();
+    repo.write(STORY, story());
+    expect(issues('error')).toEqual([]);
+    expect(issues('warning')).toEqual([]);
+  });
+
+  it('stops a story with no approval, with the schema\'s own message, and the store refuses it too (US3.4)', async () => {
+    withCampaign();
+    repo.write(STORY, `campaign: brighton-2027\n${body(TEXT)}`);
+    const schema = JSON.parse(readFileSync(join(REPO_ROOT, 'schemas/owner/campaign-story.schema.json'), 'utf8'));
+    const message = schema.properties.approved['x-error'];
+    expect(message).toBe("needs the owner's approval before it can be published");
+    expect(issues('error')).toEqual([`${STORY}  story "brighton-2027"  field approved: ${message}`]);
+    await expect(new JsonFileStore(repo.root).getOwner()).rejects.toBeInstanceOf(DataValidationError);
+  });
+
+  it('keeps "is required" for any other missing field', () => {
+    withCampaign();
+    repo.write(STORY, `campaign: brighton-2027\n${approved(TEXT)}`);
+    expect(issues('error')).toEqual([`${STORY}  story "brighton-2027"  field text: is required`]);
+  });
+
+  it('does not take a bare "approved: true" as an approval', () => {
+    withCampaign();
+    repo.write(STORY, `campaign: brighton-2027\n${body(TEXT)}approved: true\n`);
+    expect(issues('error')).toEqual([`${STORY}  story "brighton-2027"  field approved: true needs the owner's approval before it can be published`]);
+  });
+
+  it('stops a story changed after approval, with the contract\'s message', () => {
+    withCampaign();
+    repo.write(STORY, `campaign: brighton-2027\n${body(TEXT.replace('second', 'changed'))}${approved(TEXT)}`);
+    expect(issues('error')).toEqual([
+      'data/running/owner/stories/brighton-2027.yaml  field approved.text_sha256: the text has changed since it was approved; the owner must approve it again',
+    ]);
+  });
+
+  it('notices one changed character, and the trailing line break as parsed', () => {
+    withCampaign();
+    repo.write(STORY, `campaign: brighton-2027\n${body(TEXT.replace('café', 'cafe'))}${approved(TEXT)}`);
+    expect(issues('error')).toHaveLength(1);
+    repo.write(STORY, `campaign: brighton-2027\n${body(TEXT).replace('text: |', 'text: |-')}${approved(TEXT)}`);
+    expect(issues('error')).toHaveLength(1);
+  });
+
+  it('stops an approval dated in the future', () => {
+    withCampaign();
+    repo.write(STORY, `campaign: brighton-2027\n${body(TEXT)}${approved(TEXT, '2026-11-11')}`);
+    expect(issues('error')).toEqual([`${STORY}  story "brighton-2027"  field approved.date: 2026-11-11 is in the future`]);
+  });
+
+  it('allows an approval dated today', () => {
+    withCampaign();
+    repo.write(STORY, `campaign: brighton-2027\n${body(TEXT)}${approved(TEXT, TODAY)}`);
+    expect(issues('error')).toEqual([]);
+  });
+
+  it('needs the file name to be the campaign', () => {
+    withCampaign();
+    repo.write(`${OWNER}/stories/other.yaml`, story());
+    expect(issues('error')).toEqual([`${OWNER}/stories/other.yaml  story "brighton-2027"  field campaign: does not match the file name "other"`]);
+  });
+
+  it('needs the campaign to exist', () => {
+    withCampaign();
+    repo.write(`${OWNER}/stories/hove-2027.yaml`, story('hove-2027'));
+    expect(issues('error')).toEqual([`${OWNER}/stories/hove-2027.yaml  story "hove-2027"  field campaign: "hove-2027" is not a campaign in campaigns.yaml`]);
+  });
+
+  it('gives the same hash for CRLF line endings, as a Windows checkout has', () => {
+    withCampaign();
+    repo.write(STORY, story().replaceAll('\n', '\r\n'));
+    expect(readFileSync(join(repo.root, STORY), 'utf8')).toContain('\r\n');
+    expect(issues('error')).toEqual([]);
+  });
+
+  it('still runs the provider-ID scan over a story', () => {
+    withCampaign();
+    const text = 'A made-up line with 1234567890 in it.\n';
+    repo.write(STORY, story('brighton-2027', text));
+    expect(issues('error')).toEqual([`${STORY}  line 3: "1234567890" looks like a Garmin activity ID; refer to runs by the ID in the run page URL`]);
+  });
+
+  it('passes the with-story preview, whose hash has to hold on both Windows and Linux checkouts', () => {
+    const root = join(REPO_ROOT, 'tests/fixtures/fundraising-preview/data/with-story');
+    expect(validateData(root, { today: TODAY, schemaRoot: REPO_ROOT }).filter((i) => i.severity === 'error').map(formatIssue)).toEqual([]);
   });
 });
