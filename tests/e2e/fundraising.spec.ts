@@ -1,5 +1,5 @@
-// The fundraising card and page in a real browser (T059, T076; US1, US2, FR-004, FR-005, FR-040 to
-// FR-043, FR-061, FR-062, FR-065):
+// The fundraising card and page in a real browser (T059, T076, T091; US1, US2, US3, FR-004, FR-005,
+// FR-040 to FR-044, FR-061, FR-062, FR-065):
 // - the test-only previews (SHELL_PREVIEW=1, tests/fixtures/fundraising-preview/): synthetic
 //   campaigns through the real components, in the states the real one can't show yet. Each preview
 //   renders the page, with the landing card above it. Their "today" is 10 Nov 2026;
@@ -27,6 +27,7 @@ const STATES = [
   { state: 'beaten', lead: '£2,160 raised of £2,000', secondary: `Target beaten: 108% · 37 supporters · ${CHARITY}`, percent: '100' },
   { state: 'stale', lead: '£1,250 raised of £2,000', secondary: `37 supporters · ${CHARITY}`, percent: '62' },
   { state: 'second-campaign', lead: '£240 raised of £1,000', secondary: '8 supporters · For Example shelter', percent: '24' },
+  { state: 'with-story', lead: '£1,250 raised of £2,000', secondary: `37 supporters · ${CHARITY}`, percent: '62' },
 ];
 const ALL_STATES = [...STATES.map((s) => s.state), 'no-current'];
 
@@ -38,6 +39,7 @@ async function open(page: Page, state: string) {
 const card = (page: Page) => page.locator('.fundraising-card');
 const campaign = (page: Page) => page.locator('[data-fundraising-current]');
 const pastList = (page: Page) => page.locator('[data-past-campaigns]');
+const story = (page: Page) => page.locator('[data-campaign-story]');
 const chart = (page: Page) => page.locator('figure.chart-figure');
 const updated = (within: Locator) => within.locator('[data-fundraising-updated-text]');
 const notice = (within: Locator) => within.locator('[data-fundraising-stale]');
@@ -264,6 +266,51 @@ test.describe('the page (US2)', () => {
   });
 });
 
+test.describe('the story (US3, FR-044)', () => {
+  test('US3.2: the heading and exactly the approved paragraphs, after the campaign and before the chart', async ({ page }) => {
+    await open(page, 'with-story');
+    await expect(story(page).getByRole('heading', { level: 2 })).toHaveText("Why I'm running for Example hospice");
+    await expect(story(page).locator('p')).toHaveText([
+      /^This is made-up preview text/,
+      'A story is a few short paragraphs of plain text. A blank line starts a new paragraph, while a single line break inside a paragraph is only a space.',
+      /^The paragraphs stop at a comfortable width/,
+      'Everything stays exactly as approved, so a <b>tag</b> or an & shows as typed.',
+    ]);
+    const [above, here, below] = await Promise.all([campaign(page).boundingBox(), story(page).boundingBox(), chart(page).boundingBox()]);
+    expect(here!.y).toBeGreaterThan(above!.y + above!.height);
+    expect(below!.y).toBeGreaterThan(here!.y + here!.height);
+  });
+
+  test('markup in the text stays text', async ({ page }) => {
+    await open(page, 'with-story');
+    await expect(story(page).locator('b')).toHaveCount(0);
+  });
+
+  test('without JavaScript it is all there (FR-062)', async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, baseURL: baseURL! });
+    const page = await context.newPage();
+    await open(page, 'with-story');
+    await expect(story(page).locator('p')).toHaveCount(4);
+    await context.close();
+  });
+
+  test('on a desktop the paragraphs stop at a readable width, and the page keeps its own', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await open(page, 'with-story');
+    const [paragraph, section] = await Promise.all([story(page).locator('p').nth(2).boundingBox(), campaign(page).boundingBox()]);
+    expect(paragraph!.width).toBeLessThanOrEqual(640);
+    expect(section!.width).toBeGreaterThan(640);
+  });
+
+  for (const state of ALL_STATES.filter((s) => s !== 'with-story')) {
+    test(`US3.5: ${state} has no story section and no placeholder`, async ({ page }) => {
+      await open(page, state);
+      await expect(story(page)).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: /^Why I'm running/ })).toHaveCount(0);
+    });
+  }
+});
+
 test.describe('the live last-read time (FR-004, FR-005)', () => {
   test.beforeEach(async ({ page }) => {
     await page.clock.setFixedTime(new Date(NOW));
@@ -376,6 +423,11 @@ test.describe('/running/fundraising/ on real data', () => {
     await expect(updated(campaign(page))).toHaveText(/^Figures updated /);
     await expect(page.locator('[data-last-updated-text]')).toHaveText(/^(Last updated |Not updated yet)/);
     await expect(chart(page)).toHaveCount(published!.points.length >= 2 ? 1 : 0);
+  });
+
+  test('shows a story section only once the campaign has an approved story (FR-044)', async ({ page }) => {
+    await page.goto('/running/fundraising/');
+    await expect(story(page)).toHaveCount(existsSync(join(REPO, 'data/running/owner/stories', `${real!.id}.yaml`)) ? 1 : 0);
   });
 
   test('has its menu item, title, description and share image', async ({ page }) => {

@@ -1,0 +1,16 @@
+---
+// "Why I'm running for <charity>" (T086; US3, FR-044, FR-050): the campaign's approved story, on the
+// fundraising page only. The text is plain and rendered escaped by Astro's normal output, one <p> per
+// paragraph. FundraisingPage sets the paragraphs' width.
+export interface Props {
+  charity: string;
+  paragraphs: string[];
+}
+
+const { charity, paragraphs } = Astro.props;
+---
+
+<section aria-labelledby="campaign-story-title" data-campaign-story>
+  <h2 id="campaign-story-title">Why I'm running for {charity}</h2>
+  {paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+</section>

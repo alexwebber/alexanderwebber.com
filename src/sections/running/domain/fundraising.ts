@@ -54,6 +54,14 @@ export function supportersText(count: number): string {
   return `${formatNumber(count)} ${SUPPORTER_WORD}${count === 1 ? '' : 's'}`;
 }
 
+/** A story's paragraphs: blank lines separate them (data-model.md §6). */
+export function storyParagraphs(text: string): string[] {
+  return text
+    .split(/\r?\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph !== '');
+}
+
 /** The figures were last read more than `staleAfterHours` ago (FR-005). */
 export function isStale(lastReadAt: string, now: Date, staleAfterHours: number): boolean {
   return now.getTime() - Date.parse(lastReadAt) > staleAfterHours * 3_600_000;

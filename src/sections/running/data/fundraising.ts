@@ -1,12 +1,12 @@
-// Campaigns as the pages show them (T046, T065; specs/002-fundraising/data-model.md §7). A campaign
+// Campaigns as the pages show them (T046, T065, T085; specs/002-fundraising/data-model.md §7). A campaign
 // with figures is one whose published file exists; others appear nowhere (FR-022). The current
 // campaign is the one linked to the focus race, and every other is past, most recent race first
 // (FR-043). Memoised per store and day.
 import { today as londonToday } from '../../../shared/format/dates.ts';
-import { campaignProgress, type CampaignProgress } from '../domain/fundraising.ts';
+import { campaignProgress, storyParagraphs, type CampaignProgress } from '../domain/fundraising.ts';
 import { runningStore, sectionSettings } from './load.ts';
 import { perStoreAndDay } from './memo.ts';
-import type { Campaign, CampaignFigures, OwnerData, Run, RunningStore, UpcomingRace } from './store/index.ts';
+import type { Campaign, CampaignFigures, CampaignStory, OwnerData, Run, RunningStore, UpcomingRace } from './store/index.ts';
 
 export type CampaignPoint = CampaignFigures['points'][number];
 
@@ -24,6 +24,8 @@ export interface CampaignView {
   /** The owner marked it finished: its last figures are final (FR-023). */
   finished: boolean;
   staleAfterHours: number;
+  /** The approved story's paragraphs. Undefined until the campaign has one (FR-044). */
+  story?: string[];
 }
 
 export interface FundraisingData {
@@ -47,7 +49,7 @@ function campaignRace(raceId: string, owner: OwnerData, runs: readonly Run[]): C
   return { name: entry.name ?? run?.title ?? 'Race', date: entry.date };
 }
 
-function campaignView(campaign: Campaign, race: CampaignView['race'], file: CampaignFigures, staleAfterHours: number): CampaignView {
+function campaignView(campaign: Campaign, race: CampaignView['race'], file: CampaignFigures, staleAfterHours: number, story: CampaignStory | undefined): CampaignView {
   const figures = file.points.at(-1)!;
   const progress = campaignProgress(figures.raised_pence, figures.target_pence);
   return {
@@ -59,6 +61,7 @@ function campaignView(campaign: Campaign, race: CampaignView['race'], file: Camp
     ...(progress ? { progress } : {}),
     finished: campaign.finished === true,
     staleAfterHours,
+    ...(story ? { story: storyParagraphs(story.text) } : {}),
   };
 }
 
@@ -67,7 +70,8 @@ const load = perStoreAndDay(async (today, store): Promise<FundraisingData> => {
   const views = owner.campaigns.flatMap((campaign) => {
     const file = published.find((f) => f.campaign_id === campaign.id);
     const race = campaignRace(campaign.race_id, owner, runs);
-    return file && race ? [campaignView(campaign, race, file, settings.stale_after_hours)] : [];
+    const story = owner.stories.find((s) => s.campaign === campaign.id);
+    return file && race ? [campaignView(campaign, race, file, settings.stale_after_hours, story)] : [];
   });
   const current = views.find((view) => view.campaign.race_id === settings.focus_race?.race_id);
   return {
