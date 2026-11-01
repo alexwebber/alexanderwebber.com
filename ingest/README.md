@@ -74,7 +74,9 @@ paths with Running's, so a failed read on either side can't reach the other. Con
   `data/running/published/fundraising/<id>.json`, one point per UK day, through `PublishedWriter`.
   An unchanged read in an idle run commits nothing.
 - **Alert** (`fundraising/alerts.py`, `fundraising-alert`) keeps one issue per campaign, labelled
-  `fundraising-failing-<id>`, on the logic it shares with `ingest-failing`.
+  `fundraising-failing-<id>`, on the logic it shares with `ingest-failing`. It opens at once for a
+  page that can't be found or isn't active, a campaign never read, or a `state/fundraising.json` that
+  isn't JSON (which would otherwise fail every read in silence), and after 24 hours otherwise.
 
 **No raw response is stored, anywhere, unlike Running.** Reprocessing brings nothing here, because
 each read is three whole figures that can always be read again, and a stored response would hold the
@@ -85,6 +87,21 @@ logs only the response's sorted key names and the field that failed.
 **A failed read changes no figure.** All three steps are `continue-on-error`, because `decide` skips
 an idle publish only after a green run: a red run would publish every time and look like a running
 failure.
+
+**The live time follows the site.** A read compares JustGiving with the campaign's published file. A
+read with different figures holds `last_success_at`, so `/running/api/fundraising-freshness` doesn't
+move until the site shows them, and the file's `last_read_at` is always a read's own time. A refresh
+after one whose deploy failed redeploys, so the live site can't fall behind `main` while the read
+treats `main`'s figures as shown (SC-005).
+
+**Isolation covers reads, not everything** (FR-003, research.md R4). The read runs before the
+intervals.icu fetch, and a running failure can't stop it, nor the reverse. But both share the `publish`
+job: a failed `process` stops the job before `fundraising-publish`, and the gate, commit and deploy
+are shared. `fundraising-publish` writes only schema-valid files, so it can't fail the gate itself.
+
+**Campaigns** come from `data/running/owner/campaigns.yaml` (`fundraising/campaigns.py`). One with
+`finished: true` is never read again, and its published file never changes. How to add a campaign or
+mark one finished is in [the Running section's README](../src/sections/running/README.md#fundraising-specs002-fundraising).
 
 ## Running it
 

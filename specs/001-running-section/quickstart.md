@@ -179,6 +179,10 @@ share-preview check of each page type in two messaging apps (SC-008; training ru
   lapsed). The agent checks open issues and red refresh runs at session start; the issue body
   names the failure class and action (contracts/pipeline.md table). A single red run with
   `code: transient` (e.g. intervals.icu answering 503) needs nothing: the next run retries.
+  Fundraising has its own issue per campaign, `fundraising-failing-<campaign-id>`, and its steps
+  never turn a run red ([002 quickstart](../002-fundraising/quickstart.md)).
+- A refresh whose deploy failed (e.g. Cloudflare answering 10013) needs nothing either: the next
+  refresh sees it, publishes and deploys its gated build even if no data changed (2026-11-01).
 - Tweak thresholds/limits or the focus race: edit `data/running/owner/section.yaml`.
 
 ## 6. Performance & privacy budget checklist (per page type)

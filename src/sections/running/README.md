@@ -7,23 +7,27 @@ formatting and the generic storage machinery).
 adds the section to the site.
 
 This is the section's graduation design note (T110, for the MVP: Goals and the landing page;
-extended for Training and run detail, US3, Races and PBs, US4, and Health, US5).
+extended for Training and run detail, US3, Races and PBs, US4, Health, US5, and Fundraising,
+[specs/002-fundraising](../../../specs/002-fundraising/), T109 there).
 The contracts it builds on are [routes](../../../specs/001-running-section/contracts/routes.md),
 [data files](../../../specs/001-running-section/contracts/data-files.md) and
-[pipeline](../../../specs/001-running-section/contracts/pipeline.md) (freshness endpoint). The
-shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
+[pipeline](../../../specs/001-running-section/contracts/pipeline.md) (freshness endpoint), and
+fundraising's own [contracts](../../../specs/002-fundraising/contracts/). The shared plumbing's note
+is [`src/shared/README.md`](../../shared/README.md).
 
 ## Contract
 
 - **Input:** only the store (`RunningStore` over `data/running/`): published runs and health
-  series, the owner's YAML (goals, upcoming races, races, run overrides, manual Garmin metrics,
-  lab results, `section.yaml`) and `refresh.json`. No page calls a third-party API (Principle III).
+  series, campaign figures, the owner's YAML (goals, upcoming races, races, run overrides, manual
+  Garmin metrics, lab results, campaigns, approved stories, `section.yaml`) and `refresh.json`. No
+  page calls a third-party API (Principle III).
 - **Output:** static pages and share images, built for one Europe/London "today". The pages
   are `/running/`, `/running/goals/`, `/running/training/`, `/running/training/<year>/`,
   `/running/runs/<id>/`, `/running/races/`, `/running/races/<slug>/` (plus each mapped race's
-  `route.json`) and `/running/health/`; the share images are `/og/running.png`,
-  `/og/running-goals.png`, `/og/running-training.png`, `/og/running-races.png`,
-  `/og/running-health.png`, one per race
+  `route.json`), `/running/health/` and, once a campaign has figures, `/running/fundraising/`; the
+  share images are `/og/running.png`, `/og/running-goals.png`, `/og/running-training.png`,
+  `/og/running-races.png`, `/og/running-health.png`, `/og/running-fundraising.png` (with the
+  fundraising page), one per race
   (`/og/running-races-<slug>.png`), and the shared `/og/running-year.png` and
   `/og/running-run.png`.
 - **Figures mean what the owner's Garmin Connect means** (owner review, 2026-10-23):
@@ -64,7 +68,7 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
 - **Day-based text follows the UK date.** The 00:17 UTC refresh deploys daily (T105), and
   `Countdown` corrects the day count in the browser.
 - **Without JavaScript** every figure, chart table and goal is still there. JS only refreshes
-  "Last updated" and the countdown. The week/month/year, all runs/races only and
+  "Last updated", "Figures updated" and the countdown. The week/month/year, all runs/races only and
   distance/time switches are CSS (`:has()` over native radios, shared `Toggle`).
 
 ## Tests and budgets
@@ -104,6 +108,65 @@ shared plumbing's note is [`src/shared/README.md`](../../shared/README.md).
   series at the 600-point cap) into a scratch copy of the repo, never this one. On 2026-10-24:
   build 48 s for 5,019 pages, 5,032 deployed files (limit 20,000); Lighthouse 100 on the hub
   (LCP 1.15 s, 34.5 KB gzip), a year page (LCP 0.90 s) and a run page (LCP 1.06 s, 19.5 KB).
+
+## Fundraising (specs/002-fundraising)
+
+The fundraising area shows the owner's charity fundraising for a race: the total raised against the
+target, the supporters and a Donate link to the JustGiving page, on a landing card and on
+`/running/fundraising/`, with the total by day and earlier campaigns.
+
+- **Data:** `data/running/owner/campaigns.yaml` (the owner's, schema `owner/campaigns`) and one
+  `data/running/published/fundraising/<campaign-id>.json` per campaign (the bot's, schema
+  `published/fundraising-campaign`): one point a day of total, supporters and target, plus
+  `last_read_at`. Nothing else from JustGiving reaches the repo (FR-010): no donor, message, amount,
+  Gift Aid figure or account identifier, enforced by the ingest allow-list, the strict schema and
+  `scan-privacy`. Ingest reads the page through JustGiving's official API every refresh
+  (`ingest/README.md`); the website itself is never read (its terms forbid it).
+- **Nothing shows before figures** (FR-022, SC-006): a campaign without a published file appears
+  nowhere. `integration.ts` adds the area, its route, nav entry and share image only when
+  `campaignsWithFigures()` finds one, and the hero keeps its "For <charity>" line until the card
+  shows (`Hero.astro`'s `hasCard`).
+- **Components:** `FundraisingCard.astro` (the landing card), `FundraisingPage.astro` (the page, with
+  the chart of the total by day from `chartPoints()`, its summary and table), `FundraisingFigures.astro`
+  (the figures both share), `FundraisingUpdated.astro` ("Figures updated" and the stale notice),
+  `CampaignStory.astro` and `PastCampaigns.astro`. Data: `data/fundraising.ts`
+  (`loadFundraising(today, store)`: the current campaign is the focus race's, every other is past).
+  Rules and words: `domain/fundraising.ts` (amounts round down, FR-063; the phase before or after the
+  race, or finished). Share image: `og/fundraising.png.ts`.
+- **Freshness:** a read that finds the same figures makes no commit, so the page asks
+  `/running/api/fundraising-freshness` (the Worker, `src/worker/fundraising-freshness.ts`) for the
+  live last-read time, apart from Running's "Last updated". The stale notice shows after
+  `stale_after_hours` (12, shared with Running), and the owner is alerted by an issue after 24 hours
+  (FR-005, FR-006). The live time moves only once the site shows the figures JustGiving shows.
+- **Adding a campaign** (FR-020): create its JustGiving page, then add an entry to `campaigns.yaml`
+  in a PR: `id` (a slug of at most 30 characters, which names its published file and its alert
+  label), `race_id` (an id in `upcoming-races.yaml` or a race under `races/`), `charity` (`name`,
+  optional `url`, and optional `registered` name and number) and `page_url`
+  (`https://www.justgiving.com/page/<name>`). The target is never set here: it is read from the page
+  (FR-021). For the focus race's campaign, `charity.name` must equal `section.yaml`'s
+  `focus_race.charity.name`. The merge starts a refresh, whose first good read publishes the file, and
+  the card, page and menu entry appear with that deploy. A mistyped page address opens an alert at the
+  first read. To make it current, point `section.yaml`'s `focus_race` at its race; the earlier
+  campaign then lists under past campaigns, history intact (SC-009).
+- **Marking a campaign finished** (FR-023): set `finished: true` on its entry, in a PR, once donations
+  have stopped and before the JustGiving page expires. Reads stop, its file never changes again, any
+  open alert closes, and the card and page show "Final total, last updated <date>" with no Donate and
+  no stale notice. After race day, before that, the figures lead with "Raised £X for <charity>" and
+  the race result once it is recorded (FR-033).
+- **Removing a campaign** from `campaigns.yaml` hides it; its published file stays as history (FR-008).
+- **Previews (tests only):** with `SHELL_PREVIEW=1`, `/fundraising-preview/<state>/` renders the page
+  and card over the synthetic campaigns in `tests/fixtures/fundraising-preview/` (`generate.ts`), one
+  per state in contracts/routes.md (13 states: active, first day, no target, zero, beaten, stale, race
+  day, after the race, after the result, finished, a second campaign, no current campaign, with a
+  story).
+- **Graduation (T103–T110, 2026-11-01):** the SC-003 drill (`tests/e2e/stale.spec.ts`) adds a campaign
+  read 7 days ago and checks the figures, notice and Donate hold with the route failing and with JS
+  off, and that each freshness moves only its own notice; the SC-006 drill
+  (`tests/e2e/fundraising-none.spec.ts`) builds with a campaign but no figures and finds no trace of
+  fundraising. Lighthouse (mobile, deploy build): the landing page 100/100 (LCP 0.90 s, 12.0 KB gzip)
+  and the fundraising page 100/100 (LCP 0.90 s, 6.9 KB gzip), no script files and no third-party
+  requests. FR-003's isolation covers reads: the gate is shared, and a failed `process` stops
+  fundraising's publish step (research.md R4).
 
 ## Campaign stories (FR-050 to FR-055)
 
@@ -172,7 +235,8 @@ The owner's edits to a draft become lessons in `VOICE.md` when the first story i
   common styles are in `styles/goal-card.css`; `styles/theme.css` also holds `.breadcrumb`.
 - Landing (US1): `pages/index.astro` at `/running/`, fed by `data/landing.ts` (`loadLanding()`).
   `components/Hero.astro` (focus race, `Countdown.astro`, target, Garmin prediction, charity, a
-  reserved `fundraising` slot that nothing fills yet, and `TrainingBuild.astro`), the featured
+  the `fundraising` slot, which holds `FundraisingCard.astro` when the focus race's campaign has
+  figures, and `TrainingBuild.astro`), the featured
   goals as compact `GoalCard`/`AchievedGoalCard`s (lead card full width on wide screens),
   `ThisWeek.astro`, `RunCard.astro`, `StoryLink.astro` and `SectionLinks.astro`. Share image:
   `og/landing.ts` (`/og/running.png`, "N days to Brighton"). Domain: `domain/races.ts` (the
