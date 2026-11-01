@@ -24,7 +24,7 @@
     "@astrojs/check": "0.9.12",
     "@astrojs/sitemap": "3.7.4",
     "ajv": "8.20.0",
-    "astro": "7.4.2",
+    "astro": "7.4.4",
     "json-schema-to-typescript": "16.0.0",
     "maplibre-gl": "6.15.0",
     "satori": "0.63.2",
