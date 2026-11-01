@@ -9,7 +9,7 @@ Update this as decisions get made — treat it as the source of truth alongside
 <!-- Overwritten by the agent at each session boundary (see the "One session per phase" norm).
      A new session reads this first; the owner only needs to type "continue". -->
 
-- **Status (2026-10-31):** **the JustGiving page exists**:
+- **Status (2026-11-01):** **the JustGiving page exists**:
   https://www.justgiving.com/page/alexanderwebber-brighton-2027 (Southern Hospice Group's
   Martlets campaign, event Brighton Marathon 2027, £500 target, holding story). The owner has
   emailed fundraising@martlets.org.uk (introduction and the logo request). **Story draft 2 is with
@@ -20,9 +20,15 @@ Update this as decisions get made — treat it as the source of truth alongside
   reads the page through JustGiving's official API, and the bot published
   `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). No page
   shows it yet.
-  - **Next: harvest lessons (T038; about 50 candidates are waiting)**, in the main conversation.
-  - **After that: Phase 3, the staging check** (`specs/002-fundraising/tasks.md`, T039 on; about 15
+  - **Next session, first:** check that #87 (`002-key-shape-check`) merged and `main`'s Gate run
+    finished; the next refresh then runs the new key check, so its fundraising step must still pass.
+    Check that sdd-playbook#13 merged, and reinstall house-process 0.11.0 here (a small PR, with
+    `sdd-playbook` on an up-to-date `main` first). Both PRs still open means wait, or carry on with
+    Phase 3 and do these after.
+  - **Then: Phase 3, the staging check** (`specs/002-fundraising/tasks.md`, T039 on; about 15
     minutes of the owner's time, guided), in its own session.
+  - **Stray local branch:** `harvest-alexanderwebber-5` in `C:\Projects\sdd-playbook` was never
+    pushed and is superseded by #13. Delete it after #13 merges.
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -1507,199 +1513,21 @@ project-specific notes.
     publish, no commit. The key appears only in the read step's `env`.
   - **A key a header can't carry is now `justgiving_key_rejected`**, not `transient`. Issue #86 had
     said "Action: None: retried on the next run" for a fault no retry could clear.
+- **2026-11-01** — **Harvested 51 lessons upstream** (T038, go-public through the fundraising data
+  slice): [sdd-playbook#13](https://github.com/alexwebber/sdd-playbook/pull/13) (house-process
+  0.11.0). Owner picked all as listed, on the recommendation.
+  - **Template:** "green after merge" includes `main`'s own run, to the end.
+  - **PLAYBOOK:** a new *Making a repo public* section, plus session, subagent, privacy and project
+    lessons.
+  - **AGENT_TIPS:** new *Git*, *Testing*, *Research* and *Docs* sections.
+  - **Not sent (3):** the `git commit -F -` BOM (already there), replacing a class with a lambda in
+    a test, and ajv strict mode needing `type` beside `$ref` (both too narrow).
+  - **Found while harvesting:** the playbook repo still committed with the owner's personal email,
+    so GitHub's email-privacy setting refused the push (GH007). Its `user.email` is now the noreply
+    address, as here, and `new-project.ps1` defaults to it. `--amend` was blocked by the permission
+    check, so the fix is a fresh commit on a new branch.
 
 ## Upstream candidates
-
-- **A PowerShell pipe corrupts secrets silently:** PowerShell 5.1 adds a BOM to a native stdin, so
-  `... | gh secret set` stored the key with U+FEFF. `gh` reports success and the secret can't be
-  read back, so only the first real use shows it. Use `--body` or a BOM-less file (AGENT_TIPS,
-  *Secrets*; this corrects the "pipes it" wording in the rotation candidate below).
-- **Check a malformed credential before the request:** a catch-all around the transport turned it
-  into a retryable error, so the alert said no action was needed (AGENT_TIPS, *Providers and file
-  formats*).
-- **`continue-on-error` makes a green run prove nothing about that step:** check what the step
-  should have left behind (a commit, a file), not the run's colour (AGENT_TIPS, *Actions*).
-- **`gh api --jq` with double quotes fails from PowerShell 5.1** ("accepts 1 arg(s), received 3"),
-  as native arguments split at embedded `"`. Run those from the Bash tool (PLAYBOOK, Windows
-  gotchas).
-
-- **Path-filtered test jobs don't watch bot-published data:** a layout check failed on the first
-  UI PR in six days, because the week's data had changed under it. Run layout checks on a schedule
-  against real data too (AGENT_TIPS, *Testing*).
-- **Layout checks that depend on the browser's font pass on one OS and fail on another:** a 1 px
-  overflow appeared only on CI's Linux font. Assert the geometry that causes it (a label inside its
-  plot), which fails on any font, and show that it fails before fixing (AGENT_TIPS, *End-to-end
-  testing*).
-- **A test that loops over all published data outgrows the default timeout silently:** set a
-  generous limit when writing it (AGENT_TIPS, *End-to-end testing*).
-- **Run nothing else during a local Playwright run:** a first-run timeout coincided with pytest
-  and git. Rerun alone with the JSON reporter before judging; its durations and skip reasons
-  separate a growing test from a flake (AGENT_TIPS, *End-to-end testing*).
-- **`urllib` copies custom headers to redirect targets:** a client with its key in a custom header
-  needs a no-redirect handler (AGENT_TIPS, *Providers and file formats*).
-- **ajv strict mode needs `type` beside `$ref` when adding `maxLength`** (AGENT_TIPS, *Testing*).
-- **Python `Decimal` arithmetic rounds at context precision:** a long string with a stray digit past
-  the pence passed `* 100` until precision was set from the input's length (AGENT_TIPS, *Providers
-  and file formats*).
-- **`\d` in Python `str` regexes matches Unicode digits, and `$` allows a trailing newline:** use
-  `[0-9]` and `fullmatch` for strict parsing (AGENT_TIPS, *Providers and file formats*).
-- **`sed -i` across a glob marks untouched files as modified on Windows with autocrlf:** it rewrites
-  line endings, so target only files that match (AGENT_TIPS, *Shell*).
-- **Replacing a class with a lambda in a test breaks attribute reads:** subclass it instead
-  (AGENT_TIPS, *Testing*).
-- **"Print only X" throwaway scripts drift:** a keys-only probe of a live API also printed value
-  types and a status code. No value leaked, but write the print statement to exactly what the rule
-  allows (AGENT_TIPS, *Secrets*).
-- **`git checkout -b x origin/main` tracks `origin/main`:** a bare `git push` then targets `main`.
-  Use `git push -u origin x`, or `--no-track` when branching (AGENT_TIPS, *Git*).
-
-- **`/speckit-analyze` needs code-level claims to check:** it found the critical and high issues
-  because its brief named risky interactions and told it to open the code, not only cross-read the
-  documents (PLAYBOOK, Spec Kit steps).
-- **Git history is a publishing channel:** rounding what a public repo's current files show hides
-  nothing if each change is a commit. Judge a privacy rule against the history, not just the latest
-  file (PLAYBOOK, privacy; AGENT_TIPS, *Privacy and data pipelines*).
-- **Adding a required method to a store interface needs a task for hand-written fakes:** where
-  type-checking covers tests and runs in the build, a missed fake turns the gate red (AGENT_TIPS,
-  *Testing*).
-- **A `jq` check of an empty file passes silently:** `jq -r` on an empty file prints nothing and
-  exits 0, so `[ "$(jq ...)" != 0 ]` is true. Use `jq -e` with a comparison (AGENT_TIPS, *Actions*).
-- **A platform's general sign-up docs may not apply to its products:** SKY's getting-started said
-  "Standard APIs", but JustGiving needs its own "JustGiving APIs" subscription, stated only inside a
-  developer guide. Before guiding the owner to a key, find the product's own subscription steps
-  (AGENT_TIPS, *Research*).
-- **Prove a provider's response with a live call before planning:** the API reference showed a
-  numeric `TargetAmount` that the real response doesn't have, and every figure was a string. One
-  call, printing only allow-listed fields and never the key, corrected the contract (AGENT_TIPS,
-  *Providers and file formats*).
-- **Running totals published per change reveal individual donations by subtraction:** a privacy
-  rule on individual amounts covers derived values too. Show them by day, and say plainly what git
-  history still holds (PLAYBOOK, privacy).
-
-- **Check a platform's terms before testing a technical read:** the handoff asked whether
-  JustGiving's page could be read, and it could, but its terms ban scripts extracting data from
-  the website (even from your own page). Read the terms first, and look for an official route
-  the same day; here it was free and better (AGENT_TIPS, *Research*).
-- **Blackbaud's docs need a real browser:** `developer.blackbaud.com` and the SKY API reference
-  return an empty shell to WebFetch and curl. Render them with Playwright's Chromium to read the
-  text; the reference is at `developer.sky.blackbaud.com/api#api=<id>`. PDFs saved by WebFetch
-  can be read with `uv run --with pypdf` when poppler isn't installed (AGENT_TIPS, *Research*).
-- **A handoff's technical claim can be wrong:** "the target isn't in the page's raw HTML" was
-  false, and the raw HTML held it. Re-check a stated fact before planning around it (PLAYBOOK,
-  session handoffs).
-- **WebFetch summaries can misdescribe a page's purpose:** a summary called Martlets' pay-in
-  form a fundraiser sign-up form, and the owner was sent to it. Before sending the owner to a
-  form or step, fetch the page with a prompt that asks what the form is for and quotes its
-  fields, or say it's unverified (AGENT_TIPS, *Research*).
-- **A charity's JustGiving name may be its parent group's:** after a merger, Martlets' pages sit
-  under "Southern Hospice Group" with a Martlets campaign, and its registered number belongs to
-  the group. Look up the charity on JustGiving and the Charity Commission before guiding the
-  owner, and start the page from the charity's own campaign (PLAYBOOK, project lessons).
-- **Personal stories involving other people need their review, across sessions:** the owner's
-  fundraising story is about someone else's family, so those people write that passage and
-  approve the text. Plan for approval in a later session, with the draft kept outside the repo
-  (PLAYBOOK, Authentic Voice).
-- **Python written through the Bash heredoc again lost a backslash:** `C:\\temp` became a tab.
-  Even "small" scripts with a Windows path go through the Write tool (AGENT_TIPS, *Shell*;
-  reinforces the earlier candidate).
-
-- **Tell spec-writing subagents how to refer to the owner:** the specify subagent wrote
-  "he/his/him" for the owner seven times from their name alone. Brief subagents to write "the
-  owner" or "they", and grep the output for pronouns before raising the PR (PLAYBOOK, subagent
-  briefs).
-- **Story drafts stay out of a public repo's PRs:** a spec had the owner editing an AI draft in a
-  pull request, which would keep the unapproved draft in the PR's history forever. Draft and
-  approve in the session; commit only approved text (PLAYBOOK, Authentic Voice).
-
-- **A personal repo's ruleset can't exempt GitHub Actions:** naming the GitHub Actions app
-  (integration 15368) as a bypass actor answers 422 outside organisations. So a bot that pushes
-  to `main` with `GITHUB_TOKEN` rules out required PRs and checks there, unless it pushes with a
-  deploy key instead. Deletion and force-push rules don't affect it (AGENT_TIPS, *Actions*).
-- **Re-read a repo setting after setting it:** `gh api -X PUT
-  .../actions/permissions/fork-pr-contributor-approval -f approval_policy=...` answered 204 and
-  changed nothing; the same body sent as JSON with `--input -` worked (AGENT_TIPS, *Shell*).
-- **Going public turns on scanners with a backlog:** Dependabot raised nine alerts at once
-  (including a critical `certifi`) and CodeQL flagged test helpers. Plan a follow-up PR in the
-  same session, and add the alert check to the session-start list (PLAYBOOK, project lessons).
-- **npm 10's `npm ci` rejects a nested override of an exact pin** (`"miniflare": {"undici":
-  "7.30.1"}`: "lock file's undici@7.30.1 does not satisfy undici@7.29.1"), while local npm 11
-  accepts it. A version-scoped top-level key (`"undici@7.29.1": "7.30.1"`) works in both.
-  Check with `npx npm@10 ci --dry-run` when CI's Node bundles an older npm (AGENT_TIPS,
-  *Actions*).
-- **Actions logs go public with the repo:** scan the logs of runs made since the readiness
-  sweep, just before the switch (PLAYBOOK, project lessons).
-
-- **Cloudflare's "Edit Cloudflare Workers" token template is far too broad for CI deploys:** it
-  includes admin read and write on every R2 bucket (it shows up in R2's token list), plus KV,
-  Pages and more. A custom token with Workers Scripts Edit, Workers R2 Storage Read (only for an
-  R2 binding), and Workers Routes Edit and Zone Read on the zone deployed a Worker with custom
-  domains and a cron. Test it first with read-only API calls (AGENT_TIPS, *Cloudflare*).
-- **Check GitHub description-revision deletes through the API:** GraphQL
-  `pullRequest.userContentEdits` lists each revision with `deletedAt`, so the agent can confirm
-  the owner's deletes. The owner missed one of three on the first pass (AGENT_TIPS, *Git*).
-
-- **Rotating secrets: the owner drops the new value in a local file outside the repo, and the
-  agent pipes it** (owner, 2026-10-25): `gh secret set NAME < file` and a PowerShell
-  `SetEnvironmentVariable(..., 'User')` that print nothing, checked only by the secret's
-  timestamp and a real run. It keeps values out of the chat, and the owner fills in no forms
-  (PLAYBOOK, project lessons; AGENT_TIPS, *Secrets*).
-
-- **Public-readiness sweep: search for exact secret values, not just patterns.** gitleaks and
-  trufflehog only catch known shapes. A script that takes the real values from environment
-  variables (and provider IDs from the private ID map) and reports only paths and counts
-  checked history, Actions logs and PR text with nothing printed (PLAYBOOK, project lessons).
-- **Check `git rev-list --all --not main` before scanning PR refs:** GitHub keeps
-  `refs/pull/*/head` after branches go; if that list is empty, `main`'s history covers them
-  (AGENT_TIPS, *Git*).
-- **Git Bash on Windows rewrites a leading `/` in `gh api` paths** into
-  `C:/Program Files/Git/...`; write `gh api repos/...` without the slash, and pass Windows-style
-  paths (`cygpath -m`) to native tools like gitleaks and trufflehog (AGENT_TIPS, *Shell*).
-
-- **Git dates give calendar span, not effort:** the README said "21 days from first commit to
-  live", but the owner's real effort was 3 days. Ask the owner before publishing any
-  time-or-effort figure about them (PLAYBOOK, project lessons).
-
-- **Windows PowerShell 5.1 adds a BOM when piping a here-string to `git commit -F -`:** the
-  subject started with U+FEFF. Commit from the Bash tool with a message file or heredoc (no
-  backslashes), or check `git log -1 | od -c` (AGENT_TIPS, *Shell*, which suggests `-F -`).
-
-- **Render Mermaid diagrams before a PR with mermaid-cli and Playwright's Chromium:**
-  `npx @mermaid-js/mermaid-cli -p pp.json`, where `pp.json` gives `executablePath` with forward
-  slashes (backslashes are invalid JSON escapes). Run the renders one after another, because
-  parallel runs collide on puppeteer's profile lock (AGENT_TIPS, *Docs*).
-- **Mermaid flowcharts with subgraphs read better top-to-bottom on GitHub mobile:** the
-  left-to-right overview was about 1,400 px wide. Inner `direction` is ignored once a subgraph
-  links outside itself (AGENT_TIPS, *Docs*).
-
-- **"Green after merge" means `main`'s own run, to the end:** the PR's checks were green, but
-  the push-triggered Gate run on `main` (which deploys) was still going at the session-start
-  check, and it then failed on a Cloudflare upload error nobody saw for an hour. Wait for that
-  run to finish before calling a merge done (template PR norm).
-- **Prove a "0 differences" check with a planted change:** the computed-style comparison found
-  0 differences in 128,085 element styles, which only means something once a 1px edit to one
-  rule is shown to produce differences (PLAYBOOK, project lessons).
-
-- **A `dist/` diff can show every page changed when only a chunk's name moved:** Rollup names a
-  shared CSS chunk after the first module importing it, so dropping an import renamed
-  `integration.<hash>.css` to `Base.<hash>.css` (same hash) on all 208 pages. Compare the file
-  with `cmp`, normalise the name, then diff again (AGENT_TIPS, *Astro*).
-
-- **The Bash tool turns `\\` into `\` inside a quoted heredoc** (`<<'EOF'`, Windows): a Python
-  script written that way wrote real newlines for `'\\n'` and its `'\\r'` patterns never
-  matched. Write any script containing backslashes with the Write tool instead (AGENT_TIPS,
-  *Shell*).
-- **Measure CI speed-ups on one runner, back to back:** GitHub-hosted runners differ enough
-  (the same Playwright suite took 292 s and 414 s) that a PR's own job time can't show a 30%
-  gain. A throwaway branch workflow that runs the old and new versions in one job can
-  (AGENT_TIPS, *Actions*).
-
-- **Playwright `beforeAll` runs once per project (and worker):** expensive setup (building a site
-  copy) and viewport-independent checks (full axe sweeps) double with a phone and a desktop
-  project. Pin them to one project (AGENT_TIPS, *End-to-end testing*).
-- **Schedule a simplicity review after a multi-slice build:** the per-phase reviews checked
-  correctness, speed, a11y and privacy, but drift between subagent-built slices (three caching
-  patterns, section code in shared, page-by-page shims) only shows when read as a whole
-  (PLAYBOOK, project lessons).
 
 ## Open questions
 
