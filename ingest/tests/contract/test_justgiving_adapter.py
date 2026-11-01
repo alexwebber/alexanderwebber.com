@@ -215,6 +215,24 @@ def test_a_missing_key_raises_when_reading_not_when_constructing(
     assert justgiving_api.requests == []
 
 
+@pytest.mark.parametrize(
+    "stored",
+    ["﻿dummykey", "dummykey\n", "dummykey\r\n", "dummy key", "dummykéy"],
+    ids=["bom", "lf", "crlf", "space", "accent"],
+)
+def test_a_key_stored_with_a_stray_character_is_a_bad_key_not_a_retry(
+    justgiving_api, monkeypatch, clock, stored
+):
+    from awingest.providers.justgiving import JustGivingProvider
+
+    monkeypatch.setenv("JUSTGIVING_SUBSCRIPTION_KEY", stored)
+    provider = JustGivingProvider(transport=justgiving_api, sleep=clock.sleep)
+    with pytest.raises(KeyRejected) as caught:
+        provider.read_page(PAGE_URL)
+    assert "dummy" not in str(caught.value)
+    assert justgiving_api.requests == []
+
+
 def test_403_with_retry_after_is_the_daily_quota(justgiving, justgiving_api):
     justgiving_api.respond(403, b"{}", {"retry-after": "3600"})
     with pytest.raises(QuotaExhausted) as caught:

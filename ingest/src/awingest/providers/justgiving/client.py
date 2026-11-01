@@ -29,6 +29,7 @@ from awingest.providers.justgiving.parse import parse_page
 BASE_URL = "https://api.sky.blackbaud.com/jg/consumer/app/consumer/v1/fundraising/pages"
 PAGE_URL = re.compile(r"https://www\.justgiving\.com/(page)/([a-z0-9-]+)")
 KEY_ENV = "JUSTGIVING_SUBSCRIPTION_KEY"
+KEY_SHAPE = re.compile(r"[\x21-\x7e]+")  # a stored BOM or newline is a bad key, not a retry
 REALM_ENV = "JUSTGIVING_REALM"  # local staging checks only; never set in a workflow
 TIMEOUT_S = 20
 RETRY_WAIT_S = 2.0
@@ -100,6 +101,8 @@ class JustGivingProvider:
         key = os.environ.get(KEY_ENV, "")
         if not key:
             raise KeyRejected(f"{KEY_ENV} is not set")
+        if KEY_SHAPE.fullmatch(key) is None:
+            raise KeyRejected(f"{KEY_ENV} holds a character a header can't carry")
         match = PAGE_URL.fullmatch(page_url)
         if match is None:
             raise PageNotFound("page_url is not a JustGiving page address")

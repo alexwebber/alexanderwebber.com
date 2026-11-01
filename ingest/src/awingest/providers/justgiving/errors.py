@@ -18,13 +18,15 @@ from awingest.providers.base import (
 class KeyRejected(AuthRejected):
     code = "justgiving_key_rejected"
     likely_cause = (
-        "The subscription key is missing, lapsed or regenerated, or belongs to the wrong product. "
+        "The subscription key is missing, lapsed or regenerated, was stored with a stray "
+        "character (a BOM or newline), or belongs to the wrong product. "
         "A **Standard APIs** key gets 401 here; it must be a **JustGiving APIs** subscription."
     )
     action = (
         "The agent asks the owner to copy the primary or secondary key from their SKY API "
         "developer account (*Subscriptions*, product **JustGiving APIs**) into the local secrets "
-        "file, then pipes it into `gh secret set JUSTGIVING_SUBSCRIPTION_KEY`. No retry loop."
+        "file, then runs `gh secret set JUSTGIVING_SUBSCRIPTION_KEY --body <value>` (a PowerShell "
+        "pipe adds a BOM). If the local key still works, it only re-sets the secret. No retry loop."
     )
 
 
