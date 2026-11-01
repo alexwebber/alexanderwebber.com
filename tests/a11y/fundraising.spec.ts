@@ -1,4 +1,4 @@
-// The fundraising card and page's accessibility (T060, T077, T091; FR-060, FR-061, SC-010; WCAG 2.2 AA),
+// The fundraising card and page's accessibility (T060, T077, T091, T100; FR-060, FR-061, SC-010; WCAG 2.2 AA),
 // over the test-only previews and the real page: zero axe violations in every state, in light, dark
 // and forced colours, the chart's table open, a sound heading outline, and the bar exposed with its
 // figures in words. The real card is swept with the landing page in tests/a11y/landing.spec.ts.
@@ -7,7 +7,7 @@ import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { axe, fullSweep, outline, sweepOnlyInDark } from '../helpers/a11y.ts';
 
-const STATES = ['active', 'first-day', 'no-target', 'zero', 'beaten', 'stale', 'second-campaign', 'no-current', 'with-story'];
+const STATES = ['active', 'first-day', 'no-target', 'zero', 'beaten', 'stale', 'race-day', 'after-race', 'after-result', 'finished', 'second-campaign', 'no-current', 'with-story'];
 const WITH_CARD = STATES.filter((state) => state !== 'no-current');
 const PAGES = STATES.map((state) => `/fundraising-preview/${state}/`);
 
@@ -55,7 +55,8 @@ for (const state of WITH_CARD) {
     await page.emulateMedia({ forcedColors: 'active' });
     await open(page, `/fundraising-preview/${state}/`);
     await expect(page.getByRole('heading', { level: 3, name: 'Fundraising' })).toBeVisible();
-    // The button's edge is what's left of it once forced colours drop the background.
+    // The button's edge is what's left of it once forced colours drop the background. A finished
+    // campaign has no Donate.
     for (const donate of await page.getByRole('link', { name: 'Donate on JustGiving' }).all()) await expect(donate).not.toHaveCSS('border-top-style', 'none');
   });
 }
@@ -90,4 +91,18 @@ test('the chart has a text alternative, and its table a caption (FR-061)', async
   await expect(page.getByRole('img', { name: /Total raised by day/ })).toHaveAccessibleName(/£1,250 raised since 12 Oct 2026, 62% of the £2,000 target/);
   await page.locator('figure summary').click();
   await expect(page.getByRole('table', { name: 'The total so far' })).toBeVisible();
+});
+
+test('after the race the bar keeps its name and figures, and the result is read with the lead (FR-033, FR-061)', async ({ page }) => {
+  await open(page, '/fundraising-preview/after-result/');
+  const card = page.locator('.fundraising-card');
+  await expect(card.getByRole('meter')).toHaveAccessibleName('Fundraising target £2,000: progress');
+  await expect(card.getByRole('meter')).toHaveAttribute('aria-valuetext', '£2,340 of £2,000, 117%');
+  await expect(card.locator('[data-fundraising-lead]')).toHaveText('Raised £2,340 for Example hospice · Riverside Marathon: 3:18:42');
+});
+
+test('a finished campaign leaves nothing to tab to but its links (FR-023)', async ({ page }) => {
+  await open(page, '/fundraising-preview/finished/');
+  await expect(page.getByRole('link', { name: 'Donate on JustGiving' })).toHaveCount(0);
+  await expect(page.locator('.fundraising-card').getByRole('link')).toHaveText(['See the fundraising page']);
 });

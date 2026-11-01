@@ -1,0 +1,9 @@
+- id: autumn-2026
+  race_id: autumn-2026
+  charity:
+    name: Example hospice
+    url: https://example.org/
+    registered:
+      name: Example hospice group
+      number: "000000"
+  page_url: https://www.justgiving.com/page/example-autumn-2026
