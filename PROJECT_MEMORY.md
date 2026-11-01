@@ -23,12 +23,9 @@ Update this as decisions get made — treat it as the source of truth alongside
   landing card is live** (Phase 4, T044–T063, #90), with Donate leading to the JustGiving page.
   **The fundraising page is live** (Phase 5, T064–T080, #93). **The story section is live** (Phase
   6, T081–T093, #94), with nothing visible until a story exists. **After race day and later
-  campaigns is PR #95** (Phase 7, T094–T102), with nothing visible before race day.
-  - **Next session: first check #95.** If it's merged, confirm `main`'s Gate finished and tick T102,
-    and ask about any of its four boxes left unticked (the result line, the target wording, the
-    finished form, the charity named twice). The live pages shouldn't change, so no guided review is
-    needed. If it isn't merged, ask what's holding it. **Then Phase 8, Polish** (`tasks.md` T103–T112),
-    in its own session.
+  campaigns is merged** (Phase 7, T094–T102, #95, all four boxes ticked, `main`'s Gate and deploy
+  green), with nothing visible before race day.
+  - **Next session: Phase 8, Polish** (`specs/002-fundraising/tasks.md` T103–T112), in its own session.
   - **Old screenshot branches:** `002-story-screens` (#94) and `002-page-screens` (#93) are still
     there, because the permission check refused the agent's delete. #95's screenshots are instead in
     one commit on its own branch, removed by the next.
@@ -1698,6 +1695,9 @@ project-specific notes.
     ruff and `astro check` clean, gate green on a deploy build (scan-privacy without the R2 map).
   - **Screenshots** went in one commit on the PR's branch, removed by the next, because a cloud
     session may push only to its own branch. They stay reachable by commit SHA.
+- **2026-11-01** — **#95 merged** (Phase 7). The owner ticked all four boxes: the result line (a
+  watch time unlabelled, as the hero), the target wording after the race, the finished form, and the
+  charity named twice on the page. `main`'s Gate finished green, deploy included. T102 ticked.
 
 ## Upstream candidates
 
