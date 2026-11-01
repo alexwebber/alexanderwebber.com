@@ -26,6 +26,12 @@ Update this as decisions get made — treat it as the source of truth alongside
   campaigns is merged** (Phase 7, T094–T102, #95, all four boxes ticked, `main`'s Gate and deploy
   green), with nothing visible before race day.
   - **Next session: Phase 8, Polish** (`specs/002-fundraising/tasks.md` T103–T112), in its own session.
+  - **Cloud session set-up is automatic** (SessionStart hook, PR #97): in a cloud session check that
+    the hook ran (`node_modules/.session-start.sha256` exists, Playwright launches); in the first
+    local session after the merge, check that it started with no hook error. **Owner's pending
+    setting:** allow `alexanderwebber.com`, `www.alexanderwebber.com` and the workers.dev address
+    under the cloud environment's Network access, so cloud sessions can check the live site. Ask
+    once whether it's done.
   - **Old screenshot branches:** `002-story-screens` (#94) and `002-page-screens` (#93) are still
     there, because the permission check refused the agent's delete. #95's screenshots are instead in
     one commit on its own branch, removed by the next.
@@ -1698,6 +1704,21 @@ project-specific notes.
 - **2026-11-01** — **#95 merged** (Phase 7). The owner ticked all four boxes: the result line (a
   watch time unlabelled, as the hero), the target wording after the race, the finished form, and the
   charity named twice on the page. `main`'s Gate finished green, deploy included. T102 ticked.
+- **2026-11-01** — **Cloud or local sessions** (owner asked; agent's view, nothing changed in the
+  norms): cloud suits build slices with no secrets, no owner-guided steps and no live checks. It
+  matches CI's Linux, avoids the Windows gotchas and runs without the owner's PC, with PR events
+  waking it. Local stays for secrets, story and logo work, credential and token work, live-site reviews
+  (until the domain is allowed), lesson harvests, Spec Kit upgrades and version checks (PowerShell,
+  `C:\Projects`). Token cost is the same either way.
+- **2026-11-01** — **Cloud sessions set themselves up** (PR #97): `.claude/hooks/session-start.sh`, a
+  SessionStart hook registered in `.claude/settings.json` (run through `bash`), does nothing
+  outside the cloud (`CLAUDE_CODE_REMOTE`). In the cloud it runs `npm ci` and `uv sync --locked`
+  only when the hook, `package.json`/`package-lock.json` or `ingest/pyproject.toml`/`uv.lock`
+  changed since the last success (hash files inside `node_modules/` and `ingest/.venv/`), then
+  `gen-types` and links Playwright's wanted Chromium builds to the newest preinstalled ones. It's
+  synchronous: about 30 s on a fresh container, 0.6 s after. Install logs go to stderr, out of the
+  session's context. The network allowlist can't be set from the repo, so it's the owner's
+  setting.
 
 ## Upstream candidates
 
@@ -1763,6 +1784,9 @@ project-specific notes.
   the call (exit 144). Use `npx astro preview stop` on its own.
 - `spikes/<x>/out/` (gitignored, outside `tsconfig`) is a good home for a temporary `git worktree`
   used to build `main` for a `dist/` comparison: `astro check` doesn't scan the copy.
+- For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
+  installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
+  in a PR, and needs no settings screen. Only the network allowlist still needs the owner.
 
 ## Open questions
 
