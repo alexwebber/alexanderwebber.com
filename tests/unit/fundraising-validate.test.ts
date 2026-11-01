@@ -1,10 +1,12 @@
 // validate-data's fundraising checks (specs/002-fundraising/contracts/data-files.md): every
-// referential rule, with file, entry, field and severity, and the story gate of quickstart.md §9
-// (SC-007). All story text here is made up.
+// referential rule, with file, entry, field and severity, the story gate of quickstart.md §9
+// (SC-007), and a later campaign added by file edits alone (SC-009, T101). All story text here is
+// made up.
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { loadFundraising } from '../../src/sections/running/data/fundraising.ts';
 import { JsonFileStore } from '../../src/sections/running/data/store/index.ts';
 import { DataValidationError, formatIssue } from '../../src/shared/storage/errors.ts';
 import { validateData } from '../../scripts/validate-data.ts';
@@ -263,5 +265,84 @@ describe('the story gate (FR-052, SC-007, quickstart.md §9)', () => {
   it('passes the with-story preview, whose hash has to hold on both Windows and Linux checkouts', () => {
     const root = join(REPO_ROOT, 'tests/fixtures/fundraising-preview/data/with-story');
     expect(validateData(root, { today: TODAY, schemaRoot: REPO_ROOT }).filter((i) => i.severity === 'error').map(formatIssue)).toEqual([]);
+  });
+});
+
+// SC-009 and US4.4 (T101): after Brighton, a campaign for a later race and Brighton marked finished,
+// with file edits only, then the focus race moved to a race with no campaign (US4.5). Made-up figures.
+describe('a later campaign, with file edits only (SC-009, US4.4, US4.5)', () => {
+  const LATER = '2027-07-10';
+  const errorsOn = (today: string) =>
+    validateData(repo.root, { today })
+      .filter((i) => i.severity === 'error')
+      .map(formatIssue);
+  const point = (date: string, raised_pence: number, supporters: number) => ({ date, raised_pence, target_pence: 100000, supporters });
+  const BRIGHTON_POINTS = [point('2026-11-01', 10000, 1), point('2027-04-05', 180000, 40), point('2027-07-03', 234000, 52)];
+  const load = async (today: string) => loadFundraising(today, new JsonFileStore(repo.root));
+
+  function brighton() {
+    owner();
+    repo.write(CAMPAIGNS, campaign('brighton-2027'));
+    repo.write(figuresFile('brighton-2027'), figures('brighton-2027', { last_read_at: '2027-07-03T08:17:00Z', points: BRIGHTON_POINTS }));
+  }
+
+  it('moves Brighton to past with its final total and history, and makes the new campaign current once it has figures', async () => {
+    brighton();
+    expect(errorsOn(LATER)).toEqual([]);
+    expect((await load(LATER)).current).toMatchObject({ campaign: { id: 'brighton-2027' }, phase: 'after_race' });
+
+    // The owner records the result, adds the later race's campaign, makes it the focus race and marks
+    // Brighton finished. Nothing but owner files changes.
+    repo.write(`${OWNER}/races/brighton-2027/race.yaml`, 'slug: brighton-2027\nname: Brighton Marathon\ndate: 2027-04-04\ndistance: marathon\nofficial_time: "3:18:42"\n');
+    repo.write(
+      `${OWNER}/upcoming-races.yaml`,
+      '- { id: brighton-2027, name: Brighton Marathon, date: 2027-04-04, distance: marathon, result_ref: brighton-2027 }\n- { id: hove-10k, name: Hove 10k, date: 2027-10-03, distance: 10k }\n',
+    );
+    repo.write(`${OWNER}/section.yaml`, 'focus_race: { race_id: hove-10k, build_start: 2027-07-05, charity: { name: Example shelter } }\n');
+    repo.write(CAMPAIGNS, campaign('brighton-2027', { finished: 'true' }) + campaign('hove-2027', { race_id: 'hove-10k', charity: '{ name: Example shelter }' }));
+    expect(errorsOn(LATER)).toEqual([]);
+
+    // Before the new campaign's first read: nothing current, and Brighton under past.
+    const before = await load(LATER);
+    expect(before.current).toBeUndefined();
+    expect(before.past.map((view) => view.campaign.id)).toEqual(['brighton-2027']);
+
+    // Its first read publishes its file.
+    repo.write(figuresFile('hove-2027'), figures('hove-2027', { last_read_at: '2027-07-10T09:17:03Z', points: [point('2027-07-10', 4000, 2)] }));
+    expect(errorsOn(LATER)).toEqual([]);
+    const { current, past } = await load(LATER);
+    expect(current).toMatchObject({ campaign: { id: 'hove-2027' }, phase: 'before_race', figures: { raised_pence: 4000 } });
+    expect(past).toHaveLength(1);
+    expect(past[0]).toMatchObject({
+      campaign: { id: 'brighton-2027' },
+      phase: 'finished',
+      finished: true,
+      lastReadAt: '2027-07-03T08:17:00Z',
+      figures: { raised_pence: 234000 },
+      result: { time_s: 11922, official: true },
+    });
+    expect(past[0]?.points).toEqual(BRIGHTON_POINTS);
+  });
+
+  it('with the focus race on a race with no campaign, nothing is current and Brighton is past (US4.5)', async () => {
+    brighton();
+    repo.write(CAMPAIGNS, campaign('brighton-2027', { finished: 'true' }));
+    repo.write(
+      `${OWNER}/upcoming-races.yaml`,
+      '- { id: brighton-2027, name: Brighton Marathon, date: 2027-04-04, distance: marathon }\n- { id: worthing-half, name: Worthing Half, date: 2027-09-12, distance: half }\n',
+    );
+    repo.write(`${OWNER}/section.yaml`, 'focus_race: { race_id: worthing-half, build_start: 2027-07-05, charity: { name: Example shelter } }\n');
+    expect(errorsOn(LATER)).toEqual([]);
+    const { current, past } = await load(LATER);
+    expect(current).toBeUndefined();
+    expect(past.map((view) => [view.campaign.id, view.phase, view.figures.raised_pence])).toEqual([['brighton-2027', 'finished', 234000]]);
+    expect(past[0]?.points).toEqual(BRIGHTON_POINTS);
+  });
+});
+
+describe('the fundraising previews (T098)', () => {
+  it.each(['race-day', 'after-race', 'after-result', 'finished'])('%s passes validation, like the real data', (state) => {
+    const root = join(REPO_ROOT, `tests/fixtures/fundraising-preview/data/${state}`);
+    expect(validateData(root, { today: TODAY, schemaRoot: REPO_ROOT }).map(formatIssue)).toEqual([]);
   });
 });

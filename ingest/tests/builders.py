@@ -1,6 +1,8 @@
-"""Builders for normalised activities with synthetic streams (processor tests), and synthetic
-FIT files (no position data; never a real recording)."""
+"""Builders for normalised activities with synthetic streams (processor tests), synthetic
+FIT files (no position data; never a real recording), and a fake GitHub issues API (alert tests)."""
 
+import json
+import urllib.parse
 from collections.abc import Sequence
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -114,3 +116,68 @@ def activity(
         "samples": points,
     }
     return NormalisedActivity(**(values | fields))
+
+
+def _iso(when: datetime) -> str:
+    return when.isoformat().replace("+00:00", "Z")
+
+
+class FakeGitHub:
+    """Just enough of the issues API: labels, issues, comments."""
+
+    def __init__(self, now: datetime):
+        self.labels: set[str] = set()
+        self.issues: list[dict] = []
+        self.comments: dict[int, list[dict]] = {}
+        self.requests = []
+        self.now = now
+        self.fail_with: int | None = None
+
+    def __call__(self, request):
+        self.requests.append(request)
+        if self.fail_with:
+            return self.fail_with, b'{"message":"nope"}'
+        url = urllib.parse.urlsplit(request.full_url)
+        path = url.path.removeprefix("/repos/owner/repo")
+        query = dict(urllib.parse.parse_qsl(url.query))
+        body = json.loads(request.data) if request.data else None
+        method = request.get_method()
+        if path.startswith("/labels/"):
+            return (200, b"{}") if path.split("/")[2] in self.labels else (404, b"{}")
+        if path == "/labels" and method == "POST":
+            self.labels.add(body["name"])
+            return 201, json.dumps(body).encode()
+        if path == "/issues" and method == "GET":
+            found = [
+                i for i in self.issues
+                if i["state"] == query["state"] and query["labels"] in i["labels"]
+            ]  # fmt: skip
+            return 200, json.dumps(found).encode()
+        if path == "/issues" and method == "POST":
+            issue = {
+                "number": len(self.issues) + 1,
+                "title": body["title"],
+                "body": body["body"],
+                "labels": body["labels"],
+                "state": "open",
+                "created_at": _iso(self.now),
+            }
+            self.issues.append(issue)
+            return 201, json.dumps(issue).encode()
+        number = int(path.split("/")[2])
+        if path.endswith("/comments") and method == "GET":
+            since = datetime.fromisoformat(query["since"])
+            found = [
+                c for c in self.comments.get(number, [])
+                if datetime.fromisoformat(c["created_at"]) >= since
+            ]  # fmt: skip
+            return 200, json.dumps(found).encode()
+        if path.endswith("/comments"):
+            comment = {"body": body["body"], "created_at": _iso(self.now)}
+            self.comments.setdefault(number, []).append(comment)
+            return 201, json.dumps(comment).encode()
+        if method == "PATCH":
+            issue = self.issues[number - 1]
+            issue.update(state=body["state"], state_reason=body["state_reason"])
+            return 200, json.dumps(issue).encode()
+        return 404, b"{}"
