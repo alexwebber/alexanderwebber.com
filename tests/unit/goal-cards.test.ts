@@ -10,6 +10,7 @@ import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import type { Goal, RunningStore, SectionSettings } from '../../src/sections/running/data/store/index.ts';
 import type { Effort } from '../../src/sections/running/domain/efforts.ts';
 import type { GoalEvaluation } from '../../src/sections/running/domain/goals.ts';
+import { stripTags } from '../helpers/html.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -44,9 +45,7 @@ afterEach(() => setRunningStore(undefined));
 /** The visible text, whitespace collapsed. */
 async function text(component: Parameters<AstroContainer['renderToString']>[0], props: Record<string, unknown>): Promise<string> {
   const html = await container.renderToString(component, { props });
-  return html
-    .replace(/<style[\s\S]*?<\/style>/g, '')
-    .replace(/<[^>]+>/g, ' ')
+  return stripTags(html)
     .replace(/\s+/g, ' ')
     .replace(/ ([,.)])/g, '$1')
     .replace(/\( /g, '(')

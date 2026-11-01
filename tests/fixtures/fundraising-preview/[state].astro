@@ -1,10 +1,10 @@
 ---
 // /fundraising-preview/<state>/ (SHELL_PREVIEW=1 only): each synthetic state through the real
-// SectionLayout and FundraisingCard, for tests/e2e/fundraising.spec.ts and
-// tests/a11y/fundraising.spec.ts.
+// FundraisingPage, with the real FundraisingCard in its default slot when the state has a current
+// campaign, for tests/e2e/fundraising.spec.ts and tests/a11y/fundraising.spec.ts.
 import type { GetStaticPaths } from 'astro';
 import FundraisingCard from '../../../src/sections/running/components/FundraisingCard.astro';
-import SectionLayout from '../../../src/sections/running/components/SectionLayout.astro';
+import FundraisingPage from '../../../src/sections/running/components/FundraisingPage.astro';
 import { loadFundraising } from '../../../src/sections/running/data/fundraising.ts';
 import { PREVIEW_NOW, PREVIEW_STATES, PREVIEW_TODAY, previewStore, type PreviewState } from './store.ts';
 
@@ -15,12 +15,22 @@ interface Props {
 }
 
 const { state } = Astro.props;
-const { current } = await loadFundraising(PREVIEW_TODAY, previewStore(state));
+const data = await loadFundraising(PREVIEW_TODAY, previewStore(state));
 ---
 
-<SectionLayout heading="Fundraising preview" title={`Fundraising preview: ${state} (synthetic data)`} description="The fundraising card over synthetic data." image="/og/running.png" imageAlt="Preview card">
-  <section aria-labelledby="preview-race">
-    <h2 id="preview-race">{current!.race.name}</h2>
-    <FundraisingCard campaign={current!} now={PREVIEW_NOW} />
-  </section>
-</SectionLayout>
+<FundraisingPage data={data} image="/og/running.png" title={`Fundraising preview: ${state} (synthetic data)`} now={PREVIEW_NOW}>
+  {
+    data.current && (
+      <section aria-labelledby="preview-card" data-preview-card>
+        <h2 id="preview-card">The landing card</h2>
+        <FundraisingCard campaign={data.current} now={PREVIEW_NOW} />
+      </section>
+    )
+  }
+</FundraisingPage>
+
+<style>
+  section {
+    margin-bottom: var(--space-6);
+  }
+</style>

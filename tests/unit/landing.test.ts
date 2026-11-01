@@ -6,11 +6,14 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadLanding } from '../../src/sections/running/data/landing.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
+import { campaignsWithFigures } from '../../src/sections/running/data/store/index.ts';
 import type { Campaign, CampaignFigures, Goal, HealthMetric, OwnerData, RefreshRecord, Run, RunningStore, SectionSettings, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
+import { runningAreas } from '../../src/sections/running/integration.ts';
 import { landingCard } from '../../src/sections/running/og/landing.ts';
 import GoalsPage from '../../src/sections/running/pages/goals.astro';
 import Landing from '../../src/sections/running/pages/index.astro';
 import RunPage from '../../src/sections/running/pages/runs/[id].astro';
+import { stripTags } from '../helpers/html.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;
@@ -100,9 +103,7 @@ afterEach(() => {
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
 const text = (html: string) =>
-  html
-    .replace(/<(style|script)[\s\S]*?<\/\1>/g, '')
-    .replace(/<[^>]+>/g, ' ')
+  stripTags(html)
     .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')
     .replace(/ ([,.):])/g, '$1')
@@ -272,11 +273,21 @@ describe('landing page (US1)', () => {
     expect(await page()).not.toMatch(/maplibre|data-race-map|<canvas/i);
   });
 
-  it('links only to shipped areas (FR-027), and the fundraising slot renders nothing (FR-025)', async () => {
+  it('links only to shipped areas (FR-027), and with no campaign the hero says nothing of fundraising (FR-030)', async () => {
     const html = await page();
     const links = html.match(/data-section-links[\s\S]*?<\/nav>/)![0];
-    expect([...links.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual(['/running/goals/', '/running/training/', '/running/races/', '/running/health/']);
-    expect(html).not.toMatch(/fundrais/i);
+    const shipped = runningAreas.filter((area) => area.key !== 'landing').map((area) => area.href);
+    expect([...links.matchAll(/href="([^"]+)"/g)].map((m) => m[1])).toEqual(shipped);
+    expect(html.match(/data-hero[\s\S]*?<\/section>/)![0]).not.toMatch(/fundrais/i);
+  });
+
+  it('adds the Fundraising area, after Health, exactly when a campaign has figures (FR-040)', () => {
+    const area = runningAreas.find((a) => a.key === 'fundraising');
+    expect(area !== undefined).toBe(campaignsWithFigures().length > 0);
+    if (!area) return;
+    expect(runningAreas.at(-1)).toBe(area);
+    expect(area).toMatchObject({ label: 'Fundraising', href: '/running/fundraising/', description: 'Fundraising for charity, and how to give.' });
+    expect(area.routes.map((route) => route.pattern)).toEqual(['/running/fundraising', '/og/running-fundraising.png']);
   });
 
   it('puts Garmin attribution under the page heading, the hero heading, the chart and every Garmin card (FR-077)', async () => {

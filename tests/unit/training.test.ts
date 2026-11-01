@@ -8,6 +8,7 @@ import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import type { Run, RunningStore } from '../../src/sections/running/data/store/index.ts';
 import Training from '../../src/sections/running/pages/training.astro';
 import YearPage from '../../src/sections/running/pages/training/[year].astro';
+import { stripTags } from '../helpers/html.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;
@@ -52,9 +53,7 @@ afterEach(() => {
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
 const text = (html: string) =>
-  html
-    .replace(/<(style|script)[\s\S]*?<\/\1>/g, '')
-    .replace(/<[^>]+>/g, ' ')
+  stripTags(html)
     .replace(/&#39;/g, "'")
     .replace(/\s+/g, ' ')
     .trim();

@@ -3,4 +3,7 @@
   charity:
     name: Example hospice
     url: https://example.org/
+    registered:
+      name: Example hospice group
+      number: "000000"
   page_url: https://www.justgiving.com/page/example-seaside-2027

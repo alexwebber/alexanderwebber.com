@@ -1,5 +1,5 @@
 import type { AstroIntegration } from 'astro';
-import { JsonFileStore } from './data/store/index.ts';
+import { campaignsWithFigures, JsonFileStore } from './data/store/index.ts';
 
 /**
  * One area of the Running section (landing, goals, training, ...). An area is
@@ -19,6 +19,18 @@ export interface RunningArea {
   /** Routes the area owns: Astro route pattern -> page entrypoint. */
   routes: { pattern: string; entrypoint: string }[];
 }
+
+/** Exists only once a campaign has figures, so no visitor reaches an empty page (FR-040, SC-006). */
+const fundraisingArea: RunningArea = {
+  key: 'fundraising',
+  label: 'Fundraising',
+  href: '/running/fundraising/',
+  description: 'Fundraising for charity, and how to give.',
+  routes: [
+    { pattern: '/running/fundraising', entrypoint: './src/sections/running/pages/fundraising.astro' },
+    { pattern: '/og/running-fundraising.png', entrypoint: './src/sections/running/og/fundraising.png.ts' },
+  ],
+};
 
 /** The route registry, in nav order; the section nav and landing links read it. */
 export const runningAreas: readonly RunningArea[] = [
@@ -79,6 +91,7 @@ export const runningAreas: readonly RunningArea[] = [
       { pattern: '/og/running-health.png', entrypoint: './src/sections/running/og/health.png.ts' },
     ],
   },
+  ...(campaignsWithFigures().length > 0 ? [fundraisingArea] : []),
 ];
 
 /**

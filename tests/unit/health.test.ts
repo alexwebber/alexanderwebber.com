@@ -28,6 +28,7 @@ import type { Goal, HealthMetric, LabMeasurement, OwnerData, Run, RunningStore }
 import { predictionHistory, trainingStatusHistory, type ManualMetrics } from '../../src/sections/running/domain/manual-metrics.ts';
 import Health from '../../src/sections/running/pages/health.astro';
 import { addDays } from '../../src/shared/format/dates.ts';
+import { stripTags } from '../helpers/html.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
 
 const lab = (date: string, type: LabMeasurement['type'], values: LabMeasurement['values']): LabMeasurement => ({ date, type, provider: 'Example Clinic', values });
@@ -312,9 +313,7 @@ afterEach(() => {
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
 const text = (html: string) =>
-  html
-    .replace(/<(style|script)[\s\S]*?<\/\1>/g, '')
-    .replace(/<[^>]+>/g, ' ')
+  stripTags(html)
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')

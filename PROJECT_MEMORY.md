@@ -11,29 +11,26 @@ Update this as decisions get made — treat it as the source of truth alongside
 
 - **Status (2026-11-01):** **the JustGiving page exists**:
   https://www.justgiving.com/page/alexanderwebber-brighton-2027 (Southern Hospice Group's
-  Martlets campaign, event Brighton Marathon 2027, £500 target, holding story). The owner has
+  Martlets campaign, event Brighton Marathon 2027, £1,000 target, holding story). The owner has
   emailed fundraising@martlets.org.uk (introduction and the logo request). **Story draft 2 is with
   the reviewers the owner chose** (they write a passage and approve); it lives only in
   `C:\temp\story-draft.md`, outside the repo. Garmin two-step verification is proven (the
   31 Oct run and weigh-ins reached the site) and the 5k's "New" window ended as tested.
   **The fundraising data slice is live** (`specs/002-fundraising/`, T001–T037, #85): each refresh
   reads the page through JustGiving's official API, and the bot published
-  `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). **The staging
+  `data/running/published/fundraising/brighton-2027.json` (£100 of £1,000, 1 supporter). **The staging
   check is done** (Phase 3): the parser needs no change, and the label stays "supporters". **The
   landing card is live** (Phase 4, T044–T063, #90), with Donate leading to the JustGiving page.
-  - **Next session: Phase 5, the fundraising page** (`specs/002-fundraising/tasks.md`, T064 on).
-    The live card's guided review is done, with nothing to change. Donate spans its container,
-    which suits the hero but is very wide on a full page, so the fundraising page probably wants a
-    `max-width`. New tests should share one
-    tag-stripping helper in `tests/helpers/`, because each new copy trips CodeQL
-    (`js/incomplete-multi-character-sanitization`) and fails the PR's check.
-  - **The owner will raise the target to £1,000 at some point** (on JustGiving). The site follows by
-    itself at the next refresh, with a bot commit and a deploy. When the card next shows a new
-    target, note it: it's the first real proof of a target change.
-  - **First real donation** (check at each session start, by whether the card's total is above
-    £0): T117 (the supporters check against the owner's view of the page, the number format, and a
-    run logging `Publishing: fundraising figures changed` for a real donation), then T118's month
-    of timing (SC-002) and T119's tally of 10 matches with the page (SC-005), folded into reviews.
+  **The fundraising page is PR #93** (Phase 5, T064–T078).
+  - **Next session: first check #93.** If it's merged, confirm `main`'s Gate finished, do T080's live
+    checks, and run a short guided review of `/running/fundraising/` with a question round on what
+    the owner saw (T079). Ask about any box left unticked. If it isn't merged, ask what's holding it.
+    **Then Phase 6, the story section** (`specs/002-fundraising/tasks.md`, T081 on), built and
+    tested on made-up text, because it doesn't wait for the reviewers.
+  - **First real donation, 1 Nov 2026:** the owner gave £100. T117 needs only the owner's view of the
+    page (a box on #93: JustGiving shows £100, the £1,000 target and 1 supporter). That box also
+    counts as T119's first match of 10. T118's month of timing (SC-002) runs to about 1 Dec 2026:
+    compare each bot commit with the donation's time, using times the owner mentions in reviews.
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
     by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
@@ -1600,6 +1597,39 @@ project-specific notes.
     dismissed as "used in tests", like the first six, and the check turned green.
   - **Target change:** the owner will raise the target to £1,000 on JustGiving at some point. The
     site reads it from there, and a target change alone publishes (tested, not yet seen live).
+- **2026-11-01** — **Fundraising Phase 5 built** (T064–T078, `002-fundraising-page`, PR #93; implement
+  subagent about 448k tokens). The owner confirms four in the PR. Choices later tasks build on:
+  - **Owner confirms:** Donate stops at 20rem on the page only. The page names the charity once,
+    above the figures (`FundraisingFigures` `showCharity={false}`). The chart's heading is "The total
+    so far", with table columns "Date" and "Total raised", newest first. A finished past campaign
+    reads "Final total: £1,620 raised of £1,500", with its last-updated date and JustGiving link.
+  - **Menu wrap accepted** (owner pick): "Fundraising" takes a second line at 360 px, and Donate clears
+    a 360 x 780 first screen by 3 px. Shared `Nav` is left alone (BACKLOG).
+  - **Share image keeps the figure.** The agent raised "£0 raised for Martlets" as a poor first
+    impression, and the owner's donation ended the question. A future campaign at £0 would read that
+    way; nobody has picked otherwise.
+  - **The chart's target label sits at the left**, overriding shared `.chart-target span` in the
+    page's scoped style. At the right it hit the last point near or past the target.
+  - **Code:** `campaignsWithFigures()` returns IDs, and an unreadable `campaigns.yaml` counts as none,
+    so validation reports it rather than the config crashing. `FundraisingData` gained `today`,
+    `CampaignView` gained `finished`, and a race with no name or run falls back to "Race".
+  - **`stripTags`** in `tests/helpers/html.ts` (an `indexOf` scanner) replaces all seven regex copies.
+  - **CSS:** the second page changed Vite's chunks, so `/running/` links 3 stylesheets, not 4
+    (`GoalCard.*.css` is inline again).
+  - **Weight:** 6.5 KB gzip, and 20.2 KB with three years of daily points.
+  - **Loose end:** two `mobile-360` tests failed once locally and passed on three later runs, and
+    their error text wasn't captured. If either goes red on CI, treat it as real.
+- **2026-11-01** — **First real donation and target change, both proven live** (T117 in part). The
+  owner gave £100 and raised the target to £1,000. A dispatched refresh (run 41300799976) took 1 min
+  56 s from dispatch to deploy, within the 30-minute limit (T118's timed run).
+  - **Read:** `outcome: ok`, `changed: 1`, parsed to 10,000 pence, 1 supporter and a 100,000 pence
+    target. The run logged `Publishing: fundraising figures changed`.
+  - **Bot commit `3391ac4`** changed only the published fundraising file, and added a point for
+    1 Nov. The live card read "£100 raised of £1,000" and "1 supporter · For Martlets".
+  - **Not separated:** the donation and the target change arrived in one read, so a target-only
+    change is still shown only by tests.
+  - **Freshness:** after a read with new figures, `/running/api/fundraising-freshness` keeps the older
+    `last_read_at` until the next read, by design; the page takes the later of it and the build's.
 - **2026-11-01** — **Guided review of the live card** (owner, on phone and desktop): fine on both,
   nothing to change. Neither the story reviewers nor Martlets had replied yet.
 
@@ -1633,6 +1663,20 @@ project-specific notes.
 - `gh run list` and `gh run view` showed `createdAt` an hour ahead of the run's own log timestamps
   (09:24:08Z listed, 08:24:16Z logged, 1 Nov 2026), which looked like a missed refresh slot. Check
   a run's log before trusting a gap in the listing.
+- A second page sharing a component can change Vite's CSS chunking either way; here it removed a
+  chunk file from two pages. Compare `dist/`'s file list and computed styles, not just the HTML.
+- A running `astro preview` blocks Playwright's `webServer` even on another port ("Another astro
+  preview server is already running"). Run `astro preview stop` first.
+- On a `core.autocrlf` checkout, scripted edits must normalise line endings first, and a generator's
+  LF output shows as modified until `git add`.
+- For an SVG with `aria-labelledby` on its title and desc, the desc is part of the accessible name, so
+  `toHaveAccessibleDescription` reads empty. Assert on `toHaveAccessibleName`.
+- On a chart climbing towards a target, put the target label at the start of the line; at the end it
+  collides with the last point.
+- When a preview renders a component twice (card and page), older tests hit Playwright's strict mode.
+  Scope each locator to its container.
+- PowerShell 5.1's `Invoke-WebRequest` shows a UTF-8 page's `£` as `Â£`, so a text pattern misses it
+  and looks like a site bug. Check bytes or use `curl`.
 
 ## Open questions
 

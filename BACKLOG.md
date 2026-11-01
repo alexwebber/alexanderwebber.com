@@ -14,6 +14,11 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   Owner agreed on 2026-10-17 (PR #23); deferred because it's a separate slice from Phase 2g.
   It happened on 2026-10-24: a zone backfill's publish failed the gate (a `name` key, fixed
   in #53), and no issue opened. The agent was watching that run, so it was caught.
+- **The Running menu wraps on a phone** (2026-11-01). With a sixth item, "Fundraising" sits on a
+  second line at 360 px on every Running page, about 36 px taller, and the landing card's Donate
+  clears a 360 x 780 first screen by only 3 px. The owner accepted this for now. The menu is shared
+  code (`src/shared`), so look at it when CV & Blog add a site-wide nav, which changes it anyway
+  (for example, a single scrolling row).
 - **Running gear (shoe rotation).** The owner rotates shoes for different kinds of run and
   thinks per-shoe mileage and which shoe each run used could be interesting. intervals.icu syncs
   Garmin gear, so the adapter could carry it. It's a new published category, so it needs the
