@@ -228,7 +228,8 @@ JustGiving by hand (FR-054).
 - **Stale** (FR-005): active campaign, and `now - last_read_at > stale_after_hours`. Never for a
   finished campaign.
 - **Chart points** (FR-042): a total holds until it changes, so each change gets a point the day
-  before it at the old value, plus a closing point today. Without that a straight line would suggest
+  before it at the old value, plus a closing point today (for a finished campaign, at its last read,
+  because its reads have stopped). Without that a straight line would suggest
   money arrived gradually. The table lists only the real points. `zero` is on, and the target line
   uses the latest target.
 - **Chart shown** when the file has at least two points (US2.3).
