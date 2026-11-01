@@ -1,15 +1,24 @@
 ---
-// A campaign's figures, shared by the landing card and the fundraising page (T050; FR-030, FR-032,
-// FR-061, FR-063, FR-065; specs/002-fundraising/contracts/routes.md, the before-race rows): the
-// total against the target, the bar, the supporters and charity, and the Donate link. The page
-// names the charity above these, with its link, so it passes showCharity={false}.
+// A campaign's figures, shared by the landing card and the fundraising page (T050, T096; FR-023,
+// FR-030, FR-032, FR-033, FR-061, FR-063, FR-065; specs/002-fundraising/contracts/routes.md, the card
+// table): the total against the target, the bar, the supporters and charity, and the Donate link.
+// The page names the charity above these, with its link, so it passes showCharity={false}.
+//
+// Its form follows the campaign's phase (data-model.md §7):
+// - before the race, and on race day until a result is recorded: "£1,250 raised of £2,000", the bar,
+//   then the supporters and the charity;
+// - after the race: "Raised £2,340 for Martlets", with the race result beside it once recorded
+//   ("Brighton Marathon: 3:18:42", on its own line, the separator kept for screen readers), and the
+//   target and bar as secondary detail ("117% of …" or "£2,000 target beaten: 117%");
+// - finished: the same, with "Final total, last updated 3 Jul 2027" in Donate's place. The card and
+//   page leave out FundraisingUpdated, so there is no updated line and no stale notice (FR-023).
 //
 // Donate is a plain link, in the same tab, with no JustGiving or Blackbaud logo (research.md R3).
 // ProgressBar is given the floored fraction, because it rounds, and its aria-valuenow would
 // otherwise read 63 beside the words' 62%. No client JS.
 import ProgressBar from '../../../shared/charts/ProgressBar.astro';
 import type { CampaignView } from '../data/fundraising.ts';
-import { barValueText, poundsText, supportersText, targetNote } from '../domain/fundraising.ts';
+import { barValueText, finalTotalText, poundsText, resultText, supportersText, targetDetail, targetNote } from '../domain/fundraising.ts';
 
 export interface Props {
   campaign: CampaignView;
@@ -18,15 +27,32 @@ export interface Props {
 }
 
 const { campaign: view, showCharity = true } = Astro.props;
-const { campaign, figures, progress } = view;
+const { campaign, figures, progress, phase, result, race } = view;
 const target = figures.target_pence;
-const note = targetNote(progress);
+const before = phase === 'before_race';
+const note = before ? targetNote(progress) : target !== undefined && progress ? targetDetail(target, progress) : undefined;
 ---
 
-<p class="fundraising-lead" data-fundraising-lead>
-  <span class="fundraising-amount">{poundsText(figures.raised_pence)}</span> raised
-  {target !== undefined && <> of <span class="fundraising-amount">{poundsText(target)}</span></>}
-</p>
+{
+  before ? (
+    <p class="fundraising-lead" data-fundraising-lead>
+      <span class="fundraising-amount">{poundsText(figures.raised_pence)}</span> raised
+      {target !== undefined && <> of <span class="fundraising-amount">{poundsText(target)}</span></>}
+    </p>
+  ) : (
+    <p class="fundraising-lead" data-fundraising-lead>
+      Raised <span class="fundraising-amount">{poundsText(figures.raised_pence)}</span> for {campaign.charity.name}
+      {
+        result?.time_s !== undefined && (
+          <>
+            <span class="visually-hidden"> · </span>
+            <span class="fundraising-result" data-fundraising-result>{resultText(race.name, result.time_s)}</span>
+          </>
+        )
+      }
+    </p>
+  )
+}
 {
   target !== undefined && progress && (
     <ProgressBar label={`Fundraising target ${poundsText(target)}: progress`} fraction={progress.fraction} valueText={barValueText(figures.raised_pence, target, progress)} color="var(--running-series)" />
@@ -35,9 +61,9 @@ const note = targetNote(progress);
 <p class="fundraising-secondary" data-fundraising-secondary>
   {note && <><strong class="fundraising-note" data-fundraising-note>{note}</strong> ·{' '}</>}
   <span data-supporters>{supportersText(figures.supporters)}</span>
-  {showCharity && <>{' '}· <span data-fundraising-charity>For {campaign.charity.name}</span></>}
+  {before && showCharity && <>{' '}· <span data-fundraising-charity>For {campaign.charity.name}</span></>}
 </p>
-<a class="fundraising-donate" href={campaign.page_url}>Donate on JustGiving</a>
+{phase === 'finished' ? <p class="fundraising-final" data-fundraising-final>{finalTotalText(view.lastReadAt)}</p> : <a class="fundraising-donate" href={campaign.page_url}>Donate on JustGiving</a>}
 
 <style>
   .fundraising-lead {
@@ -56,5 +82,18 @@ const note = targetNote(progress);
 
   .fundraising-secondary {
     margin: 0 0 var(--space-3);
+  }
+
+  .fundraising-result {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--step-1);
+    color: var(--color-text);
+  }
+
+  .fundraising-final {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--color-text-secondary);
   }
 </style>

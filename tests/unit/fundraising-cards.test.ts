@@ -1,6 +1,6 @@
-// The fundraising card and page (T057, T074, T091; US1.1, US1.6, US1.7, US2, US3, FR-030, FR-032,
-// FR-041 to FR-044, FR-061, FR-063, FR-065), rendered with Astro's container API over the data loader: each
-// before-race row of specs/002-fundraising/contracts/routes.md, then the page's sections. The card's
+// The fundraising card and page (T057, T074, T091, T099; US1.1, US1.6, US1.7, US2, US3, US4, FR-023, FR-030, FR-032,
+// FR-033, FR-041 to FR-044, FR-061, FR-063, FR-065), rendered with Astro's container API over the data loader: each
+// row of specs/002-fundraising/contracts/routes.md's card table, then the page's sections. The card's
 // place on the landing page is in tests/unit/landing.test.ts; browser checks (layout, axe, keyboard,
 // the freshness script) are in tests/e2e/fundraising.spec.ts and tests/a11y/fundraising.spec.ts.
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
@@ -514,5 +514,153 @@ describe('the share image (FR-060)', () => {
 
   it('has plain words if there is no campaign to show', () => {
     expect(fundraisingCard(undefined)).toMatchObject({ title: 'Fundraising' });
+  });
+});
+
+// After race day (T099; US4, FR-005, FR-023, FR-033, contracts/routes.md's last three card rows). The loader's
+// "today" is 10 Nov 2026, so a race on 18 Oct has passed and one on 10 Nov is today. All made up.
+describe('after race day (US4)', () => {
+  const RIVERSIDE: UpcomingRace = { id: 'seaside-2027', name: 'Brighton Marathon', date: '2026-10-18', distance: 'marathon' };
+  const RESULT: Race = { slug: 'seaside-2027', name: 'Brighton Marathon', date: '2026-10-18', distance: 'marathon', official_time: '3:18:42' } as Race;
+  const raised = (last_read_at?: string) => [figuresOf('seaside-2027', [point('2026-10-12', 100, 2, 2000), point('2026-11-10', 2340, 52, 2000)], last_read_at)];
+  const AFTER: PageFixture = { upcoming: [RIVERSIDE], figures: raised() };
+  const WITH_RESULT: PageFixture = { upcoming: [{ ...RIVERSIDE, result_ref: 'seaside-2027' }], races: [RESULT], figures: raised() };
+  const FINISHED: PageFixture = { ...WITH_RESULT, campaigns: [campaignOn('seaside-2027', { finished: true })], figures: raised('2027-07-03T08:17:00Z') };
+
+  async function cardHtml(fixture: PageFixture): Promise<string> {
+    const { current } = await loadFundraising('2026-11-10', pageStore(fixture));
+    const rendered = await container.renderToString(FundraisingCard, { props: { campaign: current, now: NOW } });
+    return rendered.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
+  }
+
+  it('the loader gives each view its phase and result', async () => {
+    expect((await loadFundraising('2026-11-10', pageStore(ACTIVE))).current).toMatchObject({ phase: 'before_race' });
+    expect((await loadFundraising('2026-11-10', pageStore(AFTER))).current).toMatchObject({ phase: 'after_race' });
+    expect((await loadFundraising('2026-11-10', pageStore(AFTER))).current?.result).toBeUndefined();
+    expect((await loadFundraising('2026-11-10', pageStore(WITH_RESULT))).current).toMatchObject({ phase: 'after_race', result: { time_s: 11922, official: true, slug: 'seaside-2027' } });
+    expect((await loadFundraising('2026-11-10', pageStore(FINISHED))).current).toMatchObject({ phase: 'finished', result: { time_s: 11922 } });
+  });
+
+  it('takes the watch time when no official time is recorded, as the hero does (FR-033)', async () => {
+    const races = [{ ...RESULT, official_time: undefined, run_id: '2026-10-18-k3f7' } as Race];
+    const runs = [{ id: '2026-10-18-k3f7', title: 'Brighton Marathon', elapsed_s: 11950 } as Run];
+    const { current } = await loadFundraising('2026-11-10', pageStore({ ...WITH_RESULT, races, runs }));
+    expect(current?.result).toMatchObject({ time_s: 11950, official: false });
+    expect(between(await cardHtml({ ...WITH_RESULT, races, runs }), 'data-fundraising-lead')).toBe('Raised £2,340 for Example hospice · Brighton Marathon: 3:19:10');
+  });
+
+  it('a past campaign takes the same fields: its race known only under races/ reads as completed', async () => {
+    const { past } = await loadFundraising('2026-11-10', pageStore({ campaigns: [campaignOn('harbour-2026')], figures: [figuresOf('harbour-2026', [point('2026-09-20', 20, 1)])], races: [{ slug: 'harbour-2026', name: 'Harbour 10k', date: '2026-09-20', distance: '10k', official_time: '44:10' } as Race] }));
+    expect(past[0]).toMatchObject({ phase: 'after_race', result: { time_s: 2650, official: true } });
+    expect(past[0]?.race).toEqual({ name: 'Harbour 10k', date: '2026-09-20' });
+  });
+
+  it('race day: the card keeps its pre-race form until a result is recorded (spec edge case)', async () => {
+    const card = await cardHtml({ upcoming: [{ ...RIVERSIDE, date: '2026-11-10' }], figures: raised() });
+    expect(between(card, 'data-fundraising-lead')).toBe('£2,340 raised of £2,000');
+    expect(between(card, 'data-fundraising-secondary')).toBe('Target beaten: 117% · 52 supporters · For Example hospice');
+    const recorded = await cardHtml({ upcoming: [{ ...RIVERSIDE, date: '2026-11-10', result_ref: 'seaside-2027' }], races: [{ ...RESULT, date: '2026-11-10' } as Race], figures: raised() });
+    expect(between(recorded, 'data-fundraising-lead')).toBe('Raised £2,340 for Example hospice · Brighton Marathon: 3:18:42');
+  });
+
+  it('after the race, no result yet: "Raised £X", the bar and target as detail, supporters, Donate', async () => {
+    const card = await cardHtml(AFTER);
+    expect(between(card, 'data-fundraising-lead')).toBe('Raised £2,340 for Example hospice');
+    expect(card).not.toContain('data-fundraising-result');
+    expect(between(card, 'data-fundraising-secondary')).toBe('£2,000 target beaten: 117% · 52 supporters');
+    expect(card).not.toContain('data-fundraising-charity');
+    expect(meter(card)).toContain('aria-valuetext="£2,340 of £2,000, 117%"');
+    expect(card).toContain('Donate on JustGiving');
+    expect(card).toContain('Figures updated 10 Nov 2026, 09:17');
+  });
+
+  it('below the target after the race, the share of it', async () => {
+    const card = await cardHtml({ ...AFTER, figures: [figuresOf('seaside-2027', [point('2026-11-10', 1250, 37, 2000)])] });
+    expect(between(card, 'data-fundraising-secondary')).toBe('62% of the £2,000 target · 37 supporters');
+    expect(meter(card)).toContain('aria-valuenow="62"');
+  });
+
+  it('with no target after the race, no bar and just the supporters', async () => {
+    const card = await cardHtml({ ...AFTER, figures: [figuresOf('seaside-2027', [point('2026-11-10', 1250, 37)])] });
+    expect(between(card, 'data-fundraising-secondary')).toBe('37 supporters');
+    expect(card).not.toContain('role="meter"');
+  });
+
+  it('US4.1: with a result, "Raised £2,340 for Martlets" with "Brighton Marathon: 3:18:42" beside it, and Donate', async () => {
+    const card = await cardHtml({ ...WITH_RESULT, campaigns: [campaignOn('seaside-2027', { charity: { name: 'Martlets' } })], section: { focus_race: { race_id: 'seaside-2027', build_start: '2026-09-05', charity: { name: 'Martlets' } } } as never });
+    expect(between(card, 'data-fundraising-lead')).toBe('Raised £2,340 for Martlets · Brighton Marathon: 3:18:42');
+    expect(card).toContain('<span class="fundraising-result" data-fundraising-result>Brighton Marathon: 3:18:42</span>');
+    expect(card).toContain('<a class="fundraising-donate" href="https://www.justgiving.com/page/example-seaside-2027">Donate on JustGiving</a>');
+  });
+
+  it('US4.2: donations after the race keep updating the total, and the card keeps its updated line and notice', async () => {
+    const stale = await cardHtml({ ...WITH_RESULT, figures: raised('2026-11-08T09:17:03Z') });
+    expect(between(stale, 'data-fundraising-lead')).toContain('Raised £2,340');
+    expect(stale).not.toMatch(/data-fundraising-stale[^>]*hidden/);
+  });
+
+  it('US4.3: finished: "Final total" dated by the last read, the bar as detail, no Donate, no updated line, no notice', async () => {
+    const card = await cardHtml(FINISHED);
+    expect(between(card, 'data-fundraising-lead')).toBe('Raised £2,340 for Example hospice · Brighton Marathon: 3:18:42');
+    expect(between(card, 'data-fundraising-secondary')).toBe('£2,000 target beaten: 117% · 52 supporters');
+    expect(between(card, 'data-fundraising-final')).toBe('Final total, last updated 3 Jul 2027');
+    expect(meter(card)).toContain('aria-valuenow="100"');
+    expect(card).not.toContain('Donate');
+    expect(card).not.toContain('fundraising-donate');
+    expect(card).not.toContain('data-fundraising-updated');
+    expect(card).not.toContain('data-fundraising-stale');
+    expect(card).not.toContain('<script');
+    expect(card).toContain('<a href="/running/fundraising/">See the fundraising page</a>');
+  });
+
+  it('a finished campaign is never stale, however old its last read (FR-005, FR-023)', async () => {
+    const card = await cardHtml({ ...FINISHED, figures: raised('2020-01-01T08:17:00Z') });
+    expect(card).not.toContain('These figures may be out of date');
+    expect(between(card, 'data-fundraising-final')).toBe('Final total, last updated 1 Jan 2020');
+  });
+
+  it('finished before its race still reads as final, whatever the race state', async () => {
+    const card = await cardHtml({ ...ACTIVE, campaigns: [campaignOn('seaside-2027', { finished: true })] });
+    expect(between(card, 'data-fundraising-lead')).toBe('Raised £1,250 for Example hospice');
+    expect(card).not.toContain('Donate');
+  });
+
+  it('the page follows the card after the race, and still names and links the charity above (FR-041)', async () => {
+    const html = await pageHtml({ ...WITH_RESULT, campaigns: [campaignOn('seaside-2027', { charity: { name: 'Example hospice', url: 'https://example.org/' } })] });
+    const current = html.match(/<section[^>]*data-fundraising-current[\s\S]*?<\/section>/)![0];
+    expect(text(current.match(/<p[^>]*data-fundraising-lead[\s\S]*?<\/p>/)![0])).toBe('Raised £2,340 for Example hospice · Brighton Marathon: 3:18:42');
+    expect(current).toContain('For <a href="https://example.org/">Example hospice</a>');
+    expect(current).toContain('Donate on JustGiving');
+    expect(current).toContain('Figures updated 10 Nov 2026, 09:17');
+    expect(html).toContain('<figure');
+  });
+
+  it('the page, finished: "Final total", no Donate, no updated line, no notice, the chart kept (FR-023, FR-041)', async () => {
+    const html = await pageHtml({ ...FINISHED, figures: raised('2020-01-01T08:17:00Z') });
+    const current = html.match(/<section[^>]*data-fundraising-current[\s\S]*?<\/section>/)![0];
+    expect(text(current)).toContain('Final total, last updated 1 Jan 2020');
+    expect(html).not.toContain('Donate');
+    expect(html).not.toContain('data-fundraising-updated');
+    expect(html).not.toContain('data-fundraising-stale');
+    expect(html).not.toContain('FundraisingUpdated.astro?astro&type=script'); // Running's own LastUpdated script stays
+    expect(html.match(/<figure/g)).toHaveLength(1);
+  });
+
+  it('the page, finished: the chart ends at the last read, not today; an active campaign\'s runs on to today', async () => {
+    const ended = [figuresOf('seaside-2027', [point('2026-10-12', 100, 2, 2000), point('2026-11-01', 2340, 52, 2000)], '2026-11-02T08:17:00Z')];
+    const finished = await pageHtml({ ...FINISHED, figures: ended });
+    expect(finished).toMatch(/title="Total raised: £2,340, 2 Nov 2026"/);
+    expect(finished).not.toContain('10 Nov 2026"');
+    expect(await pageHtml({ ...WITH_RESULT, figures: ended })).toMatch(/title="Total raised: £2,340, 10 Nov 2026"/);
+  });
+
+  it('a campaign that moves to past keeps its history, and its final total is dated by the last read (US4.4)', async () => {
+    const { past } = await loadFundraising(
+      '2026-11-10',
+      pageStore({ ...FINISHED, section: { focus_race: { race_id: 'hove-2027', build_start: '2026-09-05', charity: { name: 'Example shelter' } } } as never, upcoming: [FINISHED.upcoming![0]!, { id: 'hove-2027', name: 'Hove 10k', date: '2027-06-06', distance: '10k' }] }),
+    );
+    expect(past).toHaveLength(1);
+    expect(past[0]).toMatchObject({ phase: 'finished', finished: true, lastReadAt: '2027-07-03T08:17:00Z' });
+    expect(past[0]?.points).toHaveLength(2);
   });
 });
