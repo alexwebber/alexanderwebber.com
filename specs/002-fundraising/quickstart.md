@@ -26,6 +26,9 @@ npx vitest run tests/unit/fundraising tests/contract/refresh-workflow.test.ts
 Expected: every row of [provider-adapter.md](contracts/provider-adapter.md) *Tests* passes, including the
 sentinel test, and no real identifier or response appears in a fixture.
 
+**Result (2026-11-01):** 220 pytest and 193 Vitest cases pass; the fixtures hold made-up names and
+all-zero GUIDs only.
+
 ## 2. One real read, against a local archive
 
 ```text
@@ -103,6 +106,11 @@ gh workflow run refresh.yml --ref main
 - **FR-003**: breaking the live key on `main` to test this isn't worth the risk, so the static workflow
   check and the failing-provider pytest cover it. A real run's log confirms the key is only in the read
   step's `env`.
+- **A failed deploy** (T108): the next refresh logs `Publishing: the last refresh's deploy didn't
+  finish.` and deploys its gated build, so the live "Figures updated" time can't run ahead of the page.
+
+**Result:** the first publish, the idle case, the route's later `last_read_at` and the "fundraising
+figures changed" reason were all proven on `main` by 1 Nov 2026 (tasks.md T037, T063, T117).
 
 ## 6. Previews
 
@@ -114,10 +122,15 @@ Expected: each state in [routes.md](contracts/routes.md) renders as its row says
 in light, dark and forced colours, with axe at zero violations. The agent looks at phone-width screenshots
 of every state before raising a UI PR, and puts them in the PR.
 
+**Result (2026-11-01):** the whole Playwright suite on a `SHELL_PREVIEW=1` build, both projects: 579 passed
+and 55 skipped by design (the build-a-copy drills run in the desktop project only), including every
+fundraising state.
+
 ## 7. SC-003: JustGiving unreadable for 7 days
 
-`tests/e2e/stale.spec.ts` gains a fundraising part. In its scratch copy of the site, a synthetic campaign's
-`last_read_at` is 7 days old.
+`tests/e2e/stale.spec.ts` has a fundraising part. In its scratch copy of the site, the focus race's
+campaign gets a published file with made-up figures and a `last_read_at` 7 days old, whatever the real
+data holds (a `finished` mark is removed, since a finished campaign has no notice).
 
 Expected, on the landing and fundraising pages:
 
@@ -130,7 +143,11 @@ Expected, on the landing and fundraising pages:
 
 The alert at the first refresh after 24 hours is a pytest case with a fixed clock, as are
 `state/fetch-status.json` staying untouched and a running fetch carrying on with corrupt fundraising state.
-The 12-hour threshold is a Vitest case.
+Corrupt fundraising state also opens each active campaign's issue at once (T108). The 12-hour threshold is
+a Vitest case.
+
+**Result (2026-11-01):** all five fundraising cases pass in the desktop project, with the 503 and no-JS
+cases following Donate to a stubbed JustGiving page.
 
 ## 8. SC-006: nothing before figures
 
@@ -140,6 +157,10 @@ Expected: no `/running/fundraising/`, no `/og/running-fundraising.png`, no "Fund
 sitemap entry, and no `<article class="fundraising-card"` element in any page. The class name itself is in
 the inlined CSS of two pages, so check for the element, not the string.
 
+**Result (2026-11-01):** `tests/e2e/fundraising-none.spec.ts` passes (desktop project, one build). It
+also checks that the data validates, that no page links to `/running/fundraising/`, and that the hero
+keeps "For Martlets".
+
 ## 9. SC-007: the story gate
 
 In a temporary copy, add `stories/<id>.yaml` with `approved` removed, then with a sentence changed after
@@ -147,6 +168,10 @@ approval. Run `npm run validate-data`.
 
 Expected: both fail, naming file and field; the build gate stops; the live site is unchanged. No real story
 text is used.
+
+**Result (2026-11-01):** in a temp copy of the real data, a made-up story with no `approved` failed on
+`approved` ("needs the owner's approval before it can be published"), the same story approved passed, and
+one changed sentence failed on `approved.text_sha256` ("the text has changed since it was approved").
 
 ## 10. SC-004: privacy
 
@@ -156,6 +181,12 @@ npm run scan-privacy
 
 Expected: 0 findings. Then plant `"totalEstimatedGiftAid": "12.50"` and a `donorName` key in a temporary
 published file, and confirm both `publish-check` and the scan fail.
+
+**Result (2026-11-01):** 0 findings on the real data and a deploy build (without the R2 run-ID map, which
+CI adds). The planting is now two tests: `tests/unit/scan-privacy.test.ts` ("SC-004: a published file
+with a planted Gift Aid figure and donor name fails the scan") and `ingest/tests/unit/test_cli.py`
+(`test_publish_check_fails_a_planted_gift_aid_figure_or_donor_name`). The scan reports a rule's first
+match in a file, so the test plants each key alone too.
 
 ## 11. SC-005: spot checks
 
@@ -170,6 +201,10 @@ node scripts/lighthouse-budget.mjs
 
 Expected: the landing page and `/running/fundraising/` at 90 or more on mobile, HTML + CSS + JS at most
 150 KB, client JS at most 10 KB, no third-party requests. The page type joins the script's list.
+
+**Result (2026-11-01, deploy build, Lighthouse 13.5.0):** landing 100 and 100, LCP 0.90 s, 12.0 KB gzip;
+fundraising 100 and 100, LCP 0.90 s, 6.9 KB gzip; no script files (the freshness scripts are inline) and no
+third-party requests. Read the nightly Quality run after the merge, as the 2-core runner is noisier.
 
 ## 13. After race day (from April 2027)
 
