@@ -144,6 +144,33 @@ def test_fundraising_read_and_publish_are_wired(
     assert cli.main(["publish-check", "--repo-root", str(repo)]) == 0
 
 
+@pytest.mark.parametrize(
+    "plant",
+    [
+        pytest.param(lambda doc: doc.update(totalEstimatedGiftAid="12.50"), id="gift-aid"),
+        pytest.param(lambda doc: doc["points"][0].update(donorName="A Person"), id="donor-name"),
+    ],
+)
+def test_publish_check_fails_a_planted_gift_aid_figure_or_donor_name(
+    fundraising, repo, capsys, real_provider_on_fake_api, plant
+):
+    """SC-004 (T105, quickstart.md §10): the schema behind publish-check refuses either key, and
+    its log names the field's place and rule, never the value."""
+    assert cli.main(["fundraising-read", *fundraising]) == 0
+    assert cli.main(["fundraising-publish", *fundraising]) == 0
+    capsys.readouterr()
+    file = repo / "data/running/published/fundraising/alpha.json"
+    doc = json.loads(file.read_text())
+    plant(doc)
+    file.write_text(json.dumps(doc))
+    assert cli.main(["publish-check", "--repo-root", str(repo)]) == 20
+    captured = capsys.readouterr()
+    assert json.loads(captured.out.splitlines()[-1]) == {"outcome": "failed", "problems": 1}
+    assert "fundraising/alpha.json" in captured.err
+    assert "12.50" not in captured.err + captured.out
+    assert "A Person" not in captured.err + captured.out
+
+
 def test_fundraising_read_with_no_key_exits_10_and_is_recorded(
     fundraising, tmp_path, monkeypatch, capsys
 ):
