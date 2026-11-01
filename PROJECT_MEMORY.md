@@ -18,18 +18,18 @@ Update this as decisions get made — treat it as the source of truth alongside
   31 Oct run and weigh-ins reached the site) and the 5k's "New" window ended as tested.
   **The fundraising data slice is live** (`specs/002-fundraising/`, T001–T037, #85): each refresh
   reads the page through JustGiving's official API, and the bot published
-  `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). No page
-  shows it yet. **The staging check is done** (Phase 3): the parser needs no change, and the label
-  stays "supporters". **The landing card is built** (Phase 4, T044–T061): the
-  `002-fundraising-card` PR is with the owner for review (T062).
-  - **Once that PR merges:** answer any unticked box, wait for `main`'s Gate run to the end, run
-    T063 (`curl https://alexanderwebber.com/running/api/fundraising-freshness` shows a
-    `last_read_at`, a later one after the next refresh, no commit from that refresh; Donate reaches
-    the page), and delete the `002-fundraising-card-screens` branch (the PR's screenshots).
+  `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). **The staging
+  check is done** (Phase 3): the parser needs no change, and the label stays "supporters". **The
+  landing card is live** (Phase 4, T044–T063, #90), with Donate leading to the JustGiving page.
   - **Next session: a short guided review of the live card**, with a question round on what the
     owner saw, then **Phase 5, the fundraising page** (`specs/002-fundraising/tasks.md`, T064 on),
     in its own session. Donate spans its container, which suits the hero but is very wide on a
-    full page, so the fundraising page probably wants a `max-width`.
+    full page, so the fundraising page probably wants a `max-width`. New tests should share one
+    tag-stripping helper in `tests/helpers/`, because each new copy trips CodeQL
+    (`js/incomplete-multi-character-sanitization`) and fails the PR's check.
+  - **The owner will raise the target to £1,000 at some point** (on JustGiving). The site follows by
+    itself at the next refresh, with a bot commit and a deploy. When the card next shows a new
+    target, note it: it's the first real proof of a target change.
   - **First real donation** (check at each session start, by whether the card's total is above
     £0): T117 (the supporters check against the owner's view of the page, the number format, and a
     run logging `Publishing: fundraising figures changed` for a real donation), then T118's month
@@ -1589,6 +1589,17 @@ project-specific notes.
     bump: markup differs only on the landing page; 209 other pages differ only in CSS.
   - **PR screenshots** live on a side branch that never merges, linked by commit, because `gh` can't
     upload images and the Gate doesn't run on other branches.
+- **2026-11-01** — **Fundraising card live** (#90; T062, T063). The owner ticked all three boxes: the
+  stale notice's wording, this week's distance moving below a phone's first screen, and the plain
+  "Fundraising" heading. `main`'s Gate finished, deploy included.
+  - **Live checks:** `/running/api/fundraising-freshness` answers 200 with the contract's fields
+    and a 5-minute cache, `HEAD` 200, `POST` 405, and `/running/api/freshness` is unaffected. The
+    hero has no charity line, and Donate reaches the page. A dispatched refresh with the same figures
+    moved `last_read_at` from 08:24:17Z to 09:48:05Z, with no commit.
+  - **CodeQL:** a seventh tag-stripping regex in a unit test failed the PR's CodeQL check. It was
+    dismissed as "used in tests", like the first six, and the check turned green.
+  - **Target change:** the owner will raise the target to £1,000 on JustGiving at some point. The
+    site reads it from there, and a target change alone publishes (tested, not yet seen live).
 
 ## Upstream candidates
 
@@ -1607,6 +1618,8 @@ project-specific notes.
 - `Remove-Item` on a variable-built scratchpad path was refused as a "system path", which rejected
   the whole PowerShell call. Keep cleanup out of chained commands.
 - `gh run list --commit` needs the full SHA; a short one returns nothing, not an error.
+- CodeQL's PR alerts don't show under `?ref=refs/pull/N/merge` here; `alerts?pr=N` and the check run's
+  annotations do. A CodeQL fail in `gh pr checks` is the results check, not the Analyze jobs.
 - JustGiving's staging: new pages can vanish minutes after creation, but existing shared test pages
   work and accept test-card donations, which reach the API at once (1 Nov 2026).
 - Before calling a third-party test environment broken, try something already in it. The agent
