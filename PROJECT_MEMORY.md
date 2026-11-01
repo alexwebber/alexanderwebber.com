@@ -27,9 +27,17 @@ Update this as decisions get made — treat it as the source of truth alongside
   green), with nothing visible before race day. **Fundraising has shipped and graduated**: Phase 8
   (Polish, T103–T112, #98) merged with all four boxes ticked, the usability check skipped, and
   `main`'s Gate green, deploy included. What remains waits on others or on a date (T113–T121).
-  - **Next session: ask the owner which spec comes next** (the journey story or CV & Blog), then
-    run `/speckit-specify` with question rounds first. Check first that the nightly Quality run after
-    #98 is green (the landing page sat near 90 on the 2-core runner).
+  - **Next session: a local session.** First the checks cloud sessions skip: open security alerts,
+    `check-versions.ps1` (both npm overrides, the TypeScript pin, Spec Kit), and the nightly Quality
+    run after #98 (the landing page sat near 90 on the 2-core runner). Then start **spec 003, the
+    fitness journey story** (owner pick, 2026-11-01): the question rounds first, then
+    `/speckit-specify` as a subagent. The first question is scope: the journey from June 2025 alone,
+    or with the "couch to runner" videos the 2026-10-04 decision paired with it.
+  - **Spec order after that** (owner, 2026-11-01): **co-parenting** (scheduling, expenses and more,
+    for the owner and their ex-wife), then CV & Blog, which is parked. Before specifying
+    co-parenting, raise that it clashes with the constitution: the site has no logins (Principle V)
+    and is public, repo included (Principle VI), while co-parenting data is private and belongs to
+    other people too. It needs a constitution amendment, or a separate private app.
   - **Fundraising triggers to check at each session start** (T113–T121): the story reviewers' reply
     (T113–T115) and Martlets' reply (T116) are below; T117 is done; T118's timing month and T119's
     tally are below. **T120:** after 4 April 2027, check the card's and page's change of form on the
@@ -43,10 +51,9 @@ Update this as decisions get made — treat it as the source of truth alongside
     at the next local session.
   - **Cloud session set-up is automatic** (SessionStart hook, PR #97): in a cloud session check that
     the hook ran (`node_modules/.session-start.sha256` exists, Playwright launches); in the first
-    local session after the merge, check that it started with no hook error. **Owner's pending
-    setting:** allow `alexanderwebber.com`, `www.alexanderwebber.com` and the workers.dev address
-    under the cloud environment's Network access, so cloud sessions can check the live site. Ask
-    once whether it's done.
+    local session after the merge, check that it started with no hook error. **Cloud sessions can
+    reach the live site** (owner allowed the domain, `www` and workers.dev, 2026-11-01; checked
+    with `curl`), so live checks and post-deploy checks work from either kind of session.
   - **Old screenshot branches:** `002-story-screens` (#94) and `002-page-screens` (#93) are still
     there, because the permission check refused the agent's delete. #95's screenshots are instead in
     one commit on its own branch, removed by the next.
@@ -1775,6 +1782,18 @@ project-specific notes.
     `main`).
 - **2026-11-01** — **T112's usability check skipped** (owner, PR #98 comment), as with 001's hallway
   test: the phase-by-phase live reviews covered it. SC-001 stays unmeasured.
+- **2026-11-01** — **Next specs and cloud access** (owner answers):
+  - **The fitness journey story is spec 003.** CV & Blog is parked.
+  - **Co-parenting comes after it**, ahead of CV & Blog: a section helping the owner and their
+    ex-wife co-parent, covering scheduling, expenses and more. It clashes with the constitution
+    (no logins, a public site and repo) and needs that settled before its spec.
+  - **Cloud sessions reach the live site:** the network allowlist has the domain, `www` and
+    workers.dev. The apex, `www` (301), workers.dev and the fundraising freshness route all
+    answered from the cloud.
+  - **What cloud sessions still skip:** open security alerts (no `gh api` beyond search),
+    `check-versions.ps1` and Spec Kit upgrades (no `pwsh`, no `C:\Projects`), anything needing a
+    secret, lesson harvests into the playbook, and deleting old branches (the permission check
+    refuses it). Neither story nor reviewer replies yet (T113), and nothing from Martlets (T116).
 
 ## Upstream candidates
 
