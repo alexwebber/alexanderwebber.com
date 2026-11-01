@@ -20,15 +20,15 @@ agents doing the work under a written constitution (see [How it was built](#how-
 
 | Page | What it shows |
 |---|---|
-| [Running](https://alexanderwebber.com/running/) | The Brighton countdown and target, featured goals (newly achieved ones first), this week's training, the training build and the latest run |
+| [Running](https://alexanderwebber.com/running/) | The Brighton countdown and target, the fundraising total, featured goals (newly achieved ones first), this week's training, the training build and the latest run |
 | [Goals](https://alexanderwebber.com/running/goals/) | Race-time, weight, body-fat and VO2 max goals with progress, the effort that achieved each, and Garmin's predictions |
 | [Training](https://alexanderwebber.com/running/training/) | Weekly, monthly and yearly totals, and every run by year |
 | Run pages | One per run: pace, heart rate, elevation, cadence and power charts, Garmin heart-rate zones, splits, best efforts and running dynamics |
 | [Races](https://alexanderwebber.com/running/races/) | Personal bests (races and any run), race history, and race pages with a route map and photos (the first race is Brighton) |
 | [Health](https://alexanderwebber.com/running/health/) | Weight, body fat, VO2 max, race predictions, training status, fitness, fatigue and form, resting heart rate and HRV |
+| [Fundraising](https://alexanderwebber.com/running/fundraising/) | The total raised for Martlets against the target, the supporters, the total by day and a link to donate on JustGiving, refreshed every two hours |
 
-**Next** (see [BACKLOG.md](BACKLOG.md)): charity fundraising (JustGiving), the running journey
-story, then the CV & Blog section.
+**Next** (see [BACKLOG.md](BACKLOG.md)): the running journey story, then the CV & Blog section.
 
 ## Architecture
 
@@ -106,6 +106,10 @@ flowchart TB
   to `main` and deploy the build it gated.
 - **The site** is static files on Cloudflare Workers. One small Worker answers
   `/running/api/freshness`, so pages can show when data last arrived without a rebuild.
+- **Fundraising** rides the same run: a step before the fetch reads the JustGiving page's total,
+  target and supporter count through JustGiving's official API, and the publish job writes them to
+  a daily file per campaign. No raw response is stored, and the Worker answers
+  `/running/api/fundraising-freshness` the same way ([specs/002-fundraising](specs/002-fundraising/)).
 
 ### Refresh triggers and alerts
 
@@ -231,6 +235,9 @@ totals, individual runs, and approved health and performance metrics.
   ID map lives in the private bucket.
 - **Raw data never enters git.** It stays in private R2; only sanitised files are committed.
 - **Sleep, stress and Body Battery stay private**, along with per-run training load.
+- **Fundraising publishes three figures only:** the total, the target and the supporter count. No
+  donor name, message, amount or Gift Aid figure reaches the repo; the ingest allow-list, the schema
+  and the privacy scan each refuse them.
 - **The privacy scan** (`scan-privacy`) checks `data/` and the built site on every build for
   start times, training-run coordinates, provider IDs, unapproved categories and photo metadata.
   Race photos are stripped of all metadata when added, and `scan-images` checks it.
@@ -315,6 +322,9 @@ pages), the Lighthouse budget and operating the pipeline are in the
 - **intervals.icu:** the data reaches the site through the
   [intervals.icu](https://intervals.icu) API, under its API terms. Fitness, fatigue and form are
   intervals.icu's model and are labelled as such.
+- **JustGiving:** fundraising figures are read from the owner's JustGiving page through
+  JustGiving's official API (Blackbaud SKY API), never by reading the website. Donations go
+  through JustGiving; the site only links to the page.
 - **OpenFreeMap and OpenStreetMap:** interactive race maps use
   [OpenFreeMap](https://openfreemap.org) tiles built from OpenStreetMap data, credited on the
   map.

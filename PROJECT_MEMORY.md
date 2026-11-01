@@ -24,8 +24,25 @@ Update this as decisions get made — treat it as the source of truth alongside
   **The fundraising page is live** (Phase 5, T064–T080, #93). **The story section is live** (Phase
   6, T081–T093, #94), with nothing visible until a story exists. **After race day and later
   campaigns is merged** (Phase 7, T094–T102, #95, all four boxes ticked, `main`'s Gate and deploy
-  green), with nothing visible before race day.
-  - **Next session: Phase 8, Polish** (`specs/002-fundraising/tasks.md` T103–T112), in its own session.
+  green), with nothing visible before race day. **Phase 8 (Polish, T103–T110) is in review** on the
+  `claude/optimistic-gauss-cco16n` PR (cloud session), with nothing visible changing.
+  - **Next session: finish Phase 8 after the owner's review.** Ask about the PR's boxes, including
+    the T112 usability check (run it, or skip it as with 001's hallway test), and record the answer.
+    After the merge: wait for `main`'s Gate to finish, deploy included; read the next nightly Quality
+    run (the landing page sat near 90 on the 2-core runner); then tick T111 and T112, move
+    fundraising's status to shipped here, and ask the owner which spec comes next (journey story or
+    CV & Blog).
+  - **Fundraising triggers to check at each session start** (T113–T121): the story reviewers' reply
+    (T113–T115) and Martlets' reply (T116) are below; T117 is done; T118's timing month and T119's
+    tally are below. **T120:** after 4 April 2027, check the card's and page's change of form on the
+    live site, and once the owner records the result, that it shows beside "Raised £X for Martlets"
+    (quickstart.md §13). **T121:** at a session in June 2027, before the page expires on 3 July
+    2027, ask whether donations have stopped and whether to mark Brighton `finished`.
+  - **A failed deploy now triggers a redeploy** (T108, if the PR merges): the first refresh after a
+    `refresh.yml` deploy failure logs "Publishing: the last refresh's deploy didn't finish" and
+    deploys its gated build. If a refresh run shows that line, check why the earlier deploy failed.
+  - **Security alerts weren't read on 2026-11-01's cloud session** (no `gh api` there): read them
+    at the next local session.
   - **Cloud session set-up is automatic** (SessionStart hook, PR #97): in a cloud session check that
     the hook ran (`node_modules/.session-start.sha256` exists, Playwright launches); in the first
     local session after the merge, check that it started with no hook error. **Owner's pending
@@ -1719,8 +1736,52 @@ project-specific notes.
   synchronous: about 30 s on a fresh container, 0.6 s after. Install logs go to stderr, out of the
   session's context. The network allowlist can't be set from the repo, so it's the owner's
   setting.
+- **2026-11-01** — **The cloud hook works:** in the next cloud session, `node_modules/.session-start.sha256`
+  existed and the full Playwright suite launched with no `playwright install`.
+- **2026-11-01** — **Fundraising Phase 8 built** (T103–T110, cloud session, the
+  `claude/optimistic-gauss-cco16n` PR; implement subagent about 371k tokens). Nothing visible changes.
+  Choices later work builds on; the owner confirms three in the PR:
+  - **Drills:** `tests/e2e/stale.spec.ts` gains fundraising (SC-003): a published file read 7 days ago
+    with made-up figures, `/running/fundraising/` in `pageTypes()`, and five desktop-only tests (in the
+    HTML, 503, JS off, and each notice alone). The new `tests/e2e/fundraising-none.spec.ts` (SC-006)
+    builds a copy with `campaigns.yaml` but no published file: no page, image, nav, sitemap entry or
+    card element, and the hero keeps "For Martlets". Both build through the new
+    `tests/helpers/scratch-site.ts`.
+  - **SC-004:** a planted Gift Aid figure and donor name fail both `scan-privacy` and `publish-check`.
+    The scan reports only a rule's first match in a file, so the test plants each key alone, then both.
+  - **Lighthouse** (T106, mobile, deploy build): landing and fundraising both 100, LCP 0.90 s, 12.0 KB
+    and 6.9 KB gzip, no script files, no third-party requests. `PAGE_TYPES` now includes fundraising.
+  - **Graduation review (T108) fixed two faults:**
+    - **Redeploy after a failed deploy** (`refresh.yml`, shared with Running). After a refresh whose
+      deploy failed, the next read compared JustGiving with the repo, not the live site, so it moved
+      the live "Figures updated" time on while the page still showed the older figures, for up to
+      about a day (SC-005). The decide step now finds the latest of the last five completed refreshes
+      that reached deploy, and if that deploy failed, was cancelled or timed out, the run publishes
+      and deploys its gated build. A failed `gh` call means no redeploy. A deploy cancelled while
+      queued costs one extra deploy at most.
+    - **A corrupt `state/fundraising.json` now alerts** (`StateCorrupt`, still `archive_unavailable`,
+      exit 14): every active campaign's issue opens, where before the figures went stale silently
+      (FR-006). An R2 outage still opens nothing.
+    - **Left, low:** a queued run comparing against its older checkout (heals next run), a new
+      campaign whose first read never saves (no state, so no alert), a gate build baking in a stale
+      notice the script clears (as Running, R6), and the bot's commit message saying "running data"
+      for fundraising-only changes.
+  - **FR-003's isolation covers reads only:** the gate is shared, and a failed `process` stops
+    fundraising's publish step (research.md R4). Recorded in the Running and ingest READMEs.
+  - **Docs:** the Running README's *Fundraising* section is the graduation design note (adding,
+    finishing and removing a campaign). `BACKLOG.md` had one fundraising entry left ("Fundraising
+    spec"), now removed.
+  - **Tests:** Vitest 815, Playwright 579 passed (55 skipped by design, both projects), pytest 670,
+    ruff and `astro check` clean, gate green on a deploy build (scan-privacy without the R2 map).
+    quickstart §1, §6–§10 and §12 ran and passed; §5 needs Actions and secrets (proven earlier on
+    `main`).
 
 ## Upstream candidates
+
+- `scan-privacy` (and scanners like it) report only a rule's first match per file, so a test that
+  plants two forbidden keys in one file proves only one. Plant each alone, then both.
+- Cloud image: there's no `pwsh`, so Spec Kit's PowerShell prerequisite scripts can't run in a cloud
+  session; the implement subagent took the feature folder from `feature.json` instead.
 
 - `gh` can't attach images to a PR. Commit them to a side branch that never merges, link
   `raw.githubusercontent.com` by commit SHA, and delete the branch after the merge.

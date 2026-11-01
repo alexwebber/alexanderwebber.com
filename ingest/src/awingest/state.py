@@ -21,6 +21,18 @@ FUNDRAISING_STATE = "state/fundraising.json"
 FUNDRAISING_FRESHNESS = "public/fundraising-freshness.json"
 
 
+class StateCorrupt(ArchiveUnavailable):
+    """A state object that exists but isn't JSON. Unlike an outage it won't clear by itself, so the
+    fundraising alert opens at once rather than waiting for a state it can't read (T108). Its code
+    and exit stay ``archive_unavailable`` and 14."""
+
+    likely_cause = "A state object in R2 exists but isn't valid JSON, so the stage can't start."
+    action = (
+        "The agent inspects the object in R2 and repairs or deletes it. Deleting "
+        "state/fundraising.json is safe: the next read writes it afresh."
+    )
+
+
 def utc_iso(when: datetime) -> str:
     return when.astimezone(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
@@ -55,7 +67,7 @@ class StateDoc:
         try:
             value = {} if data is None else json.loads(data)
         except (UnicodeDecodeError, json.JSONDecodeError):
-            raise ArchiveUnavailable(f"{key} is not valid JSON") from None
+            raise StateCorrupt(f"{key} is not valid JSON") from None
         self.value: dict[str, Any] = value if isinstance(value, dict) else {}
 
     def save(self) -> None:

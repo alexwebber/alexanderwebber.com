@@ -75,6 +75,7 @@ const PAGE_TYPES = [
   { type: 'races', path: () => '/running/races/' },
   { type: 'race', path: () => firstBuilt('running/races') },
   { type: 'health', path: () => '/running/health/' },
+  { type: 'fundraising', path: () => '/running/fundraising/' },
 ];
 
 async function exists(baseUrl, path, local) {

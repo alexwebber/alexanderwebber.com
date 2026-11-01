@@ -139,6 +139,29 @@ describe('scan-privacy', () => {
       expect(rules('dist/_astro/x.js', 'Gift Aid adds £312')).toEqual([]);
     });
 
+    it('SC-004: a published file with a planted Gift Aid figure and donor name fails the scan (T105)', async () => {
+      // quickstart.md §10: the scan over the repo, as the gate runs it, not just scanText.
+      repo = tempRepo();
+      const clean = { schema_version: 1, campaign_id: 'brighton-2027', last_read_at: '2026-11-10T09:17:03Z', points: [{ date: '2026-11-10', raised_pence: 100, supporters: 1, target_pence: 50000 }] };
+      repo.write(FIGURES, clean);
+      expect(await scanPrivacy(repo.root)).toEqual([]);
+      // The scan reports a rule's first match in a file, so each key is planted alone, then both.
+      const planted = [
+        { ...clean, totalEstimatedGiftAid: '12.50' },
+        { ...clean, points: [{ ...clean.points[0], donorName: 'A Person' }] },
+        { ...clean, totalEstimatedGiftAid: '12.50', points: [{ ...clean.points[0], donorName: 'A Person' }] },
+      ];
+      const findings: Awaited<ReturnType<typeof scanPrivacy>> = [];
+      for (const [i, file] of planted.entries()) {
+        repo.write(FIGURES, file);
+        const found = await scanPrivacy(repo.root);
+        expect(found.map((f) => [f.file, f.rule]), `planted ${i}`).toEqual([[FIGURES, IN_DATA]]);
+        findings.push(...found);
+      }
+      expect(findings.map((f) => f.excerpt)).toEqual(['"totalEstimatedGiftAid":', '"donorName":', '"donorName":']);
+      expect(JSON.stringify(findings)).not.toMatch(/12\.50|A Person/);
+    });
+
     it('never reports the matched value', () => {
       const [figure] = scanText(PAGE, '<p>Gift Aid adds £312 to this</p>');
       expect(figure).toMatchObject({ line: 1, column: 4, excerpt: expect.stringMatching(/^\[\d+ chars redacted\]$/) });

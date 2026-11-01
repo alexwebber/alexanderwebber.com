@@ -28,13 +28,15 @@ fully successful point; `process` writes nothing if any validation fails.
   Jobs: `fetch` (always on Actions; Spike 0 confirmed GitHub-hosted runners reach intervals.icu;
   then `alert` as a step that always runs, even on failure) -> `publish` (`process`, run **gate**;
   if the published tree changed, commit as `github-actions[bot]` to `main`) -> `deploy`
-  (`wrangler deploy`, only if gate passed and something changed, owner files changed, or it is the
-  daily catch-all). There is
+  (`wrangler deploy`, only if gate passed and something changed, owner files changed, it is the
+  daily catch-all, or the latest refresh that reached `deploy` failed there, so the live site
+  catches up with `main`; 2026-11-01, specs/002-fundraising T108). There is
   no `FETCH_MODE` and no PC fallback.
   **Idle runs skip `publish`** (2026-10-23, Actions minutes; each job bills at least a minute):
   only when the fetch succeeded with nothing new archived, the last refresh succeeded, it is not an
-  owner-file push or a re-import, and it is not the 00:17 UTC daily catch-all (which reprocesses
-  after a processor change on a day with no new data). Any doubt publishes.
+  owner-file push or a re-import, it is not the 00:17 UTC daily catch-all (which reprocesses
+  after a processor change on a day with no new data), and the last deploy didn't fail. Any doubt
+  publishes.
 - **Gate** (reusable job, also `gate.yml` for pushes/PRs, no deploy on PR) = **site build + data-schema
   validation** per the constitution: install; `validate-data` (schemas + referential, incl.
   duplicate-race and ID checks); `scan-images`; **section-boundary check**
