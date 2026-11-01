@@ -37,7 +37,7 @@ function store(runs: Run[]): RunningStore {
     getHealthSeries: async () => [],
     getRefreshRecord: async () => ({ schema_version: 1, generated_at: '2026-10-24T08:00:00Z', sources: { intervals: { last_data_change_at: '2026-10-24T08:00:00Z', last_success_at_build: '2026-10-24T08:00:00Z' } } }),
     getCampaignFigures: async () => [],
-    getOwner: async () => ({ section: undefined, goals: [], upcomingRaces: [], races: [], overrides: [], exclusions: [], lab: [], manualMetrics: { training_status: [], race_predictions: [] }, campaigns: [] }),
+    getOwner: async () => ({ section: undefined, goals: [], upcomingRaces: [], races: [], overrides: [], exclusions: [], lab: [], manualMetrics: { training_status: [], race_predictions: [] }, campaigns: [], stories: [] }),
   };
 }
 

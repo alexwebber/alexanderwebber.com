@@ -297,6 +297,7 @@ function store(owner: Partial<OwnerData> = {}): RunningStore {
       lab: [],
       manualMetrics: { training_status: [{ as_of: '2026-10-23', status: 'productive' }], race_predictions: [{ as_of: '2026-10-23', '5k': '19:31', '10k': '40:56', half: '1:32:01', marathon: '3:25:18' }] },
       campaigns: [],
+      stories: [],
       ...owner,
     }) as OwnerData,
   };

@@ -1,0 +1,6 @@
+campaign: seaside-2027
+text: Made-up text.
+title: Not a known field
+approved:
+  date: 2026-11-01
+  text_sha256: "0000000000000000000000000000000000000000000000000000000000000abc"

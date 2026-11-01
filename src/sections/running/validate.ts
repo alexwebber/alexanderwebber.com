@@ -324,6 +324,14 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
     }
   });
 
+  for (const { file, value: story } of data.stories) {
+    const entry = `story "${story.campaign}"`;
+    const name = /([^/]+)\.yaml$/.exec(file)?.[1];
+    if (story.campaign !== name) error(file, entry, 'campaign', `does not match the file name "${name}"`);
+    if (!campaignIds.has(story.campaign)) error(file, entry, 'campaign', `"${story.campaign}" is not a campaign in campaigns.yaml`);
+    if (story.approved.date > today) error(file, entry, 'approved.date', `${story.approved.date} is in the future`);
+  }
+
   // Provider IDs never belong in owner files: runs are referenced by their public ID.
   for (const file of data.files.filter((f) => f.startsWith(`${OWNER_DIR}/`) && f.endsWith('.yaml'))) {
     readFileSync(join(root, file), 'utf8')

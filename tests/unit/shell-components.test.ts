@@ -325,6 +325,7 @@ describe('SectionLayout', () => {
         lab: [],
         manualMetrics: { training_status: [], race_predictions: [] },
         campaigns: [],
+        stories: [],
       }),
     };
   }

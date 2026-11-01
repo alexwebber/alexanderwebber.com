@@ -1,0 +1,9 @@
+# A comment stays where it is.
+campaign: seaside-2027
+text: |
+  A first made-up paragraph.
+
+  A second made-up paragraph.
+approved:
+  date: 2026-11-01
+  text_sha256: "0000000000000000000000000000000000000000000000000000000000000abc"

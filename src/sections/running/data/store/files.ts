@@ -1,12 +1,14 @@
 // Running's file map: reads and schema-validates every file under data/running/
 // (contracts/data-files.md layout). Shared by JsonFileStore (which throws on any problem) and
 // ../../validate.ts (which adds referential checks and reports everything at once).
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fieldPath, listDataFiles, parseDataFile, SchemaSet, type DataIssue } from '../../../../shared/storage/index.ts';
+import { fieldPath, listDataFiles, parseDataFile, SchemaSet, type DataIssue, type SchemaIssue } from '../../../../shared/storage/index.ts';
 import type {
   Campaign,
   CampaignFigures,
+  CampaignStory,
   Goal,
   HealthExclusion,
   HealthSeries,
@@ -50,6 +52,7 @@ export interface RunningData {
   lab: Loaded<LabMeasurement>[];
   manualMetrics: Loaded<ManualMetrics> | undefined;
   campaigns: Loaded<Campaign[]> | undefined;
+  stories: Loaded<CampaignStory>[];
   /** Every file under data/running/, repo-relative (photos included). */
   files: string[];
 }
@@ -66,6 +69,22 @@ const LIST_NOUNS: Partial<Record<RunningSchema, string>> = {
   'owner/health-exclusions': 'exclusion',
   'owner/campaigns': 'campaign',
 };
+
+/**
+ * The schema's x-error on `approved`, for when the field is missing (FR-052). The shared machinery
+ * says "is required" for any missing field, because x-error describes a value that is there.
+ */
+const NEEDS_APPROVAL = "needs the owner's approval before it can be published";
+
+function problemMessage(schema: RunningSchema, problem: SchemaIssue): string {
+  const noApproval = schema === 'owner/campaign-story' && problem.message === 'is required' && fieldPath(problem.path) === 'approved';
+  return noApproval ? NEEDS_APPROVAL : problem.message;
+}
+
+/** What an approval is tied to: the sha256 of a story's text as parsed (FR-052, SC-007). */
+export function storySha256(text: string): string {
+  return createHash('sha256').update(text, 'utf8').digest('hex');
+}
 
 const MANUAL_NOUNS: Record<string, string> = {
   training_status: 'training status',
@@ -101,6 +120,7 @@ export function locate(schema: RunningSchema, value: unknown, path: Path): { ent
     'published/health-series': ['health series', 'metric'],
     'published/fundraising-campaign': ['campaign figures', 'campaign_id'],
     'owner/race': ['race', 'slug'],
+    'owner/campaign-story': ['story', 'campaign'],
   };
   const entry = named[schema];
   if (entry) {
@@ -127,6 +147,7 @@ function schemaForFile(file: string): RunningSchema | undefined {
     [/^owner\/health-exclusions\.yaml$/, 'owner/health-exclusions'],
     [/^owner\/manual-metrics\.yaml$/, 'owner/manual-metrics'],
     [/^owner\/campaigns\.yaml$/, 'owner/campaigns'],
+    [/^owner\/stories\/[^/]+\.yaml$/, 'owner/campaign-story'],
     [/^owner\/races\/[^/]+\/race\.yaml$/, 'owner/race'],
     [/^owner\/lab\/[^/]+\.yaml$/, 'owner/lab'],
   ];
@@ -169,6 +190,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     lab: [],
     manualMetrics: undefined,
     campaigns: undefined,
+    stories: [],
     files: listDataFiles(root, DATA_DIR),
   };
 
@@ -189,9 +211,18 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     const value = parsed.value;
     const problems = schemas.validate(schema, value);
     for (const problem of problems) {
-      issues.push({ file, ...locate(schema, value, problem.path), message: problem.message, severity: 'error' });
+      issues.push({ file, ...locate(schema, value, problem.path), message: problemMessage(schema, problem), severity: 'error' });
     }
     if (problems.length > 0) continue;
+    // Checked here, not with the other story rules in validate.ts, because the store and the build's
+    // first step load through this: text changed after approval can't reach a page by any path.
+    if (schema === 'owner/campaign-story') {
+      const { text, approved } = value as CampaignStory;
+      if (approved.text_sha256 !== storySha256(text)) {
+        issues.push({ file, entry: '', field: 'approved.text_sha256', message: 'the text has changed since it was approved; the owner must approve it again', severity: 'error' });
+        continue;
+      }
+    }
     store(data, schema, { file, value });
   }
 
@@ -199,6 +230,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
   data.races.sort((a, b) => b.value.date.localeCompare(a.value.date) || a.value.slug.localeCompare(b.value.slug));
   data.lab.sort((a, b) => a.value.date.localeCompare(b.value.date) || a.value.type.localeCompare(b.value.type));
   data.fundraising.sort((a, b) => a.value.campaign_id.localeCompare(b.value.campaign_id));
+  data.stories.sort((a, b) => a.value.campaign.localeCompare(b.value.campaign));
   return { data, issues };
 }
 
@@ -235,5 +267,6 @@ function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>
     case 'owner/lab': data.lab.push(loaded as Loaded<LabMeasurement>); break;
     case 'owner/manual-metrics': data.manualMetrics = loaded as Loaded<ManualMetrics>; break;
     case 'owner/campaigns': data.campaigns = loaded as Loaded<Campaign[]>; break;
+    case 'owner/campaign-story': data.stories.push(loaded as Loaded<CampaignStory>); break;
   }
 }

@@ -17,5 +17,6 @@ export const RUNNING_SCHEMAS = [
   'owner/lab',
   'owner/manual-metrics',
   'owner/campaigns',
+  'owner/campaign-story',
 ] as const;
 export type RunningSchema = (typeof RUNNING_SCHEMAS)[number];

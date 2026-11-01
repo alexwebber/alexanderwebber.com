@@ -4,6 +4,7 @@ import type {
   BodyCompositionGoal,
   Campaign,
   CampaignFigures,
+  CampaignStory,
   Goal,
   HealthExclusion,
   HealthSeries,
@@ -26,6 +27,7 @@ export type {
   BodyCompositionGoal,
   Campaign,
   CampaignFigures,
+  CampaignStory,
   Goal,
   HealthExclusion,
   HealthSeries,
@@ -72,6 +74,8 @@ export interface OwnerData {
   };
   /** Empty until campaigns.yaml exists. */
   campaigns: Campaign[];
+  /** One per stories/<campaign-id>.yaml, all approved: anything else stops validation. */
+  stories: CampaignStory[];
 }
 
 export interface RunningStore {

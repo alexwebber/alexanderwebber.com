@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/campaign-story.schema.json",
+  "title": "CampaignStory",
+  "description": "data/running/owner/stories/<campaign-id>.yaml: a campaign's approved story, the only place story text lives (FR-055). Only approved text may enter this file (FR-050, FR-052).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["campaign", "text", "approved"],
+  "properties": {
+    "campaign": {
+      "description": "Equals the file name, and is a campaign ID.",
+      "$ref": "../defs.schema.json#/$defs/slug"
+    },
+    "text": {
+      "description": "Non-empty plain text. Blank lines separate paragraphs. No HTML or Markdown: rendered as <p> elements, escaped.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "x-error": "must be the story's text, not empty"
+    },
+    "approved": {
+      "description": "The owner's approval, written by scripts/approve-story.ts after their explicit yes (FR-052).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "text_sha256"],
+      "x-error": "needs the owner's approval before it can be published",
+      "properties": {
+        "date": {
+          "description": "The date the owner approved the text. Not in the future.",
+          "$ref": "../defs.schema.json#/$defs/date"
+        },
+        "text_sha256": {
+          "description": "The sha256 of the text field as parsed. A mismatch means the text changed after approval (SC-007).",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "x-error": "is not a sha256 (64 lower-case hexadecimal characters)"
+        }
+      }
+    }
+  }
+}
