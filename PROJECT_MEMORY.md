@@ -1632,6 +1632,12 @@ project-specific notes.
     `last_read_at` until the next read, by design; the page takes the later of it and the build's.
 - **2026-11-01** — **Guided review of the live card** (owner, on phone and desktop): fine on both,
   nothing to change. Neither the story reviewers nor Martlets had replied yet.
+- **2026-11-01** — **Fundraising page live** (#93; T079, T080, T117). `main`'s Gate finished, deploy
+  included. The page answers 200 with its menu item and sitemap entry, and the share image reads
+  "£100 raised for Martlets". The owner reviewed it on a phone and a desktop: fine on both, and the
+  two-point chart stays. T119's tally of site-and-JustGiving matches is **1 of 10**.
+  - **Overrides stay:** the latest miniflare still pins `undici` 7.28.0 and the latest satori `fflate`
+    0.7.3. wrangler 4.156.0 depends on a miniflare 5 beta, so it stays on 4.152.0.
 
 ## Upstream candidates
 
