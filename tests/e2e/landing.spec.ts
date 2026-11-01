@@ -104,9 +104,10 @@ test('US1.1/US1.2: the hero shows the focus race, its date, the days left, its t
     const card = hero.locator('.fundraising-card');
     await expect(card).toContainText(`For ${section.focus_race.charity.name}`);
     await expect(card.getByRole('link', { name: 'Donate on JustGiving' })).toHaveAttribute('href', campaign!.page_url);
+    await expect(card.getByRole('link', { name: 'See the fundraising page' })).toHaveAttribute('href', '/running/fundraising/');
   } else {
     await expect(hero.locator('[data-charity]')).toHaveText(`For ${section.focus_race.charity.name}`);
-    await expect(page.getByText(/fundrais|donate/i)).toHaveCount(0);
+    await expect(hero.getByText(/fundrais|donate/i)).toHaveCount(0);
   }
   // A Garmin prediction always says "at current fitness" and carries the date it was read.
   for (const prediction of await hero.locator('[data-prediction]').all()) {

@@ -42,6 +42,7 @@ describe('ogPath', () => {
     ['/', '/og/site.png'],
     ['/running/', '/og/running.png'],
     ['/running/goals/', '/og/running-goals.png'],
+    ['/running/fundraising/', '/og/running-fundraising.png'],
     ['/running/races/brighton-2027/', '/og/running-races-brighton-2027.png'],
   ])('%s -> %s', (page, image) => {
     expect(ogPath(page)).toBe(image);
