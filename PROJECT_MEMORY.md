@@ -21,10 +21,10 @@ Update this as decisions get made — treat it as the source of truth alongside
   `data/running/published/fundraising/brighton-2027.json` (£0 of £500, 0 supporters). **The staging
   check is done** (Phase 3): the parser needs no change, and the label stays "supporters". **The
   landing card is live** (Phase 4, T044–T063, #90), with Donate leading to the JustGiving page.
-  - **Next session: a short guided review of the live card**, with a question round on what the
-    owner saw, then **Phase 5, the fundraising page** (`specs/002-fundraising/tasks.md`, T064 on),
-    in its own session. Donate spans its container, which suits the hero but is very wide on a
-    full page, so the fundraising page probably wants a `max-width`. New tests should share one
+  - **Next session: Phase 5, the fundraising page** (`specs/002-fundraising/tasks.md`, T064 on).
+    The live card's guided review is done, with nothing to change. Donate spans its container,
+    which suits the hero but is very wide on a full page, so the fundraising page probably wants a
+    `max-width`. New tests should share one
     tag-stripping helper in `tests/helpers/`, because each new copy trips CodeQL
     (`js/incomplete-multi-character-sanitization`) and fails the PR's check.
   - **The owner will raise the target to £1,000 at some point** (on JustGiving). The site follows by
@@ -1600,6 +1600,8 @@ project-specific notes.
     dismissed as "used in tests", like the first six, and the check turned green.
   - **Target change:** the owner will raise the target to £1,000 on JustGiving at some point. The
     site reads it from there, and a target change alone publishes (tested, not yet seen live).
+- **2026-11-01** — **Guided review of the live card** (owner, on phone and desktop): fine on both,
+  nothing to change. Neither the story reviewers nor Martlets had replied yet.
 
 ## Upstream candidates
 
