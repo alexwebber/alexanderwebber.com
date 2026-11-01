@@ -27,12 +27,15 @@ Update this as decisions get made — treat it as the source of truth alongside
   green), with nothing visible before race day. **Fundraising has shipped and graduated**: Phase 8
   (Polish, T103–T112, #98) merged with all four boxes ticked, the usability check skipped, and
   `main`'s Gate green, deploy included. What remains waits on others or on a date (T113–T121).
-  - **Next session: a local session.** First the checks cloud sessions skip: open security alerts,
-    `check-versions.ps1` (both npm overrides, the TypeScript pin, Spec Kit), and the nightly Quality
-    run after #98 (the landing page sat near 90 on the 2-core runner). Then start **spec 003, the
-    fitness journey story** (owner pick, 2026-11-01): the question rounds first, then
-    `/speckit-specify` as a subagent. The first question is scope: the journey from June 2025 alone,
-    or with the "couch to runner" videos the 2026-10-04 decision paired with it.
+  **Spec 003, the journey story, is written** (`specs/003-journey-story/`, the PR raised on
+  2026-11-01), with nothing visible until a first chapter is approved.
+  - **Next session: first check spec 003's PR.** If it's merged, ask about any box left unticked,
+    above all the landing link's position. If it isn't merged, ask what's holding it. **Then the
+    journey interview**, in the main conversation: a chapter at a time, in the owner's words, with
+    answers kept in `C:\temp\journey-answers.md` (the agreed arc is there too). **Nothing from it
+    goes in the repo, a PR, a commit message or this file**, which is public (spec FR-036): only the
+    story's shape may, such as chapter counts and lengths. **After the interview, `/speckit-plan`
+    as a subagent.**
   - **Spec order after that** (owner, 2026-11-01): **co-parenting** (scheduling, expenses and more,
     for the owner and their ex-wife), then CV & Blog, which is parked. Before specifying
     co-parenting, raise that it clashes with the constitution: the site has no logins (Principle V)
@@ -47,16 +50,14 @@ Update this as decisions get made — treat it as the source of truth alongside
   - **A failed deploy now triggers a redeploy** (T108, #98): the first refresh after a
     `refresh.yml` deploy failure logs "Publishing: the last refresh's deploy didn't finish" and
     deploys its gated build. If a refresh run shows that line, check why the earlier deploy failed.
-  - **Security alerts weren't read on 2026-11-01's cloud session** (no `gh api` there): read them
-    at the next local session.
   - **Cloud session set-up is automatic** (SessionStart hook, PR #97): in a cloud session check that
-    the hook ran (`node_modules/.session-start.sha256` exists, Playwright launches); in the first
-    local session after the merge, check that it started with no hook error. **Cloud sessions can
-    reach the live site** (owner allowed the domain, `www` and workers.dev, 2026-11-01; checked
-    with `curl`), so live checks and post-deploy checks work from either kind of session.
-  - **Old screenshot branches:** `002-story-screens` (#94) and `002-page-screens` (#93) are still
-    there, because the permission check refused the agent's delete. #95's screenshots are instead in
-    one commit on its own branch, removed by the next.
+    the hook ran (`node_modules/.session-start.sha256` exists, Playwright launches). Locally it
+    exits at once (checked 2026-11-01). **Cloud sessions can reach the live site** (owner allowed the
+    domain, `www` and workers.dev, 2026-11-01; checked with `curl`), so live checks and post-deploy
+    checks work from either kind of session.
+  - **Old screenshot branches:** `002-story-screens` (#94) and `002-page-screens` (#93) hold only PR
+    images. The permission check refused the agent's delete twice, so leave them unless the owner
+    says otherwise. For later PRs, use the one-commit route #95 used.
   - **T118's month of timing** (SC-002) runs to about 1 Dec 2026: compare each bot commit with the
     donation's time, using times the owner mentions in reviews. **T119's tally is 1 of 10.**
   - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
@@ -95,6 +96,8 @@ Update this as decisions get made — treat it as the source of truth alongside
   start. Cloud credits remain until 2026-11-05 but are mostly used, so only suggest a cloud
   session for a slice that needs no secrets and no owner input.
 - **Each session, first:**
+  - **Fetch before trusting this file:** `git fetch` and fast-forward local `main`. Cloud sessions
+    merge to `main`, so the copy auto-loaded here can be out of date (27 commits on 2026-11-01).
   - **Refresh runs:** fix any red one first, and any `refresh-trigger-failing` or
     `ingest-failing` issue.
   - **Security alerts:** read the open Dependabot, code-scanning and secret-scanning alerts
@@ -1794,9 +1797,51 @@ project-specific notes.
     `check-versions.ps1` and Spec Kit upgrades (no `pwsh`, no `C:\Projects`), anything needing a
     secret, lesson harvests into the playbook, and deleting old branches (the permission check
     refuses it). Neither story nor reviewer replies yet (T113), and nothing from Martlets (T116).
+- **2026-11-01** — **Local checks after the cloud sessions:** no open security alerts of any kind, and
+  no reviewer or Martlets reply yet. A Quality run dispatched against production after #98 passed
+  (41334041580). Spec Kit 1.2.5 is current. Both npm overrides stay (the latest satori still pins
+  `fflate` 0.7.3, and the latest miniflare `undici` 7.28.0), and so does the TypeScript pin
+  (`@astrojs/check` 0.9.12 still peer-requires `^5 || ^6`). `gh`, `uv` and maplibre-gl 6.16.0 are
+  routine, so they're skipped.
+- **2026-11-01** — **Spec 003, the journey story** (`specs/003-journey-story/`, specify subagent about
+  204k tokens; 5 user stories, 51 FRs, 13 SCs). Owner answers from three question rounds, all on the
+  recommendation except where noted:
+  - **Scope:** the story page now. Videos come later, with a place left for them in each chapter and
+    no hosting decision.
+  - **Reader:** someone just starting out. Friends, family and sponsors come second.
+  - **Form: chapters, not a progress view** (owner's correction): times and comparisons aren't what
+    the story is about, and the Goals and Health pages already show them. Chapters run in time order,
+    each named after a turning point and ending in "What I learned", with a figure or two at most,
+    and a closing section for someone at the start.
+  - **Writing:** interview, then draft, then the owner's edits and approval. Each chapter has its own
+    approval tied to its text. Whichever story is approved first creates `VOICE.md`.
+  - **The story keeps growing**, starting with Brighton, and earlier chapters stay as written.
+  - **Finding it:** the landing link already reserved plus "Story" in the Running menu, both hidden
+    until a first approved chapter exists, with Donate kept on a phone's first screen.
+  - **Photos:** optional, three a chapter at most, with no other people and nothing showing where the
+    owner lives or regularly runs. This amends spec 001's FR-055 (photos on race pages only).
+  - **Order:** spec, then interview, then plan and build, so the page is designed around the real
+    chapters.
+  - **The agent changed one thing after review:** FR-020 covers private individuals, not everyone,
+    because "names no one else" would have stopped the owner crediting a published source. The brief
+    had over-widened the owner's answer.
+  - **Public repo:** the spec holds structure only. The agent read it in full and searched it for
+    personal terms. The owner's answers and the agreed arc are outside the repo.
+  - `/speckit-clarify` was skipped: the question rounds covered it, and what's left is in the PR's
+    boxes.
 
 ## Upstream candidates
 
+- With both cloud and local sessions, a local session auto-loads `PROJECT_MEMORY.md` from whatever
+  its checkout holds, so a stale `main` means a stale handoff. Here it pointed at work already done,
+  until `git log` showed 27 new commits. Fast-forward first, then read the handoff.
+- Write a brief for a spec from the owner's exact answer. "No one else in the family appears" became
+  "names no one else" in the agent's brief and reached the spec, where it would have banned crediting
+  a published source. Only the agent's own read of the spec caught it.
+- For a personal story in a public repo, tell the specify subagent what mustn't appear, then search
+  its output yourself. Keep the owner's raw answers in a private file the next session can find.
+- PowerShell 5.1 breaks `gh --jq` expressions that contain `\(...)`: the quotes are lost, and `gh`
+  reports "unknown command". Run those through Bash.
 - `scan-privacy` (and scanners like it) report only a rule's first match per file, so a test that
   plants two forbidden keys in one file proves only one. Plant each alone, then both.
 - Cloud image: there's no `pwsh`, so Spec Kit's PowerShell prerequisite scripts can't run in a cloud

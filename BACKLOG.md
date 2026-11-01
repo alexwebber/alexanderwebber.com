@@ -48,8 +48,9 @@ the Decisions log in `PROJECT_MEMORY.md` and remove it from here.
   changed, and rewrote 356 of 383 wellness days. Something in intervals.icu's rows (probably
   recomputed fields) changes after the fact. Check which fields change, and leave volatile ones
   out of the row hash if they don't affect what's published. Deferred: correct, just slower.
-- **Journey/story spec (Running)** — motivational/educational "couch potato to runner" story and
-  videos, plus training-run photos. Running landing page links to it once it exists.
+- **"Couch to runner" videos (Running)** — educational videos that join the story's chapters. Spec
+  003 (`specs/003-journey-story/`) leaves a place for them (FR-053) and makes no hosting decision.
+- **Training-run photos (Running)** — still deferred. Spec 003 adds photos in story chapters only.
 - **CV & Blog section** — phase 2, after Running.
 - **Report Spec Kit 1.1.0 Windows issue upstream?** — PowerShell scripts prefer `python3` even
   when it's the Microsoft Store stub, and need PyYAML installed. Worked around locally
