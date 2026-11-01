@@ -376,7 +376,7 @@ live page, nothing changes.
 
 ### Ship the slice
 
-- [ ] T093 [US3] (owner, guided by the agent) Run the PR routine's suites, including quickstart.md §9, and raise the PR by the PR routine. The owner looks at the screenshot of `with-story` in the PR review
+- [X] T093 [US3] (owner, guided by the agent) Run the PR routine's suites, including quickstart.md §9, and raise the PR by the PR routine. The owner looks at the screenshot of `with-story` in the PR review
 
 **Checkpoint**: an approved story can join with one file. Nothing else waits for it.
 
