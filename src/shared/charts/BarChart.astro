@@ -139,6 +139,11 @@ const height = (value: number) => percent(PLOT - y(Math.max(0, value)));
     overflow: visible;
   }
 
+  /* The same for the last column's label: a minor one is only visibility-hidden, so it still widens the page. */
+  .bar-labels li:last-child {
+    justify-content: flex-end;
+  }
+
   @media (forced-colors: active) {
     .bar {
       background: CanvasText !important;

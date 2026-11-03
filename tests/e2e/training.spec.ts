@@ -106,5 +106,17 @@ test('lists show the date only, never a time of day (FR-011), and fit 320px', as
       els.filter((el) => el.getBoundingClientRect().right > el.closest('.chart-plot')!.getBoundingClientRect().right + 0.5).map((el) => el.textContent),
     );
     expect(escaped, path).toEqual([]);
+    // The same for x labels, hidden minor ones included, since they still take up layout.
+    const labelsOut = await page.locator('.bar-labels li').evaluateAll((els) =>
+      els
+        .filter((el) => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const plot = el.closest('.bar-chart')!.querySelector('.chart-plot')!;
+          return el.textContent!.trim() !== '' && range.getBoundingClientRect().right > plot.getBoundingClientRect().right + 0.5;
+        })
+        .map((el) => el.textContent),
+    );
+    expect(labelsOut, path).toEqual([]);
   }
 });
