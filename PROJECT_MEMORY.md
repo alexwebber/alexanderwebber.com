@@ -28,19 +28,41 @@ Update this as decisions get made — treat it as the source of truth alongside
   (Polish, T103–T112, #98) merged with all four boxes ticked, the usability check skipped, and
   `main`'s Gate green, deploy included. What remains waits on others or on a date (T113–T121).
   **Spec 003, the journey story, is written** (`specs/003-journey-story/`, the PR raised on
-  2026-11-01), with nothing visible until a first chapter is approved.
-  - **Next session: first check spec 003's PR.** If it's merged, ask about any box left unticked,
-    above all the landing link's position. If it isn't merged, ask what's holding it. **Then the
-    journey interview**, in the main conversation: a chapter at a time, in the owner's words, with
-    answers kept in `C:\temp\journey-answers.md` (the agreed arc is there too). **Nothing from it
-    goes in the repo, a PR, a commit message or this file**, which is public (spec FR-036): only the
-    story's shape may, such as chapter counts and lengths. **After the interview, `/speckit-plan`
-    as a subagent.**
-  - **Spec order after that** (owner, 2026-11-01): **co-parenting** (scheduling, expenses and more,
-    for the owner and their ex-wife), then CV & Blog, which is parked. Before specifying
-    co-parenting, raise that it clashes with the constitution: the site has no logins (Principle V)
-    and is public, repo included (Principle VI), while co-parenting data is private and belongs to
-    other people too. It needs a constitution amendment, or a separate private app.
+  2026-11-01), with nothing visible until a first chapter is approved. **#101 merged** with every box
+  ticked (photos: race crowds allowed, to amend FR-062 in the plan's PR). **The journey interview is
+  done (2026-11-03)** and waits on the owner's whole-story review.
+  - **The journey interview is done (2026-11-03).** Every chapter has a draft, in
+    `C:\temp\journey-story-review.md` (clean read-through), with working notes in
+    `C:\temp\journey-draft.md` and answers in `C:\temp\journey-answers.md`. **Nothing from them
+    goes in the repo, a PR, a commit message or this file** (spec FR-036). The privacy rules the
+    owner set are at the end of each round's notes in `journey-answers.md`. Read them before
+    touching the text.
+  - **Next session, first:** check #102 (journey start date, chart label fix) and #103 (Brighton
+    sub-3:15, new goals, Garmin readings of 3 Nov). Merge order is #102 then #103, because #103's
+    Playwright failures are the ones #102 fixes. After #102 merges, update #103's branch and
+    re-check every check. After each merge, wait for `main`'s Gate to finish, deploy included, and
+    point the owner at the *How to view it* URLs.
+  - **Then the owner's whole-story review**, which the owner chose to do once, over all chapters
+    (`journey-story-review.md`). Open choices: chapter 8's lesson (three options), the two
+    keep-or-cut lines in chapter 6, and the suggested lessons. Then per-chapter approval
+    (FR-030–FR-034), and `VOICE.md` from the owner's edits if the Martlets story isn't approved
+    first.
+  - **Then `/speckit-plan` as a subagent** (Opus override, flagged), passing only the shape:
+    **nine chapters plus a closing section for someone just starting**, about 1,800 words in all.
+    Chapters run 62 to 337 words (four under 170, two over 290). One chapter has a set-apart figure,
+    and most carry a figure or two in prose, several of them Garmin-sourced, so prose figures need
+    FR-014's attribution too. One chapter links to the fundraising page. The owner
+    suggests a few photos; amend FR-062 for race crowds in the plan's PR.
+  - **Goals follow-up, from 17 Nov 2026:** unfeature `half-sub-1-40` and `vo2max-52-5` (their "New"
+    window ends 16 Nov) and set `featured_goal_limit` back to 7, in a PR.
+  - **Martlets logo (T116):** Martlets OK'd the "I'm supporting" logo and sent a transparent
+    version (owner, 2026-11-03). Ask the owner to put the file in `C:\temp\` with any conditions
+    from the email, record the conditions here, then build it as its own slice.
+  - **Spec order after that** (owner, 2026-11-01): **a private family-admin section**
+    (scheduling, expenses and more; details in the agent's local memory), then CV & Blog, which is
+    parked. Before specifying it, raise that it clashes with the constitution: the site has no
+    logins (Principle V) and is public, repo included (Principle VI), while that data is private
+    and belongs to other people too. It needs a constitution amendment, or a separate private app.
   - **Fundraising triggers to check at each session start** (T113–T121): the story reviewers' reply
     (T113–T115) and Martlets' reply (T116) are below; T117 is done; T118's timing month and T119's
     tally are below. **T120:** after 4 April 2027, check the card's and page's change of form on the
@@ -70,8 +92,6 @@ Update this as decisions get made — treat it as the source of truth alongside
     https://www.martlets.org.uk/give-in-your-will/) before committing. Commit the approved story
     and `VOICE.md` in a PR; the owner pastes the story into JustGiving and may retitle the page
     after it. Nothing from the draft goes in the repo, PRs or commit messages before approval.
-  - **When Martlets replies:** record the "I'm supporting" logo's conditions; the logo files
-    arrive with the build.
   - **T149** runs at a session start from about 2026-11-23 (30 days after go-live).
   - Remember that the lab wording is decided at the first lab result.
   - **Secrets from the owner** come through a local file outside the repo
@@ -1787,9 +1807,9 @@ project-specific notes.
   test: the phase-by-phase live reviews covered it. SC-001 stays unmeasured.
 - **2026-11-01** — **Next specs and cloud access** (owner answers):
   - **The fitness journey story is spec 003.** CV & Blog is parked.
-  - **Co-parenting comes after it**, ahead of CV & Blog: a section helping the owner and their
-    ex-wife co-parent, covering scheduling, expenses and more. It clashes with the constitution
-    (no logins, a public site and repo) and needs that settled before its spec.
+  - **A private family-admin section comes after it**, ahead of CV & Blog, covering scheduling,
+    expenses and more (details in the agent's local memory). It clashes with the constitution (no
+    logins, a public site and repo) and needs that settled before its spec.
   - **Cloud sessions reach the live site:** the network allowlist has the domain, `www` and
     workers.dev. The apex, `www` (301), workers.dev and the fundraising freshness route all
     answered from the cloud.
@@ -1830,7 +1850,34 @@ project-specific notes.
   - `/speckit-clarify` was skipped: the question rounds covered it, and what's left is in the PR's
     boxes.
 
+- **2026-11-03** — **Journey interview done** (six rounds, in the main conversation). The owner's
+  answers and the drafts stay in `C:\temp\` (FR-036). The story's shape: nine chapters plus a
+  closing section, about 1,800 words. The owner will review all chapters at once rather than one
+  at a time. Research informed the questions only, and the owner's Garmin export was read for
+  aggregates, with figures from it used only once the owner confirmed them.
+- **2026-11-03** — **Goals updated** (owner): half sub-1:40 (1:37:44) and VO2 max 52.5 (53) were
+  achieved on 2 Nov. Brighton is now **sub-3:15**, and the new goals are half sub-1:35, 5k sub-19 and
+  VO2 max 55, the last counting from 2 Nov. Garmin's predictions on 3 Nov were 19:31, 40:42, 1:30:37
+  and 3:18:16, with training status Productive. The weight and body-fat journey start moves to the
+  first October 2025 weigh-in (9 Oct, 126.4 kg, 32.9%), and the 2023 heaviest line stays as it is
+  (#102, #103).
+- **2026-11-03** — **Bot data broke two UI checks, unseen on `main`** (fixed in #102). A new week put
+  a label under the Training chart's last column, and the "Just achieved" heading matched a
+  substring check for "Achieved". It's the BACKLOG item about Playwright only running on UI PRs.
+
 ## Upstream candidates
+
+- Hidden minor axis labels (`visibility: hidden`) still take up layout, so a label at a chart's edge
+  can widen the page at 320 px though nobody sees it. Find these by walking text nodes' ranges, not
+  element boxes.
+- Playwright's `getByRole(..., { name })` matches substrings by default, so real data that adds a
+  heading containing the name ("Just achieved" vs "Achieved") breaks strict mode. Use `exact: true`.
+- In an owner interview, people volunteer private details they then ask to keep out. Redact them in
+  the private notes too (a placeholder plus a rule), and search the public repo for earlier mentions.
+- Owner-volunteered figures from a data export still need the owner's confirmation before a story
+  uses them: the export misses activities recorded in other apps.
+- If the owner asks to review a multi-part draft once at the end, keep a clean read-through file
+  apart from the working notes, with choices marked inline.
 
 - With both cloud and local sessions, a local session auto-loads `PROJECT_MEMORY.md` from whatever
   its checkout holds, so a stale `main` means a stale handoff. Here it pointed at work already done,
