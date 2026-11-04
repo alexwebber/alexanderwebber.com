@@ -6,8 +6,9 @@
 import { ogPath } from '../../../shared/og/render.ts';
 import FundraisingPage from '../components/FundraisingPage.astro';
 import { loadFundraising } from '../data/fundraising.ts';
+import { charityLogo } from '../data/logos.ts';
 
 const data = await loadFundraising();
 ---
 
-<FundraisingPage data={data} image={ogPath('/running/fundraising/')} />
+<FundraisingPage data={data} image={ogPath('/running/fundraising/')} logo={charityLogo(data.current?.campaign)} />

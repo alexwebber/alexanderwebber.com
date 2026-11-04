@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { today as londonToday } from '../../shared/format/dates.ts';
 import { parseTime } from '../../shared/format/parse.ts';
 import type { DataIssue } from '../../shared/storage/index.ts';
-import { OWNER_DIR, PHOTO_FILE, PUBLISHED_DIR, locate, loadRunningData } from './data/store/files.ts';
+import { LOGO_FILE, OWNER_DIR, PHOTO_FILE, PUBLISHED_DIR, locate, loadRunningData } from './data/store/files.ts';
 import type { RacePredictionEntry } from './data/store/index.ts';
 import { SECTION_DEFAULTS } from './data/load.ts';
 import type { RunningSchema } from './data/store/schemas.ts';
@@ -291,6 +291,10 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
     if (!upcomingIds.has(campaign.race_id) && !raceSlugs.has(campaign.race_id)) {
       error(file, entry, 'race_id', `"${campaign.race_id}" is not an id in upcoming-races.yaml or a race under ${OWNER_DIR}/races/`);
     }
+    const logo = campaign.charity.logo;
+    if (logo && !existsSync(join(root, OWNER_DIR, 'logos', logo.file))) {
+      error(file, entry, 'charity.logo.file', `${OWNER_DIR}/logos/${logo.file} does not exist`);
+    }
     const focus = section?.value.focus_race;
     if (focus && campaign.race_id === focus.race_id && campaign.charity.name !== focus.charity.name) {
       error(
@@ -323,6 +327,10 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
       warning(data.campaigns!.file, entry, 'finished', 'is set but the campaign has no published figures, so it would never appear');
     }
   });
+  const usedLogos = new Set(campaigns.flatMap((c) => (c.charity.logo ? [`${OWNER_DIR}/logos/${c.charity.logo.file}`] : [])));
+  for (const file of data.files.filter((f) => LOGO_FILE.test(f) && !usedLogos.has(f))) {
+    warning(file, '', '', 'is not named by any campaign charity.logo in campaigns.yaml, so it is not shown');
+  }
 
   for (const { file, value: story } of data.stories) {
     const entry = `story "${story.campaign}"`;

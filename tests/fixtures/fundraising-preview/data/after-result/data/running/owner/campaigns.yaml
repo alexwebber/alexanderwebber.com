@@ -6,4 +6,7 @@
     registered:
       name: Example hospice group
       number: "000000"
+    logo:
+      file: example-hospice.webp
+      alt: In aid of Example hospice
   page_url: https://www.justgiving.com/page/example-riverside-2026

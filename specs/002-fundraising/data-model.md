@@ -148,6 +148,9 @@ schema.
     registered:
       name: Southern Hospice Group
       number: "256789"
+    logo:
+      file: martlets.webp   # as Martlets supplied it, no conditions (T116)
+      alt: In aid of Martlets
   page_url: https://www.justgiving.com/page/alexanderwebber-brighton-2027
   # finished: true    # stops reads; shows "Final total" (FR-023)
 ```
@@ -159,6 +162,7 @@ schema.
 | `charity.name` | Required. Must equal `section.yaml` `focus_race.charity.name` when `race_id` is the focus race (FR-024) |
 | `charity.url` | Optional, `https://` |
 | `charity.registered` | Optional. `name` and `number` together: the legal charity. Shown as "Part of <name>, registered charity <number>" when `name` differs from `charity.name`, else "Registered charity <number>". Fundraising page only |
+| `charity.logo` | Optional (T116). `file` (a `.webp` or `.avif` in `data/running/owner/logos/`, which must exist) and `alt` (what the logo says, naming the charity) together. Shown on the card, below Donate, and on the page, beside the charity lines. A logo file no campaign names is a warning |
 | `page_url` | Required, `^https://www\.justgiving\.com/page/[a-z0-9-]+$`. A typing mistake that keeps this shape is caught by the first read (404, alert) |
 | `finished` | Optional boolean, default false |
 

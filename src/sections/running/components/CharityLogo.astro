@@ -1,0 +1,53 @@
+---
+// A campaign's charity logo (T116; spec assumption *Charity branding*), on the fundraising card and
+// page: the charity's own file, unaltered, served from this site at 1x and 2x of its display width
+// as AVIF and WebP with a PNG fallback (PNG keeps the transparency). The logo is drawn for a light
+// background and may have transparent parts (Martlets' heart and eye are), so in dark mode it sits
+// on a white tile and looks as supplied; the tile's padding is there in light mode too, so the layout
+// is the same in both. Forced colours leave the tile white for the same reason. No client JS.
+import { Picture } from 'astro:assets';
+import type { CharityLogo } from '../data/logos.ts';
+
+export interface Props {
+  logo: CharityLogo;
+  /** Display width in CSS pixels; the height follows the logo's shape. */
+  width: number;
+}
+
+const { logo, width } = Astro.props;
+---
+
+<div class="charity-logo" data-charity-logo>
+  <Picture
+    src={logo.image}
+    alt={logo.alt}
+    formats={['avif', 'webp']}
+    fallbackFormat="png"
+    widths={[width, width * 2]}
+    width={width}
+    sizes={`${width}px`}
+    loading="eager"
+    decoding="async"
+  />
+</div>
+
+<style>
+  .charity-logo {
+    flex: none;
+    padding: var(--space-1);
+    border-radius: var(--radius);
+    line-height: 0;
+    forced-color-adjust: none;
+  }
+
+  .charity-logo img {
+    display: block;
+    height: auto;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .charity-logo {
+      background: #fff;
+    }
+  }
+</style>

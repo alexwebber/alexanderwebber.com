@@ -130,7 +130,7 @@ export function locate(schema: RunningSchema, value: unknown, path: Path): { ent
   return { entry: '', field: fieldPath(path) };
 }
 
-/** Recognises a data file's schema from its path; undefined for photos and unexpected files. */
+/** Recognises a data file's schema from its path; undefined for photos, logos and unexpected files. */
 function schemaForFile(file: string): RunningSchema | undefined {
   const rel = file.slice(DATA_DIR.length + 1);
   const rules: [RegExp, RunningSchema][] = [
@@ -155,6 +155,8 @@ function schemaForFile(file: string): RunningSchema | undefined {
 }
 
 export const PHOTO_FILE = /^data\/running\/owner\/races\/[^/]+\/[^/]+\.(jpg|webp|avif)$/;
+/** A charity logo, named by a campaign's charity.logo.file (T116). */
+export const LOGO_FILE = /^data\/running\/owner\/logos\/[^/]+\.(webp|avif)$/;
 const IGNORED_FILE = /(^|\/)(\.gitkeep|README\.md)$/;
 
 const schemaSets = new Map<string, SchemaSet<RunningSchema>>();
@@ -197,7 +199,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
   for (const file of data.files) {
     const schema = schemaForFile(file);
     if (!schema) {
-      if (!PHOTO_FILE.test(file) && !IGNORED_FILE.test(file)) {
+      if (!PHOTO_FILE.test(file) && !LOGO_FILE.test(file) && !IGNORED_FILE.test(file)) {
         issues.push({ file, entry: '', field: '', severity: 'error', message: 'is not an expected data file (check the name and folder)' });
       }
       continue;

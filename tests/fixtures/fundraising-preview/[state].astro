@@ -6,7 +6,8 @@ import type { GetStaticPaths } from 'astro';
 import FundraisingCard from '../../../src/sections/running/components/FundraisingCard.astro';
 import FundraisingPage from '../../../src/sections/running/components/FundraisingPage.astro';
 import { loadFundraising } from '../../../src/sections/running/data/fundraising.ts';
-import { PREVIEW_NOW, PREVIEW_STATES, PREVIEW_TODAY, previewStore, type PreviewState } from './store.ts';
+import { charityLogo } from '../../../src/sections/running/data/logos.ts';
+import { PREVIEW_LOGOS, PREVIEW_NOW, PREVIEW_STATES, PREVIEW_TODAY, previewLogoFolder, previewStore, type PreviewState } from './store.ts';
 
 export const getStaticPaths = (() => PREVIEW_STATES.map((state) => ({ params: { state }, props: { state } }))) satisfies GetStaticPaths;
 
@@ -16,14 +17,15 @@ interface Props {
 
 const { state } = Astro.props;
 const data = await loadFundraising(PREVIEW_TODAY, previewStore(state));
+const logo = charityLogo(data.current?.campaign, PREVIEW_LOGOS, previewLogoFolder(state));
 ---
 
-<FundraisingPage data={data} image="/og/running.png" title={`Fundraising preview: ${state} (synthetic data)`} now={PREVIEW_NOW}>
+<FundraisingPage data={data} image="/og/running.png" title={`Fundraising preview: ${state} (synthetic data)`} logo={logo} now={PREVIEW_NOW}>
   {
     data.current && (
       <section aria-labelledby="preview-card" data-preview-card>
         <h2 id="preview-card">The landing card</h2>
-        <FundraisingCard campaign={data.current} now={PREVIEW_NOW} />
+        <FundraisingCard campaign={data.current} logo={logo} now={PREVIEW_NOW} />
       </section>
     )
   }

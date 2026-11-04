@@ -9,29 +9,53 @@
 // "Raised £X" form by itself; a finished campaign has no updated line and no stale notice, because
 // it is no longer read (FR-023). Every figure is in the built HTML, and the only client JS is
 // FundraisingUpdated's.
+//
+// The charity's logo, when the campaign has one (T116), sits at the bottom right, beside the updated
+// line and the page link: Donate has almost no room to spare on a phone's first screen, so nothing is
+// added above it.
 import type { CampaignView } from '../data/fundraising.ts';
+import type { CharityLogo as Logo } from '../data/logos.ts';
+import CharityLogo from './CharityLogo.astro';
 import FundraisingFigures from './FundraisingFigures.astro';
 import FundraisingUpdated from './FundraisingUpdated.astro';
 import '../styles/goal-card.css';
 
 export interface Props {
   campaign: CampaignView;
+  /** The charity's logo, from charityLogo(). */
+  logo?: Logo | undefined;
   /** The build time; tests and previews pin it. */
   now?: Date;
 }
 
-const { campaign, now } = Astro.props;
+const { campaign, logo, now } = Astro.props;
 const id = `fundraising-${campaign.campaign.id}`;
 ---
 
 <article class="fundraising-card" aria-labelledby={id} data-campaign-id={campaign.campaign.id}>
   <h3 class="fundraising-card-title" id={id}>Fundraising</h3>
   <FundraisingFigures campaign={campaign} />
-  {campaign.phase !== 'finished' && <FundraisingUpdated campaignId={campaign.campaign.id} lastReadAt={campaign.lastReadAt} staleAfterHours={campaign.staleAfterHours} {...now ? { now } : {}} />}
-  <p class="fundraising-card-more"><a href="/running/fundraising/">See the fundraising page</a></p>
+  <div class="fundraising-card-foot">
+    <div>
+      {campaign.phase !== 'finished' && <FundraisingUpdated campaignId={campaign.campaign.id} lastReadAt={campaign.lastReadAt} staleAfterHours={campaign.staleAfterHours} {...now ? { now } : {}} />}
+      <p class="fundraising-card-more"><a href="/running/fundraising/">See the fundraising page</a></p>
+    </div>
+    {logo && <CharityLogo logo={logo} width={64} />}
+  </div>
 </article>
 
 <style>
+  .fundraising-card-foot {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .fundraising-card-foot > :global(.charity-logo) {
+    margin-top: var(--space-3);
+  }
+
   .fundraising-card-more {
     margin: var(--space-2) 0 0;
     font-size: var(--step--1);

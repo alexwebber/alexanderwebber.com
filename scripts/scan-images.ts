@@ -4,6 +4,7 @@
 // means a photo skipped that step.
 //
 //   node scripts/scan-images.ts
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import sharp from 'sharp';
 import { isMain, walk } from './lib/walk.ts';
@@ -18,9 +19,13 @@ export interface ImageFinding {
   message: string;
 }
 
-/** Metadata kinds present in an image (empty when clean). */
+/**
+ * Metadata kinds present in an image (empty when clean). sharp is given the bytes, not the path:
+ * given a path it keeps the file open in its cache, so a caller in the same process (the stale drill)
+ * couldn't then delete it on Windows.
+ */
 export async function metadataKinds(path: string): Promise<string[]> {
-  const meta = await sharp(path).metadata();
+  const meta = await sharp(readFileSync(path)).metadata();
   const kinds: string[] = [];
   if (meta.exif?.length) kinds.push('EXIF');
   if (meta.xmp?.length) kinds.push('XMP');
@@ -42,7 +47,7 @@ export async function scanImageFiles(root: string, files: string[]): Promise<Ima
       const kinds = await metadataKinds(path);
       if (kinds.length > 0) findings.push({ file, message: `contains ${kinds.join(', ')} metadata (strip it before committing)` });
       if (isOwnerPhoto) {
-        const { width = 0, height = 0 } = await sharp(path).metadata();
+        const { width = 0, height = 0 } = await sharp(readFileSync(path)).metadata();
         if (Math.max(width, height) > MAX_LONG_EDGE) {
           findings.push({ file, message: `is ${width}x${height}; the long edge must be at most ${MAX_LONG_EDGE} px` });
         }

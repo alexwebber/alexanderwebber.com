@@ -2,4 +2,7 @@
   race_id: seaside-2027
   charity:
     name: Example hospice
+    logo:
+      file: example-hospice.webp
+      alt: In aid of Example hospice
   page_url: https://www.justgiving.com/page/example-seaside-2027

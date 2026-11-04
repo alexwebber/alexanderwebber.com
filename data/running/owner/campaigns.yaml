@@ -10,5 +10,8 @@
     registered:
       name: Southern Hospice Group
       number: "256789"
+    logo:
+      file: martlets.webp   # as Martlets supplied it, no conditions (T116)
+      alt: In aid of Martlets
   page_url: https://www.justgiving.com/page/alexanderwebber-brighton-2027
   # finished: true    # stops reads; shows "Final total" (FR-023)

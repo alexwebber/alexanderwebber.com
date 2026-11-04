@@ -166,6 +166,45 @@ describe('fundraising validation', () => {
   });
 });
 
+describe('charity logos (T116)', () => {
+  const withLogo = (file: string, alt = 'In aid of Martlets') => campaign('a', { charity: `{ name: Martlets, logo: { file: ${file}, alt: ${alt} } }` });
+  const LOGOS = `${OWNER}/logos`;
+
+  it('passes a logo the campaign names', () => {
+    owner();
+    repo.write(CAMPAIGNS, withLogo('martlets.webp'));
+    repo.write(`${LOGOS}/martlets.webp`, 'image bytes');
+    expect(issues('error')).toEqual([]);
+    expect(issues('warning')).toEqual([]);
+  });
+
+  it('needs the named file to exist', () => {
+    owner();
+    repo.write(CAMPAIGNS, withLogo('martlets.webp'));
+    expect(issues('error')).toEqual([`${CAMPAIGNS}  campaign "a"  field charity.logo.file: ${LOGOS}/martlets.webp does not exist`]);
+  });
+
+  it('takes only a .webp or .avif file name, with alt text', () => {
+    owner();
+    repo.write(CAMPAIGNS, withLogo('Martlets Logo.png'));
+    expect(issues('error')).toEqual([
+      `${CAMPAIGNS}  campaign "a"  field charity.logo.file: "Martlets Logo.png" is not a logo file name (lowercase letters, digits and hyphens, ending .webp or .avif, e.g. martlets.webp)`,
+    ]);
+    repo.write(CAMPAIGNS, campaign('a', { charity: '{ name: Martlets, logo: { file: martlets.webp } }' }));
+    repo.write(`${LOGOS}/martlets.webp`, 'image bytes');
+    expect(issues('error')).toEqual([`${CAMPAIGNS}  campaign "a"  field charity.logo.alt: is required`]);
+  });
+
+  it('warns about a logo no campaign names, and rejects other files in the folder', () => {
+    owner();
+    repo.write(CAMPAIGNS, campaign('a'));
+    repo.write(`${LOGOS}/martlets.webp`, 'image bytes');
+    repo.write(`${LOGOS}/martlets.png`, 'image bytes');
+    expect(issues('warning')).toEqual([`${LOGOS}/martlets.webp: is not named by any campaign charity.logo in campaigns.yaml, so it is not shown`]);
+    expect(issues('error')).toEqual([`${LOGOS}/martlets.png: is not an expected data file (check the name and folder)`]);
+  });
+});
+
 describe('the story gate (FR-052, SC-007, quickstart.md §9)', () => {
   const STORY = `${OWNER}/stories/brighton-2027.yaml`;
   const TEXT = 'A made-up first paragraph, £1 and all: café.\n\nA made-up second paragraph.\n';

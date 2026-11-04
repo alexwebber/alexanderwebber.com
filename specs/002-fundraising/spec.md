@@ -504,7 +504,8 @@ current with no change other than the site's files.
   fundraisers on request (fundraising@martlets.org.uk; it is not a public download, and the toolkit
   says "Our brand is really important to us"), so the site uses that logo as supplied, following
   any conditions Martlets gives, on the card and the fundraising page. Until it arrives, the
-  charity is named in text only.
+  charity is named in text only. *Amended 2026-11-04 (T116):* Martlets sent an "In aid of Martlets"
+  logo with no conditions, and it is used unaltered; the charity is still named in text too.
 - **Share image**: the fundraising page's share image shows the charity, race and total raised at
   the time of the site update, because a figure helps fundraising (social apps may show an older
   cached image). The landing page's existing share image is unchanged.

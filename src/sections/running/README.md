@@ -141,7 +141,8 @@ target, the supporters and a Donate link to the JustGiving page, on a landing ca
 - **Adding a campaign** (FR-020): create its JustGiving page, then add an entry to `campaigns.yaml`
   in a PR: `id` (a slug of at most 30 characters, which names its published file and its alert
   label), `race_id` (an id in `upcoming-races.yaml` or a race under `races/`), `charity` (`name`,
-  optional `url`, and optional `registered` name and number) and `page_url`
+  optional `url`, optional `registered` name and number, and an optional `logo`: a `file` in
+  `data/running/owner/logos/` and its `alt` text) and `page_url`
   (`https://www.justgiving.com/page/<name>`). The target is never set here: it is read from the page
   (FR-021). For the focus race's campaign, `charity.name` must equal `section.yaml`'s
   `focus_race.charity.name`. The merge starts a refresh, whose first good read publishes the file, and

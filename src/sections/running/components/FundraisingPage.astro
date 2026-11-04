@@ -19,12 +19,18 @@
 //
 // The chart's table lists the stored days, date and total only: the page has no need to show how
 // supporters changed by day. No client JS but FundraisingUpdated's.
+//
+// The current campaign's charity logo, when it has one (T116), sits to the right of the charity lines,
+// under the race: beside the race too, a phone's narrow column couldn't hold the race's date, which
+// doesn't wrap. Past campaigns are text only.
 import ChartFigure from '../../../shared/charts/ChartFigure.astro';
 import LineChart from '../../../shared/charts/LineChart.astro';
 import { formatDate, formatLongDate, londonDate } from '../../../shared/format/dates.ts';
 import type { FundraisingData } from '../data/fundraising.ts';
+import type { CharityLogo as Logo } from '../data/logos.ts';
 import { chartPoints, chartSummary, poundsText, registeredText } from '../domain/fundraising.ts';
 import CampaignStory from './CampaignStory.astro';
+import CharityLogo from './CharityLogo.astro';
 import FundraisingFigures from './FundraisingFigures.astro';
 import FundraisingUpdated from './FundraisingUpdated.astro';
 import PastCampaigns from './PastCampaigns.astro';
@@ -35,11 +41,13 @@ export interface Props {
   /** Share image path. */
   image: string;
   title?: string;
+  /** The current campaign's charity logo, from charityLogo(). */
+  logo?: Logo | undefined;
   /** The build time; tests and previews pin it. */
   now?: Date;
 }
 
-const { data, image, title, now } = Astro.props;
+const { data, image, title, logo, now } = Astro.props;
 const { current, past, today } = data;
 const lead = current ?? past[0];
 const description = lead
@@ -63,8 +71,11 @@ const chartEnd = current?.phase === 'finished' ? [londonDate(new Date(current.la
             {current.race.name} <span class="fundraising-race-date">· {formatLongDate(current.race.date)}</span>
           </h2>
           <div class="fundraising-who">
-            <p data-fundraising-for>For {current.campaign.charity.url ? <a href={current.campaign.charity.url}>{current.campaign.charity.name}</a> : current.campaign.charity.name}</p>
-            {registered && <p class="fundraising-registered" data-fundraising-registered>{registered}</p>}
+            <div>
+              <p data-fundraising-for>For {current.campaign.charity.url ? <a href={current.campaign.charity.url}>{current.campaign.charity.name}</a> : current.campaign.charity.name}</p>
+              {registered && <p class="fundraising-registered" data-fundraising-registered>{registered}</p>}
+            </div>
+            {logo && <CharityLogo logo={logo} width={80} />}
           </div>
           <FundraisingFigures campaign={current} showCharity={false} />
           {current.phase !== 'finished' && <FundraisingUpdated campaignId={current.campaign.id} lastReadAt={current.lastReadAt} staleAfterHours={current.staleAfterHours} {...now ? { now } : {}} />}
@@ -120,6 +131,10 @@ const chartEnd = current?.phase === 'finished' ? [londonDate(new Date(current.la
   }
 
   .fundraising-who {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    justify-content: space-between;
     margin-bottom: var(--space-3);
   }
 
