@@ -6,6 +6,8 @@ schema_version: 1
 training_status:
   - as_of: 2026-10-23
     status: productive
+  - as_of: 2026-11-03
+    status: productive
 
 race_predictions:
   - as_of: 2026-10-23
@@ -13,3 +15,8 @@ race_predictions:
     10k: "40:56"
     half: "1:32:01"
     marathon: "3:25:18"
+  - as_of: 2026-11-03
+    5k: "19:31"
+    10k: "40:42"
+    half: "1:30:37"
+    marathon: "3:18:16"

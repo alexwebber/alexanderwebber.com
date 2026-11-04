@@ -1,45 +1,45 @@
 # Running goals (schemas/owner/goals.schema.json). Priority 1 is the highest.
-# Owner answers of 2026-10-18 (PROJECT_MEMORY.md, "Phase 3 goal answers").
+# Owner answers of 2026-10-18 (PROJECT_MEMORY.md, "Phase 3 goal answers"), updated 2026-11-03:
+# Brighton tightened to sub-3:15, and new half, 5k and VO2 max targets after three were achieved;
+# 10k sub-40 after sub-43 was achieved on 4 Nov (owner, 2026-11-04).
 
-- id: brighton-sub-3-20
+- id: brighton-sub-3-15
   type: race_time
-  title: Brighton Marathon under 3:20
+  title: Brighton Marathon under 3:15
   priority: 1
   featured: true
   linked_race: brighton-2027
   deadline: 2027-04-04
   target:
     distance: marathon
-    time: "3:20:00"
+    time: "3:15:00"
 
-- id: half-sub-1-40
+- id: half-sub-1-35
   type: race_time
-  title: Half marathon under 1:40
+  title: Half marathon under 1:35
   priority: 2
   featured: true
   target:
     distance: half
-    time: "1:40:00"
+    time: "1:35:00"
 
-- id: 10k-sub-43
+- id: 10k-sub-40
   type: race_time
-  title: 10k under 43 minutes
+  title: 10k under 40 minutes
   priority: 3
   featured: true
   target:
     distance: 10k
-    time: "43:00"
+    time: "40:00"
 
-# Already achieved (19:44 on 17 Oct 2026); the evaluator finds the effort itself. Featured
-# anyway, as a major milestone (owner, PR #33).
-- id: 5k-sub-20
+- id: 5k-sub-19
   type: race_time
-  title: 5k under 20 minutes
+  title: 5k under 19 minutes
   priority: 4
   featured: true
   target:
     distance: 5k
-    time: "20:00"
+    time: "19:00"
 
 # Only data from October 2025 counts toward achievement. Progress runs from the start of the
 # current journey, 9 Oct 2025 (126.4 kg, 32.9% body fat; owner, 2026-11-03, moved from 2 Jun 2025),
@@ -74,14 +74,62 @@
     value: 17.5
     direction: at_most
 
-# "Superior" for the owner's age. Garmin reports whole numbers, so 53 is the first value that counts.
+# Set the day after 52.5 was achieved (owner, 2026-11-03). It counts from that day, 2 Nov 2026,
+# so progress runs from its 53.
+- id: vo2max-55
+  type: metric
+  title: VO2 max 55
+  priority: 7
+  featured: true
+  created: 2026-11-02
+  target:
+    metric: vo2max
+    value: 55
+    direction: at_least
+
+# Achieved goals. Each stays featured through its 14-day "New" window, then leaves the landing
+# page (the next goal at its distance or metric replaces it) and stays on the Goals page.
+
+# Achieved with 1:37:44 on 2 Nov 2026.
+- id: half-sub-1-40
+  type: race_time
+  title: Half marathon under 1:40
+  priority: 8
+  featured: true
+  target:
+    distance: half
+    time: "1:40:00"
+
+# Achieved with 19:44 on 17 Oct 2026; the evaluator finds the effort itself. Off the landing
+# page now that sub-19 replaces it (it was featured as a major milestone, owner, PR #33).
+- id: 5k-sub-20
+  type: race_time
+  title: 5k under 20 minutes
+  priority: 9
+  featured: false
+  target:
+    distance: 5k
+    time: "20:00"
+
+# "Superior" for the owner's age. Garmin reports whole numbers, so 53 is the first value that
+# counts. Achieved with 53 on 2 Nov 2026.
 - id: vo2max-52-5
   type: metric
   title: VO2 max 52.5
-  priority: 7
+  priority: 10
   featured: true
   created: 2025-10-01
   target:
     metric: vo2max
     value: 52.5
     direction: at_least
+
+# Achieved on 4 Nov 2026.
+- id: 10k-sub-43
+  type: race_time
+  title: 10k under 43 minutes
+  priority: 11
+  featured: true
+  target:
+    distance: 10k
+    time: "43:00"
