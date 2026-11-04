@@ -54,8 +54,8 @@ Update this as decisions get made — treat it as the source of truth alongside
     and most carry a figure or two in prose, several of them Garmin-sourced, so prose figures need
     FR-014's attribution too. One chapter links to the fundraising page. The owner
     suggests a few photos; amend FR-062 for race crowds in the plan's PR.
-  - **Goals follow-up, from 17 Nov 2026:** unfeature `half-sub-1-40` and `vo2max-52-5` (their "New"
-    window ends 16 Nov) and set `featured_goal_limit` back to 7, in a PR.
+  - **Goals follow-up, from 19 Nov 2026:** unfeature `half-sub-1-40`, `vo2max-52-5` and `10k-sub-43`
+    (their "New" windows end 16 and 18 Nov) and set `featured_goal_limit` back to 7, in a PR.
   - **Martlets logo (T116):** Martlets OK'd the "I'm supporting" logo and sent a transparent
     version (owner, 2026-11-03). Ask the owner to put the file in `C:\temp\` with any conditions
     from the email, record the conditions here, then build it as its own slice.
@@ -1857,8 +1857,8 @@ project-specific notes.
   written on 2026-11-04. Research informed the questions only, and the owner's Garmin export was read for
   aggregates, with figures from it used only once the owner confirmed them.
 - **2026-11-03** — **Goals updated** (owner): half sub-1:40 (1:37:44) and VO2 max 52.5 (53) were
-  achieved on 2 Nov. Brighton is now **sub-3:15**, and the new goals are half sub-1:35, 5k sub-19 and
-  VO2 max 55, the last counting from 2 Nov. Garmin's predictions on 3 Nov were 19:31, 40:42, 1:30:37
+  achieved on 2 Nov, and the 10k sub-43 (41:43) on 4 Nov. Brighton is now **sub-3:15**, and the new
+  goals are half sub-1:35, 10k sub-40, 5k sub-19 and VO2 max 55, the last counting from 2 Nov. Garmin's predictions on 3 Nov were 19:31, 40:42, 1:30:37
   and 3:18:16, with training status Productive. The weight and body-fat journey start moves to the
   first October 2025 weigh-in (9 Oct, 126.4 kg, 32.9%), and the 2023 heaviest line stays as it is
   (#102, #103).
