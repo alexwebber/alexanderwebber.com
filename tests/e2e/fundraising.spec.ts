@@ -476,12 +476,70 @@ test.describe('the live last-read time (FR-004, FR-005)', () => {
 });
 
 // The real page, with expectations from the data the build read (FR-040, SC-006).
+test.describe('the charity logo (T116)', () => {
+  const logo = (within: Locator) => within.locator('[data-charity-logo]');
+  const img = (within: Locator) => logo(within).getByRole('img', { name: 'In aid of Example hospice' });
+  const rect = (l: Locator) => l.evaluate((el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; });
+  const backing = (within: Locator) => logo(within).evaluate((el) => getComputedStyle(el).backgroundColor);
+
+  test('the card shows it at 64px, below Donate, and the page at 80px, beside the charity under the race', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 780 });
+    await open(page, 'active');
+    for (const [within, width] of [[card(page), 64], [campaign(page), 80]] as const) {
+      await expect(img(within)).toBeVisible();
+      expect(await img(within).evaluate((el: HTMLImageElement) => [el.complete && el.naturalWidth > 0, Math.round(el.getBoundingClientRect().width)])).toEqual([true, width]);
+    }
+    expect((await rect(logo(card(page)))).top).toBeGreaterThan((await rect(donate(card(page)))).bottom);
+    const heading = await rect(campaign(page).getByRole('heading', { level: 2 }));
+    const charity = await rect(campaign(page).locator('[data-fundraising-for]'));
+    const pageLogo = await rect(logo(campaign(page)));
+    expect(pageLogo.top).toBeGreaterThanOrEqual(heading.bottom);
+    expect(pageLogo.left).toBeGreaterThan(charity.right);
+    expect(Math.abs(pageLogo.top - charity.top)).toBeLessThan(2);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  });
+
+  test('it is served from this site, at its display width and twice that', async ({ page }) => {
+    await open(page, 'active');
+    const sources = await logo(card(page)).locator('source, img').evaluateAll((els) => els.map((el) => el.getAttribute('srcset') ?? ''));
+    for (const srcset of sources) expect(srcset).toMatch(/^\/_astro\/\S+ 64w, \/_astro\/\S+ 128w$/);
+  });
+
+  test('a finished campaign keeps it, with space above it', async ({ page }) => {
+    await open(page, 'finished');
+    await expect(img(card(page))).toBeVisible();
+    expect((await rect(logo(card(page)))).top).toBeGreaterThan((await rect(card(page).locator('[data-fundraising-final]'))).bottom);
+  });
+
+  test('a charity without a logo shows none, on the card or the page', async ({ page }) => {
+    await open(page, 'second-campaign');
+    await expect(logo(page.locator('body'))).toHaveCount(0);
+  });
+
+  test('in dark mode it sits on a white tile, so its transparent heart stays white; in light mode it has none', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await open(page, 'active');
+    expect(await backing(card(page))).toBe('rgb(255, 255, 255)');
+    expect(await backing(campaign(page))).toBe('rgb(255, 255, 255)');
+    const dark = await rect(logo(card(page)));
+    await page.emulateMedia({ colorScheme: 'light' });
+    expect(await backing(card(page))).toBe('rgba(0, 0, 0, 0)');
+    expect(await rect(logo(card(page)))).toEqual(dark);
+  });
+
+  test('forced colours keep the white tile in dark mode', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark', forcedColors: 'active' });
+    await open(page, 'active');
+    expect(await backing(card(page))).toBe('rgb(255, 255, 255)');
+  });
+});
+
 test.describe('/running/fundraising/ on real data', () => {
   const REPO = resolve(import.meta.dirname, '../..');
   const owner = (file: string) => parse(readFileSync(join(REPO, 'data/running/owner', file), 'utf8'));
   const section = owner('section.yaml') as { focus_race: { race_id: string } };
   const races = (owner('upcoming-races.yaml') ?? []) as { id: string; name: string; date: string }[];
-  const real = ((owner('campaigns.yaml') ?? []) as { id: string; race_id: string; page_url: string; charity: { name: string; url?: string; registered?: { name: string; number: string } } }[]).find(
+  const real = ((owner('campaigns.yaml') ?? []) as { id: string; race_id: string; page_url: string; charity: { name: string; url?: string; registered?: { name: string; number: string }; logo?: { file: string; alt: string } } }[]).find(
     (c) => c.race_id === section.focus_race.race_id,
   );
   const file = real && join(REPO, 'data/running/published/fundraising', `${real.id}.json`);
@@ -506,6 +564,20 @@ test.describe('/running/fundraising/ on real data', () => {
     await expect(updated(campaign(page))).toHaveText(/^Figures updated /);
     await expect(page.locator('[data-last-updated-text]')).toHaveText(/^(Last updated |Not updated yet)/);
     await expect(chart(page)).toHaveCount(published!.points.length >= 2 ? 1 : 0);
+  });
+
+  test('shows the charity logo on the page and the landing card when the campaign names one (T116)', async ({ page }) => {
+    const logo = real!.charity.logo;
+    for (const [path, within] of [['/running/fundraising/', campaign(page)], ['/running/', card(page)]] as const) {
+      await page.goto(path);
+      const img = within.locator('[data-charity-logo] img');
+      if (!logo) {
+        await expect(img).toHaveCount(0);
+        continue;
+      }
+      await expect(img).toHaveAttribute('alt', logo.alt);
+      expect(await img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0 && new URL(el.currentSrc).origin === location.origin)).toBe(true);
+    }
   });
 
   test('shows a story section only once the campaign has an approved story (FR-044)', async ({ page }) => {

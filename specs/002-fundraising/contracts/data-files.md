@@ -9,6 +9,7 @@ Schema 2020-12 in `schemas/` is authoritative. Field rules: [data-model.md](../d
 data/running/published/fundraising/<campaign-id>.json   schemas/published/fundraising-campaign.schema.json
 data/running/owner/campaigns.yaml                       schemas/owner/campaigns.schema.json
 data/running/owner/stories/<campaign-id>.yaml           schemas/owner/campaign-story.schema.json
+data/running/owner/logos/<name>.webp|.avif              (an image; named by a campaign's charity.logo, T116)
 ```
 
 **Where these are registered** (each rejects unknown files or schemas today):

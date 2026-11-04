@@ -3,6 +3,9 @@
   charity:
     name: Example hospice
     url: https://example.org/
+    logo:
+      file: example-hospice.webp
+      alt: In aid of Example hospice
   page_url: https://www.justgiving.com/page/example-seaside-2026
   finished: true
 - id: lakeside-2027

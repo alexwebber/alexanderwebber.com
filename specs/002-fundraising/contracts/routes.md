@@ -61,8 +61,12 @@ styled as a button in the Running accent, at least 44 px tall, opening in the sa
 No JustGiving or Blackbaud logo (research.md R3). A new token pair for the button's text and background
 joins the AA contrast suite if the existing ones don't pass.
 
-**The charity's logo** isn't built. The "I'm supporting" logo and its conditions haven't arrived, so the
-charity is named in text, and the layout holds no space for it. Adding it later is a small follow-up.
+**The charity's logo** (T116), when the campaign's `charity.logo` names one: at the bottom right of the card,
+64 px wide, beside the updated line and the page link, below Donate, because Donate has about 3 px to spare on
+a 360 x 780 first screen. On the page it sits 80 px wide beside the charity lines, under the race heading,
+whose date doesn't wrap. It is the charity's file, unaltered, served from this site as AVIF, WebP and PNG at
+1x and 2x, with its `alt` text. In dark mode it sits on a white tile, as the logo has transparent parts; the
+tile's padding is there in light mode too, so the layout is the same. Past campaigns are text only.
 
 ## Fundraising page (`pages/fundraising.astro`, `components/FundraisingPage.astro`)
 

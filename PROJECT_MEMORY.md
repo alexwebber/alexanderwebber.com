@@ -33,13 +33,13 @@ Update this as decisions get made — treat it as the source of truth alongside
   done (2026-11-03), and the owner approved every chapter as written (2026-11-04).** #102–#104 are
   merged and live (owner's review: fine). **The plan for 003 is written** (`003-journey-plan` PR,
   raised 2026-11-04), with nothing visible until the content PR. **#105 (the plan) merged** with all
-  ten boxes ticked. **Spec Kit 1.3.0 is in a PR**, upgraded with the playbook's new script
-  (sdd-playbook#14).
-  - **Next session, first: check both upgrade PRs merged** (this repo's `chore-speckit-1.3.0` and
-    sdd-playbook#14) with `main`'s Gate green. If sdd-playbook#14 changed in review, nothing here
-    needs redoing: the script isn't installed into projects. **Then the Martlets logo slice**
-    (below), then `/speckit-tasks` and `/speckit-analyze` for 003 as subagents, using the plan's
-    delivery order (slices 1–7) (owner's order, 2026-11-04).
+  ten boxes ticked. **Spec Kit 1.3.0 is merged** (#106, sdd-playbook#14; `main`'s Gate green,
+  deploy included). **The Martlets logo (T116) is in a PR** (`002-martlets-logo`).
+  - **Next session, first: check the logo PR merged** with every box ticked and `main`'s Gate green,
+    deploy included, then a **short guided review of the logo on the live site** (card and page,
+    phone and desktop, light and dark) and a question round on what the owner saw. **Then**
+    `/speckit-tasks` and `/speckit-analyze` for 003 as subagents, using the plan's delivery order
+    (slices 1–7) (owner's order, 2026-11-04).
   - **The journey interview is done (2026-11-03).** Every chapter has a draft, in
     `C:\temp\journey-story-review.md` (clean read-through), with working notes in
     `C:\temp\journey-draft.md` and answers in `C:\temp\journey-answers.md`. **Nothing from them
@@ -63,19 +63,15 @@ Update this as decisions get made — treat it as the source of truth alongside
     label (FR-039). Draft them from the approved text, in the owner's voice.
   - **Goals follow-up, from 19 Nov 2026:** unfeature `half-sub-1-40`, `vo2max-52-5` and `10k-sub-43`
     (their "New" windows end 16 and 18 Nov) and set `featured_goal_limit` back to 7, in a PR.
-  - **Martlets logo (T116):** Martlets OK'd their logo with **no conditions** (owner, 2026-11-04) and
-    sent a transparent PNG, now at `C:\temp\martlets-logo.png` (1514 x 2151, portrait). It reads
-    **"In aid of Martlets"**, not "I'm supporting": a pink hand-lettered "In aid of" and underline over
-    a blue martlet with a white heart and the blue "Martlets" wordmark. Use it unaltered. Build it as
-    its own slice; check its blue and pink on the dark theme's surface (it's transparent, so it may
-    need a light backing in dark mode) and give it alt text naming the charity.
+  - **Martlets logo (T116):** built (see the decisions log, 2026-11-04). The original PNG stays at
+    `C:\temp\martlets-logo.png`; the repo holds a pixel-exact lossless WebP of it.
   - **Spec order after that** (owner, 2026-11-01): **a private family-admin section**
     (scheduling, expenses and more; details in the agent's local memory), then CV & Blog, which is
     parked. Before specifying it, raise that it clashes with the constitution: the site has no
     logins (Principle V) and is public, repo included (Principle VI), while that data is private
     and belongs to other people too. It needs a constitution amendment, or a separate private app.
   - **Fundraising triggers to check at each session start** (T113–T121): the story reviewers' reply
-    (T113–T115) and Martlets' reply (T116) are below; T117 is done; T118's timing month and T119's
+    (T113–T115) is below; T116 (the logo) and T117 are done; T118's timing month and T119's
     tally are below. **T120:** after 4 April 2027, check the card's and page's change of form on the
     live site, and once the owner records the result, that it shows beside "Raised £X for Martlets"
     (quickstart.md §13). **T121:** at a session in June 2027, before the page expires on 3 July
@@ -1906,8 +1902,47 @@ project-specific notes.
   - **`/speckit-specify` loads its template through `resolve-template.ps1`**, so a preset that
     composes templates works. Tested: it returns the core spec template, and the constitution
     template is still the house one.
+- **2026-11-04** — **#106 and sdd-playbook#14 merged**; `main`'s Gate after #106 finished green,
+  deploy included. No open security alerts, issues or red runs; `check-versions.ps1` reports nothing
+  important (`gh` and `uv` bumps are routine, skipped).
+- **2026-11-04** — **Martlets logo built** (T116, `002-martlets-logo` PR). Owner picks, all on the
+  recommendation:
+  - **Card:** bottom right, 64 px wide, beside "Figures updated" and the page link, **below Donate**,
+    because Donate ends at 777 px on a 360 x 780 phone (3 px to spare). Donate's place is unchanged.
+  - **Page:** 80 px wide, beside the charity lines. It was first beside the race heading too, but at
+    320 px the heading's column couldn't hold "· 18 October 2026" (it doesn't wrap), so the page
+    scrolled sideways; it now sits under the heading. Donate moves from 556 to 612 px on a phone.
+  - **Dark mode:** a white tile, because the logo's heart and eye are **transparent**, not white, so
+    the dark surface would show through. The tile's padding is there in light mode too (same layout),
+    and forced colours keep it white. Blue `#1D71B8` reads at about 3.4:1 on the dark surface, pink
+    `#EC64A1` at 5.6:1.
+  - **Data, not code:** `campaigns.yaml` `charity.logo` (`file`, `alt`) names a file in
+    `data/running/owner/logos/` (`.webp`/`.avif` only, as owner photos are). A missing file is an
+    error and an unnamed one a warning, so a later charity's campaign never shows Martlets' mark. Alt
+    text: "In aid of Martlets".
+  - **Unaltered:** the PNG became a lossless WebP with `exact`, so every byte of every pixel matches,
+    the hidden colour under transparent pixels included (32 KB, no metadata). Astro serves it at 1x
+    and 2x as AVIF, WebP and PNG (2–11 KB each); the original isn't shipped.
+  - **Previews** get a made-up shapes-only logo for "Example hospice" (transparent heart included);
+    "Example shelter" has none, which tests the no-logo case.
+  - **`scan-images` now hands sharp the bytes, not the path.** Given a path, sharp keeps the file open
+    in its cache, so the stale drill (which runs the gate in-process) couldn't delete its scratch copy
+    on Windows: EPERM, even with 11 s of retries, until the worker exited. CI's Linux never saw it.
+  - **Against `main`:** `dist/` differs only in `/running/`, `/running/fundraising/`, the landing's
+    own CSS file (same count of stylesheets) and the 12 logo files. Lighthouse: every page 100/100.
+  - **Tests:** Vitest 822, Playwright 593 passed (55 skipped by design), pytest 665 (1 skipped),
+    `astro check` clean, gate green on a deploy build (scan-privacy without the R2 map).
 
 ## Upstream candidates
+
+- sharp given a file path keeps the file open in its cache (`sharp.cache` holds up to 20 files), so
+  an in-process caller can't delete it on Windows (EPERM, retries don't help) until the process exits.
+  Pass `readFileSync(path)` for read-only checks.
+- To convert a supplied logo without altering it, use lossless WebP with `exact: true` and compare the
+  raw RGBA of both files; without `exact`, the hidden colour under transparent pixels changes.
+- A cosmetic element beside a heading that doesn't wrap (`white-space: nowrap` dates) can push a
+  320 px page into sideways scrolling; the existing "fits 320px" tests across every preview state
+  caught it, where the active state alone looked fine.
 
 - `python -I` (isolated mode) also ignores user site-packages, so a module installed with
   `pip install --user` (PyYAML here) is missing. Safe scripts in a folder you created don't need it.

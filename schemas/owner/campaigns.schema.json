@@ -44,6 +44,24 @@
                 "x-error": "is not a charity number (digits only, in quotes)"
               }
             }
+          },
+          "logo": {
+            "description": "The charity's logo as it supplied it, shown on the card and the fundraising page (T116).",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["file", "alt"],
+            "properties": {
+              "file": {
+                "description": "A file in data/running/owner/logos/, e.g. martlets.webp.",
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*\\.(webp|avif)$",
+                "x-error": "is not a logo file name (lowercase letters, digits and hyphens, ending .webp or .avif, e.g. martlets.webp)"
+              },
+              "alt": {
+                "description": "Alternative text: what the logo says, naming the charity, e.g. \"In aid of Martlets\".",
+                "$ref": "../defs.schema.json#/$defs/text"
+              }
+            }
           }
         }
       },

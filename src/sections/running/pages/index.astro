@@ -25,6 +25,7 @@ import SectionLinks from '../components/SectionLinks.astro';
 import StoryLink from '../components/StoryLink.astro';
 import ThisWeek from '../components/ThisWeek.astro';
 import { loadLanding } from '../data/landing.ts';
+import { charityLogo } from '../data/logos.ts';
 import { sectionSettings } from '../data/load.ts';
 import { viewAttribution } from '../domain/attribution.ts';
 import { countdownText } from '../domain/races.ts';
@@ -59,7 +60,7 @@ const description = `Alexander Webber's running: ${raceLine}Goals, this week's t
   {
     focus ? (
       <Hero focus={focus} today={today} hasCard={fundraising !== undefined}>
-        {fundraising && <FundraisingCard slot="fundraising" campaign={fundraising} />}
+        {fundraising && <FundraisingCard slot="fundraising" campaign={fundraising} logo={charityLogo(fundraising.campaign)} />}
       </Hero>
     ) : null
   }

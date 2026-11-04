@@ -8,10 +8,14 @@
 // renders them at /fundraising-preview/<state>/ through the real components. Deterministic; the
 // output is committed.
 //
+// "Example hospice" has a made-up logo (T116): shapes only, no text, portrait like Martlets', with a
+// transparent heart so the dark-mode tile is tested. "Example shelter" has none.
+//
 //   node tests/fixtures/fundraising-preview/generate.ts
 import { createHash } from 'node:crypto';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import sharp from 'sharp';
 
 const ROOT = resolve(import.meta.dirname, 'data');
 rmSync(ROOT, { recursive: true, force: true });
@@ -144,10 +148,22 @@ const STATES: Record<string, State> = {
 const raceYaml = ({ id, name, date, distance, result = '3:40:00' }: Race) => `slug: ${id}\nname: ${name}\ndate: ${date}\ndistance: ${distance}\nofficial_time: "${result}"\n`;
 const upcomingYaml = ({ id, name, date, distance, result }: Race) => `- { id: ${id}, name: ${name}, date: ${date}, distance: ${distance}, target_time: "3:20:00"${result ? `, result_ref: ${id}` : ''} }\n`;
 
+const LOGO_CHARITY = 'Example hospice';
+const LOGO_FILE = 'example-hospice.webp';
+const LOGO_SVG = [
+  '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="600">',
+  '<path d="M40 120 Q210 60 380 100" stroke="#ec64a1" stroke-width="22" fill="none" stroke-linecap="round"/>',
+  '<path fill-rule="evenodd" fill="#1d71b8" d="M210 160 a150 150 0 1 0 0.1 0 Z M210 280 c-30 -50 -110 -30 -90 30 c15 40 60 70 90 95 c30 -25 75 -55 90 -95 c20 -60 -60 -80 -90 -30 Z"/>',
+  '<rect x="40" y="500" width="340" height="60" rx="14" fill="#1d71b8"/>',
+  '</svg>',
+].join('');
+const LOGO = await sharp(Buffer.from(LOGO_SVG)).webp({ lossless: true, exact: true }).toBuffer();
+
 function campaignYaml({ race, charity, registered, noUrl, finished }: PreviewCampaign): string {
   const lines = [`- id: ${race.id}`, `  race_id: ${race.id}`, '  charity:', `    name: ${charity}`];
   if (!noUrl) lines.push('    url: https://example.org/');
   if (registered) lines.push('    registered:', `      name: ${registered}`, '      number: "000000"');
+  if (charity === LOGO_CHARITY) lines.push('    logo:', `      file: ${LOGO_FILE}`, `      alt: In aid of ${charity}`);
   lines.push(`  page_url: https://www.justgiving.com/page/example-${race.id}`);
   if (finished) lines.push('  finished: true');
   return `${lines.join('\n')}\n`;
@@ -161,7 +177,7 @@ const storyYaml = (id: string, text: string) => {
 };
 
 for (const [state, { campaigns, focus }] of Object.entries(STATES)) {
-  const write = (path: string, content: string) => {
+  const write = (path: string, content: string | Buffer) => {
     const file = join(ROOT, state, 'data/running', path);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, content);
@@ -173,6 +189,7 @@ for (const [state, { campaigns, focus }] of Object.entries(STATES)) {
   write('owner/upcoming-races.yaml', races.filter((r) => !r.raced).map(upcomingYaml).join(''));
   for (const race of races.filter((r) => r.raced || r.result)) write(`owner/races/${race.id}/race.yaml`, raceYaml(race));
   write('owner/campaigns.yaml', campaigns.map(campaignYaml).join(''));
+  if (campaigns.some((c) => c.charity === LOGO_CHARITY)) write(`owner/logos/${LOGO_FILE}`, LOGO);
   for (const { race, last_read_at = LAST_READ, points, story } of campaigns) {
     write(`published/fundraising/${race.id}.json`, `${JSON.stringify({ schema_version: 1, campaign_id: race.id, last_read_at, points })}\n`);
     if (story) write(`owner/stories/${race.id}.yaml`, storyYaml(race.id, story));
