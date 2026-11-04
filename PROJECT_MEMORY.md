@@ -34,12 +34,21 @@ Update this as decisions get made — treat it as the source of truth alongside
   merged and live (owner's review: fine). **The plan for 003 is written** (`003-journey-plan` PR,
   raised 2026-11-04), with nothing visible until the content PR. **#105 (the plan) merged** with all
   ten boxes ticked. **Spec Kit 1.3.0 is merged** (#106, sdd-playbook#14; `main`'s Gate green,
-  deploy included). **The Martlets logo (T116) is in a PR** (`002-martlets-logo`).
-  - **Next session, first: check the logo PR merged** with every box ticked and `main`'s Gate green,
-    deploy included, then a **short guided review of the logo on the live site** (card and page,
-    phone and desktop, light and dark) and a question round on what the owner saw. **Then**
-    `/speckit-tasks` and `/speckit-analyze` for 003 as subagents, using the plan's delivery order
-    (slices 1–7) (owner's order, 2026-11-04).
+  deploy included). **The Martlets logo (T116) is live** (#107, reviewed fine). **003's tasks and analysis are
+  done** (`003-journey-tasks` PR, raised 2026-11-04).
+  - **Next session, first: check the `003-journey-tasks` PR merged** with its three boxes ticked
+    (calories category, prose numbers, FR-078) and `main`'s Gate green. **Then a process retro**
+    (owner pick, 2026-11-04: small increments got slow), one concern, before 003's slice 1:
+    1. Move the decisions log (137 KB of this 168 KB file, about 34k tokens in every session and
+       subagent) to its own file read on demand, keeping *Next session*, norms and candidates here.
+    2. Turn the recurring checks into 2–3 project skills or scripts: session start (fetch, alerts,
+       runs, issues, `check-versions.ps1`), post-merge (PR boxes, `gh pr checks`, `main`'s Gate to
+       the end, deploy, live `curl`), and the PR routine (private-term search, `dist/` against
+       `main`).
+    3. Propose a "repeated procedures → skill or script" step for sdd-playbook's harvest, from the
+       first *Upstream candidates* entry. One PR here, one in sdd-playbook.
+    **After the retro:** 003 Phase 1 (slice 1, files and checks, T001–T023) via `/speckit-implement`
+    as a subagent, in its own session.
   - **The journey interview is done (2026-11-03).** Every chapter has a draft, in
     `C:\temp\journey-story-review.md` (clean read-through), with working notes in
     `C:\temp\journey-draft.md` and answers in `C:\temp\journey-answers.md`. **Nothing from them
@@ -1933,8 +1942,38 @@ project-specific notes.
   - **Tests:** Vitest 822, Playwright 593 passed (55 skipped by design), pytest 665 (1 skipped),
     `astro check` clean, gate green on a deploy build (scan-privacy without the R2 map).
 
+- **2026-11-04** — **#107 (the logo) live, reviewed fine** (owner, phone and desktop, light and dark);
+  all three boxes ticked, `main`'s Gate green, deploy included. No reviewer reply (T113) and no
+  donations to time (T118).
+- **2026-11-04** — **Journey story tasks and analysis** (`specs/003-journey-story/tasks.md`, 92
+  tasks in the plan's seven slices; tasks subagent about 170k tokens including the fixes, analyze
+  subagent about 165k). Analyze found 0 critical, 2 high, 7 medium and 6 low; all are fixed in the
+  tasks and design docs:
+  - **Approval comes after the owner sees the rendered text:** the loader refuses unapproved files,
+    so the content PR renders and compares through a scratch copy approved there first (T080–T081),
+    then approves in the repo (T082).
+  - **Which rules run where:** schema and loader checks run in every build; `validate.ts` rules only
+    in the gate's `validate-data`; `check-links` after the build (contracts/content-files.md).
+  - **Figures:** a private shape check of the approved story (main conversation; nothing copied)
+    found every figure fits the planned categories except daily calories, which the owner approved
+    in the interview (2026-11-03), so `calories` joins the schema (owner, `garmin: Garmin`). Numbers
+    that aren't measurements of the owner stay prose. Each category has fixed ref kinds, and
+    `{ race: <slug> }` covers a race's official time.
+  - **Existing tests that real chapters would break** are fixed in Phase 3 (T050).
+  - **A chapter linking to the fundraising page** must be edited and re-approved before a campaign
+    is removed, or `check-links` fails every deploy.
+  - Three owner boxes in the PR: the calories category, prose numbers, and FR-078's rewording.
+
 ## Upstream candidates
 
+- **Small increments got slow** (owner, 2026-11-04). Recurring procedures (session-start checks,
+  post-merge checks, the PR routine's privacy search and `dist/` comparison, live checks) are
+  re-derived by hand each time, and every session and subagent re-reads this whole file (the tasks
+  and analyze subagents spent about 95k and 165k tokens, mostly reading). The harvest should ask
+  which repeated procedures become a skill or script, and what the auto-loaded memory can stop
+  carrying (e.g. the decisions log in its own file, read on demand).
+- When analyze's fixes are applied, resume the tasks subagent (`SendMessage`), which already holds
+  the docs, rather than starting a fresh one.
 - sharp given a file path keeps the file open in its cache (`sharp.cache` holds up to 20 files), so
   an in-process caller can't delete it on Windows (EPERM, retries don't help) until the process exits.
   Pass `readFileSync(path)` for read-only checks.

@@ -432,11 +432,14 @@ photo. Confirm a story with no photos looks complete.
   001's FR-070: a problem stops the update with a message identifying the file, entry and field,
   leaving the live site unchanged.
 - **FR-077**: Dates MUST use UK format (e.g. 4 Apr 2027), and figures metric units, as in spec 001's
-  FR-075.
-- **FR-078**: Test-only previews on made-up text MUST cover every state of the page: no chapters, one
-  chapter, a long story, figures, photos, no closing section, and each refused case. They MUST exist
-  only in test builds, never on the deployed site, so that everything can be built and reviewed
-  without any real words reaching the repository.
+  FR-075. A number in the prose that isn't a measurement of the owner (a target or aspiration, a
+  product's limit, or a fixed expression the owner keeps in their own words) is prose, not a figure,
+  and the metric-unit rule doesn't apply to it. (Note added by the tasks, owner to confirm.)
+- **FR-078**: Test-only previews on made-up text MUST cover every state that renders: one chapter, a
+  long story, figures, photos, no closing section. "No chapters" and each refused case are covered by
+  scratch-site drills and temporary-tree tests, never by a deploy build. Previews MUST exist only in
+  test builds, never on the deployed site, so that everything can be built and reviewed without any
+  real words reaching the repository. (Reworded by the tasks, owner to confirm.)
 
 ### Key Entities
 

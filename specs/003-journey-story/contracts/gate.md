@@ -9,9 +9,11 @@ touches section code.
 node scripts/check-links.ts          # after `astro build`, before the privacy scan
 ```
 
-- **Scope:** every `.html` file in `dist/`. Every `href` that is a site path (starts with one `/`) must
-  resolve to a built file: `<path>index.html` for a path ending in `/`, else the file itself. A `#anchor`
-  on the story page must match an element `id` on that page.
+- **Scope:** every `.html` file in `dist/` (or `--dist=<dir>`; the module exports `checkLinks(distDir)`
+  for tests and drills). Every `href` that is a site path (starts with one `/`), with any `#fragment`
+  stripped first, must resolve to a built file: `<path>index.html` for a path ending in `/`, else the
+  file itself. Fragments are checked against element `id`s only for links to the story page; elsewhere
+  they're ignored.
 - **Ignored:** external links (`https:`), `mailto:`, links into `/_astro/`, and the `/running/api/`
   Worker routes, which aren't files.
 - **Output:** `error: <page file>: links to <path>, which the build didn't make`. For a link inside a

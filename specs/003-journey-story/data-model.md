@@ -118,15 +118,58 @@ approved:
 | `category` | One of the approved categories (research.md R5). Anything else needs a schema change, which records the owner's approval (FR-013) |
 | `label` | What it measures, plain text. Shown on a set-apart figure |
 | `as_of` | A day or a month, not in the future. Shown on a set-apart figure |
-| `text` | The figure exactly as approved. Matches its category's pattern: metric units (`kg`, `%`, `km`, `bpm`, `ms`, `/km` paces), clock times `m:ss` or `h:mm:ss`, or a bare number for `vo2_max` (FR-077) |
+| `text` | The figure exactly as approved. Matches its category's pattern in *Figure text by category* below (FR-077) |
 | `source` | `stored` (taken from the site's data) or `owner` (FR-012) |
-| `ref` | Required with `source: stored`: `{ run: <run-id> }`, `{ health: { metric, date } }` (a published health metric), or `{ manual: { kind, as_of } }` (an entry in `manual-metrics.yaml`). The record must exist. Not allowed with `source: owner` |
+| `ref` | Required with `source: stored`: `{ run: <run-id> }`, `{ health: { metric, date } }` (a published health metric), `{ manual: { kind, as_of } }` (an entry in `manual-metrics.yaml`), or `{ race: <slug> }` (a `races/<slug>/race.yaml` official time). The record must exist, and its kind must fit the category (*Ref kinds by category* below). Not allowed with `source: owner` |
 | `garmin` | Optional: a Garmin device model (`garminDevice` from `defs`), `Garmin` alone, or `derived`. Required when `ref` is Garmin-sourced, and must agree with it: a run's own `device` (or `Garmin` when it has none), the scale for weight and body fat, `Garmin` for other wellness and manual Garmin figures, `derived` for fitness and fatigue. A hand-entered race result isn't Garmin data, so a race time from `race.yaml` carries none |
+
+**Figure text by category** (the `text` pattern; metric units only, FR-077):
+
+| Category | `text` |
+|---|---|
+| `weight` | A number with `kg` |
+| `body_fat` | A number with `%` |
+| `vo2_max`, `fitness` | A bare number |
+| `resting_hr` | A number with `bpm` |
+| `hrv` | A number with `ms` |
+| `race_prediction`, `race_time`, `best_effort` | A clock time, `m:ss` or `h:mm:ss` |
+| `run_distance` | A number with `km` |
+| `run_pace` | `m:ss /km` |
+| `training_total` | A number with `km`, or `h:mm` |
+| `training_status` | Plain words, no digit |
+| `calories` | A comma-grouped number, or `<n> to <n>`, followed by ` calories`, and no other unit |
+
+**Ref kinds by category** (a `stored` figure's `ref`):
+
+| Category | Ref |
+|---|---|
+| `weight` | `health`, metric `weight_avg7` |
+| `body_fat` | `health`, metric `body_fat_pct` |
+| `vo2_max` | `health`, metric `vo2max` |
+| `fitness` | `health`, metric `fitness_ctl` |
+| `resting_hr` | `health`, metric `resting_hr` |
+| `hrv` | `health`, metric `hrv` |
+| `training_status` | `manual`, kind `training_status` |
+| `race_prediction` | `manual`, kind `race_predictions` |
+| `run_distance`, `run_pace`, `best_effort` | `run` |
+| `race_time` | `run`, or `race` for an official time from `race.yaml` |
+| `training_total`, `calories` | None: owner figures only (`source: owner`) |
+
+**`calories`**: daily calories burned, a Garmin estimate, as one value or a range per day. The owner
+approved publishing it on 2026-11-03, in the interview (FR-013); adding it to the schema records that
+approval. It isn't in the stored data, so it's always `source: owner`, and it requires `garmin: Garmin`.
+
+**Numbers in the prose that aren't figures.** A number that isn't a measurement of the owner (a target
+or aspiration, a product's limit, or a fixed expression the owner chose to keep in their own words, a
+non-metric one included) is prose, not a figure: it has no placeholder, no source, and doesn't count
+towards the two figures. FR-077's metric-unit rule applies to figures. Which numbers are figures is
+decided with the owner when the files are written (owner to confirm in the tasks PR).
 
 **Cross-field rules (`validate.ts`):**
 
 - A `stored` figure whose `as_of` is before the first stored record of its kind stops the update: before
   then only the owner can supply it (FR-012).
+- A figure's category and its `ref` agree, as *Ref kinds by category* gives them.
 - Every placeholder names a figure, and every figure has exactly one placeholder.
 - The first paragraph of `prose` can't be a lone placeholder (FR-003, FR-005).
 - Two chapters with the same start and no distinct `order` stop the update, naming both.
@@ -188,7 +231,7 @@ approved: { date: 2001-04-01, sha256: 0f3c… }
 ```
 
 `text` is required plain text, one paragraph, no markup. **Required once any chapter exists** (FR-008,
-research.md R12).
+research.md R12). With no chapter it's ignored, with no message.
 
 ## 8. Page wording: `page.yaml`
 
@@ -207,7 +250,8 @@ approved: { date: 2001-04-01, sha256: 0f3c… }
 | `share_text` | Required plain text, at most 90 characters, **no digits** (FR-075: the share image carries no figure) |
 | `link_label` | Required plain text. Must equal `section.yaml` `story_link.label` |
 
-**Required once any chapter exists** (FR-039, research.md R12).
+**Required once any chapter exists** (FR-039, research.md R12). With no chapter it's ignored, with no
+message.
 
 ## 9. The landing link: `section.yaml` `story_link` (spec 001, unchanged schema)
 

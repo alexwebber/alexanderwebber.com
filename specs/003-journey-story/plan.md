@@ -147,8 +147,9 @@ Each has the decision and its reason; the fuller reasoning is in [research.md](r
 11. **Launch conditions** (R12). The page needs its approved wording (`page.yaml`) and the note
     (`note.yaml`) before it can go live; a chapter without them stops the update. The closing section
     doesn't hold it back (FR-007), though it's ready.
-12. **Links** (R9). Form checked in validation; existence checked by a new gate step, `check-links`, over
-    the built site, which also catches a dead `story_link`.
+12. **Links** (R9). Form checked in validation (`validate.ts`, so in the gate's `validate-data`, not in a
+    plain build's first step, which runs only the schema and loader checks); existence checked by a new
+    gate step, `check-links`, over the built site, which also catches a dead `story_link`.
 13. **Privacy** (R13). The existing scans apply to the story unchanged; their findings in story files and
     the story page are redacted, and validation messages never quote text (sentinel test).
 14. **`VOICE.md`** (R14). At the repository root, created in the content PR from the owner's edits, as
