@@ -24,7 +24,7 @@ test('headings go h1 > h2 sections > h3 goal cards, without skipping a level', a
   await open(page);
   await outline(page);
   await expect(page.getByRole('heading', { level: 2, name: 'Working towards' })).toBeVisible();
-  await expect(page.getByRole('heading', { level: 2, name: 'Achieved' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Achieved', exact: true })).toBeVisible();
 });
 
 test('each progress bar is a named meter with its figures in words', async ({ page }) => {
