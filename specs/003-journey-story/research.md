@@ -128,7 +128,10 @@ JustGiving reminder is printed only for campaign stories.
 2026-11-04, if the words reach the files unchanged.** The build converts each approved text into the
 file format (placeholders for figures, the one link), renders it, and compares the page's plain text
 with the approved text outside the repository. Zero differences (SC-005) means the approval stands,
-and the script records it with `--date=2026-11-04`.
+and the script records it with `--date=2026-11-04`. Because the loader refuses a file without an
+`approved` block, the files can't be built in the repo before approval, so the comparison and the owner's
+look at the rendered chapters use a scratch copy of the site, where the approval is recorded with the
+same dates first; the repo's files are approved only after the owner's yes.
 
 The rendered page adds two things the owner didn't see as words: the Garmin attribution after a figure
 and the figure's set-apart layout. The owner looks at the rendered chapters in the same review that
@@ -171,8 +174,11 @@ there, that chapter's approval takes that day's date instead.
 
 **Approved categories (FR-013, spec 001 FR-015):** `weight`, `body_fat`, `vo2_max`, `resting_hr`, `hrv`,
 `training_status`, `race_prediction`, `fitness`, `race_time`, `best_effort`, `run_distance`, `run_pace`,
-`training_total`. A new category is a schema change in a PR, which is where the owner's explicit
-approval is recorded.
+`training_total`, and `calories` (daily calories burned, a Garmin estimate, which the owner approved in
+the interview on 2026-11-03; data-model.md §3). A new category is a schema change in a PR, which is
+where the owner's explicit approval is recorded. Each category's text pattern and allowed `ref` kind are
+tabled in data-model.md §3, as is the rule that numbers in the prose that aren't measurements of the
+owner stay prose.
 
 ---
 
@@ -283,7 +289,8 @@ It must pass on today's site before the story is added; any dead link it finds t
   refuses a fourth photo (FR-060), and writes into the chapter's folder.
 - **Checking:** `scan-images.ts` already covers everything under `data/running/owner/`, so chapter
   photos get the metadata and size checks with no change. The schema requires `description` (alt text)
-  and `caption`, and `maxItems: 3`. Validation checks each listed file exists.
+  and `caption`, and `maxItems: 3`. The loader (`files.ts`) checks each listed file exists, because it
+reads the bytes for the approval hash.
 - **Serving (FR-064):** the gallery's `Picture` settings: AVIF, WebP and a JPEG fallback at 640 and 1280
   px, lazy-loaded, with width and height set. In a chapter the photos sit after the prose and before
   the takeaway, as a `<figure>` each with a visible `<figcaption>`.

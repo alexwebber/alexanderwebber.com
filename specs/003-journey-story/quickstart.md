@@ -27,7 +27,8 @@ covers every form in data-model.md §5 and each stray-markup case.
 
 In a temporary data tree with one made-up chapter:
 
-1. Run `approve-story --journey=<id>`, then build: the chapter renders exactly as written.
+1. Run `approve-story --journey=<id>`, then build: the chapter renders exactly as written (rendering:
+   §3's previews and §5's drill, because the page has no route until the story area exists).
 2. Change one character of the prose: `validate-data` and a plain `astro build` both stop, naming the file,
    `chapter "<id>"` and `approved.sha256`, and `dist/` from step 1 is still there.
 3. Remove the `approved` block: both stop with "needs the owner's approval before it can be published".
@@ -90,7 +91,8 @@ build:
 
 - It appears before the first, every other chapter's file and hash is byte-identical, and the first
   chapter's anchor still works.
-- `git diff --stat` shows only the new chapter's folder.
+- Every other journey file's bytes equal the copies recorded before the edit, so only the new chapter's
+  folder changed (the scratch copy isn't a git repository).
 
 ## 7. Gate and budgets
 
@@ -114,13 +116,16 @@ node scripts/lighthouse-budget.mjs
    repository. **Owner:** edits and approves them.
 2. The agent writes the approved chapters, closing section, note and page wording into their files,
    marking each figure with a placeholder and its source, and the one link with its path.
-3. **SC-005:** the agent renders each file's plain text to a scratch file outside the repository and
-   diffs it with the approved text there. Zero differences, or the file isn't approved.
-4. **Owner:** looks at the rendered chapters on a local preview of the real files (figure sources and the
+3. **SC-005:** the loader refuses unapproved files, so the agent copies the site to a scratch folder
+   outside the repository, records the approvals there with the same dates as step 5, builds the copy,
+   renders each file's plain text to a scratch file and diffs it with the approved text. Zero
+   differences, or the file isn't approved.
+4. **Owner:** looks at the rendered chapters on a local preview of that copy (figure sources and the
    set-apart figure included) and says yes, or asks for a change, which is then approved afresh.
-5. The agent runs `approve-story --journey=<target>` for each file, with `--date=2026-11-04` for text
-   approved that day and unchanged, else that day's date (research.md R4), sets `story_link`, and writes
-   `VOICE.md` from the owner's edits (style lessons only).
+5. The agent runs `approve-story --journey=<target>` in the repository for each file, with
+   `--date=2026-11-04` for the chapters and closing section approved that day and unchanged, the note's
+   and page wording's approval date for those, else that day's date (research.md R4), sets `story_link`,
+   and writes `VOICE.md` from the owner's edits (style lessons only).
 6. The full gate of §7 on the real files, locally, including `scan-privacy` and `check-links`.
 7. **Before the PR:** the agent reads every new file in full, and searches the repository for the raw
    answers and drafts (none may be found, SC-005). The PR body describes the content by shape only.

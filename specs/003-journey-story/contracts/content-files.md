@@ -34,9 +34,18 @@ node scripts/approve-story.ts <campaign-id> [--date=YYYY-MM-DD]      # unchanged
 
 ## Validation
 
-Every rule runs in the build's first step (`astro:build:start`) and in the gate's `validate-data`, so a
-problem stops the update before `dist/` is emptied, and the live site stays as it was (FR-034, FR-076).
-The approval checks are in the loader itself, so the store refuses too.
+Which rules run where:
+
+- **Schema and loader rules** (the *Schema* and *Loader* rows below: schema rules, approval missing or
+  changed, a listed photo missing) run everywhere the data is loaded: the build's first step
+  (`astro:build:start`), the store, and the gate's `validate-data`. So a plain `astro build` stops on
+  them too, before `dist/` is emptied (FR-034).
+- **`validate.ts` rules** run only in the gate's `validate-data`, which comes before the build in the
+  gate. A plain `astro build` doesn't run them.
+- **`check-links`** runs after the build in the gate.
+
+The gate deploys only when every step passes, so a problem at any layer leaves the live site as it was
+(FR-034, FR-076).
 
 | Rule | Layer | FR |
 |---|---|---|
@@ -46,7 +55,7 @@ The approval checks are in the loader itself, so the store refuses too.
 | Unknown or unused placeholder; stray markup; first paragraph a lone figure | `validate.ts` (via `parseProse`) | FR-003, FR-005, FR-010 |
 | Link not a root-relative site path | `validate.ts` | FR-015 |
 | `stored` figure without an existing `ref`, or dated before the stored data; missing or mismatched `garmin` | `validate.ts` | FR-012, FR-014 |
-| Listed photo missing from the folder | `validate.ts` | FR-063 |
+| Listed photo missing from the folder | Loader (`files.ts`, which reads the bytes for the hash) | FR-063 |
 | Chapters without `note.yaml` or `page.yaml` | `validate.ts` | FR-008, FR-039 |
 | `story_link` with no chapter; href not the story page; label ≠ `link_label` | `validate.ts` | FR-040, FR-042 |
 | `closing.yaml` with no chapter | Warning only | Edge case |
