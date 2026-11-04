@@ -30,7 +30,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   **Spec 003, the journey story, is written** (`specs/003-journey-story/`, the PR raised on
   2026-11-01), with nothing visible until a first chapter is approved. **#101 merged** with every box
   ticked (photos: race crowds allowed, to amend FR-062 in the plan's PR). **The journey interview is
-  done (2026-11-03)** and waits on the owner's whole-story review.
+  done (2026-11-03), and the owner approved every chapter as written (2026-11-04).**
   - **The journey interview is done (2026-11-03).** Every chapter has a draft, in
     `C:\temp\journey-story-review.md` (clean read-through), with working notes in
     `C:\temp\journey-draft.md` and answers in `C:\temp\journey-answers.md`. **Nothing from them
@@ -42,11 +42,12 @@ Update this as decisions get made — treat it as the source of truth alongside
     Playwright failures are the ones #102 fixes. After #102 merges, update #103's branch and
     re-check every check. After each merge, wait for `main`'s Gate to finish, deploy included, and
     point the owner at the *How to view it* URLs.
-  - **Then the owner's whole-story review**, which the owner chose to do once, over all chapters
-    (`journey-story-review.md`). Open choices: chapter 8's lesson (three options), the two
-    keep-or-cut lines in chapter 6, and the suggested lessons. Then per-chapter approval
-    (FR-030–FR-034), and `VOICE.md` from the owner's edits if the Martlets story isn't approved
-    first.
+  - **The whole story is approved** (owner, 2026-11-04, after one read-through of all chapters):
+    every chapter and the closing section, exactly as `journey-story-review.md` reads. A sha256 of
+    each section is in `journey-answers.md`, so if the text there changes, that chapter needs fresh
+    approval. The build commits the approved text with the project's own approval hashes. It's the
+    first story approved, so the build also creates `VOICE.md` from the owner's edits, which the
+    approval notes in `journey-answers.md` list.
   - **Then `/speckit-plan` as a subagent** (Opus override, flagged), passing only the shape:
     **nine chapters plus a closing section for someone just starting**, about 1,800 words in all.
     Chapters run 62 to 337 words (four under 170, two over 290). One chapter has a set-apart figure,
@@ -1852,8 +1853,8 @@ project-specific notes.
 
 - **2026-11-03** — **Journey interview done** (six rounds, in the main conversation). The owner's
   answers and the drafts stay in `C:\temp\` (FR-036). The story's shape: nine chapters plus a
-  closing section, about 1,800 words. The owner will review all chapters at once rather than one
-  at a time. Research informed the questions only, and the owner's Garmin export was read for
+  closing section, about 1,800 words. The owner reviewed all chapters at once and approved them as
+  written on 2026-11-04. Research informed the questions only, and the owner's Garmin export was read for
   aggregates, with figures from it used only once the owner confirmed them.
 - **2026-11-03** — **Goals updated** (owner): half sub-1:40 (1:37:44) and VO2 max 52.5 (53) were
   achieved on 2 Nov. Brighton is now **sub-3:15**, and the new goals are half sub-1:35, 5k sub-19 and
