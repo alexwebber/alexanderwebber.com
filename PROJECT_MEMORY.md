@@ -32,14 +32,14 @@ Update this as decisions get made — treat it as the source of truth alongside
   ticked (photos: race crowds allowed, to amend FR-062 in the plan's PR). **The journey interview is
   done (2026-11-03), and the owner approved every chapter as written (2026-11-04).** #102–#104 are
   merged and live (owner's review: fine). **The plan for 003 is written** (`003-journey-plan` PR,
-  raised 2026-11-04), with nothing visible until the content PR.
-  - **Next session, first: check the plan's PR.** If it's merged, ask about any box left unticked
-    before building on it. If not, ask what's holding it. **Then upgrade Spec Kit 1.2.5 → 1.3.0**
-    (flagged by `check-versions.ps1` on 2026-11-04; it removes `/speckit-taskstoissues`, unused here,
-    and fixes the git extension's fetch prompt), **and build the playbook's Spec Kit upgrade script
-    with it**, as planned at the last upgrade (sdd-playbook backlog). Owner's order (2026-11-04): the
-    upgrade session, then the Martlets logo slice, then `/speckit-tasks` and `/speckit-analyze` for
-    003 as subagents, using the plan's delivery order (slices 1–7).
+  raised 2026-11-04), with nothing visible until the content PR. **#105 (the plan) merged** with all
+  ten boxes ticked. **Spec Kit 1.3.0 is in a PR**, upgraded with the playbook's new script
+  (sdd-playbook#14).
+  - **Next session, first: check both upgrade PRs merged** (this repo's `chore-speckit-1.3.0` and
+    sdd-playbook#14) with `main`'s Gate green. If sdd-playbook#14 changed in review, nothing here
+    needs redoing: the script isn't installed into projects. **Then the Martlets logo slice**
+    (below), then `/speckit-tasks` and `/speckit-analyze` for 003 as subagents, using the plan's
+    delivery order (slices 1–7) (owner's order, 2026-11-04).
   - **The journey interview is done (2026-11-03).** Every chapter has a draft, in
     `C:\temp\journey-story-review.md` (clean read-through), with working notes in
     `C:\temp\journey-draft.md` and answers in `C:\temp\journey-answers.md`. **Nothing from them
@@ -56,6 +56,8 @@ Update this as decisions get made — treat it as the source of truth alongside
     written 28 s before they were recorded, so the text is as approved. At the content PR, compare
     the committed text with that file, not with those hashes, and show the owner the rendered
     chapters (plan question 6).
+  - **Next upgrade:** run `C:\Projects\sdd-playbook\scripts\upgrade-speckit.ps1` from the project
+    folder after upgrading the CLI (PLAYBOOK > Upgrading Spec Kit).
   - **Still to approve, at the content PR** (plan, open questions 5 and 6): the "not medical advice"
     note, which holds back launch, and the page's title, description, share text and landing-link
     label (FR-039). Draft them from the approved text, in the owner's voice.
@@ -91,8 +93,6 @@ Update this as decisions get made — treat it as the source of truth alongside
     says otherwise. For later PRs, use the one-commit route #95 used.
   - **T118's month of timing** (SC-002) runs to about 1 Dec 2026: compare each bot commit with the
     donation's time, using times the owner mentions in reviews. **T119's tally is 1 of 10.**
-  - **The playbook's Spec Kit upgrade script** was due at the next flagged release, and 1.2.5 went
-    by hand to keep that session on the plan. Build it at the next flagged release.
   - **When the story reviewers reply** (ask at each session start until then): take their
     passage into the draft, the owner approves the final text, then create `VOICE.md` (lessons so
     far: personal or family passages are written by the people they belong to, and the agent's
@@ -1893,8 +1893,24 @@ project-specific notes.
     redacted, as the scan's excerpt would quote the story into a public log.
   - **Spec edits:** FR-062 (race crowds, owner 2026-11-01) and spec 001's FR-055 (photos also in story
     chapters). No dependencies, $0. Astro 7.4.5 is out (routine; 7.4.4 here).
+- **2026-11-04** — **#105 merged** with all ten boxes ticked (the plan's choices stand as written).
+- **2026-11-04** — Upgraded Spec Kit 1.2.5 → 1.3.0 with the playbook's new
+  `scripts/upgrade-speckit.ps1` (sdd-playbook#14, built and tested on this upgrade). Three runs
+  found two script bugs, both fixed before the PR: `python -I` hid the user-installed PyYAML, and
+  "identical" missed reordered hook events. The final run restored `extensions.yml` (only the
+  events' order changed), and the constitution still resolves to `house-constitution`. What
+  reaches us:
+  - **`/speckit-taskstoissues` is removed** (unused here).
+  - **The `git` extension is 1.0.3:** its fetch can't wait on a credential prompt, and `--number`
+    is bounded.
+  - **`/speckit-specify` loads its template through `resolve-template.ps1`**, so a preset that
+    composes templates works. Tested: it returns the core spec template, and the constitution
+    template is still the house one.
 
 ## Upstream candidates
+
+- `python -I` (isolated mode) also ignores user site-packages, so a module installed with
+  `pip install --user` (PyYAML here) is missing. Safe scripts in a folder you created don't need it.
 
 - When recording an approval hash outside the repo, record exactly what was hashed (byte range, line
   endings, trailing newline) or the script. The journey story's private hashes couldn't be reproduced
