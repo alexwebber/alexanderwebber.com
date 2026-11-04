@@ -1,6 +1,7 @@
 # Running goals (schemas/owner/goals.schema.json). Priority 1 is the highest.
 # Owner answers of 2026-10-18 (PROJECT_MEMORY.md, "Phase 3 goal answers"), updated 2026-11-03:
-# Brighton tightened to sub-3:15, and new half, 5k and VO2 max targets after three were achieved.
+# Brighton tightened to sub-3:15, and new half, 5k and VO2 max targets after three were achieved;
+# 10k sub-40 after sub-43 was achieved on 4 Nov (owner, 2026-11-04).
 
 - id: brighton-sub-3-15
   type: race_time
@@ -22,14 +23,14 @@
     distance: half
     time: "1:35:00"
 
-- id: 10k-sub-43
+- id: 10k-sub-40
   type: race_time
-  title: 10k under 43 minutes
+  title: 10k under 40 minutes
   priority: 3
   featured: true
   target:
     distance: 10k
-    time: "43:00"
+    time: "40:00"
 
 - id: 5k-sub-19
   type: race_time
@@ -122,3 +123,13 @@
     metric: vo2max
     value: 52.5
     direction: at_least
+
+# Achieved on 4 Nov 2026.
+- id: 10k-sub-43
+  type: race_time
+  title: 10k under 43 minutes
+  priority: 11
+  featured: true
+  target:
+    distance: 10k
+    time: "43:00"
