@@ -30,35 +30,43 @@ Update this as decisions get made — treat it as the source of truth alongside
   **Spec 003, the journey story, is written** (`specs/003-journey-story/`, the PR raised on
   2026-11-01), with nothing visible until a first chapter is approved. **#101 merged** with every box
   ticked (photos: race crowds allowed, to amend FR-062 in the plan's PR). **The journey interview is
-  done (2026-11-03), and the owner approved every chapter as written (2026-11-04).**
+  done (2026-11-03), and the owner approved every chapter as written (2026-11-04).** #102–#104 are
+  merged and live (owner's review: fine). **The plan for 003 is written** (`003-journey-plan` PR,
+  raised 2026-11-04), with nothing visible until the content PR.
+  - **Next session, first: check the plan's PR.** If it's merged, ask about any box left unticked
+    before building on it. If not, ask what's holding it. **Then upgrade Spec Kit 1.2.5 → 1.3.0**
+    (flagged by `check-versions.ps1` on 2026-11-04; it removes `/speckit-taskstoissues`, unused here,
+    and fixes the git extension's fetch prompt), **and build the playbook's Spec Kit upgrade script
+    with it**, as planned at the last upgrade (sdd-playbook backlog). Owner's order (2026-11-04): the
+    upgrade session, then the Martlets logo slice, then `/speckit-tasks` and `/speckit-analyze` for
+    003 as subagents, using the plan's delivery order (slices 1–7).
   - **The journey interview is done (2026-11-03).** Every chapter has a draft, in
     `C:\temp\journey-story-review.md` (clean read-through), with working notes in
     `C:\temp\journey-draft.md` and answers in `C:\temp\journey-answers.md`. **Nothing from them
     goes in the repo, a PR, a commit message or this file** (spec FR-036). The privacy rules the
     owner set are at the end of each round's notes in `journey-answers.md`. Read them before
     touching the text.
-  - **Next session, first:** check #102 (journey start date, chart label fix) and #103 (Brighton
-    sub-3:15, new goals, Garmin readings of 3 Nov). Merge order is #102 then #103, because #103's
-    Playwright failures are the ones #102 fixes. After #102 merges, update #103's branch and
-    re-check every check. After each merge, wait for `main`'s Gate to finish, deploy included, and
-    point the owner at the *How to view it* URLs.
   - **The whole story is approved** (owner, 2026-11-04, after one read-through of all chapters):
     every chapter and the closing section, exactly as `journey-story-review.md` reads. A sha256 of
     each section is in `journey-answers.md`, so if the text there changes, that chapter needs fresh
     approval. The build commits the approved text with the project's own approval hashes. It's the
     first story approved, so the build also creates `VOICE.md` from the owner's edits, which the
-    approval notes in `journey-answers.md` list.
-  - **Then `/speckit-plan` as a subagent** (Opus override, flagged), passing only the shape:
-    **nine chapters plus a closing section for someone just starting**, about 1,800 words in all.
-    Chapters run 62 to 337 words (four under 170, two over 290). One chapter has a set-apart figure,
-    and most carry a figure or two in prose, several of them Garmin-sourced, so prose figures need
-    FR-014's attribution too. One chapter links to the fundraising page. The owner
-    suggests a few photos; amend FR-062 for race crowds in the plan's PR.
+    approval notes in `journey-answers.md` list. **The private hashes can't be reproduced** (checked
+    2026-11-04 under several byte conventions, none matched), but `journey-story-review.md` was last
+    written 28 s before they were recorded, so the text is as approved. At the content PR, compare
+    the committed text with that file, not with those hashes, and show the owner the rendered
+    chapters (plan question 6).
+  - **Still to approve, at the content PR** (plan, open questions 5 and 6): the "not medical advice"
+    note, which holds back launch, and the page's title, description, share text and landing-link
+    label (FR-039). Draft them from the approved text, in the owner's voice.
   - **Goals follow-up, from 19 Nov 2026:** unfeature `half-sub-1-40`, `vo2max-52-5` and `10k-sub-43`
     (their "New" windows end 16 and 18 Nov) and set `featured_goal_limit` back to 7, in a PR.
-  - **Martlets logo (T116):** Martlets OK'd the "I'm supporting" logo and sent a transparent
-    version (owner, 2026-11-03). Ask the owner to put the file in `C:\temp\` with any conditions
-    from the email, record the conditions here, then build it as its own slice.
+  - **Martlets logo (T116):** Martlets OK'd their logo with **no conditions** (owner, 2026-11-04) and
+    sent a transparent PNG, now at `C:\temp\martlets-logo.png` (1514 x 2151, portrait). It reads
+    **"In aid of Martlets"**, not "I'm supporting": a pink hand-lettered "In aid of" and underline over
+    a blue martlet with a white heart and the blue "Martlets" wordmark. Use it unaltered. Build it as
+    its own slice; check its blue and pink on the dark theme's surface (it's transparent, so it may
+    need a light backing in dark mode) and give it alt text naming the charity.
   - **Spec order after that** (owner, 2026-11-01): **a private family-admin section**
     (scheduling, expenses and more; details in the agent's local memory), then CV & Blog, which is
     parked. Before specifying it, raise that it clashes with the constitution: the site has no
@@ -1865,8 +1873,34 @@ project-specific notes.
 - **2026-11-03** — **Bot data broke two UI checks, unseen on `main`** (fixed in #102). A new week put
   a label under the Training chart's last column, and the "Just achieved" heading matched a
   substring check for "Achieved". It's the BACKLOG item about Playwright only running on UI PRs.
+- **2026-11-04** — **#102–#104 live, reviewed fine** (owner, phone and desktop). `main`'s Gate after
+  #104 finished green, deploy included; the nightly Quality run is green, and there are no open
+  security alerts. Martlets' logo came with no conditions. The story reviewers haven't replied.
+  `check-versions.ps1` flags Spec Kit 1.3.0 (owner: upgrade next session, after this plan).
+- **2026-11-04** — **Journey story plan** (`specs/003-journey-story/plan.md`, plan subagent on Opus
+  about 277k tokens, given the story's shape only and kept away from `C:\temp`). The agent searched
+  every file it wrote for private terms before committing. Ten choices go to the owner as PR boxes.
+  - **Files:** owner YAML in `data/running/owner/journey/` (`page`, `note`, `closing`, one folder per
+    chapter with its photos), plain text with only `{{figure-id}}` and `[text](/path/)` inline.
+  - **Approval:** spec 002's `approved` block, generalised to a hash of each file's named fields plus
+    photo bytes, checked in the loader; `approve-story --journey=<id>`.
+  - **Figures:** structured entries; a Garmin figure in prose reads "12.3 kg (Garmin Index S2)",
+    because the guidelines (re-read in full, V 6.30.2025) forbid footnotes and tooltips. Two a
+    chapter at most, by schema.
+  - **Finding it:** a `story` area only when a chapter exists, "Story" last in the menu, spec 001's
+    `StoryLink` unchanged; the note and page wording hold back launch, the closing section doesn't.
+  - **New gate step `check-links`** over the built site; privacy-scan findings in story text are
+    redacted, as the scan's excerpt would quote the story into a public log.
+  - **Spec edits:** FR-062 (race crowds, owner 2026-11-01) and spec 001's FR-055 (photos also in story
+    chapters). No dependencies, $0. Astro 7.4.5 is out (routine; 7.4.4 here).
 
 ## Upstream candidates
+
+- When recording an approval hash outside the repo, record exactly what was hashed (byte range, line
+  endings, trailing newline) or the script. The journey story's private hashes couldn't be reproduced
+  a day later, and only the files' modified times showed the text was unchanged.
+- A privacy scan that prints its matched excerpt is harmless over data files but quotes free text
+  when run over prose. Redact findings in prose files before a scan's output reaches a public log.
 
 - Hidden minor axis labels (`visibility: hidden`) still take up layout, so a label at a chart's edge
   can widen the page at 320 px though nobody sees it. Find these by walking text nodes' ranges, not

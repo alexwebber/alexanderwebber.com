@@ -443,7 +443,8 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
 - **FR-054**: Race detail pages MUST show the result, an interactive route map (unless hidden by the
   owner or not recorded), the full run detail where available, and any race photos.
 - **FR-055**: The owner MUST be able to add photos to a race via the site's files; each photo MUST
-  have a text description used as its alternative text. Photos are supported on race pages only.
+  have a text description used as its alternative text. Photos are supported on race pages only,
+  and in story chapters under spec 003's own rules (FR-060 to FR-064 there; amended 2026-11-04).
 - **FR-056**: The section MUST show upcoming races entered by the owner (name, date, distance, optional
   target time and link), in date order, each with days remaining; the focus race (Brighton) is
   shown first.
