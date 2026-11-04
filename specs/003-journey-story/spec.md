@@ -220,8 +220,10 @@ photo. Confirm a story with no photos looks complete.
    site's files, the update stops.
 4. **Given** a photo with no caption or no alternative text, **When** the site is updated, **Then**
    the update stops with a message identifying the chapter and photo.
-5. **Given** a candidate photo that shows another person, or anything showing where the owner lives
-   or regularly runs, **When** it reaches approval, **Then** it isn't used.
+5. **Given** a candidate photo that shows a recognisable person other than the owner, any other
+   person outside a race, or anything showing where the owner lives or regularly runs, **When** it
+   reaches approval, **Then** it isn't used. A race photo with strangers in the crowd, none of them
+   recognisable, can be used.
 6. **Given** a chapter with more photos than the limit, **When** the site is updated, **Then** the
    update stops with a message identifying the chapter.
 
@@ -400,8 +402,10 @@ photo. Confirm a story with no photos looks complete.
   anywhere, and a story with none MUST look complete.
 - **FR-061**: All metadata, location above all, MUST be removed from a photo before it enters the
   repository. An automated check MUST stop any update that carries a photo with metadata.
-- **FR-062**: Photos MUST NOT show any person other than the owner, or anything showing where the
-  owner lives or regularly runs. The owner checks this at approval.
+- **FR-062**: Photos MUST NOT show where the owner lives or regularly runs. Outside
+  a race, they MUST NOT show any person other than the owner. A race photo MAY show strangers in the
+  crowd only if none of them is recognisable. The owner checks this at approval. (Amended by the plan,
+  owner 2026-11-01.)
 - **FR-063**: Every photo MUST have alternative text and a visible caption. A missing one MUST stop the
   update with a message identifying the chapter and photo.
 - **FR-064**: Photos MUST be delivered at sizes suited to the reader's screen, and a page with photos
@@ -531,9 +535,9 @@ something open.
 - **Withdrawing text (owner to confirm)**: removing a chapter takes it off the site, not out of the
   public git history. The owner accepts this when approving, and rewriting history is out of scope.
 - **Photo limit (owner to confirm)**: "a few at most" is taken as three per chapter.
-- **No other people in photos (owner to confirm)**: taken strictly, so runners in the background of a
-  race photo also rule it out here. Race pages keep their own photo rules. If that's too strict for
-  race chapters, the owner may relax it for unidentifiable people in a crowd.
+- **Other people in photos** (owner, 2026-11-01, amending the earlier strict default): in a race
+  photo, strangers in the crowd are fine if nobody is recognisable. Outside races, still no other
+  people at all. Race pages keep their own photo rules.
 - **Menu position (owner to confirm)**: "Story" comes last in the Running menu, after "Fundraising".
   At 360 px that line has room, so the menu gains no third line, which is what protects Donate.
 - **Landing link position (owner to confirm)**: the link stays where spec 001 put it, in its own panel
