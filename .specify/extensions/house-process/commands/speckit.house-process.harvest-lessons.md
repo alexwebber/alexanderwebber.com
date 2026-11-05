@@ -24,6 +24,20 @@ looks back over the work just completed and proposes which lessons should be sen
    Also review `canaries.md` (if present). If a pattern holds across several canaries (not a
    single result), add a candidate to update the model-selection norm.
 
+   **Then look at the process itself**, not only at lessons:
+   - **Repeated procedures.** List the checks and routines the agent ran by hand in more than one
+     session since the last harvest: session-start checks (fetch, alerts, red runs, version
+     checks), post-merge checks (PR boxes, checks, `main`'s run to the end, deploy, live pages),
+     the PR routine (privacy search, build-output comparison), dated follow-ups. Propose turning
+     each into a script with a thin project skill that runs it and says how to act on the result,
+     or extending one that exists. A script that would help any project is an SDD-general
+     candidate for the playbook's `scripts/`.
+   - **What every session loads.** Measure the files `CLAUDE.md` auto-loads (`PROJECT_MEMORY.md`,
+     the constitution). Every session and every subagent pays for them on each run. If they're past
+     about 40 KB, propose moving what's read rarely, usually the decisions log, to its own file
+     read on demand (e.g. `DECISIONS.md`, with a pointer left behind), and trimming *Next session*
+     to status and follow-ups.
+
 2. **Classify each candidate** into exactly one destination:
    - **Global working preference** (applies to any project, SDD or not) → the owner's
      `~/.claude/CLAUDE.md`.
@@ -46,7 +60,8 @@ looks back over the work just completed and proposes which lessons should be sen
      request** — never commit to `main`.
    - Global `~/.claude/CLAUDE.md`: show the exact lines and add them only with the owner's
      agreement.
-   - Add a one-line entry to this project's `PROJECT_MEMORY.md` decisions log noting what was
+   - Add a one-line entry to this project's decisions log (in `PROJECT_MEMORY.md`, or the file it
+     points to) noting what was
      sent upstream (with the PR link), so the next harvest knows where to start.
    - Remove processed entries from *Upstream candidates*: ones sent upstream, and ones the
      owner rejected or classified as project-specific (move those to the decisions log if worth

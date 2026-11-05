@@ -1774,3 +1774,7 @@ end. Add each new decision as a dated entry at the end, as it's made.
 - **2026-11-05** — **#109 merged** with both boxes ticked: the trimmed *Next session* is complete, and
   wrangler stays held at 4.152.0 until miniflare 5 is a stable release. `main`'s Gate finished
   green, deploy included, and `/after-merge` (its first real use) found nothing to act on.
+- **2026-11-05** — **#110 merged** and checked with `/after-merge` (Gate and deploy green). Reinstalled
+  house-process 0.12.0 from the playbook's `main` after sdd-playbook#15 merged: the harvest command
+  gains the review of repeated procedures and loaded memory, and the template its note on moving
+  the decisions log out. `extensions.yml` is unchanged.

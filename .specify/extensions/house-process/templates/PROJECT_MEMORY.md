@@ -88,6 +88,10 @@ Update this as decisions get made — treat it as the source of truth alongside
 
 ## Decisions log
 
+<!-- Every session and subagent loads this file. When the log passes about 30 KB, move it to its
+     own file read on demand (e.g. DECISIONS.md), leave a pointer here, and update CLAUDE.md's
+     "Record new decisions in ..." line to match. The harvest command checks this. -->
+
 - **[DATE]** — [What was decided, and why. Add one entry per decision as they happen.]
 
 ## Upstream candidates
