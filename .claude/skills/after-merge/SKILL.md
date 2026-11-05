@@ -18,6 +18,8 @@ description: After one of this project's PRs merges, check its boxes and checks,
      deploy. Say so, and check that the next refresh deployed.
    - **A live page doesn't answer 200 or lacks the text**: it's a real fault until shown
      otherwise. Check the deploy job's log and the page itself.
+   - **Kept local branches** ("commits not on main"): look at each; delete it only if its work is
+     abandoned or merged another way, and ask the owner if unsure.
 3. Record the outcome in `DECISIONS.md` (one entry: merged, boxes, Gate and deploy green, live
    checks), and update *Next session* in `PROJECT_MEMORY.md` if the PR changed what's next. Those
    edits go in the next PR.

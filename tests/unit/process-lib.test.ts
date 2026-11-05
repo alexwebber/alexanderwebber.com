@@ -12,11 +12,69 @@ import {
   dueTriggers,
   hashTree,
   maskTerm,
+  parseCandidates,
   parseTerms,
   parseTriggers,
+  suitesFor,
   summarisePaths,
+  tail,
   termMatchers,
 } from '../../scripts/process/lib.ts';
+
+describe('skill candidates', () => {
+  it('parses entries, with next optional', () => {
+    const yaml = ['- task: A card', '  times: 6', '  home: project', '  next: 003 Phase 3', '- task: A review', '  times: 1', '  home: playbook'].join('\n');
+    expect(parseCandidates(yaml)).toEqual([
+      { task: 'A card', times: 6, home: 'project', next: '003 Phase 3' },
+      { task: 'A review', times: 1, home: 'playbook' },
+    ]);
+  });
+
+  it('refuses a bad entry by number', () => {
+    expect(() => parseCandidates('- times: 2\n  home: project')).toThrow('candidate 1: "task"');
+    expect(() => parseCandidates('- task: x\n  times: 0\n  home: project')).toThrow('candidate 1: "times"');
+    expect(() => parseCandidates('- task: x\n  times: 2\n  home: elsewhere')).toThrow('candidate 1: "home"');
+    expect(() => parseCandidates('task: x')).toThrow('must be a list');
+  });
+
+  it('parses the repo file', () => {
+    expect(parseCandidates(readFileSync('process/skill-candidates.yaml', 'utf8')).length).toBeGreaterThan(0);
+  });
+});
+
+describe('suitesFor', () => {
+  it('runs nothing for docs and process notes', () => {
+    expect(suitesFor(['DECISIONS.md', 'PROJECT_MEMORY.md', 'specs/003-journey-story/tasks.md', '.claude/skills/x/SKILL.md'])).toEqual([]);
+  });
+
+  it('runs everything but pytest for a page change', () => {
+    expect(suitesFor(['src/sections/running/pages/index.astro'])).toEqual(['unit', 'astro-check', 'e2e', 'gate']);
+  });
+
+  it('adds pytest when a schema changes', () => {
+    expect(suitesFor(['schemas/owner/goals.schema.json'])).toEqual(['unit', 'astro-check', 'pytest', 'e2e', 'gate']);
+  });
+
+  it('runs unit tests and astro check, not e2e, for a process script', () => {
+    expect(suitesFor(['scripts/process/lib.ts'])).toEqual(['unit', 'astro-check', 'gate']);
+    expect(suitesFor(['tests/unit/format.test.ts'])).toEqual(['unit', 'astro-check']);
+  });
+
+  it('runs unit tests for a workflow and the gate for its action', () => {
+    expect(suitesFor(['.github/workflows/refresh.yml'])).toEqual(['unit']);
+    expect(suitesFor(['.github/actions/gate/action.yml'])).toEqual(['unit', 'gate']);
+  });
+
+  it('runs every suite for a dependency bump', () => {
+    expect(suitesFor(['package.json', 'package-lock.json'])).toEqual(['unit', 'astro-check', 'e2e', 'gate']);
+  });
+});
+
+describe('tail', () => {
+  it('keeps the last non-blank lines', () => {
+    expect(tail('a\n\nb\r\nc\n\n', 2)).toEqual(['b', 'c']);
+  });
+});
 
 describe('checkboxes', () => {
   it('splits ticked and unticked boxes, outside code fences only', () => {

@@ -4,13 +4,13 @@
 //   node scripts/process/session-start.ts
 //
 // Sections: git, main's workflows, open issues, security alerts, PRs (open, and recently merged with
-// unticked boxes), live freshness, versions, dated triggers. A section that can't run (e.g. no
-// `gh api` in a cloud session) says UNAVAILABLE and the rest carry on. Lines needing action start
-// with "!".
+// unticked boxes), live freshness, versions, dated triggers, skill candidates. A section that can't
+// run (e.g. no `gh api` in a cloud session) says UNAVAILABLE and the rest carry on. Lines needing
+// action start with "!".
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { today as londonToday } from '../../src/shared/format/dates.ts';
-import { checkboxes, dueTriggers, ghJson, hoursAgo, parseTriggers, REPO, run, section, SITE } from './lib.ts';
+import { checkboxes, dueTriggers, ghJson, hoursAgo, parseCandidates, parseTriggers, REPO, run, section, SITE } from './lib.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const git = (...args: string[]) => run('git', args, ROOT).trim();
@@ -164,4 +164,11 @@ await section('Dated triggers (process/triggers.yaml)', () => {
   if (due.length === 0) console.log('  Nothing due.');
   for (const t of due) console.log(`! Due since ${t.due}: ${t.task}`);
   for (const t of soon) console.log(`  Coming ${t.due}: ${t.task}`);
+});
+
+await section('Skill candidates (process/skill-candidates.yaml)', () => {
+  const candidates = parseCandidates(readFileSync(join(ROOT, 'process', 'skill-candidates.yaml'), 'utf8'));
+  const planned = candidates.filter((c) => c.next);
+  console.log(`  ${candidates.length} tasks done by hand without a skill; build each before the work it names.`);
+  for (const c of planned) console.log(`  ${c.task} (${c.times}x, ${c.home}): before ${c.next}`);
 });

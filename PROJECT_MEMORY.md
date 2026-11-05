@@ -9,27 +9,24 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
   journey story, has its spec, plan and tasks merged (#101, #105, #108), with nothing visible yet,
-  and the owner approved the whole story on 2026-11-04. The process retro (`chore-process-retro`
-  PR, and [sdd-playbook#15](https://github.com/alexwebber/sdd-playbook/pull/15) for the
-  harvest step) moved the decisions log to `DECISIONS.md` and
-  added the `/session-start`, `/after-merge` and `/pr-ready` skills.
-- **Next session, first:** `/session-start`, and `/after-merge` for the house-process 0.12.0 PR
-  if it has merged. (#109, #110 and sdd-playbook#15 are merged and checked.)
-- **Then the skills inventory** (owner, 2026-11-05; `DECISIONS.md` has the picks), in the main
-  conversation, as one session:
-  1. From evidence (`DECISIONS.md`, the three specs' tasks, *Upstream candidates*, sdd-playbook's
-     `AGENT_TIPS.md`), list every SDLC task done more than once: implementation (e.g. a landing
-     card, a chart, an owner data file with its schema and store fakes, a test-only preview state,
-     Playwright tests, an ingest step), reviews (graduation, privacy, maintainability, live guided
-     review, alert triage) and process (question rounds, subagent briefs, PR bodies, handoffs,
-     dependency research). For each: how often, rough cost, project or playbook.
-  2. The owner picks. Then build the **first batch**: the skills 003 Phase 1 needs (e.g. owner data
-     file + schema, tests, the PR routine), written from the real code, each naming the files to
-     copy and the checks that prove it's done. A PR here, and one in sdd-playbook for the general
-     ones plus `AGENT_TIPS.md` turned into topic skills shipped by house-process.
-  3. **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in its own
-     session, with the brief naming the skills. Compare its token cost with 002's slices (about
-     350–470k each).
+  and the owner approved the whole story on 2026-11-04. The skills inventory is done
+  (`DECISIONS.md`, 2026-11-05) and its first batch is in two PRs: the `chore-skills-first-batch` PR
+  here (the `owner-data-file`, `gate-check` and `tests` skills, `emptyOwner()`, `/pr-ready --suites`,
+  branch pruning, `process/skill-candidates.yaml`) and
+  [sdd-playbook#16](https://github.com/alexwebber/sdd-playbook/pull/16) (house-process 0.13.0:
+  the agent tips as 15 topic skills, and the `implement-brief`, `handoff` and `guided-review`
+  commands).
+- **Next session, first:** `/session-start`, and `/after-merge` for the skills PR if it has merged.
+  If sdd-playbook#16 has merged, reinstall house-process 0.13.0 from the playbook's `main` (as #111
+  did) in a PR, and change `CLAUDE.md`'s *AGENT_TIPS.md* paragraph to the topic skills, as the
+  template now has it.
+- **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in its own
+  session. Write the brief with `/speckit-house-process-implement-brief`: the skills are
+  `owner-data-file` (T002–T011, T020), `gate-check` (T012, T013, T018, T019, T022), `tests`
+  (T014–T020), and the topic skills `tips-github-actions`, `tips-privacy-pipelines` and
+  `tips-testing`. No private file is read (FR-036; made-up text only). Compare its token cost with
+  002's slices (about 350–470k each), and apply the skill gaps it reports in the same PR. Close
+  with `/speckit-house-process-handoff`.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -39,9 +36,6 @@ read on demand (search it for the topic at hand); this file keeps what's next an
     https://www.martlets.org.uk/give-in-your-will/) before committing. Commit the approved story and
     `VOICE.md` in a PR; the owner pastes the story into JustGiving and may retitle the page after
     it. Nothing from the draft goes in the repo, PRs or commit messages before approval.
-  - **A first lab result** (DEXA or lab VO2 max, 001 T142): offer the plainer wording first: "Lab
-    test (Clinic, 15 Mar 2026): 51.0. Your Garmin said 54 that day, 3.0 higher than the lab." The
-    built wording is the alternative.
 - **At reviews** (fold in, never as chores):
   - Offer a fresh Garmin training-status and predictions reading.
   - 002 T118 (to about 1 Dec 2026): note donation times the owner mentions, to compare with the
@@ -179,12 +173,23 @@ project-specific notes.
   lists when due. **This covers every part of the SDLC** (owner, 2026-11-05): implementation
   patterns (cards, charts, data files, tests) and reviews become skills too, here or in
   sdd-playbook when they'd help any project. A lesson about how to do a task updates its skill.
+  **The loop that keeps them improving** (owner, 2026-11-05) is agent-run: each subagent brief
+  asks for skill gaps, which the same PR fixes; each handoff adds or counts up tasks done by hand
+  in `process/skill-candidates.yaml` (listed by `/session-start`), and a candidate is built before
+  the work its `next` names; the lesson harvest reviews skills used, unused or out of date.
 - Spec Kit runs via the Claude integration with PowerShell scripts; house standards are
   installed from sdd-playbook in dev mode (preset `house-constitution`, extension
   `house-process`). Open `C:\Projects\alexanderwebber-workspace.code-workspace` to work on the
   site and the playbook side by side.
 
 ## Upstream candidates
+
+- `git worktree remove --force` from the Bash tool failed with "Permission denied" on the folder but
+  still unregistered the worktree; PowerShell's `Remove-Item -Recurse -Force` on the literal path,
+  alone in its call, removed the rest.
+- Playwright's `webServer` started fine from the Bash tool on 2026-11-05 (Playwright 1.64.1, 174
+  passed), against `tips-windows-cloud`'s "run Playwright from PowerShell". Recheck before relying
+  on either.
 
 - When analyze's fixes are applied, resume the tasks subagent (`SendMessage`), which already holds
   the docs, rather than starting a fresh one.

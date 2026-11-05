@@ -1,0 +1,53 @@
+# Tasks done by hand without a skill (the skills inventory, DECISIONS.md 2026-11-05). The agent keeps
+# this current: after a phase, it adds a task done by hand, or adds one to `times`. `next` names the
+# planned work that will need it: the agent builds the skill before that work starts (in the same
+# session as the brief, or the one before), then removes the entry here in the skill's PR.
+# /session-start lists the entries with a `next`. The lesson harvest's skills review goes through
+# the rest. A general skill goes to sdd-playbook (home: playbook), a project one to .claude/skills/.
+#
+#   - task: what is repeated, in a few words
+#     times: how often so far (count from specs/*/tasks.md, DECISIONS.md and the PR list)
+#     home: project | playbook
+#     next: the work that next needs it (optional)
+
+- task: Test-only preview state (SHELL_PREVIEW pages, a fixed-seed generate.ts, made-up text)
+  times: 3
+  home: project
+  next: 003 Phase 2 (story-preview)
+- task: Playwright page tests (both projects, axe sweeps, 320px fit, exact names, scoped locators)
+  times: 9
+  home: project
+  next: 003 Phase 2
+- task: Section page or landing card in Astro (card shell, dark mode, 320px, share image)
+  times: 6
+  home: project
+  next: 003 Phase 2
+- task: PR screenshots (phone width, light and dark, WebP, side branch linked by SHA)
+  times: 8
+  home: project
+  next: 003 Phase 2
+- task: Chart (SVG with an accessible name, the dataviz palette, label placement)
+  times: 8
+  home: project
+- task: Provider adapter or ingest stage (Python, provider contract, archive)
+  times: 2
+  home: project
+- task: Graduation review (adversarial self-review, design note, Lighthouse, axe, Principle II bar)
+  times: 3
+  home: playbook
+  next: 003 Phase 6
+- task: Maintainability review (knip, vulture, findings grouped into refactor PRs)
+  times: 1
+  home: playbook
+- task: Security alert triage (Dependabot, CodeQL, overrides with a reason)
+  times: 3
+  home: project
+- task: Question round before a phase (owner picks, recommended options, recorded in DECISIONS.md)
+  times: 8
+  home: playbook
+- task: Dependency research (current release, maintenance, a comparison in DECISIONS.md)
+  times: 4
+  home: playbook
+- task: Spec Kit or house-process upgrade (reinstall, check-versions, record)
+  times: 10
+  home: playbook
