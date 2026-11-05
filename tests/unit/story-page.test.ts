@@ -130,7 +130,7 @@ describe('the text is exactly as approved (US2)', () => {
     expect(html).toContain('<p>Lorem &lt;b&gt;ipsum&lt;/b&gt; &amp; dolor</p>');
     expect(html).toContain('<p>Sit &lt;i&gt;amet&lt;/i&gt; &amp; co</p>');
     expect(html).toContain('<p class="story-note">Note &lt;script&gt;x&lt;/script&gt; &amp; more</p>');
-    expect(html).not.toMatch(/<b>|<i>|<script>/);
+    expect(html).not.toMatch(/<(b|i|script)[\s>]/i);
   });
 });
 
