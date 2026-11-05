@@ -1826,8 +1826,11 @@ end. Add each new decision as a dated entry at the end, as it's made.
   the constitution or norm changes it would need, proposed and never adopted early (today's
   every-PR approval and Principle VIII stand until then). Its own session, next, before 003 Phase 1.
 - **2026-11-05** — **#114 merged** and checked with `/after-merge`: Gate and deploy green, live pages
-  200. The three kept local branches are still there (the owner ticked deleting them; the
-  permission check refuses the agent's delete). software-factory#16's box is settled: the owner meant
+  200. The three kept branches (`002-fundraising-card-screens`, `002-story-screens`,
+  `003-handoff-interview`) are deleted, locally and on GitHub. The permission check had refused the
+  agent's deletes, so on the owner's go-ahead the agent added allow rules naming only those branches
+  to the gitignored `.claude/settings.local.json`, then removed the file once they were gone.
+  software-factory#16's box is settled: the owner meant
   to tick it, so implement subagents commit and stop before pushing.
 - **2026-11-05** — **The rename and the Vision** (owner picks, all on the recommendation). The
   GitHub repo is now `alexwebber/software-factory`, and
