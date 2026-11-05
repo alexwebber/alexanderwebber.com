@@ -312,6 +312,8 @@ project-specific notes.
 - Deleting a PR's screenshot side branch after the merge breaks the merged PR's images once GitHub
   drops the commit. Keep such branches (made-up or public images only), and the delete never needs
   a permission.
+- CodeQL's `js/path-injection` didn't credit a `resolve` + `startsWith` containment check in a
+  local static server (4 alerts). Serving only from a map of files indexed up front cleared them.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.
