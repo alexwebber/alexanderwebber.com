@@ -98,9 +98,7 @@ test.beforeAll(async ({}, testInfo) => {
 
   // Every gate step, the build included, in the gate's order (tests/helpers/scratch-site.ts).
   gate = await runGate(root);
-  if (gate.failed) throw new Error(`the gate stopped at ${gate.failed}:
-${gate.messages.join('
-')}`);
+  if (gate.failed) throw new Error(`the gate stopped at ${gate.failed}:\n${gate.messages.join('\n')}`);
   // No Worker here, so /running/api/freshness is a 404 unless a test routes it.
   server = await serveDist(join(root, 'dist'));
   baseUrl = server.base;
