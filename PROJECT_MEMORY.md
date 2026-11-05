@@ -13,8 +13,8 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   PR, and [sdd-playbook#15](https://github.com/alexwebber/sdd-playbook/pull/15) for the
   harvest step) moved the decisions log to `DECISIONS.md` and
   added the `/session-start`, `/after-merge` and `/pr-ready` skills.
-- **Next session, first:** `/session-start`. Then `/after-merge` for the retro PR, and check
-  sdd-playbook#15 merged (if so, reinstall house-process 0.12.0 from its `main`).
+- **Next session, first:** `/session-start`, and `/after-merge` for the house-process 0.12.0 PR
+  if it has merged. (#109, #110 and sdd-playbook#15 are merged and checked.)
 - **Then the skills inventory** (owner, 2026-11-05; `DECISIONS.md` has the picks), in the main
   conversation, as one session:
   1. From evidence (`DECISIONS.md`, the three specs' tasks, *Upstream candidates*, sdd-playbook's
