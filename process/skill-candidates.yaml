@@ -33,5 +33,5 @@
   times: 4
   home: playbook
 - task: Spec Kit or house-process upgrade (reinstall, check-versions, record)
-  times: 10
+  times: 11
   home: playbook
