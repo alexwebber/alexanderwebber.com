@@ -6,9 +6,13 @@ description: The PR routine's checks for the current branch in this project — 
 # PR ready
 
 1. Commit everything first; uncommitted changes aren't checked.
-2. Run `node scripts/process/pr-ready.ts` **in the background** (it makes two deploy builds, a
-   few minutes). Use `--no-dist` for a PR that changes no site code or data (docs, process,
-   ingest-only), and `--reuse-dist` if `dist/` is already a deploy build of this commit.
+2. Run `node scripts/process/pr-ready.ts --suites` **in the background** (two deploy builds, a
+   few minutes; with Playwright, about ten). `--suites` runs the PR routine's suites for what the
+   branch changed (`npm test`, `astro check`, pytest, a preview build with both Playwright
+   projects, the gate's commands), and `--suites=all` runs every one. A failing suite prints its
+   output's tail: fix it and run again. Use `--no-dist` for a PR that changes no site code or data
+   (docs, process, ingest-only), and `--reuse-dist` if `dist/` is already a deploy build of this
+   commit.
 3. **Private terms** (`C:\temp\private-terms.txt`, one per line, outside the repo): a match
    prints its place and the term's number and mask, never the term. Remove every match before
    pushing, rewording the commit message too if it matched. If the file is missing (a cloud

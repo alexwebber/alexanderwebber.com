@@ -95,6 +95,54 @@ export function addDays(date: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// --- Skill candidates (process/skill-candidates.yaml) ------------------------------------------
+
+export interface SkillCandidate {
+  /** The repeated task, in a few words. */
+  task: string;
+  /** How many times it has been done by hand (without a skill). */
+  times: number;
+  /** Where its skill would live. */
+  home: 'project' | 'playbook';
+  /** The planned work that will next need it, if known: build the skill before that work. */
+  next?: string;
+}
+
+export function parseCandidates(text: string): SkillCandidate[] {
+  const data: unknown = parse(text, { version: '1.2', schema: 'core' }) ?? [];
+  if (!Array.isArray(data)) throw new Error('process/skill-candidates.yaml must be a list');
+  return data.map((item: unknown, i) => {
+    const entry = item as Partial<SkillCandidate> | null;
+    if (typeof entry?.task !== 'string' || entry.task.trim() === '') throw new Error(`candidate ${i + 1}: "task" is missing`);
+    if (!Number.isInteger(entry.times) || entry.times! < 1) throw new Error(`candidate ${i + 1}: "times" must be a whole number, at least 1`);
+    if (entry.home !== 'project' && entry.home !== 'playbook') throw new Error(`candidate ${i + 1}: "home" must be project or playbook`);
+    if (entry.next !== undefined && (typeof entry.next !== 'string' || entry.next.trim() === '')) throw new Error(`candidate ${i + 1}: "next" must be text`);
+    return { task: entry.task.trim(), times: entry.times!, home: entry.home, ...(entry.next ? { next: entry.next.trim() } : {}) };
+  });
+}
+
+// --- The PR routine's suites (pr-ready --suites) ------------------------------------------------
+
+export type Suite = 'unit' | 'astro-check' | 'pytest' | 'e2e' | 'gate';
+
+const SUITE_RULES: [Suite, RegExp][] = [
+  ['unit', /^(src|scripts|tests|schemas|data|public|\.github)\/|^[^/]+\.(json|ts|mjs)$/],
+  ['astro-check', /^(src|scripts|tests|schemas)\/|^[^/]+\.(json|ts|mjs)$/],
+  ['pytest', /^(schemas|ingest)\//],
+  ['e2e', /^(src|public|data|schemas|tests\/(e2e|a11y|fixtures|helpers))\/|^(astro\.config\.mjs|playwright\.config\.ts|package(-lock)?\.json)$/],
+  ['gate', /^(src|public|data|schemas|scripts)\/|^\.github\/actions\/gate\/|^(astro\.config\.mjs|package(-lock)?\.json)$/],
+];
+
+/** The suites the PR routine runs for a branch that changed `files` (repo-relative), in run order. */
+export function suitesFor(files: string[]): Suite[] {
+  return SUITE_RULES.filter(([, pattern]) => files.some((file) => pattern.test(file))).map(([suite]) => suite);
+}
+
+/** The last `count` non-blank lines of a command's output, for a failure report. */
+export function tail(text: string, count: number): string[] {
+  return text.split(/\r?\n/).filter((line) => line.trim() !== '').slice(-count);
+}
+
 // --- Private-term search -----------------------------------------------------------------------
 
 /** One term per line; blank lines and `#` comments are skipped. */

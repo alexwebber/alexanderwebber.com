@@ -17,6 +17,7 @@ import GarminAttribution from '../../src/sections/running/components/GarminAttri
 import LastUpdated from '../../src/sections/running/components/LastUpdated.astro';
 import SectionLayout from '../../src/sections/running/components/SectionLayout.astro';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
+import { emptyOwner } from '../helpers/owner-data.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -315,18 +316,7 @@ describe('SectionLayout', () => {
       getHealthSeries: async () => [],
       getRefreshRecord: async () => refresh,
       getCampaignFigures: async () => [],
-      getOwner: async () => ({
-        section: section as SectionSettings | undefined,
-        goals: [],
-        upcomingRaces: [],
-        races: [],
-        overrides: [],
-        exclusions: [],
-        lab: [],
-        manualMetrics: { training_status: [], race_predictions: [] },
-        campaigns: [],
-        stories: [],
-      }),
+      getOwner: async () => emptyOwner({ section: section as SectionSettings | undefined }),
     };
   }
 

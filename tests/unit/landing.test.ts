@@ -15,6 +15,7 @@ import Landing from '../../src/sections/running/pages/index.astro';
 import RunPage from '../../src/sections/running/pages/runs/[id].astro';
 import { stripTags } from '../helpers/html.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
+import { emptyOwner } from '../helpers/owner-data.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -73,18 +74,14 @@ function store(f: Fixture = {}): RunningStore {
     getRefreshRecord: async () =>
       f.refresh ?? { schema_version: 1, generated_at: '2026-10-04T08:00:00Z', sources: { intervals: { last_data_change_at: '2026-10-04T08:00:00Z', last_success_at_build: '2026-10-04T08:00:00Z' } } },
     getCampaignFigures: async () => f.figures ?? [],
-    getOwner: async () => ({
-      section: 'section' in f ? f.section : SECTION,
-      goals: f.goals ?? GOALS,
-      upcomingRaces: f.upcoming ?? [BRIGHTON],
-      races: [],
-      overrides: [],
-      exclusions: [],
-      lab: [],
-      manualMetrics: { training_status: [], race_predictions: f.predictions ?? [{ as_of: '2026-10-01', marathon: '3:28:40', '10k': '44:10' }] },
-      campaigns: f.campaigns ?? [],
-      stories: [],
-    }),
+    getOwner: async () =>
+      emptyOwner({
+        section: 'section' in f ? f.section : SECTION,
+        goals: f.goals ?? GOALS,
+        upcomingRaces: f.upcoming ?? [BRIGHTON],
+        manualMetrics: { training_status: [], race_predictions: f.predictions ?? [{ as_of: '2026-10-01', marathon: '3:28:40', '10k': '44:10' }] },
+        campaigns: f.campaigns ?? [],
+      }),
   };
 }
 

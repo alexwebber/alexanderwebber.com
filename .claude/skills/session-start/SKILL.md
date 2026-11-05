@@ -24,6 +24,8 @@ description: Run this project's session-start checks (git, main's workflows, iss
    - **Due triggers**: do them in this session if they're small, or tell the owner they're next.
      Remove a done trigger from `process/triggers.yaml` in the same PR, and record the outcome
      in `DECISIONS.md`.
+   - **Skill candidates with a `next`**: if this session's work is that `next`, build the skill
+     first (or say it's next). The rest wait for the lesson harvest's skills review.
 3. Then read the event follow-ups in *Next session* (e.g. "ask whether the reviewers replied")
    and fold them into what you say to the owner.
 4. Report to the owner in a few lines: what was flagged and what you did, then the session's

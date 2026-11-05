@@ -12,6 +12,7 @@ import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import type { Campaign, CampaignFigures, CampaignStory, OwnerData, Race, Run, RunningStore, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
 import { fundraisingCard } from '../../src/sections/running/og/fundraising.png.ts';
 import { stripTags } from '../helpers/html.ts';
+import { emptyOwner } from '../helpers/owner-data.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -35,18 +36,12 @@ function store(point: Partial<CampaignFigures['points'][number]>, { lastReadAt =
     getRefreshRecord: async () => undefined,
     getCampaignFigures: async () =>
       published ? [{ schema_version: 1, campaign_id: CAMPAIGN.id, last_read_at: lastReadAt, points: [{ date: '2026-11-09', raised_pence: 1, supporters: 1 }, { date: '2026-11-10', raised_pence: 0, supporters: 0, ...point }] }] : [],
-    getOwner: async () => ({
-      section: { focus_race: { race_id: 'seaside-2027', build_start: '2026-09-05', charity: { name: 'Example hospice' } } } as never,
-      goals: [],
-      upcomingRaces: [{ id: 'seaside-2027', name: 'Seaside Marathon', date: '2027-04-04', distance: 'marathon' }],
-      races: [],
-      overrides: [],
-      exclusions: [],
-      lab: [],
-      manualMetrics: { training_status: [], race_predictions: [] },
-      campaigns,
-      stories: [],
-    }),
+    getOwner: async () =>
+      emptyOwner({
+        section: { focus_race: { race_id: 'seaside-2027', build_start: '2026-09-05', charity: { name: 'Example hospice' } } } as never,
+        upcomingRaces: [{ id: 'seaside-2027', name: 'Seaside Marathon', date: '2027-04-04', distance: 'marathon' }],
+        campaigns,
+      }),
   };
 }
 

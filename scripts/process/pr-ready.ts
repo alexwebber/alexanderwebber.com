@@ -1,7 +1,11 @@
 // The PR routine's checks for the current branch (/pr-ready skill): a private-term search, a dist/
 // comparison against the branch's base on main, and the PR's own checks once it exists.
 //
-//   node scripts/process/pr-ready.ts [--no-dist] [--reuse-dist]
+//   node scripts/process/pr-ready.ts [--suites[=all]] [--no-dist] [--reuse-dist]
+//
+// --suites runs the PR routine's suites for what the branch changed (suitesFor in lib.ts; =all runs
+// every one): `npm test`, `astro check`, ingest's pytest, a SHELL_PREVIEW=1 build with Playwright on
+// both projects, and the gate's commands over a deploy build. A failure prints its output's tail.
 //
 // Private terms: one per line in the file named by PRIVATE_TERMS_FILE (default
 // C:\temp\private-terms.txt), kept outside the repo. Added lines, new file names, commit messages
@@ -12,9 +16,10 @@
 // temporary worktree under spikes/process/out/ (gitignored), the branch in the repo (skipped with
 // --reuse-dist, which keeps the current dist/), both as deploy builds, and every file is compared.
 // Exits 1 when a private term is found or a check failed.
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { addedLines, diffTrees, ghJson, hashTree, maskTerm, parseTerms, run, section, summarisePaths, termMatchers } from './lib.ts';
+import { addedLines, diffTrees, ghJson, hashTree, maskTerm, parseTerms, run, section, suitesFor, summarisePaths, tail, termMatchers, type Suite } from './lib.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const git = (...args: string[]) => run('git', args, ROOT);
@@ -86,13 +91,48 @@ function deployBuild(cwd: string): void {
 // Child processes inherit this environment, and a deploy build must not include the previews.
 delete process.env.SHELL_PREVIEW;
 
+/** Runs a shell command (fixed text, never input); prints pass or fail, and the output's tail on failure. */
+function step(label: string, command: string, cwd: string = ROOT, env: NodeJS.ProcessEnv = process.env): boolean {
+  const started = Date.now();
+  const result = spawnSync(command, { cwd, env, shell: true, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
+  const ok = result.status === 0;
+  flag(ok, `${label}: ${ok ? 'passed' : `failed (exit ${result.status ?? result.signal})`}, ${Math.round((Date.now() - started) / 1000)} s`);
+  if (!ok) for (const line of tail(`${result.stdout ?? ''}\n${result.stderr ?? ''}`, 15)) console.log(`      ${line}`);
+  return ok;
+}
+
+const BUILD = `node scripts/gen-types.ts && node "${ASTRO}" build --silent`;
+const suitesArg = [...args].find((a) => a === '--suites' || a.startsWith('--suites='));
+const ALL_SUITES: Suite[] = ['unit', 'astro-check', 'pytest', 'e2e', 'gate'];
+const suites: Suite[] = !suitesArg ? [] : suitesArg === '--suites=all' ? ALL_SUITES : suitesFor(git('diff', '--name-only', base, 'HEAD').split('\n').filter(Boolean));
+/** What dist/ holds now: unknown until this run builds it. */
+let dist: 'unknown' | 'preview' | 'deploy' = 'unknown';
+
+if (suitesArg) {
+  await section('Suites', () => {
+    console.log(`  For this branch's changes: ${suites.join(', ') || 'none'}${suites.includes('gate') ? ' (the gate runs after the dist/ comparison)' : ''}`);
+    if (suites.includes('unit')) step('npm test', 'npm test');
+    if (suites.includes('astro-check')) step('astro check', `node "${ASTRO}" check`);
+    if (suites.includes('pytest')) step('pytest', 'uv run pytest -q', join(ROOT, 'ingest'));
+    if (suites.includes('e2e')) {
+      // A running preview server blocks Playwright's, even on another port.
+      spawnSync(`node "${ASTRO}" preview stop`, { cwd: ROOT, shell: true, stdio: 'ignore' });
+      dist = 'preview';
+      if (step('preview build (SHELL_PREVIEW=1)', BUILD, ROOT, { ...process.env, SHELL_PREVIEW: '1' })) {
+        step('Playwright, both projects', 'npx playwright test --reporter=line', ROOT, { ...process.env, SHELL_PREVIEW: '1' });
+      }
+    }
+  });
+}
+
 if (!args.has('--no-dist')) {
   await section(`dist/ against ${base.slice(0, 7)}`, () => {
     if (existsSync(WORKTREE)) git('worktree', 'remove', '--force', WORKTREE);
     git('worktree', 'add', '--detach', '--quiet', WORKTREE, base);
     try {
       deployBuild(WORKTREE);
-      if (!args.has('--reuse-dist') || !existsSync(join(ROOT, 'dist'))) deployBuild(ROOT);
+      if (dist === 'preview' || !args.has('--reuse-dist') || !existsSync(join(ROOT, 'dist'))) deployBuild(ROOT);
+      dist = 'deploy';
       const diff = diffTrees(hashTree(join(WORKTREE, 'dist')), hashTree(join(ROOT, 'dist')));
       console.log(`  ${diff.same} identical, ${diff.changed.length} changed, ${diff.added.length} added, ${diff.removed.length} removed`);
       for (const [label, paths] of [['Changed', diff.changed], ['Added', diff.added], ['Removed', diff.removed]] as const) {
@@ -103,6 +143,17 @@ if (!args.has('--no-dist')) {
     } finally {
       git('worktree', 'remove', '--force', WORKTREE);
       rmSync(join(ROOT, 'spikes', 'process'), { recursive: true, force: true });
+    }
+  });
+}
+
+if (suites.includes('gate')) {
+  await section('Gate commands (deploy build)', () => {
+    if (dist !== 'deploy' && !step('deploy build', BUILD)) return;
+    const scripts = (JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as { scripts: Record<string, string> }).scripts;
+    // In the gate's order (.github/actions/gate/action.yml); check-links once 003 adds it.
+    for (const name of ['validate-data', 'scan-images', 'check-boundaries', 'check-links', 'scan-privacy']) {
+      if (scripts[name]) step(name, `npm run ${name} --silent`);
     }
   });
 }

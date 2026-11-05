@@ -31,3 +31,9 @@
   task: >-
     The refresh dispatch token (Worker secret GITHUB_DISPATCH_TOKEN) expires 2027-10-17 23:00 UTC.
     Raise a new fine-grained token (Actions: write on this repo only) with the owner this week.
+- due: 2027-01-04
+  task: >-
+    001 T142: ask the owner whether a DEXA or lab VO2 max test is booked (expected in 2027; they
+    said so on 2026-11-05). When a result comes, offer the plainer wording first: "Lab test (Clinic,
+    15 Mar 2026): 51.0. Your Garmin said 54 that day, 3.0 higher than the lab." The built wording is
+    the alternative. If not booked, move this trigger on.

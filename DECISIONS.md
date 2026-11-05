@@ -1785,3 +1785,28 @@ end. Add each new decision as a dated entry at the end, as it's made.
   the background, and maps that stop loading after iOS stops their workers) adopted, as core
   releases with fixes that touch us. `session-start.ts` gains `SETTLED`, so a merged PR whose
   unticked box was answered elsewhere (#101) stops being flagged at every session start.
+- **2026-11-05** — **#112 merged** and checked with `/after-merge` (Gate and deploy green, live pages
+  200). The owner: no reply yet from the Martlets story reviewers; the lab test (001 T142) probably
+  won't be until 2027, so it moved from the every-session asks to a dated trigger on 2027-01-04.
+- **2026-11-05** — **Skills inventory and the first batch** (owner picks, after the inventory from
+  the PR list, the three specs' tasks, this log, *Upstream candidates* and `AGENT_TIPS.md`):
+  - **Everything in one session**, on the owner's choice over the split recommended (project batch
+    here, playbook batch next session).
+  - **Project skills:** `owner-data-file` (schema, fixtures, registration, validation, the approved
+    text variant; owner data files were added 10 times, `campaign-story` touching 33 files),
+    `gate-check` (5 gate scans so far) and `tests`. `tests/helpers/owner-data.ts`'s `emptyOwner()`
+    replaces the 7 hand-written `OwnerData` stubs, so a new owner file changes one fake.
+    `/pr-ready --suites` runs the PR routine's step 2 for what the branch changed (`suitesFor` in
+    `scripts/process/lib.ts`, unit-tested). `/after-merge` also deletes local branches whose tip is
+    on `origin/main` or was merged by a PR (71 of 74 today), and lists the rest.
+  - **The improvement loop** (owner asked for one): skill gaps reported by each subagent brief and
+    fixed in the same PR; `process/skill-candidates.yaml` (12 tasks done by hand, counts from the
+    evidence) kept by each handoff and listed by `/session-start`, with a candidate built before the
+    work its `next` names; and a skills review in the lesson harvest.
+  - **Playbook** ([sdd-playbook#16](https://github.com/alexwebber/sdd-playbook/pull/16), house-process
+    0.13.0): the 90 agent tips moved unchanged into 15 topic skills, `AGENT_TIPS.md` kept as an
+    index so section links still land; `implement-brief`, `handoff` and `guided-review` commands;
+    the harvest's skills review; the template norm *Repeated work becomes skills*. Test-installed
+    in a throwaway worktree: all 21 skills install.
+  - **Kept local branches:** `002-fundraising-card-screens` and `002-story-screens` (PR screenshots
+    only) and `003-handoff-interview` (a memory note superseded by #107), for the owner.

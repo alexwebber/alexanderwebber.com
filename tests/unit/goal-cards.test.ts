@@ -11,6 +11,7 @@ import type { Goal, RunningStore, SectionSettings } from '../../src/sections/run
 import type { Effort } from '../../src/sections/running/domain/efforts.ts';
 import type { GoalEvaluation } from '../../src/sections/running/domain/goals.ts';
 import { stripTags } from '../helpers/html.ts';
+import { emptyOwner } from '../helpers/owner-data.ts';
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -25,18 +26,7 @@ function fakeStore(section?: Partial<SectionSettings>): RunningStore {
     getHealthSeries: async () => [],
     getRefreshRecord: async () => undefined,
     getCampaignFigures: async () => [],
-    getOwner: async () => ({
-      section: section as SectionSettings | undefined,
-      goals: [],
-      upcomingRaces: [],
-      races: [],
-      overrides: [],
-      exclusions: [],
-      lab: [],
-      manualMetrics: { training_status: [], race_predictions: [] },
-      campaigns: [],
-      stories: [],
-    }),
+    getOwner: async () => emptyOwner({ section: section as SectionSettings | undefined }),
   };
 }
 

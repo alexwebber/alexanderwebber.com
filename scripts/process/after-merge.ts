@@ -1,6 +1,6 @@
 // Post-merge checks for one PR (/after-merge skill): its boxes, its checks, main's Gate run for the
 // merge commit followed to the end (deploy included), then live checks on the site. Fast-forwards a
-// clean local main and deletes the merged local branch.
+// clean local main and deletes the merged local branch, and any other local branch already merged.
 //
 //   node scripts/process/after-merge.ts <pr> [--live=/path[=text] ...] [--timeout=<minutes>]
 //
@@ -101,6 +101,33 @@ await section('Local clean-up', () => {
     git('branch', '-D', view.headRefName);
     console.log(`  Deleted local branch ${view.headRefName}.`);
   }
+  // Earlier merged branches too: only those whose tip is on origin/main, or is the commit a merged
+  // PR merged, so no unmerged work is lost. Anything else is listed and kept.
+  const current = git('rev-parse', '--abbrev-ref', 'HEAD');
+  const mergedTips = new Set(
+    ghJson<{ headRefOid: string }[]>(['pr', 'list', '--state', 'merged', '--limit', '500', '--json', 'headRefOid']).map((p) => p.headRefOid),
+  );
+  const deleted: string[] = [];
+  const kept: string[] = [];
+  for (const line of git('for-each-ref', '--format=%(refname:short) %(objectname)', 'refs/heads/').split('\n')) {
+    const [name, tip] = line.split(' ');
+    if (!name || !tip || name === 'main' || name === current) continue;
+    let onMain = mergedTips.has(tip);
+    if (!onMain) {
+      try {
+        git('merge-base', '--is-ancestor', tip, 'origin/main');
+        onMain = true;
+      } catch {
+        onMain = false;
+      }
+    }
+    if (onMain) {
+      git('branch', '-D', name);
+      deleted.push(name);
+    } else kept.push(name);
+  }
+  if (deleted.length > 0) console.log(`  Deleted ${deleted.length} other merged local branch(es).`);
+  if (kept.length > 0) console.log(`  Kept ${kept.length} local branch(es) with commits not on main: ${kept.join(', ')}`);
 });
 
 console.log(attention ? '\n! Something needs action (lines starting with "!").' : '\nAll post-merge checks passed.');
