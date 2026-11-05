@@ -1,0 +1,16 @@
+---
+// A figure set apart from a chapter's prose (spec 003; FR-010, FR-011, FR-014): its label, its date
+// ("15 Mar 2001" or "March 2001"), the figure in <strong> and its Garmin source in brackets, all on
+// one block, smaller than the prose. StoryProse places it after the paragraph before it; validation
+// keeps it from opening a chapter. Built on one line, because Astro strips line-break whitespace
+// between inline elements.
+import type { FigureView } from '../data/journey.ts';
+
+export interface Props {
+  figure: FigureView;
+}
+
+const { figure } = Astro.props;
+---
+
+<p class="story-figure-block">{figure.label}, {figure.asOf}:{' '}<strong>{figure.text}</strong>{figure.source && <Fragment>{' '}<span class="story-source">({figure.source})</span></Fragment>}</p>

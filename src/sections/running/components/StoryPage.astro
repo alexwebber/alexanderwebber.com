@@ -1,0 +1,36 @@
+---
+// The journey story page body (spec 003; contracts/routes.md *The page*), shared by the real page
+// (Phase 3) and the test-only previews, which pass made-up journeys. In order: the approved title as
+// the <h1>, the chapters oldest first, the closing section if approved, then the note once (FR-005,
+// FR-007, FR-008). Nothing sits between the <h1> and the first chapter yet (Phase 4 adds the closed
+// chapter list there at four or more chapters).
+//
+// No "Last updated" (FR-071: the story isn't a data view) and no Garmin line under the heading:
+// attribution sits at each figure (FR-014). No Donate button, fundraising card, figure summary,
+// chart or progress bar (FR-002). No client JavaScript. Styles: styles/story.css.
+import type { JourneyView } from '../data/journey.ts';
+import SectionLayout from './SectionLayout.astro';
+import StoryChapter from './StoryChapter.astro';
+import StoryClosing from './StoryClosing.astro';
+import StoryNote from './StoryNote.astro';
+import '../styles/story.css';
+
+export interface Props {
+  journey: JourneyView;
+  /** Share image path: /og/running-story.png on the real page. */
+  image: string;
+  /** The <title>; defaults to "<approved title> · Running · Alexander Webber". Previews override it. */
+  title?: string;
+}
+
+const { journey, image, title } = Astro.props;
+const { page, chapters, closing, note } = journey;
+---
+
+<SectionLayout heading={page.title} title={title} description={page.description} image={image} imageAlt={page.share_text} garmin={false} lastUpdated={false} current="/running/story/">
+  <div class="story-page">
+    {chapters.map((chapter) => <StoryChapter chapter={chapter} />)}
+    {closing && <StoryClosing heading={closing.heading} paragraphs={closing.paragraphs} />}
+    <StoryNote text={note} />
+  </div>
+</SectionLayout>

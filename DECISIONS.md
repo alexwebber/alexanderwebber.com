@@ -1903,3 +1903,7 @@ end. Add each new decision as a dated entry at the end, as it's made.
     twice. They hold only made-up previews or already-public pages.
   - **The nightly Quality run is Lighthouse only**, not Playwright, so `page-tests` says real-data
     layout checks run only on UI PRs (the backlog's nightly 320 px check would close that).
+- **2026-11-05** — **#118 merged** (the four Phase 2 skills and `scripts/process/screenshots.ts`).
+  The owner ticked its one box: screenshot side branches (`<branch>-screens`, made-up previews or
+  already-public pages only) stay after a merge. `/after-merge 118`: the PR's 10 checks and `main`'s
+  Gate green, deploy included; `/` and `/running/` answer 200.

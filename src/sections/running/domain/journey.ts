@@ -1,6 +1,7 @@
 // The journey story's text and dates (specs/003-journey-story/data-model.md §5, research.md R6):
 // pure functions, no dependency. validate.ts uses them to refuse anything the page couldn't show;
-// the story page (Phase 2) renders from the same parse.
+// the story page renders from the same parse, with the display helpers at the end (dates, order,
+// Garmin attribution).
 //
 // Prose is plain text in paragraphs separated by blank lines, with two inline forms only:
 // `{{figure-id}}` (a figure: inline inside a sentence, set apart when alone in its paragraph) and
@@ -200,4 +201,76 @@ export function startsBeforeEnd(when: When): boolean {
 /** Whether a day or month, or a period's end, is after `today`: its first day is (research.md R6). */
 export function isAfter(when: When, today: string): boolean {
   return when.to.first > today;
+}
+
+// --- Display (data-model.md §10; owner decisions 1 and 2, #105) ---------------------------------
+
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/** One `<time>` element's text and `datetime` value. A period has two, joined by " to ". */
+export interface WhenPart {
+  text: string;
+  /** `YYYY-MM-DD` for a day, `YYYY-MM` for a month: valid HTML `datetime` values. */
+  datetime: string;
+}
+
+function endText(end: WhenEnd, withYear: boolean): string {
+  const [y, m, d] = end.text.split('-');
+  const year = withYear ? ` ${y}` : '';
+  return end.kind === 'day' ? `${Number(d)} ${MONTHS_SHORT[Number(m) - 1]}${year}` : `${MONTHS_LONG[Number(m) - 1]}${year}`;
+}
+
+/**
+ * A `when` as shown: "15 Mar 2001" for a day (spec 001's date format), "March 2001" for a month
+ * (months in full when there's no day), and a period's two ends joined by " to ", the year said
+ * once when both ends share it: "March to September 2001", "March 2001 to February 2002",
+ * "15 Mar to 20 Sep 2001". HTML has no `datetime` for a range, so a period is two `<time>`s.
+ */
+export function whenParts(when: When): WhenPart[] {
+  if (when.kind !== 'period') return [{ text: endText(when.from, true), datetime: when.from.text }];
+  const sameYear = when.from.text.slice(0, 4) === when.to.text.slice(0, 4);
+  return [
+    { text: endText(when.from, !sameYear), datetime: when.from.text },
+    { text: endText(when.to, true), datetime: when.to.text },
+  ];
+}
+
+/** `whenParts` as one line of text. */
+export function whenText(when: When): string {
+  return whenParts(when)
+    .map((part) => part.text)
+    .join(' to ');
+}
+
+/** What `sortChapters` reads of a chapter. */
+export interface Sortable {
+  id: string;
+  when: string;
+  order?: number | undefined;
+}
+
+/**
+ * Chapters oldest first (FR-002): by the first day `when` covers, then `order` (validation makes
+ * ties carry distinct ones), then `id`, so every build gives the same order. A `when` that doesn't
+ * parse sorts last; validation refuses it before a build.
+ */
+export function sortChapters<T extends Sortable>(chapters: readonly T[]): T[] {
+  const start = (c: T) => parseWhen(c.when)?.start ?? '9999-12-31';
+  const order = (c: T) => c.order ?? Number.MAX_SAFE_INTEGER;
+  return chapters.toSorted((a, b) => start(a).localeCompare(start(b)) || order(a) - order(b) || a.id.localeCompare(b.id));
+}
+
+export const DERIVED_SOURCE = 'derived in part from Garmin device-sourced data';
+
+/**
+ * A figure's Garmin attribution as shown beside it (research.md R1, FR-014): "Garmin <device>",
+ * "Garmin", or the derived wording for `derived`. Undefined for a figure without `garmin`: the
+ * owner's own figure shows nothing extra.
+ */
+export function sourceText(garmin: string | undefined): string | undefined {
+  if (garmin === undefined) return undefined;
+  if (garmin === 'Garmin') return 'Garmin';
+  if (garmin === 'derived') return DERIVED_SOURCE;
+  return `Garmin ${garmin}`;
 }

@@ -1,0 +1,83 @@
+/*
+ * The journey story page (spec 003; contracts/routes.md *Layout and styles*): StoryPage.astro and its
+ * parts. Every rule sits under .theme-running with a .story- prefix (spec 001's .story-link panel is
+ * the landing page's and isn't styled here), in a stylesheet rather than scoped <style> blocks, so the
+ * repeated markup carries no per-element attribute and a component that isn't rendered can't reorder
+ * a page's inlined CSS (research.md R16, R19). Colours come from the tokens, so dark mode follows.
+ *
+ * - Text stops at 66ch (FR-072: lines of at most about 75 characters), and long words wrap, so
+ *   nothing scrolls sideways at 320 px.
+ * - A figure's source in the prose is the prose's size in the secondary colour (owner decision 1).
+ * - The takeaway is a box with a border on every side and a heavier start edge, so it stands apart
+ *   by shape and its "What I learned" label in light, dark and forced colours (owner decision 10,
+ *   FR-004).
+ */
+.theme-running .story-page {
+  overflow-wrap: anywhere;
+}
+
+.theme-running .story-chapter {
+  margin: 0 0 var(--space-7);
+}
+
+.theme-running .story-chapter > h2,
+.theme-running .story-closing > h2 {
+  margin: 0 0 var(--space-1);
+  line-height: var(--leading-tight);
+}
+
+.theme-running .story-page p,
+.theme-running .story-takeaway {
+  max-width: 66ch;
+}
+
+.theme-running .story-when {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.theme-running .story-source {
+  color: var(--color-text-secondary);
+}
+
+/* A figure set apart from the prose: smaller than the prose, after the paragraph it follows. */
+.theme-running .story-figure-block {
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--color-border);
+  font-size: var(--step--1);
+}
+
+.theme-running .story-takeaway {
+  margin: var(--space-5) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-inline-start: 6px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.theme-running .story-takeaway > h3 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--step-0);
+}
+
+.theme-running .story-takeaway > p {
+  margin: 0;
+}
+
+.theme-running .story-closing {
+  margin: 0 0 var(--space-6);
+}
+
+.theme-running .story-note {
+  margin-top: var(--space-6);
+  font-size: var(--step--1);
+  color: var(--color-text-secondary);
+}
+
+@media (forced-colors: active) {
+  .theme-running .story-takeaway {
+    border-color: CanvasText;
+    border-inline-start-color: Highlight;
+  }
+}

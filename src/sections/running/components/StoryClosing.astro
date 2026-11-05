@@ -1,0 +1,19 @@
+---
+// The journey story's closing section, for someone at the start (spec 003; FR-007): its heading and
+// paragraphs, which take links to pages of this site but no figures. Shown after the latest chapter,
+// only once approved.
+import type { Paragraph } from '../domain/journey.ts';
+import StoryProse from './StoryProse.astro';
+
+export interface Props {
+  heading: string;
+  paragraphs: readonly Paragraph[];
+}
+
+const { heading, paragraphs } = Astro.props;
+---
+
+<section class="story-closing" aria-labelledby="story-closing-title">
+  <h2 id="story-closing-title">{heading}</h2>
+  <StoryProse paragraphs={paragraphs} />
+</section>
