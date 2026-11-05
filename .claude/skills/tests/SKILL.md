@@ -6,7 +6,7 @@ description: Write this project's Vitest unit and contract tests (and their pyte
 # Tests
 
 Coverage of each component's documented contract comes with the code, not test-first (Principle
-II(a)). Playwright page tests are a separate candidate (`process/skill-candidates.yaml`).
+II(a)). Playwright page tests have their own skill, `page-tests`.
 
 ## Where they go
 

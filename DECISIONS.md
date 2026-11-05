@@ -1882,3 +1882,24 @@ end. Add each new decision as a dated entry at the end, as it's made.
     sentinel test, two ajv and gen-types pitfalls), `gate-check` (drills on a copy call the functions,
     `dist/` checks take `--dist=`), `tests` (`tempRepo().write` and binary files, the journey helper).
     A new skill candidate: the gate drill on a scratch copy.
+- **2026-11-05** — **#117 merged** (003 Phase 1). The owner ticked all seven boxes, so the checks'
+  readings of figures, dates, sources, links and photos stand as built. `/after-merge 117`: the PR's
+  11 checks and `main`'s Gate green, deploy included; `/` and `/running/` answer 200. The dispatched
+  refresh was idle (nothing new), and an idle run skips the publish job, where the bot's gate and its
+  new `check-links` step run. The 00:17 UTC catch-all always publishes, so a trigger on 2026-11-06
+  checks that run, and T023 stays open until then.
+- **2026-11-05** — **The four skills 003 Phase 2 needs** (process PR, before Phase 2's brief), drawn
+  from specs 001 and 002: `preview-state` (made-up states behind `SHELL_PREVIEW=1`), `page-tests`
+  (Playwright and axe, both projects, scratch-copy drills), `section-page` (a page, area, share image
+  or landing card, and the CSS pitfalls), `pr-screenshots`. Their four candidates are removed.
+  - **Screenshots became a script**, `scripts/process/screenshots.ts`, done by hand 8 times before.
+    It serves `dist/` itself rather than through `astro preview` (backgrounded under a coding agent,
+    and blocking Playwright's server), shoots phone shots at 360 px with `isMobile` off (full-page
+    shots fail with it on), writes WebP, and with `--publish` commits to `<branch>-screens` by git
+    plumbing, leaving the working tree alone. Tried for real: six shots looked right, and a publish
+    served `image/webp` from `raw.githubusercontent.com` by SHA.
+  - **Side branches stay after the merge** (the owner confirms in the PR): deleting one breaks the
+    merged PR's images once GitHub drops the commit, and the permission check refused the deletes
+    twice. They hold only made-up previews or already-public pages.
+  - **The nightly Quality run is Lighthouse only**, not Playwright, so `page-tests` says real-data
+    layout checks run only on UI PRs (the backlog's nightly 320 px check would close that).
