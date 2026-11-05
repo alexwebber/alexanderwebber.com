@@ -10,10 +10,11 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
   journey story, has its spec, plan and tasks merged (#101, #105, #108), with nothing visible yet,
   and the owner approved the whole story on 2026-11-04. The process retro (`chore-process-retro`
-  PR, and an sdd-playbook PR for the harvest step) moved the decisions log to `DECISIONS.md` and
+  PR, and [sdd-playbook#15](https://github.com/alexwebber/sdd-playbook/pull/15) for the
+  harvest step) moved the decisions log to `DECISIONS.md` and
   added the `/session-start`, `/after-merge` and `/pr-ready` skills.
-- **Next session, first:** `/session-start`. Then `/after-merge` for the retro PR, and check the
-  sdd-playbook PR merged (reinstall house-process from its `main` if so). **Then 003 Phase 1**
+- **Next session, first:** `/session-start`. Then `/after-merge` for the retro PR, and check
+  sdd-playbook#15 merged (if so, reinstall house-process 0.12.0 from its `main`). **Then 003 Phase 1**
   (slice 1, files and checks, T001–T023) via `/speckit-implement` as a subagent, in its own session.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the

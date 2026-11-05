@@ -1736,7 +1736,8 @@ end. Add each new decision as a dated entry at the end, as it's made.
     images. The permission check refused the agent's delete twice, so they stay unless the owner
     says otherwise; later PRs use the one-commit route #95 used.
 - **2026-11-05** — **Process retro: small increments got slow** (owner pick, 2026-11-04;
-  `chore-process-retro` PR). Owner picks, all on the recommendation:
+  `chore-process-retro` PR, and [sdd-playbook#15](https://github.com/alexwebber/sdd-playbook/pull/15),
+  which adds the same review to the harvest command). Owner picks, all on the recommendation:
   - **The decisions log moved here**, read on demand. Every session and subagent had loaded all of
     `PROJECT_MEMORY.md` (171 KB, about 43k tokens), 138 KB of it this log. *Next session* is now
     status plus follow-ups (12 KB to about 5 KB); norms and upstream candidates stay. About 30 KB
