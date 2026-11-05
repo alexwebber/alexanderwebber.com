@@ -20,11 +20,12 @@
 //
 // Made-up data only: the screenshots are public the moment they're pushed (Principle VI).
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
-import { extname, join, normalize, resolve, sep } from 'node:path';
+import { extname, join } from 'node:path';
 import { chromium } from '@playwright/test';
 import sharp from 'sharp';
+import { walk } from '../lib/walk.ts';
 import { REPO, run } from './lib.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
@@ -85,21 +86,31 @@ const TYPES: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 
-/** The file under dist/ a URL path maps to, as Cloudflare's static assets serve it. */
+/**
+ * Every file under dist/, by the URL path that serves it, as Cloudflare's static assets do:
+ * "/a/b.css", and "/a/" for "/a/index.html". The server only serves what's listed here, so no
+ * request reaches the file system with a path of its own.
+ */
+const FILES = new Map<string, string>();
+for (const rel of existsSync(DIST) ? walk(DIST, '.') : []) {
+  const url = rel.slice(1); // "./a/b.css" -> "/a/b.css"
+  FILES.set(url, join(DIST, rel));
+  if (url.endsWith('/index.html')) FILES.set(url.slice(0, -'index.html'.length), join(DIST, rel));
+}
+
+/** The file a request's URL path is served from, if dist/ has one. */
 function distFile(urlPath: string): string | undefined {
-  const rel = normalize(decodeURIComponent(urlPath.split('?')[0]!)).replace(/^[/\\]+/, '');
-  const file = resolve(DIST, rel);
-  if (file !== DIST && !file.startsWith(DIST + sep)) return undefined;
-  if (existsSync(file) && statSync(file).isFile()) return file;
-  const index = join(file, 'index.html');
-  return existsSync(index) ? index : undefined;
+  try {
+    return FILES.get(decodeURIComponent(urlPath.split('?')[0]!));
+  } catch {
+    return undefined; // a malformed escape
+  }
 }
 
 function serve(): Promise<{ server: Server; base: string }> {
   const server = createServer((req, res) => {
     const file = distFile(req.url ?? '/');
-    const notFound = join(DIST, '404.html');
-    const path = file ?? (existsSync(notFound) ? notFound : undefined);
+    const path = file ?? FILES.get('/404.html');
     res.writeHead(file ? 200 : 404, { 'content-type': TYPES[extname(path ?? '.txt')] ?? 'application/octet-stream' });
     res.end(path ? readFileSync(path) : 'Not found');
   });
