@@ -1778,3 +1778,10 @@ end. Add each new decision as a dated entry at the end, as it's made.
   house-process 0.12.0 from the playbook's `main` after sdd-playbook#15 merged: the harvest command
   gains the review of repeated procedures and loaded memory, and the template its note on moving
   the decisions log out. `extensions.yml` is unchanged.
+- **2026-11-05** — **#111 merged** (house-process 0.12.0) and checked with `/after-merge`: no boxes,
+  10 checks and `main`'s Gate green, deploy included, `/` and `/running/` answer 200. Same session:
+  **astro 7.4.5** (string tag names render strictly, so `/` or `=` can't change the markup) and
+  **maplibre-gl 6.16.0** (fixes a map that collapses to one pixel when a phone browser returns from
+  the background, and maps that stop loading after iOS stops their workers) adopted, as core
+  releases with fixes that touch us. `session-start.ts` gains `SETTLED`, so a merged PR whose
+  unticked box was answered elsewhere (#101) stops being flagged at every session start.

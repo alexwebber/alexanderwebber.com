@@ -22,6 +22,10 @@ const HOLDS: Record<string, string> = {
   typescript: 'deliberate pin while @astrojs/check excludes TypeScript 7',
   wrangler: 'held at 4.152.0: newer releases depend on a miniflare 5 beta',
 };
+/** Merged PRs whose unticked boxes the owner answered elsewhere (DECISIONS.md): shown as settled, not a "!". */
+const SETTLED: Record<number, string> = {
+  101: 'photos box answered in a comment, 2026-11-01',
+};
 const STALE_HOURS = 6;
 const TRIGGER_LOOKAHEAD_DAYS = 14;
 const RECENT_MERGE_DAYS = 7;
@@ -106,6 +110,10 @@ await section('Pull requests', () => {
   for (const pr of merged.filter((p) => Date.parse(p.mergedAt) >= since)) {
     const { unticked } = checkboxes(pr.body);
     if (unticked.length === 0) continue;
+    if (SETTLED[pr.number]) {
+      console.log(`  #${pr.number}: ${unticked.length} unticked box(es), settled (${SETTLED[pr.number]})`);
+      continue;
+    }
     console.log(`! #${pr.number} merged with ${unticked.length} unticked box(es): ask the owner before building on them.`);
     for (const box of unticked) console.log(`    - ${box.slice(0, 160)}`);
   }

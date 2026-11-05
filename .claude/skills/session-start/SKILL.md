@@ -15,7 +15,8 @@ description: Run this project's session-start checks (git, main's workflows, iss
    - **A secret-scanning alert**: raise it with the owner at once. Other alerts: fix what affects
      us in a PR, and dismiss the rest with a reason.
    - **A merged PR with unticked boxes**: if `DECISIONS.md` already records the owner's answer
-     (e.g. given in a comment), it's settled. Otherwise ask the owner before building on it.
+     (e.g. given in a comment), it's settled: add the PR to `SETTLED` in the script so it stops
+     flagging. Otherwise ask the owner before building on it.
    - **Stale live data** (over 6 h): check the latest Refresh run's fetch step.
    - **Versions**: adopt new core releases and security fixes in a PR, and skip routine bumps
      (say so in one line). A hold shown with its reason stays until the reason ends; then remove
