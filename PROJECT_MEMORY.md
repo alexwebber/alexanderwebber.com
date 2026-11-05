@@ -16,8 +16,22 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   `guided-review`.
 - **Next session, first:** `/session-start`, and `/after-merge` for the house-process 0.13.0 PR if
   it has merged. Ask the owner the unticked box on sdd-playbook#16 (implement subagents commit and
-  stop before pushing?) before the Phase 1 brief relies on it. If the playbook rename is decided
-  (owner raised it 2026-11-05; `DECISIONS.md`), it's its own session.
+  stop before pushing?) before the Phase 1 brief relies on it.
+- **Then, in that session: rename sdd-playbook to `software-factory`** (owner, 2026-11-05;
+  `DECISIONS.md`), before 003 Phase 1, so Phase 1 uses the new name and paths:
+  1. **Vision question round first** (in the main conversation): an autonomy ladder, from today
+     (the agent orchestrates, the owner approves every PR) up to brief-to-live, each rung with the
+     evidence that unlocks it (eval suites, canary history, token logs, skill-gap trends) and the
+     constitution or norm changes it would need, proposed for later, never adopted early. Written
+     into the README as *Vision*, tagline "an agentic software factory".
+  2. **The rename**, by checklist: GitHub repo rename (old URLs redirect); every `sdd-playbook`
+     mention in both repos (about 30 files: bundle id, extension `repository`, templates, README,
+     PLAYBOOK, `session-start.ts`'s `check-versions.ps1` path, this repo's `CLAUDE.md` and this
+     file); the local folder `C:\Projects\sdd-playbook` (close the VS Code workspace first; update
+     `C:\Projects\alexanderwebber-workspace.code-workspace`); the owner's `~/.claude/CLAUDE.md` (show
+     the lines first); the agent's memory. The extension id `house-process` stays. A PR in each repo,
+     and a house-process reinstall here.
+  3. Then the next session is 003 Phase 1, as below.
 - **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in its own
   session. Write the brief with `/speckit-house-process-implement-brief`: the skills are
   `owner-data-file` (T002–T011, T020), `gate-check` (T012, T013, T018, T019, T022), `tests`
