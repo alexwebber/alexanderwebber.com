@@ -34,14 +34,19 @@ interface Run {
   url: string;
 }
 
+/** A package's registry URL; a scoped name's slash is encoded, as the registry expects. */
+function npmUrl(name: string, version: string): string {
+  return `https://registry.npmjs.org/${encodeURIComponent(name)}/${encodeURIComponent(version)}`;
+}
+
 async function npmLatest(name: string): Promise<{ version: string; dependencies?: Record<string, string>; peerDependencies?: Record<string, string> }> {
-  const response = await fetch(`https://registry.npmjs.org/${name.replace('/', '%2F')}/latest`);
+  const response = await fetch(npmUrl(name, 'latest'));
   if (!response.ok) throw new Error(`npm registry answered ${response.status} for ${name}`);
   return response.json() as Promise<{ version: string }>;
 }
 
 async function npmVersion(name: string, version: string): Promise<{ dependencies?: Record<string, string> }> {
-  const response = await fetch(`https://registry.npmjs.org/${name}/${version}`);
+  const response = await fetch(npmUrl(name, version));
   if (!response.ok) throw new Error(`npm registry answered ${response.status} for ${name}@${version}`);
   return response.json() as Promise<{ dependencies?: Record<string, string> }>;
 }
