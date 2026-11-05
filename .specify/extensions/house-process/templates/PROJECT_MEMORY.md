@@ -85,6 +85,14 @@ Update this as decisions get made — treat it as the source of truth alongside
   Capturing is cheap and needs no approval. Sending upstream happens via
   `/speckit-house-process-harvest-lessons` (offered after `/speckit-plan` and
   `/speckit-implement`, or run any time), which proposes changes for the owner to approve.
+- **Repeated work becomes skills.** Any procedure, check, implementation pattern or review done
+  by hand a second time becomes a script behind a thin project skill, or a skill naming the files
+  to copy and the checks that prove it's done (in sdd-playbook when it would help any project).
+  The loop that improves them is agent-run: each subagent brief
+  (`/speckit-house-process-implement-brief`) asks for skill gaps, and the same PR fixes the skill;
+  each handoff (`/speckit-house-process-handoff`) adds or counts up tasks done by hand in a
+  skill-candidates list (e.g. `process/skill-candidates.yaml`) and builds a candidate before the
+  work its `next` names; and the lesson harvest reviews skills used, unused or out of date.
 
 ## Decisions log
 

@@ -20,20 +20,38 @@
       "installed_at": "2026-11-04T20:21:55.340897+00:00"
     },
     "house-process": {
-      "version": "0.12.0",
+      "version": "0.13.0",
       "source": "local",
-      "manifest_hash": "sha256:b7cd275b34cf5166978539dc858ea2cc5b51f9512fec6457661086ba79139d20",
+      "manifest_hash": "sha256:93bc747930c251de2110fa84403cc80aa223c7db0e0bd5c995744dcf74b9ae2a",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
         "claude": [
           "speckit.house-process.scaffold-memory",
           "speckit.house-process.harvest-lessons",
-          "speckit.house-process.model-canary"
+          "speckit.house-process.model-canary",
+          "speckit.house-process.implement-brief",
+          "speckit.house-process.handoff",
+          "speckit.house-process.guided-review",
+          "speckit.house-process.tips-astro",
+          "speckit.house-process.tips-cloudflare",
+          "speckit.house-process.tips-docs",
+          "speckit.house-process.tips-git",
+          "speckit.house-process.tips-github-actions",
+          "speckit.house-process.tips-maps",
+          "speckit.house-process.tips-privacy-pipelines",
+          "speckit.house-process.tips-providers",
+          "speckit.house-process.tips-research",
+          "speckit.house-process.tips-secrets",
+          "speckit.house-process.tips-share-images",
+          "speckit.house-process.tips-shell",
+          "speckit.house-process.tips-testing",
+          "speckit.house-process.tips-ui-accessibility",
+          "speckit.house-process.tips-windows-cloud"
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-11-05T08:55:55.074909+00:00"
+      "installed_at": "2026-11-05T10:27:46.474793+00:00"
     }
   }
 }

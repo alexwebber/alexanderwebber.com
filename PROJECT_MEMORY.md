@@ -9,17 +9,15 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
   journey story, has its spec, plan and tasks merged (#101, #105, #108), with nothing visible yet,
-  and the owner approved the whole story on 2026-11-04. The skills inventory is done
-  (`DECISIONS.md`, 2026-11-05) and its first batch is in two PRs: the `chore-skills-first-batch` PR
-  here (the `owner-data-file`, `gate-check` and `tests` skills, `emptyOwner()`, `/pr-ready --suites`,
-  branch pruning, `process/skill-candidates.yaml`) and
-  [sdd-playbook#16](https://github.com/alexwebber/sdd-playbook/pull/16) (house-process 0.13.0:
-  the agent tips as 15 topic skills, and the `implement-brief`, `handoff` and `guided-review`
-  commands).
-- **Next session, first:** `/session-start`, and `/after-merge` for the skills PR if it has merged.
-  If sdd-playbook#16 has merged, reinstall house-process 0.13.0 from the playbook's `main` (as #111
-  did) in a PR, and change `CLAUDE.md`'s *AGENT_TIPS.md* paragraph to the topic skills, as the
-  template now has it.
+  and the owner approved the whole story on 2026-11-04. The skills inventory's first batch is
+  merged (#113, sdd-playbook#16) and house-process 0.13.0 is installed (the
+  `chore-house-process-0.13.0` PR): the project skills `owner-data-file`, `gate-check` and
+  `tests`, the agent tips as 15 topic skills, and `implement-brief`, `handoff` and
+  `guided-review`.
+- **Next session, first:** `/session-start`, and `/after-merge` for the house-process 0.13.0 PR if
+  it has merged. Ask the owner the unticked box on sdd-playbook#16 (implement subagents commit and
+  stop before pushing?) before the Phase 1 brief relies on it. If the playbook rename is decided
+  (owner raised it 2026-11-05; `DECISIONS.md`), it's its own session.
 - **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in its own
   session. Write the brief with `/speckit-house-process-implement-brief`: the skills are
   `owner-data-file` (T002–T011, T020), `gate-check` (T012, T013, T018, T019, T022), `tests`

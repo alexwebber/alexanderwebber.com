@@ -1810,3 +1810,11 @@ end. Add each new decision as a dated entry at the end, as it's made.
     in a throwaway worktree: all 21 skills install.
   - **Kept local branches:** `002-fundraising-card-screens` and `002-story-screens` (PR screenshots
     only) and `003-handoff-interview` (a memory note superseded by #107), for the owner.
+- **2026-11-05** — **#113 and sdd-playbook#16 merged.** `/after-merge 113`: Gate and deploy green,
+  live pages 200, and the new pruning deleted 71 merged local branches. The owner ticked deleting
+  the three kept branches, but the auto-mode permission check refused `git branch -D` and
+  `git push origin --delete` on them, so the owner runs those (or adds a permission rule).
+  sdd-playbook#16's box (implement subagents commit and stop before pushing) merged unticked: ask
+  before the Phase 1 brief relies on it. Reinstalled house-process 0.13.0 from the playbook's
+  `main` (`chore-house-process-0.13.0` PR): 18 new skills, `extensions.yml` unchanged; `CLAUDE.md`
+  now points at the topic skills.
