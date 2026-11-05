@@ -314,6 +314,15 @@ project-specific notes.
   a permission.
 - CodeQL's `js/path-injection` didn't credit a `resolve` + `startsWith` containment check in a
   local static server (4 alerts). Serving only from a map of files indexed up front cleared them.
+- An exact-text helper that swaps HTML tags for spaces hides a missing space between inline
+  elements; drop tags without adding spaces, and also compare the browser's `innerText`.
+- To prove several new checks fail when broken, batch the CSS and markup breaks into one preview
+  build and one spec run (32 checks in about a minute), then restore the files.
+- HTML's `<time datetime>` has no range form: a period is two `<time>` elements joined by text.
+- A page that drops a standard line under its `<h1>` (here "Last updated") can leave the next
+  heading reading as a subtitle. Every test passed; only the screenshot showed it.
+- Playwright's per-project counts come from `--reporter=line,json` with
+  `PLAYWRIGHT_JSON_OUTPUT_FILE`, walking `suites` and `specs[].tests[].projectName`.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.

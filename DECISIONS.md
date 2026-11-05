@@ -1907,3 +1907,23 @@ end. Add each new decision as a dated entry at the end, as it's made.
   The owner ticked its one box: screenshot side branches (`<branch>-screens`, made-up previews or
   already-public pages only) stay after a merge. `/after-merge 118`: the PR's 10 checks and `main`'s
   Gate green, deploy included; `/` and `/running/` answer 200.
+- **2026-11-05** — **003 Phase 2** (T024–T040, the story page over made-up previews). Implement
+  subagent about **287k tokens** (Phase 1: 352k; 002's slices 353–471k), with four new project skills
+  loaded (`preview-state`, `section-page`, `page-tests`, `tests`). Six preview states behind
+  `SHELL_PREVIEW=1`; `dist/` byte-identical to `main`'s, as nothing a deploy build routes imports
+  the new components. Choices beyond the task text, for the owner to confirm in the PR: a set-apart
+  figure carries its source in brackets like an inline one; a period whose ends are days reads
+  "15 Mar to 20 Sep 2001" (the year once when shared); the takeaway has a 1 px border, a 6 px start
+  edge in the accent colour (Highlight in forced colours) and the surface background; the set-apart
+  figure is smaller with a 2 px start rule, and the note smaller in the secondary colour. A period
+  renders as two `<time>` elements, as HTML has no range form. `loadJourney` also refuses stray
+  markup and a placeholder naming no figure, so a plain build can't render them.
+  - **The main conversation's look at the screenshots** caught the page title sitting right on the
+    first chapter's heading (no "Last updated" line between them), which read as title and subtitle;
+    `story.css` now puts 2rem above the first chapter. No test covered it.
+  - **Skill gaps applied in the same PR**: `preview-state` (the journey helpers, `lorem()`'s capital,
+    the lone `section.yaml` warning), `section-page` (`imageAlt` required, `current` takes an href, a
+    hiding prop skips its data read, components-only slices), `page-tests` (heavier edges by width,
+    exact approved text, batched breaks), `pr-ready` (the subagent's terms file, `dist/` left as a
+    deploy build). `pr-ready --suites` now prints Playwright's counts per project (`playwrightCounts`),
+    which took the subagent a second four-minute run.

@@ -18,9 +18,12 @@ Read `speckit-house-process-tips-astro` and `-tips-ui-accessibility` first, and
 - **`SectionLayout`** gives the shell, the section menu, the `<h1>`, Garmin attribution
   (`garmin`, on any page showing Garmin data) and "Last updated" (every data-driven view must show
   it, Principle V). `title` defaults to "<heading> · Running · Alexander Webber". `current` marks the
-  menu item a sub-page sits under. A new prop keeps a default that leaves every existing page's
-  output unchanged. Don't drive an optional part with `Astro.slots.has`: it reports
-  `{cond && <X slot="x" />}` as filled.
+  menu item a sub-page sits under (its href, e.g. `"/running/story/"`). `imageAlt` is required. A new
+  prop keeps a default that leaves every existing page's output unchanged, and a prop that hides a
+  part also skips that part's data read (`lastUpdated={false}` skips `buildFreshness()`). Don't drive
+  an optional part with `Astro.slots.has`: it reports `{cond && <X slot="x" />}` as filled.
+- **A components-only slice** (page and preview, no route yet) skips the area, share image and
+  landing steps; say so in the PR.
 - **Register the area** in `src/sections/running/integration.ts`'s `runningAreas`, in menu order,
   with its routes and share image route. An area that would be empty without data is added only
   when its data exists, checked from files without loading the tree (`campaignsWithFigures()`,

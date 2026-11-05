@@ -34,7 +34,11 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
   (`sweepOnlyInDark`), in forced colours on the phone project (`fullSweep()`), with `<details>`
   opened first; `outline(page)` for headings; named regions (`getByRole('region', { name })`).
 - **Forced colours**: a box or button that relies on a background keeps a border
-  (`not.toHaveCSS('border-top-style', 'none')`).
+  (`not.toHaveCSS('border-top-style', 'none')`). A heavier edge is proved by comparing computed
+  border widths, not by "not none".
+- **Approved text, exactly**: read the served HTML (`response.text()`) through a helper that drops
+  tags *without* adding spaces (`tests/helpers/story-text.ts`), compare with the fixture, and also
+  compare the browser's `innerText`. A helper that swaps tags for spaces hides a missing space.
 
 ## Rules that kept failing
 
@@ -67,4 +71,6 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
 ## Done when
 
 - Both projects pass locally; skips are by design, each with its reason.
-- Each new check fails when the behaviour breaks (break it once and watch it fail).
+- Each new check fails when the behaviour breaks (break it once and watch it fail). Batch the
+  breaks: several CSS and markup mutations in one `SHELL_PREVIEW=1` build, one spec run, then
+  restore the files (one build, not one per check).

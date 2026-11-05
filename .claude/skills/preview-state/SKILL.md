@@ -24,6 +24,10 @@ screenshots run against it (`page-tests`, `pr-screenshots`).
    behind. Run it with `node tests/fixtures/<x>-preview/generate.ts`; **commit its output**.
    - **Deterministic:** a fixed seed (`race-preview`'s LCG, or `lorem(seed, n)` from
      `tests/helpers/journey.ts` for text). Running it twice changes nothing (`git status` clean).
+     `lorem()` capitalises its first word, so lower-case the words that carry on a sentence (after
+     a placeholder or a link), as `story-preview`'s `lower()` does.
+   - **Reuse the test helpers** for approved files: `approve(kind, value, photos, date)` and
+     `yaml(value)` from `tests/helpers/journey.ts` write exactly what `approve-story` would.
    - **Made up, and says so:** lorem-style words or "Example hospice", "Seaside Marathon"; never a
      real name, place, figure or the owner's text (Principle VI, FR-036). Coordinates in open sea.
    - **Approved text** carries an `approved` block with the hash the real approver writes
@@ -42,7 +46,8 @@ screenshots run against it (`page-tests`, `pr-screenshots`).
    preview-only wrappers (a heading over a card) are fine; say so in the PR's screenshots.
 4. **`astro.config.mjs`**: `injectRoute` in `shellPreview`, and add the route to the comment above it.
 5. **A unit test** that each state passes `validateData(root, { today, schemaRoot: REPO_ROOT })` with
-   no issues, as `tests/unit/fundraising-validate.test.ts` does for its previews.
+   no errors, as `tests/unit/fundraising-validate.test.ts` does for its previews. A tree without
+   `section.yaml` always carries that one warning: assert it's the only one (or add the file).
 
 ## Rules
 
