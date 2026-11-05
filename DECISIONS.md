@@ -1771,3 +1771,6 @@ end. Add each new decision as a dated entry at the end, as it's made.
     github-actions, playwright-testing), shipped by house-process, so they load when the topic
     comes up, subagents included.
   - **Normal PR review**: one line per skill in the PR; each is proven by its first real use.
+- **2026-11-05** — **#109 merged** with both boxes ticked: the trimmed *Next session* is complete, and
+  wrangler stays held at 4.152.0 until miniflare 5 is a stable release. `main`'s Gate finished
+  green, deploy included, and `/after-merge` (its first real use) found nothing to act on.
