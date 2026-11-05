@@ -1,0 +1,10 @@
+# Made-up text: lorem-style words only.
+id: chapter-a
+name: Lorem ipsum
+when: 2001-03
+prose: |
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+takeaway: Sed do eiusmod tempor incididunt ut labore.
+approved:
+  date: 2001-04-01
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

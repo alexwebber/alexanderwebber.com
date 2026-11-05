@@ -1,9 +1,11 @@
 # The build gate (T042; contracts/pipeline.md "Gate"): site build + data-schema validation, with
-# the image, boundary and privacy scans. It is a composite action, so it runs in the caller's job
-# and workspace: callers check out the repo first, and dist/ is left behind for a deploy step.
-# Test suites (pytest, Vitest, Playwright) are not part of it; they run in tests.yml.
+# the image, boundary and privacy scans, and the built site's link check (spec 003,
+# specs/003-journey-story/contracts/gate.md). Order: validate-data, scan-images, check-boundaries,
+# build, check-links, scan-privacy. It is a composite action, so it runs in the caller's job and
+# workspace (gate.yml and refresh.yml): callers check out the repo first, and dist/ is left behind
+# for a deploy step. Test suites (pytest, Vitest, Playwright) are not part of it; they run in tests.yml.
 name: Build gate
-description: validate-data, scan-images, check-boundaries, astro check + build, scan-privacy
+description: validate-data, scan-images, check-boundaries, astro check + build, check-links, scan-privacy
 
 inputs:
   r2-account-id:
@@ -58,6 +60,11 @@ runs:
       shell: bash
       # prebuild would only regenerate the types generated above.
       run: npm run build --ignore-scripts
+
+    - name: Check links
+      shell: bash
+      # Every link to a page of this site must lead to a page the build made (FR-015, FR-042).
+      run: npm run check-links
 
     - name: Fetch the R2 run-ID map
       id: run-ids

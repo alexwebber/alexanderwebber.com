@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/journey-closing.schema.json",
+  "title": "JourneyClosing",
+  "description": "data/running/owner/journey/closing.yaml: the story's closing section, for someone at the start (specs/003-journey-story/data-model.md §6). Optional (FR-007). Only approved text may enter this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["heading", "text", "approved"],
+  "properties": {
+    "heading": {
+      "description": "Required plain text, one line.",
+      "$ref": "journey-chapter.schema.json#/$defs/line"
+    },
+    "text": {
+      "description": "Required plain text in paragraphs separated by blank lines. Takes [text](/path/) links but no figures.",
+      "$ref": "journey-chapter.schema.json#/$defs/paragraphs"
+    },
+    "approved": {
+      "description": "The owner's approval, written by scripts/approve-story.ts --journey after their explicit yes. sha256 covers the file's hashed fields (data-model.md §2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "sha256"],
+      "x-error": "needs the owner's approval before it can be published",
+      "properties": {
+        "date": {
+          "description": "The date the owner approved the file. Not in the future.",
+          "$ref": "../defs.schema.json#/$defs/date"
+        },
+        "sha256": {
+          "description": "64 lower-case hexadecimal characters: the sha256 of the canonical JSON of the hashed fields. A mismatch means the file changed after approval.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "x-error": "is not a sha256 (64 lower-case hexadecimal characters)"
+        }
+      }
+    }
+  }
+}

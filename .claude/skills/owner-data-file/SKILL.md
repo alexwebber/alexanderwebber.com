@@ -38,7 +38,9 @@ schema, its fixtures, the store and validation in one PR. Copy the nearest prece
    needs its pattern (`PHOTO_FILE`, `LOGO_FILE`, `IGNORED_FILE`).
 5. **Expose** in `running-store.ts` (export the type; an `OwnerData` field whose comment says what
    empty means) and `json-file-store.ts` (map it into `owner`). Add its empty value to
-   `emptyOwner()` in `tests/helpers/owner-data.ts`: the only fake to change.
+   `emptyOwner()` in `tests/helpers/owner-data.ts`, and to the one hand-written `OwnerData` literal
+   in `tests/unit/fundraising-cards.test.ts` (`pageStore`); find any others with
+   `grep -rn "getOwner: async" tests/`. A missing field fails `astro check`, so the gate.
 6. **Rules across fields and files** go in `validateRunning` (`src/sections/running/validate.ts`):
    `error(file, entry, field, message)` or `warning(...)`, the entry in `locate`'s form, the message
    never quoting a value from free text. A rule that must also stop the build's store (approval, a
@@ -48,6 +50,11 @@ schema, its fixtures, the store and validation in one PR. Copy the nearest prece
    the check in `loadRunningData` ("the owner must approve it again"); the missing-approval message in
    `problemMessage`; and a mode in `scripts/approve-story.ts` that writes the `approved` block with
    `parseDocument` (comments kept) and never prints the text. Run it only after the owner's explicit yes.
+   The shared schema messages start with the offending value (`"…" must be one line`), so drop it for
+   approved free text (`withoutValue` in `files.ts`, as the journey files do) and prove it with a
+   sentinel test: one made-up word in every text field, every refused case run, and no message, store
+   error or script output containing it. Test trees of approved text: `tests/helpers/journey.ts`
+   (`lorem(seed, n)`, `approve`, `writeApproved`, `writePhoto`) is the precedent.
 8. **Docs**: an entry in `schemas/README.md` and the feature's data-files contract.
 
 ## Done when
@@ -70,3 +77,8 @@ schema, its fixtures, the store and validation in one PR. Copy the nearest prece
   picks them).
 - `.github/workflows/tests.yml` runs Vitest only for paths in its `vitest=` filter; a test that imports
   from a new folder needs that folder added there (003's T001 did it for `tests/fixtures`).
+- ajv's `strictTypes` needs an explicit `type` beside type-specific keywords (`maxLength`, `pattern`,
+  `required`), even next to a `$ref`, and inside `if`/`then` and `anyOf` branches.
+- gen-types exports every titled `$defs` object from each schema that references it, so a shared
+  def used across several files breaks the generated index's `export type *` (TS2308). Write it out
+  in each file, or leave its `title` off.

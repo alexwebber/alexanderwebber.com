@@ -1,18 +1,42 @@
 // Validates every published and owner file under data/running/ (T038, FR-070): the schemas, then
-// the referential checks of contracts/data-files.md. scripts/validate-data.ts runs it in the gate
-// and prints the file/entry/field messages.
+// the referential checks of contracts/data-files.md, the fundraising files' (spec 002) and the
+// journey story's (specs/003-journey-story/contracts/content-files.md). scripts/validate-data.ts
+// runs it in the gate and prints the file/entry/field messages. Messages about the journey files
+// never quote a value from them (FR-035): they name the file, chapter ID, field and paragraph.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { today as londonToday } from '../../shared/format/dates.ts';
 import { parseTime } from '../../shared/format/parse.ts';
 import type { DataIssue } from '../../shared/storage/index.ts';
 import { LOGO_FILE, OWNER_DIR, PHOTO_FILE, PUBLISHED_DIR, locate, loadRunningData } from './data/store/files.ts';
-import type { RacePredictionEntry } from './data/store/index.ts';
+import type { JourneyChapter, RacePredictionEntry } from './data/store/index.ts';
 import { SECTION_DEFAULTS } from './data/load.ts';
 import type { RunningSchema } from './data/store/schemas.ts';
 import { parseDistance } from './domain/distances.ts';
+import { isAfter, parseProse, parseText, parseWhen, placedFigures, startsBeforeEnd, type ProseIssue } from './domain/journey.ts';
 
 const DUPLICATE_RACE_TOLERANCE = 0.02;
+
+const JOURNEY_DIR = `${OWNER_DIR}/journey`;
+const JOURNEY_CHAPTER_FILE = /^data\/running\/owner\/journey\/chapters\/[^/]+\/chapter\.yaml$/;
+export const STORY_PAGE = '/running/story/';
+
+type Figure = NonNullable<JourneyChapter['figures']>[number];
+type HealthRefMetric = 'weight_avg7' | 'body_fat_pct' | 'vo2max' | 'fitness_ctl' | 'resting_hr' | 'hrv';
+
+/** data-model.md §3 *Ref kinds by category*: the health metric or manual kind a stored figure names. */
+const CATEGORY_METRIC: Partial<Record<Figure['category'], HealthRefMetric>> = {
+  weight: 'weight_avg7',
+  body_fat: 'body_fat_pct',
+  vo2_max: 'vo2max',
+  fitness: 'fitness_ctl',
+  resting_hr: 'resting_hr',
+  hrv: 'hrv',
+};
+const CATEGORY_MANUAL: Partial<Record<Figure['category'], 'training_status' | 'race_predictions'>> = {
+  training_status: 'training_status',
+  race_prediction: 'race_predictions',
+};
 
 /** Provider activity links, and IDs outside links, that must never appear in owner files (data-model §3). */
 const PROVIDER_LINK_PATTERNS: [RegExp, string][] = [
@@ -340,6 +364,165 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
     if (story.approved.date > today) error(file, entry, 'approved.date', `${story.approved.date} is in the future`);
   }
 
+  // --- Journey story (specs/003-journey-story/contracts/content-files.md) ------------------------
+  const journey = data.journey;
+  const chapterFiles = data.files.filter((f) => JOURNEY_CHAPTER_FILE.test(f));
+  const proseIssues = (file: string, entry: string, field: string, found: ProseIssue[]) => {
+    for (const issue of found) error(file, entry, `${field}, paragraph ${issue.paragraph}`, issue.message);
+  };
+
+  // The first stored record of each kind, and what exists, for stored figures (FR-011, FR-012).
+  const healthDates = new Map<string, Set<string>>();
+  for (const { value: series } of data.health) {
+    const dates = healthDates.get(series.metric) ?? new Set<string>();
+    for (const point of series.points) dates.add(point.date);
+    healthDates.set(series.metric, dates);
+  }
+  const earliest = (dates: Iterable<string>) => [...dates].sort()[0];
+  const firstRunDate = earliest(data.runs.map((r) => r.value.date));
+  const manual = data.manualMetrics?.value;
+  const officialRaces = new Map(data.races.filter((r) => r.value.official_time !== undefined).map((r) => [r.value.slug, r.value]));
+  const scale = section?.value.garmin_devices?.scale ?? 'Garmin';
+
+  /** A stored figure's record: its date, the Garmin attribution it carries, and the first record of its kind. */
+  const record = (figure: Figure): { exists: boolean; first: string | undefined; garmin: string | undefined } | undefined => {
+    const ref = figure.ref;
+    if (!ref) return undefined;
+    if ('run' in ref) {
+      const run = runsById.get(ref.run)?.value;
+      return { exists: run !== undefined, first: firstRunDate, garmin: run ? (run.device ?? 'Garmin') : undefined };
+    }
+    if ('health' in ref) {
+      const dates = healthDates.get(ref.health.metric) ?? new Set<string>();
+      const metric = ref.health.metric;
+      const garmin = metric === 'fitness_ctl' ? 'derived' : metric === 'weight_avg7' || metric === 'body_fat_pct' ? scale : 'Garmin';
+      return { exists: dates.has(ref.health.date), first: earliest(dates), garmin };
+    }
+    if ('manual' in ref) {
+      const entries: { as_of: string }[] = manual?.[ref.manual.kind] ?? [];
+      return { exists: entries.some((e) => e.as_of === ref.manual.as_of), first: earliest(entries.map((e) => e.as_of)), garmin: 'Garmin' };
+    }
+    const race = officialRaces.get(ref.race);
+    // A hand-entered race result isn't Garmin data, so it carries no attribution.
+    return { exists: race !== undefined, first: earliest([...officialRaces.values()].map((r) => r.date)), garmin: undefined };
+  };
+
+  const starts = new Map<string, { id: string; order: number | undefined }[]>();
+  for (const { file, value: chapter } of journey.chapters) {
+    const entry = `chapter "${chapter.id}"`;
+    const folder = file.split('/').at(-2);
+    if (chapter.id !== folder) error(file, entry, 'id', 'does not match the name of its folder (a chapter\'s id is its folder name, FR-051)');
+
+    const when = parseWhen(chapter.when);
+    if (!when) error(file, entry, 'when', "names a day that doesn't exist");
+    else {
+      if (!startsBeforeEnd(when)) error(file, entry, 'when', 'must start before it ends');
+      if (isAfter(when, today)) error(file, entry, 'when', 'is in the future');
+      const tied = starts.get(when.start) ?? [];
+      for (const other of tied) {
+        if (other.order === undefined || chapter.order === undefined || other.order === chapter.order) {
+          error(file, entry, 'order', `starts on the same day as chapter "${other.id}": give each a distinct order`);
+        }
+      }
+      tied.push({ id: chapter.id, order: chapter.order });
+      starts.set(when.start, tied);
+    }
+    if (chapter.approved.date > today) error(file, entry, 'approved.date', 'is in the future');
+
+    const parsed = parseProse(chapter.prose);
+    proseIssues(file, entry, 'prose', parsed.issues);
+    if (parsed.paragraphs[0]?.kind === 'figure') {
+      error(file, entry, 'prose, paragraph 1', 'is a figure on its own: a chapter opens with prose, so put the figure after a paragraph');
+    }
+    proseIssues(file, entry, 'takeaway', parseText(chapter.takeaway, { links: false }).issues);
+
+    const figures = chapter.figures ?? [];
+    const figureIds = new Set(figures.map((f) => f.id));
+    parsed.paragraphs.forEach((paragraph, i) => {
+      for (const id of placedFigures({ paragraphs: [paragraph], issues: [] })) {
+        if (!figureIds.has(id)) error(file, entry, `prose, paragraph ${i + 1}`, `{{${id}}} names no figure in this chapter's figures`);
+      }
+    });
+    const placed = placedFigures(parsed);
+    const seenIds = new Set<string>();
+    figures.forEach((figure, i) => {
+      const field = `figures[${i}]`;
+      if (seenIds.has(figure.id)) error(file, entry, `${field}.id`, 'is used by another figure in this chapter');
+      seenIds.add(figure.id);
+      const uses = placed.filter((id) => id === figure.id).length;
+      if (uses === 0) error(file, entry, `${field}.id`, `has no {{${figure.id}}} placeholder in the prose (each figure has exactly one)`);
+      if (uses > 1) error(file, entry, `${field}.id`, `has ${uses} {{${figure.id}}} placeholders in the prose (each figure has exactly one)`);
+
+      const asOf = parseWhen(figure.as_of);
+      if (!asOf) error(file, entry, `${field}.as_of`, "names a day that doesn't exist");
+      else if (isAfter(asOf, today)) error(file, entry, `${field}.as_of`, 'is in the future');
+
+      if (figure.source !== 'stored' || !figure.ref) return;
+      const ref = figure.ref;
+      const metric = CATEGORY_METRIC[figure.category];
+      if ('health' in ref && metric && ref.health.metric !== metric) {
+        error(file, entry, `${field}.ref.health.metric`, `must be ${metric} for a ${figure.category} figure`);
+        return;
+      }
+      const kind = CATEGORY_MANUAL[figure.category];
+      if ('manual' in ref && kind && ref.manual.kind !== kind) {
+        error(file, entry, `${field}.ref.manual.kind`, `must be ${kind} for a ${figure.category} figure`);
+        return;
+      }
+      const found = record(figure)!;
+      if (asOf && (found.first === undefined || asOf.end < found.first)) {
+        error(file, entry, `${field}.as_of`, 'is before the first stored record of its kind: before then only the owner can supply it (source: owner)');
+        return;
+      }
+      if (!found.exists) {
+        const refField = `${field}.ref.${Object.keys(ref)[0]}`;
+        error(file, entry, refField, 'names no stored record (a published run, a published health point of that metric and date, a manual-metrics.yaml entry of that kind and date, or a race.yaml with an official time)');
+        return;
+      }
+      if (found.garmin === undefined) {
+        if (figure.garmin !== undefined) error(file, entry, `${field}.garmin`, "must be left out: a hand-entered race result isn't Garmin data");
+      } else if (figure.garmin === undefined) {
+        error(file, entry, `${field}.garmin`, `is required: its record is Garmin data (expected ${found.garmin})`);
+      } else if (figure.garmin !== found.garmin) {
+        error(file, entry, `${field}.garmin`, `doesn't match its record (expected ${found.garmin})`);
+      }
+    });
+  }
+
+  if (chapterFiles.length > 0) {
+    // A file that exists but was refused (unapproved, changed) is already reported by the loader.
+    const note = `${JOURNEY_DIR}/note.yaml`;
+    const page = `${JOURNEY_DIR}/page.yaml`;
+    if (!data.files.includes(note)) error(note, 'note', '', 'is missing: the story needs its approved note before it can be published (FR-008)');
+    if (!data.files.includes(page)) error(page, 'page wording', '', 'is missing: the story needs its approved page wording before it can be published (FR-039)');
+  }
+  if (journey.closing) {
+    const { file, value: closing } = journey.closing;
+    if (chapterFiles.length === 0) warning(file, 'closing section', '', 'has no chapter to follow, so it is not shown');
+    proseIssues(file, 'closing section', 'text', parseText(closing.text).issues);
+    if (closing.approved.date > today) error(file, 'closing section', 'approved.date', 'is in the future');
+  }
+  if (journey.note) {
+    const { file, value: note } = journey.note;
+    proseIssues(file, 'note', 'text', parseText(note.text, { links: false }).issues);
+    if (note.approved.date > today) error(file, 'note', 'approved.date', 'is in the future');
+  }
+  if (journey.page) {
+    const { file, value: page } = journey.page;
+    if (page.approved.date > today) error(file, 'page wording', 'approved.date', 'is in the future');
+  }
+
+  // The landing page's link to the story (data-model.md §9; FR-040, FR-042, research.md R8).
+  const storyLink = section?.value.story_link;
+  if (section && storyLink) {
+    if (chapterFiles.length === 0) error(section.file, '', 'story_link.href', "leads to the story page, which doesn't exist until a chapter does");
+    if (storyLink.href !== STORY_PAGE) error(section.file, '', 'story_link.href', `must be the story page, ${STORY_PAGE}`);
+    const page = journey.page?.value;
+    if (page && storyLink.label !== page.link_label) {
+      error(section.file, '', 'story_link.label', `differs from link_label in ${JOURNEY_DIR}/page.yaml; they must match`);
+    }
+  }
+
   // Provider IDs never belong in owner files: runs are referenced by their public ID.
   for (const file of data.files.filter((f) => f.startsWith(`${OWNER_DIR}/`) && f.endsWith('.yaml'))) {
     readFileSync(join(root, file), 'utf8')
@@ -352,7 +535,9 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
         ];
         for (const [pattern, what, text] of checks) {
           const match = pattern.exec(text);
-          if (match) error(file, `line ${i + 1}`, '', `"${match[0]}" ${what}; refer to runs by the ID in the run page URL`);
+          // In the journey's files the match is part of the story, so it isn't quoted (FR-035).
+          const shown = file.startsWith(`${JOURNEY_DIR}/`) ? 'this' : `"${match?.[0]}"`;
+          if (match) error(file, `line ${i + 1}`, '', `${shown} ${what}; refer to runs by the ID in the run page URL`);
         }
       });
   }

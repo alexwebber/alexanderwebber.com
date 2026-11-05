@@ -73,6 +73,12 @@ export class JsonFileStore implements RunningStore {
         },
         campaigns: data.campaigns?.value ?? [],
         stories: data.stories.map((s) => s.value),
+        journey: {
+          chapters: data.journey.chapters.map((c) => c.value),
+          ...(data.journey.closing && { closing: data.journey.closing.value }),
+          ...(data.journey.note && { note: data.journey.note.value }),
+          ...(data.journey.page && { page: data.journey.page.value }),
+        },
       },
     };
     return this.#indexed;

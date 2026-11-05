@@ -8,22 +8,21 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story, has its spec, plan and tasks merged (#101, #105, #108), with nothing visible yet,
-  and the owner approved the whole story on 2026-11-04. The playbook is now **software-factory**
-  (#115 and software-factory#17 merged and checked, house-process 0.14.0).
-- **Next session, first:** `/session-start`. Check that `C:\temp\rename-software-factory.log` ends
-  with `done` and `C:\Projects\software-factory` exists: the watcher renames `sdd-playbook` once no
-  `Code` process is left, so the owner quits VS Code fully (File > Exit) at the end of the
-  2026-11-05 session. If it still says "waiting", VS Code wasn't fully quit; if it logged "rename
-  still refused", find what else holds the folder.
-- **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in this
-  session. The subagent commits and stops before pushing (owner, 2026-11-05: software-factory#16's
-  box). Write the brief with `/speckit-house-process-implement-brief`: the skills are
-  `owner-data-file` (T002–T011, T020), `gate-check` (T012, T013, T018, T019, T022), `tests`
-  (T014–T020), and the topic skills `tips-github-actions`, `tips-privacy-pipelines` and
-  `tips-testing`. No private file is read (FR-036; made-up text only). Compare its token cost with
-  002's slices (about 350–470k each), and apply the skill gaps it reports in the same PR. Close
-  with `/speckit-house-process-handoff`.
+  journey story: spec, plan and tasks merged (#101, #105, #108), the owner approved the whole story on
+  2026-11-04, and **Phase 1 (files and checks, T001–T022) is raised as
+  [#117](https://github.com/alexwebber/alexanderwebber.com/pull/117)**, with nothing visible. The
+  software-factory rename is finished (`C:\Projects\software-factory`).
+- **Next session, first:** `/session-start`. If #117 merged: `/after-merge 117`, then dispatch one
+  refresh (`gh workflow run refresh.yml --ref main`) and confirm its gate passes the new
+  `check-links` step, tick T023 in `specs/003-journey-story/tasks.md`, and ask about any of #117's
+  seven boxes left unticked before building on them (they're how the checks read figures, dates,
+  links and photos). If it hasn't merged, ask the owner whether they've reviewed it.
+- **Then build the four skills 003 Phase 2 needs** (`process/skill-candidates.yaml`, `next: 003
+  Phase 2`): the test-only preview state, Playwright page tests, a section page or landing card,
+  and PR screenshots. Draw each from its precedents in specs 001 and 002, in one process PR, and
+  remove their entries. That's this session's work. Phase 2 (T024 on, the story page) is the session
+  after, via `/speckit-house-process-implement-brief` and a `/speckit-implement` subagent that
+  commits and stops before pushing. Phase 1's subagent cost about 352k tokens; compare.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -304,6 +303,14 @@ project-specific notes.
   the call (exit 144). Use `npx astro preview stop` on its own.
 - `spikes/<x>/out/` (gitignored, outside `tsconfig`) is a good home for a temporary `git worktree`
   used to build `main` for a `dist/` comparison: `astro check` doesn't scan the copy.
+- An ajv-to-message layer that prefixes the offending value leaks free text through schema errors;
+  only a sentinel test across schema-invalid cases caught it. Drop the value for approved text.
+- `sed -i` with `$(` and `|` in its pattern silently didn't match in Git Bash, yet the file showed as
+  modified with an empty diff (line endings). Use the Edit tool or a script file.
+- A subagent barred from `C:\temp` can still run `pr-ready` by pointing `PRIVATE_TERMS_FILE` at a
+  missing file, which skips the term search; the main conversation must rerun it with the real file.
+- A subagent's "waiting on its own background work" notification isn't its report: check the branch
+  (or the process list) for progress rather than calling it finished.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.

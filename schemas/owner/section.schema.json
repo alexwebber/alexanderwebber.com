@@ -36,10 +36,10 @@
       "required": ["href", "label"],
       "properties": {
         "href": {
-          "description": "A site path (/story/) or an https link.",
+          "description": "A site path (/running/story/) or an https link.",
           "type": "string",
           "pattern": "^(/(?!/)[^\\s]*|https://[^\\s]+)$",
-          "x-error": "is not a valid link (expected a site path like /story/ or https://...)"
+          "x-error": "is not a valid link (expected a site path like /running/story/ or https://...)"
         },
         "label": { "$ref": "../defs.schema.json#/$defs/text" }
       }

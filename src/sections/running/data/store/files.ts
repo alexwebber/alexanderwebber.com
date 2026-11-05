@@ -1,6 +1,11 @@
 // Running's file map: reads and schema-validates every file under data/running/
 // (contracts/data-files.md layout). Shared by JsonFileStore (which throws on any problem) and
 // ../../validate.ts (which adds referential checks and reports everything at once).
+//
+// Approved text is checked here, not in validate.ts, because the store and the build's first step
+// load through this: the campaign story's hash (spec 002) and each journey file's hash, photos'
+// bytes included (specs/003-journey-story/data-model.md §2). Messages about journey files never
+// quote a value from them (FR-035).
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,6 +17,10 @@ import type {
   Goal,
   HealthExclusion,
   HealthSeries,
+  JourneyChapter,
+  JourneyClosing,
+  JourneyNote,
+  JourneyPage,
   LabMeasurement,
   Manifest,
   ManualMetrics,
@@ -53,6 +62,14 @@ export interface RunningData {
   manualMetrics: Loaded<ManualMetrics> | undefined;
   campaigns: Loaded<Campaign[]> | undefined;
   stories: Loaded<CampaignStory>[];
+  /** The journey story's files (spec 003): each approved, or dropped with an error. */
+  journey: {
+    page?: Loaded<JourneyPage>;
+    note?: Loaded<JourneyNote>;
+    closing?: Loaded<JourneyClosing>;
+    /** One per journey/chapters/<id>/chapter.yaml, sorted by file. */
+    chapters: Loaded<JourneyChapter>[];
+  };
   /** Every file under data/running/, repo-relative (photos included). */
   files: string[];
 }
@@ -76,14 +93,108 @@ const LIST_NOUNS: Partial<Record<RunningSchema, string>> = {
  */
 const NEEDS_APPROVAL = "needs the owner's approval before it can be published";
 
-function problemMessage(schema: RunningSchema, problem: SchemaIssue): string {
-  const noApproval = schema === 'owner/campaign-story' && problem.message === 'is required' && fieldPath(problem.path) === 'approved';
-  return noApproval ? NEEDS_APPROVAL : problem.message;
+const JOURNEY_SCHEMAS: ReadonlySet<RunningSchema> = new Set<RunningSchema>(['owner/journey-page', 'owner/journey-note', 'owner/journey-closing', 'owner/journey-chapter']);
+const APPROVED_TEXT: ReadonlySet<RunningSchema> = new Set<RunningSchema>(['owner/campaign-story', ...JOURNEY_SCHEMAS]);
+
+function problemMessage(schema: RunningSchema, value: unknown, problem: SchemaIssue): string {
+  const noApproval = APPROVED_TEXT.has(schema) && problem.message === 'is required' && fieldPath(problem.path) === 'approved';
+  if (noApproval) return NEEDS_APPROVAL;
+  return JOURNEY_SCHEMAS.has(schema) ? withoutValue(problem.message, problem.path.reduce<unknown>(at, value)) : problem.message;
+}
+
+/**
+ * The shared schema messages start with the offending value when it's a string or a number
+ * ('"…" must be one line of text'). In a journey file that value is story text, so it's dropped
+ * (FR-035): the file, entry and field path are enough to find it.
+ */
+function withoutValue(message: string, value: unknown): string {
+  if (value === null || value === undefined || typeof value === 'object') return message;
+  const shown = typeof value === 'string' ? `"${value}" ` : `${String(value)} `;
+  return message.startsWith(shown) ? message.slice(shown.length) : message;
 }
 
 /** What an approval is tied to: the sha256 of a story's text as parsed (FR-052, SC-007). */
 export function storySha256(text: string): string {
   return createHash('sha256').update(text, 'utf8').digest('hex');
+}
+
+export type JourneyKind = 'chapter' | 'closing' | 'note' | 'page';
+
+/**
+ * Each journey file's hashed fields (data-model.md §2), by name: a field added later (a video, say)
+ * isn't in the list, so it doesn't move the hash of chapters already approved (FR-053).
+ */
+export const JOURNEY_HASHED_FIELDS: Readonly<Record<JourneyKind, readonly string[]>> = {
+  chapter: ['id', 'name', 'when', 'order', 'prose', 'takeaway', 'figures', 'photos'],
+  closing: ['heading', 'text'],
+  note: ['text'],
+  page: ['title', 'description', 'share_text', 'link_label'],
+};
+/** A chapter photo's hashed fields; `sha256`, the sha256 of the photo file's bytes, is added to them. */
+export const JOURNEY_PHOTO_FIELDS = ['file', 'description', 'caption'] as const;
+
+/** JSON with keys sorted at every level (by UTF-16 code unit) and no whitespace. */
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value !== null && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>).filter(([, v]) => v !== undefined);
+    entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+const sha256Hex = (data: string | Uint8Array) => createHash('sha256').update(data).digest('hex');
+
+/**
+ * What a journey file's approval is tied to (FR-033, research.md R3): the sha256 of the canonical
+ * JSON (keys sorted at every level, no whitespace, UTF-8) of the file's hashed fields only, as YAML
+ * parsed them. Absent optional fields are left out, not hashed as null. Each chapter photo
+ * contributes its `file`, `description` and `caption`, plus `sha256`: the sha256 of the photo
+ * file's bytes (`photoBytes`, by file name), so a photo swapped under the same name needs a fresh
+ * approval. Throws when a listed photo has no bytes: callers report that first.
+ */
+export function journeySha256(kind: JourneyKind, value: unknown, photoBytes: ReadonlyMap<string, Uint8Array> = new Map()): string {
+  const hashed: Record<string, unknown> = {};
+  for (const field of JOURNEY_HASHED_FIELDS[kind]) {
+    const fieldValue = at(value, field);
+    if (fieldValue === undefined) continue;
+    if (kind === 'chapter' && field === 'photos' && Array.isArray(fieldValue)) {
+      hashed[field] = fieldValue.map((photo) => {
+        const entry: Record<string, unknown> = {};
+        for (const key of JOURNEY_PHOTO_FIELDS) if (at(photo, key) !== undefined) entry[key] = at(photo, key);
+        const bytes = photoBytes.get(String(at(photo, 'file')));
+        if (!bytes) throw new Error('a listed photo has no bytes to hash');
+        entry.sha256 = sha256Hex(bytes);
+        return entry;
+      });
+    } else {
+      hashed[field] = fieldValue;
+    }
+  }
+  return sha256Hex(canonicalJson(hashed));
+}
+
+const JOURNEY_KIND: Partial<Record<RunningSchema, JourneyKind>> = {
+  'owner/journey-chapter': 'chapter',
+  'owner/journey-closing': 'closing',
+  'owner/journey-note': 'note',
+  'owner/journey-page': 'page',
+};
+
+/** The bytes of the photos a chapter lists, read from its folder, and the indexes of any missing. */
+export function chapterPhotoBytes(root: string, chapterFile: string, chapter: unknown): { bytes: Map<string, Uint8Array>; missing: number[] } {
+  const folder = chapterFile.slice(0, chapterFile.lastIndexOf('/'));
+  const bytes = new Map<string, Uint8Array>();
+  const missing: number[] = [];
+  const photos = at(chapter, 'photos');
+  (Array.isArray(photos) ? photos : []).forEach((photo, i) => {
+    const name = String(at(photo, 'file'));
+    const path = join(root, folder, name);
+    if (existsSync(path)) bytes.set(name, readFileSync(path));
+    else missing.push(i);
+  });
+  return { bytes, missing };
 }
 
 const MANUAL_NOUNS: Record<string, string> = {
@@ -122,6 +233,8 @@ export function locate(schema: RunningSchema, value: unknown, path: Path): { ent
     'owner/race': ['race', 'slug'],
     'owner/campaign-story': ['story', 'campaign'],
   };
+  const journeyEntry = JOURNEY_ENTRY[schema];
+  if (journeyEntry) return { entry: journeyEntry(value), field: fieldPath(path) };
   const entry = named[schema];
   if (entry) {
     const id = at(value, entry[1]);
@@ -129,6 +242,18 @@ export function locate(schema: RunningSchema, value: unknown, path: Path): { ent
   }
   return { entry: '', field: fieldPath(path) };
 }
+
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+/** The entry of a journey file's messages (contracts/content-files.md *Messages*): never its text. */
+const JOURNEY_ENTRY: Partial<Record<RunningSchema, (value: unknown) => string>> = {
+  'owner/journey-chapter': (value) => {
+    const id = at(value, 'id');
+    return typeof id === 'string' && SLUG.test(id) ? `chapter "${id}"` : 'chapter';
+  },
+  'owner/journey-closing': () => 'closing section',
+  'owner/journey-note': () => 'note',
+  'owner/journey-page': () => 'page wording',
+};
 
 /** Recognises a data file's schema from its path; undefined for photos, logos and unexpected files. */
 function schemaForFile(file: string): RunningSchema | undefined {
@@ -150,11 +275,17 @@ function schemaForFile(file: string): RunningSchema | undefined {
     [/^owner\/stories\/[^/]+\.yaml$/, 'owner/campaign-story'],
     [/^owner\/races\/[^/]+\/race\.yaml$/, 'owner/race'],
     [/^owner\/lab\/[^/]+\.yaml$/, 'owner/lab'],
+    [/^owner\/journey\/page\.yaml$/, 'owner/journey-page'],
+    [/^owner\/journey\/note\.yaml$/, 'owner/journey-note'],
+    [/^owner\/journey\/closing\.yaml$/, 'owner/journey-closing'],
+    [/^owner\/journey\/chapters\/[^/]+\/chapter\.yaml$/, 'owner/journey-chapter'],
   ];
   return rules.find(([pattern]) => pattern.test(rel))?.[1];
 }
 
 export const PHOTO_FILE = /^data\/running\/owner\/races\/[^/]+\/[^/]+\.(jpg|webp|avif)$/;
+/** A journey chapter's photo, beside its chapter.yaml. Apart from PHOTO_FILE, whose photos race.yaml lists. */
+export const JOURNEY_PHOTO_FILE = /^data\/running\/owner\/journey\/chapters\/[^/]+\/[^/]+\.(jpg|webp|avif)$/;
 /** A charity logo, named by a campaign's charity.logo.file (T116). */
 export const LOGO_FILE = /^data\/running\/owner\/logos\/[^/]+\.(webp|avif)$/;
 const IGNORED_FILE = /(^|\/)(\.gitkeep|README\.md)$/;
@@ -193,13 +324,14 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     manualMetrics: undefined,
     campaigns: undefined,
     stories: [],
+    journey: { chapters: [] },
     files: listDataFiles(root, DATA_DIR),
   };
 
   for (const file of data.files) {
     const schema = schemaForFile(file);
     if (!schema) {
-      if (!PHOTO_FILE.test(file) && !LOGO_FILE.test(file) && !IGNORED_FILE.test(file)) {
+      if (!PHOTO_FILE.test(file) && !JOURNEY_PHOTO_FILE.test(file) && !LOGO_FILE.test(file) && !IGNORED_FILE.test(file)) {
         issues.push({ file, entry: '', field: '', severity: 'error', message: 'is not an expected data file (check the name and folder)' });
       }
       continue;
@@ -213,7 +345,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     const value = parsed.value;
     const problems = schemas.validate(schema, value);
     for (const problem of problems) {
-      issues.push({ file, ...locate(schema, value, problem.path), message: problemMessage(schema, problem), severity: 'error' });
+      issues.push({ file, ...locate(schema, value, problem.path), message: problemMessage(schema, value, problem), severity: 'error' });
     }
     if (problems.length > 0) continue;
     // Checked here, not with the other story rules in validate.ts, because the store and the build's
@@ -225,6 +357,18 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
         continue;
       }
     }
+    const kind = JOURNEY_KIND[schema];
+    if (kind) {
+      const { entry } = locate(schema, value, []);
+      const { bytes, missing } = kind === 'chapter' ? chapterPhotoBytes(root, file, value) : { bytes: new Map<string, Uint8Array>(), missing: [] };
+      // Only the loader reads the bytes, so the rule is its own, and the hash isn't checked as well.
+      for (const i of missing) issues.push({ file, entry, field: `photos[${i}].file`, message: "is listed but isn't in the chapter's folder", severity: 'error' });
+      if (missing.length > 0) continue;
+      if (at(at(value, 'approved'), 'sha256') !== journeySha256(kind, value, bytes)) {
+        issues.push({ file, entry, field: 'approved.sha256', message: 'has changed since it was approved; the owner must approve it again', severity: 'error' });
+        continue;
+      }
+    }
     store(data, schema, { file, value });
   }
 
@@ -233,6 +377,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
   data.lab.sort((a, b) => a.value.date.localeCompare(b.value.date) || a.value.type.localeCompare(b.value.type));
   data.fundraising.sort((a, b) => a.value.campaign_id.localeCompare(b.value.campaign_id));
   data.stories.sort((a, b) => a.value.campaign.localeCompare(b.value.campaign));
+  data.journey.chapters.sort((a, b) => a.file.localeCompare(b.file));
   return { data, issues };
 }
 
@@ -270,5 +415,9 @@ function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>
     case 'owner/manual-metrics': data.manualMetrics = loaded as Loaded<ManualMetrics>; break;
     case 'owner/campaigns': data.campaigns = loaded as Loaded<Campaign[]>; break;
     case 'owner/campaign-story': data.stories.push(loaded as Loaded<CampaignStory>); break;
+    case 'owner/journey-page': data.journey.page = loaded as Loaded<JourneyPage>; break;
+    case 'owner/journey-note': data.journey.note = loaded as Loaded<JourneyNote>; break;
+    case 'owner/journey-closing': data.journey.closing = loaded as Loaded<JourneyClosing>; break;
+    case 'owner/journey-chapter': data.journey.chapters.push(loaded as Loaded<JourneyChapter>); break;
   }
 }

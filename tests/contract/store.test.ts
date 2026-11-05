@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { storySha256 } from '../../src/sections/running/data/store/files.ts';
 import { JsonFileStore } from '../../src/sections/running/data/store/index.ts';
 import { DataValidationError } from '../../src/shared/storage/index.ts';
+import { approve, chapter, chapterFile, CLOSING, closing, NOTE, note, PAGE, page, writeApproved, writePhoto, yaml } from '../helpers/journey.ts';
 import { run, runPath, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
 let repo: TempRepo;
@@ -30,7 +31,45 @@ describe('JsonFileStore', () => {
     expect(owner.manualMetrics).toEqual({ training_status: [], race_predictions: [] });
     expect(owner.campaigns).toEqual([]);
     expect(owner.stories).toEqual([]);
+    expect(owner.journey).toEqual({ chapters: [] });
     expect(await store.getCampaignFigures()).toEqual([]);
+  });
+
+  it('loads every journey file of a full made-up story, chapters by folder (spec 003)', async () => {
+    repo = tempRepo();
+    const photos = { 'lorem.jpg': new Uint8Array([1, 2, 3]) };
+    const b = chapter('chapter-b', { when: '2026-01', photos: [{ file: 'lorem.jpg', description: 'Lorem ipsum.', caption: 'Dolor sit.' }] });
+    writeApproved(repo, chapterFile('chapter-b'), 'chapter', b, photos);
+    writeApproved(repo, chapterFile('chapter-a'), 'chapter', chapter('chapter-a'));
+    writeApproved(repo, NOTE, 'note', note());
+    writeApproved(repo, PAGE, 'page', page());
+    writeApproved(repo, CLOSING, 'closing', closing());
+    const { journey } = await new JsonFileStore(repo.root).getOwner();
+    expect(journey.chapters.map((c) => [c.id, c.photos?.length ?? 0])).toEqual([['chapter-a', 0], ['chapter-b', 1]]);
+    expect(journey.note?.text).toBe(note().text);
+    expect(journey.page?.title).toBe(page().title);
+    expect(journey.closing?.heading).toBe(closing().heading);
+    expect(journey.chapters[1]).toEqual(approve('chapter', b, new Map(Object.entries(photos))));
+  });
+
+  it('refuses an unapproved or changed journey file, reporting it (FR-034)', async () => {
+    repo = tempRepo();
+    writeApproved(repo, chapterFile('chapter-a'), 'chapter', chapter());
+    repo.write(NOTE, yaml(note()));
+    await expect(new JsonFileStore(repo.root).getOwner()).rejects.toThrow("data/running/owner/journey/note.yaml  note  field approved: needs the owner's approval before it can be published");
+    writeApproved(repo, NOTE, 'note', note());
+    expect((await new JsonFileStore(repo.root).getOwner()).journey.chapters).toHaveLength(1);
+    repo.write(chapterFile('chapter-a'), yaml({ ...approve('chapter', chapter()), name: 'Changed' }));
+    await expect(new JsonFileStore(repo.root).getOwner()).rejects.toThrow('chapter "chapter-a"  field approved.sha256: has changed since it was approved; the owner must approve it again');
+  });
+
+  it('accepts chapter photos beside their chapter, and nothing else in the journey folder', async () => {
+    repo = tempRepo();
+    writeApproved(repo, chapterFile('chapter-a'), 'chapter', chapter());
+    writePhoto(repo, 'data/running/owner/journey/chapters/chapter-a/unlisted.webp', new Uint8Array([1]));
+    expect((await new JsonFileStore(repo.root).getOwner()).journey.chapters).toHaveLength(1);
+    repo.write('data/running/owner/journey/draft.md', 'Lorem.');
+    await expect(new JsonFileStore(repo.root).getOwner()).rejects.toThrow('journey/draft.md: is not an expected data file');
   });
 
   it('loads a story, by campaign', async () => {

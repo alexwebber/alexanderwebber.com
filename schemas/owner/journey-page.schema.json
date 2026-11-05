@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/journey-page.schema.json",
+  "title": "JourneyPage",
+  "description": "data/running/owner/journey/page.yaml: the story page's own wording (specs/003-journey-story/data-model.md §8). Required once any chapter exists (FR-039). Only approved text may enter this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "description", "share_text", "link_label", "approved"],
+  "properties": {
+    "title": {
+      "description": "Required plain text, at most 70 characters. The <h1> and the start of <title>.",
+      "$ref": "journey-chapter.schema.json#/$defs/line",
+      "type": "string",
+      "maxLength": 70,
+      "x-error": "must be one line of at most 70 characters"
+    },
+    "description": {
+      "description": "Required plain text, at most 160 characters. The meta description and share description.",
+      "$ref": "journey-chapter.schema.json#/$defs/line",
+      "type": "string",
+      "maxLength": 160,
+      "x-error": "must be one line of at most 160 characters"
+    },
+    "share_text": {
+      "description": "Required plain text, at most 90 characters, no digits (FR-075: the share image carries no figure).",
+      "$ref": "journey-chapter.schema.json#/$defs/line",
+      "type": "string",
+      "maxLength": 90,
+      "pattern": "^[^0-9]+$",
+      "x-error": "must be one line of at most 90 characters with no digit: the share image carries no figure"
+    },
+    "link_label": {
+      "description": "Required plain text. Must equal section.yaml story_link.label.",
+      "$ref": "journey-chapter.schema.json#/$defs/line"
+    },
+    "approved": {
+      "description": "The owner's approval, written by scripts/approve-story.ts --journey after their explicit yes. sha256 covers the file's hashed fields (data-model.md §2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "sha256"],
+      "x-error": "needs the owner's approval before it can be published",
+      "properties": {
+        "date": {
+          "description": "The date the owner approved the file. Not in the future.",
+          "$ref": "../defs.schema.json#/$defs/date"
+        },
+        "sha256": {
+          "description": "64 lower-case hexadecimal characters: the sha256 of the canonical JSON of the hashed fields. A mismatch means the file changed after approval.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "x-error": "is not a sha256 (64 lower-case hexadecimal characters)"
+        }
+      }
+    }
+  }
+}
