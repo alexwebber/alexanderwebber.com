@@ -14,8 +14,22 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   harvest step) moved the decisions log to `DECISIONS.md` and
   added the `/session-start`, `/after-merge` and `/pr-ready` skills.
 - **Next session, first:** `/session-start`. Then `/after-merge` for the retro PR, and check
-  sdd-playbook#15 merged (if so, reinstall house-process 0.12.0 from its `main`). **Then 003 Phase 1**
-  (slice 1, files and checks, T001–T023) via `/speckit-implement` as a subagent, in its own session.
+  sdd-playbook#15 merged (if so, reinstall house-process 0.12.0 from its `main`).
+- **Then the skills inventory** (owner, 2026-11-05; `DECISIONS.md` has the picks), in the main
+  conversation, as one session:
+  1. From evidence (`DECISIONS.md`, the three specs' tasks, *Upstream candidates*, sdd-playbook's
+     `AGENT_TIPS.md`), list every SDLC task done more than once: implementation (e.g. a landing
+     card, a chart, an owner data file with its schema and store fakes, a test-only preview state,
+     Playwright tests, an ingest step), reviews (graduation, privacy, maintainability, live guided
+     review, alert triage) and process (question rounds, subagent briefs, PR bodies, handoffs,
+     dependency research). For each: how often, rough cost, project or playbook.
+  2. The owner picks. Then build the **first batch**: the skills 003 Phase 1 needs (e.g. owner data
+     file + schema, tests, the PR routine), written from the real code, each naming the files to
+     copy and the checks that prove it's done. A PR here, and one in sdd-playbook for the general
+     ones plus `AGENT_TIPS.md` turned into topic skills shipped by house-process.
+  3. **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in its own
+     session, with the brief naming the skills. Compare its token cost with 002's slices (about
+     350–470k each).
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -162,7 +176,9 @@ project-specific notes.
   session, `/pr-ready` before raising a PR and calling it ready, `/after-merge <pr>` once a PR
   merges. When the agent finds itself doing a procedure by hand a second time, it extends
   these or adds one. Dated follow-ups go in `process/triggers.yaml`, which `/session-start`
-  lists when due.
+  lists when due. **This covers every part of the SDLC** (owner, 2026-11-05): implementation
+  patterns (cards, charts, data files, tests) and reviews become skills too, here or in
+  sdd-playbook when they'd help any project. A lesson about how to do a task updates its skill.
 - Spec Kit runs via the Claude integration with PowerShell scripts; house standards are
   installed from sdd-playbook in dev mode (preset `house-constitution`, extension
   `house-process`). Open `C:\Projects\alexanderwebber-workspace.code-workspace` to work on the
