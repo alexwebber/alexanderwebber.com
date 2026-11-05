@@ -43,6 +43,8 @@ II(a)). Playwright page tests have their own skill, `page-tests`.
   that something failed.
 - On Windows, give `sharp` the bytes (`readFileSync(path)`), not the path, or the file stays locked.
 - An SVG labelled by its title and desc: assert `toHaveAccessibleName`, not the description.
+- A regex that looks for HTML tags, even in an assertion, is case-insensitive and allows attributes
+  (`/<(b|script)[\s>]/i`), or CodeQL's `js/bad-tag-filter` fails the PR.
 
 ## Running them
 
