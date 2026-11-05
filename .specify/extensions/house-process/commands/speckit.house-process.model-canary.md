@@ -69,6 +69,6 @@ Don't ask permission, unless the project's norms say cost needs approval.
 
 `speckit.house-process.harvest-lessons` reviews `canaries.md`. When a pattern holds across
 several canaries (e.g. "Sonnet matches Opus on `/speckit-tasks`"), it proposes updating the
-model-selection norm. A cross-project pattern is proposed upstream to sdd-playbook; a
+model-selection norm. A cross-project pattern is proposed upstream to software-factory; a
 project-only pattern goes into the project's `PROJECT_MEMORY.md`. A single canary is an
 anecdote, not evidence.

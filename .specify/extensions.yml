@@ -36,7 +36,7 @@ hooks:
     enabled: true
     optional: true
     priority: 10
-    prompt: Anything learned so far worth sending upstream to the sdd-playbook?
+    prompt: Anything learned so far worth sending upstream to software-factory?
     description: Offer to harvest generalisable lessons once a plan is complete
     condition: null
   after_implement:
@@ -53,7 +53,7 @@ hooks:
     enabled: true
     optional: true
     priority: 10
-    prompt: Anything learned during implementation worth sending upstream to the sdd-playbook?
+    prompt: Anything learned during implementation worth sending upstream to software-factory?
     description: Offer to harvest generalisable lessons once implementation is complete
     condition: null
   before_constitution:

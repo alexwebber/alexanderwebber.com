@@ -3,7 +3,7 @@
 # planned work that will need it: the agent builds the skill before that work starts (in the same
 # session as the brief, or the one before), then removes the entry here in the skill's PR.
 # /session-start lists the entries with a `next`. The lesson harvest's skills review goes through
-# the rest. A general skill goes to sdd-playbook (home: playbook), a project one to .claude/skills/.
+# the rest. A general skill goes to software-factory (home: playbook), a project one to .claude/skills/.
 #
 #   - task: what is repeated, in a few words
 #     times: how often so far (count from specs/*/tasks.md, DECISIONS.md and the PR list)

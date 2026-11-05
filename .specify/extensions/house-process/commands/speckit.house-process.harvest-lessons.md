@@ -1,5 +1,5 @@
 ---
-description: "Review recent work for lessons that should be sent upstream to the sdd-playbook (or global norms) instead of staying trapped in this project"
+description: "Review recent work for lessons that should be sent upstream to software-factory (or global norms) instead of staying trapped in this project"
 ---
 
 # Harvest Lessons Upstream
@@ -49,7 +49,7 @@ looks back over the work just completed and proposes which lessons should be sen
 2. **Classify each candidate** into exactly one destination:
    - **Global working preference** (applies to any project, SDD or not) → the owner's
      `~/.claude/CLAUDE.md`.
-   - **SDD-general** → the sdd-playbook repo. Prefer encoding it where it applies
+   - **SDD-general** → the software-factory repo. Prefer encoding it where it applies
      automatically — a template (`PROJECT_MEMORY.md` working norms, `CLAUDE.md`, constitution
      preset), a hook/command, or `scripts/new-project.ps1` — and fall back to `PLAYBOOK.md`
      (Lessons, Windows gotchas, or the relevant procedure) only when it can't be automated. A
@@ -65,8 +65,8 @@ looks back over the work just completed and proposes which lessons should be sen
    candidates list is empty), say so in one line and stop. Do not change anything until the owner picks which ones to apply.
 
 4. **Apply the accepted ones:**
-   - sdd-playbook: locate it as a sibling folder (`../sdd-playbook`) or clone
-     https://github.com/alexwebber/sdd-playbook. Create a branch, make the changes (bump
+   - software-factory: locate it as a sibling folder (`../software-factory`) or clone
+     https://github.com/alexwebber/software-factory. Create a branch, make the changes (bump
      versions per its README if templates/extension/preset change), and raise a **pull
      request** — never commit to `main`.
    - Global `~/.claude/CLAUDE.md`: show the exact lines and add them only with the owner's

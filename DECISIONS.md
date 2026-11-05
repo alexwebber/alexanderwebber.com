@@ -1825,3 +1825,29 @@ end. Add each new decision as a dated entry at the end, as it's made.
   autonomy ladder comes first, from a question round: each rung, the evidence that unlocks it, and
   the constitution or norm changes it would need, proposed and never adopted early (today's
   every-PR approval and Principle VIII stand until then). Its own session, next, before 003 Phase 1.
+- **2026-11-05** — **#114 merged** and checked with `/after-merge`: Gate and deploy green, live pages
+  200. The three kept local branches are still there (the owner ticked deleting them; the
+  permission check refuses the agent's delete). software-factory#16's box is settled: the owner meant
+  to tick it, so implement subagents commit and stop before pushing.
+- **2026-11-05** — **The rename and the Vision** (owner picks, all on the recommendation). The
+  GitHub repo is now `alexwebber/software-factory`, and
+  [software-factory#17](https://github.com/alexwebber/software-factory/pull/17) (0.14.0) renames
+  every mention and adds the README's *Vision*. It sets out an autonomy ladder of **five rungs by
+  risk**: process PRs, then dependency and CI fixes, implement slices, plan and tasks, and
+  brief-to-live. The rules:
+  - Rungs are defined by the factory and climbed **per project** (a new project starts at 0).
+  - A rung unlocks on **a clean streak plus a check that has caught a planted fault**. The agent
+    proposes the amendment and the owner ratifies it.
+  - **An incident drops the project one rung automatically**, and it's logged here.
+  - Self-merged work is shown **in the reviews the owner already does** (`/session-start`, guided
+    reviews).
+  - **Authored content is a separate track**, owner-approved at every rung. Delegating it needs its
+    own eval suite and a Principle VIII amendment.
+  - Nothing is adopted yet. The streak lengths are starting numbers, asked in #17's boxes.
+
+  This repo's PR updates the paths and installs house-process 0.14.0 from #17's branch. Its
+  extension files are what #17 merges, so no second reinstall is needed unless #17 changes them.
+  The local folder can't be renamed while VS Code holds it ("Access denied"), so on the owner's pick
+  a one-off watcher (`C:\temp\rename-software-factory.ps1`, started through WMI so it outlives VS
+  Code) renames it once VS Code closes, and updates the alexanderwebber, agents and art workspace
+  files. The agents and art repos have no mentions of the old name.

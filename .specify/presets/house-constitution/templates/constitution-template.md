@@ -1,5 +1,5 @@
 # [PROJECT_NAME] Constitution
-<!-- House starting point (sdd-playbook bundle). Replace with the actual project name. -->
+<!-- House starting point (software-factory bundle). Replace with the actual project name. -->
 
 ## Core Principles
 

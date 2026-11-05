@@ -1,7 +1,7 @@
 # [PROJECT_NAME]
 
 Spec-driven project built with [Spec Kit](https://github.com/github/spec-kit) and the
-[sdd-playbook](https://github.com/alexwebber/sdd-playbook) house standards. Read the project
+[software-factory](https://github.com/alexwebber/software-factory) house standards. Read the project
 memory (working norms, decisions so far) and the constitution before doing any work:
 
 @PROJECT_MEMORY.md

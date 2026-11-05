@@ -24,7 +24,7 @@ Update this as decisions get made — treat it as the source of truth alongside
 
 ## Working norms
 
-<!-- House defaults from sdd-playbook, learned across projects. Keep, adapt, or delete each one
+<!-- House defaults from software-factory, learned across projects. Keep, adapt, or delete each one
      for this project, and add project-specific norms (pace/rigor, model choices, etc.). -->
 
 - **The agent orchestrates.** The coding agent owns, remembers and runs all process (spec-kit
@@ -72,7 +72,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
   their current release. Routine bumps of supporting tools that work fine can be skipped — the
-  agent recommends rather than blanket-upgrading. Run sdd-playbook's `scripts/check-versions.ps1`
+  agent recommends rather than blanket-upgrading. Run software-factory's `scripts/check-versions.ps1`
   at the start of a work session. A deliberate pin of a core component gets a decisions-log
   entry saying why.
 - **Research before choosing dependencies.** Verify a library/service is current and maintained
@@ -81,13 +81,13 @@ Update this as decisions get made — treat it as the source of truth alongside
 - **Capture lessons in the moment; send them upstream later.** Add a one-line entry to
   *Upstream candidates* below **immediately** — don't wait for a milestone — whenever the agent:
   works around a tool/environment problem; is corrected or told a preference by the owner; finds
-  sdd-playbook wrong or missing something; or hits a procedure that behaved unexpectedly.
+  software-factory wrong or missing something; or hits a procedure that behaved unexpectedly.
   Capturing is cheap and needs no approval. Sending upstream happens via
   `/speckit-house-process-harvest-lessons` (offered after `/speckit-plan` and
   `/speckit-implement`, or run any time), which proposes changes for the owner to approve.
 - **Repeated work becomes skills.** Any procedure, check, implementation pattern or review done
   by hand a second time becomes a script behind a thin project skill, or a skill naming the files
-  to copy and the checks that prove it's done (in sdd-playbook when it would help any project).
+  to copy and the checks that prove it's done (in software-factory when it would help any project).
   The loop that improves them is agent-run: each subagent brief
   (`/speckit-house-process-implement-brief`) asks for skill gaps, and the same PR fixes the skill;
   each handoff (`/speckit-house-process-handoff`) adds or counts up tasks done by hand in a
