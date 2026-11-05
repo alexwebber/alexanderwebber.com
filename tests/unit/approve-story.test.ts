@@ -2,11 +2,13 @@
 // and comments survive, a new approval moves the hash, the reminder prints, and the text never
 // appears in anything the script prints. All text here is made up.
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parse } from 'yaml';
-import { approveStory, JUSTGIVING_REMINDER, main, StoryError } from '../../scripts/approve-story.ts';
+import { approveJourney, approveStory, JUSTGIVING_REMINDER, main, StoryError } from '../../scripts/approve-story.ts';
+import { journeySha256 } from '../../src/sections/running/data/store/files.ts';
+import { chapter, chapterFile, CLOSING, closing, NOTE, note, PAGE, page, writePhoto, yaml as journeyYaml } from '../helpers/journey.ts';
 import { validateData } from '../../scripts/validate-data.ts';
 import { formatIssue } from '../../src/shared/storage/errors.ts';
 import { today as londonToday } from '../../src/shared/format/dates.ts';
@@ -170,5 +172,101 @@ describe('what it prints', () => {
       expect(code).toBe(1);
       expect(output).not.toContain(SECRET);
     }
+  });
+});
+
+// Journey mode (spec 003, T011, T017; contracts/content-files.md *approve-story.ts, journey mode*).
+describe('approve-story --journey', () => {
+  const A = chapterFile('chapter-a');
+  const PHOTO = new Uint8Array([9, 8, 7]);
+  const COMMENT = '# A made-up comment that stays.\n';
+  const withPhoto = () => chapter('chapter-a', { photos: [{ file: 'lorem.jpg', description: 'Lorem ipsum.', caption: 'Dolor sit.' }] });
+
+  /** The chapter (with a photo), note, page wording and closing section, none approved yet. */
+  function journey() {
+    repo = tempRepo();
+    repo.write(A, `${COMMENT}${journeyYaml(withPhoto())}`);
+    writePhoto(repo, 'data/running/owner/journey/chapters/chapter-a/lorem.jpg', PHOTO);
+    repo.write(NOTE, `${COMMENT}${journeyYaml(note())}`);
+    repo.write(PAGE, journeyYaml(page()));
+    repo.write(CLOSING, journeyYaml(closing()));
+  }
+  const parsed = (file: string) => parse(readFileSync(join(repo.root, file), 'utf8'), { version: '1.2', schema: 'core' }) as Record<string, unknown> & { approved: { date: string; sha256: string } };
+  const photos = () => new Map([['lorem.jpg', readFileSync(join(repo.root, 'data/running/owner/journey/chapters/chapter-a/lorem.jpg'))]]);
+  const targets: [string, string, 'chapter' | 'note' | 'page' | 'closing'][] = [
+    ['chapter-a', A, 'chapter'],
+    ['note', NOTE, 'note'],
+    ['page', PAGE, 'page'],
+    ['closing', CLOSING, 'closing'],
+  ];
+
+  it('round-trips every target, which then passes validation', () => {
+    journey();
+    expect(errors()).toHaveLength(4);
+    for (const [target, file, kind] of targets) {
+      const before = parsed(file);
+      expect(approveJourney({ root: repo.root, target, date: '2026-10-30' })).toEqual({ file, date: '2026-10-30' });
+      const after = parsed(file);
+      expect(after.approved).toEqual({ date: '2026-10-30', sha256: journeySha256(kind, before, photos()) });
+      expect({ ...after, approved: undefined }).toEqual({ ...before, approved: undefined });
+    }
+    expect(errors()).toEqual([]);
+    expect(readFileSync(join(repo.root, A), 'utf8').startsWith(COMMENT)).toBe(true);
+    expect(readFileSync(join(repo.root, NOTE), 'utf8').startsWith(COMMENT)).toBe(true);
+  });
+
+  it('moves the hash on re-approval after an edit, and when a photo is swapped', () => {
+    journey();
+    approveJourney({ root: repo.root, target: 'chapter-a', date: '2026-10-30' });
+    const first = parsed(A).approved.sha256;
+    repo.write(A, readFileSync(join(repo.root, A), 'utf8').replace('Dolor sit.', 'Dolor sat.'));
+    expect(errors().filter((e) => e.startsWith(A))).toEqual([expect.stringContaining('field approved.sha256: has changed since it was approved')]);
+    approveJourney({ root: repo.root, target: 'chapter-a', date: '2026-10-31' });
+    expect(errors().filter((e) => e.startsWith(A))).toEqual([]);
+    const second = parsed(A).approved.sha256;
+    expect(second).not.toBe(first);
+    writePhoto(repo, 'data/running/owner/journey/chapters/chapter-a/lorem.jpg', new Uint8Array([9, 8, 6]));
+    approveJourney({ root: repo.root, target: 'chapter-a', date: '2026-10-31' });
+    expect(parsed(A).approved.sha256).not.toBe(second);
+    expect(parsed(A).approved.date).toBe('2026-10-31');
+  });
+
+  it('refuses a bad target, a missing file, a missing photo, a future or malformed date, touching nothing', () => {
+    journey();
+    const before = readFileSync(join(repo.root, A), 'utf8');
+    const refused = (target: string, date?: string) => () => approveJourney({ root: repo.root, target, ...(date ? { date } : {}) });
+    expect(refused('../../section')).toThrow('the target is not a chapter id, closing, note or page');
+    expect(refused('Chapter A')).toThrow(StoryError);
+    expect(refused('chapter-b')).toThrow('does not exist');
+    expect(refused('chapter-a', '2999-01-01')).toThrow('is in the future');
+    expect(refused('chapter-a', '1 Nov 2026')).toThrow('is not a date');
+    rmSync(join(repo.root, 'data/running/owner/journey/chapters/chapter-a/lorem.jpg'));
+    expect(refused('chapter-a', '2026-10-30')).toThrow("photos[0].file is listed but isn't in the chapter's folder");
+    expect(readFileSync(join(repo.root, A), 'utf8')).toBe(before);
+  });
+
+  it('prints one line naming the file and date, no text and no JustGiving reminder', () => {
+    journey();
+    const { code, output } = run(['--journey=chapter-a', '--date=2026-10-30']);
+    expect(code).toBe(0);
+    expect(output).toBe(`approve-story: recorded the owner's approval in ${A}, dated 2026-10-30`);
+    for (const [target] of targets.slice(1)) expect(run([`--journey=${target}`, '--date=2026-10-30']).output).not.toContain('JustGiving');
+    expect(run(['--journey=nope nope']).code).toBe(1);
+    expect(run(['--journey=nope nope']).output).toBe('error: the target is not a chapter id, closing, note or page');
+    expect(run([ID, '--journey=note']).code).toBe(2);
+  });
+
+  it('never quotes a file it cannot parse', () => {
+    journey();
+    repo.write(NOTE, `text: [${SECRET} unclosed\n`);
+    expect(run(['--journey=note'])).toEqual({ code: 1, output: `error: ${NOTE} is not valid YAML` });
+  });
+
+  it('leaves campaign mode as it was', () => {
+    setUp();
+    const { code, output } = run([ID, '--date=2026-10-30']);
+    expect(code).toBe(0);
+    expect(output).toBe(`approve-story: recorded the owner's approval in ${FILE}, dated 2026-10-30\n${JUSTGIVING_REMINDER}`);
+    expect(written().approved).toEqual({ date: '2026-10-30', text_sha256: sha256(TEXT) });
   });
 });

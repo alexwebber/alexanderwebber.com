@@ -199,3 +199,36 @@ describe('scan-privacy', () => {
     ]);
   });
 });
+
+// Story text (specs/003-journey-story/contracts/gate.md §2, FR-035): a finding there is a word of the
+// story, so it's redacted whatever the rule; the rules still apply (FR-022). Planted words are made up.
+describe('scan-privacy: findings in story text are redacted', () => {
+  const PLANTED = 'sleepquuxsentinel';
+  const DATA_RULE = 'unapproved category (sleep, stress, Body Battery, steps, SpO2) in data';
+  const PAGE_RULE = 'unapproved category (sleep, stress, Body Battery, steps, SpO2) on a page';
+  const places: [string, string, string][] = [
+    ['data/running/owner/journey/chapters/chapter-a/chapter.yaml', `id: chapter-a\nprose: |\n  Lorem ${PLANTED}: ipsum.\n`, DATA_RULE],
+    ['data/running/owner/stories/made-up-10k.yaml', `campaign: made-up-10k\ntext: |\n  Lorem ${PLANTED}: ipsum.\n`, DATA_RULE],
+    ['dist/running/story/index.html', `<p>Lorem</p>\n<script>{"${PLANTED}":1}</script>`, PAGE_RULE],
+  ];
+
+  for (const [file, text, rule] of places) {
+    it(`reports file, line, column and rule in ${file.split('/').slice(0, 4).join('/')}, not the planted word`, async () => {
+      repo = tempRepo();
+      repo.write(file, text);
+      const findings = await scanPrivacy(repo.root);
+      expect(findings).toEqual([{ file, rule, line: file.endsWith('.html') ? 2 : 3, column: expect.any(Number), excerpt: expect.stringMatching(/^\[\d+ chars redacted\]$/) }]);
+      expect(JSON.stringify(findings)).not.toContain('quux');
+    });
+  }
+
+  it('still prints the matched key elsewhere', () => {
+    expect(scanText('data/running/owner/goals.yaml', `- id: lorem\n  ${PLANTED}: 1\n`)[0]).toMatchObject({ rule: DATA_RULE, excerpt: `${PLANTED}:` });
+    expect(scanText('dist/running/index.html', `<script>{"${PLANTED}":1}</script>`)[0]).toMatchObject({ rule: PAGE_RULE, excerpt: `"${PLANTED}":` });
+  });
+
+  it('keeps the fundraising-key exemption for campaign stories only', () => {
+    expect(rules('data/running/owner/stories/made-up-10k.yaml', 'text: |\n  Donations: every one helps.\n')).toEqual([]);
+    expect(rules('data/running/owner/journey/note.yaml', 'text: |\n  Donations: every one helps.\n')).toEqual(['donor, Gift Aid or JustGiving account key in data']);
+  });
+});
