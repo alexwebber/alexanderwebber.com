@@ -2,14 +2,14 @@
   "schema_version": "1.0",
   "presets": {
     "house-constitution": {
-      "version": "0.1.1",
+      "version": "0.1.2",
       "source": "local",
-      "manifest_hash": "sha256:8f75346cd6294e69eac83ce22100e113f22a68277e3954f67823d24a4154e61c",
+      "manifest_hash": "sha256:e1dccd1a440007b99f7e0512c764ff31a55f5d7c109fa9c22490a9a2b344a3d0",
       "enabled": true,
       "priority": 50,
       "registered_commands": {},
       "registered_skills": {},
-      "installed_at": "2026-11-04T20:21:56.081814+00:00"
+      "installed_at": "2026-11-05T10:57:00.279155+00:00"
     }
   }
 }

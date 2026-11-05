@@ -149,12 +149,12 @@ await section('Versions', async () => {
   const undici = miniflare ? (await npmVersion('miniflare', miniflare)).dependencies?.undici : undefined;
   console.log(`  Override undici 7.30.1: latest wrangler uses miniflare ${miniflare ?? '?'}, which pins undici ${undici ?? '?'}`);
 
-  const checkVersions = 'C:\\Projects\\sdd-playbook\\scripts\\check-versions.ps1';
+  const checkVersions = 'C:\\Projects\\software-factory\\scripts\\check-versions.ps1';
   if (process.platform === 'win32' && existsSync(checkVersions)) {
     const out = run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', checkVersions]);
     for (const line of out.split(/\r?\n/).filter((l) => /\S/.test(l))) console.log(`    ${line.trimEnd()}`);
   } else {
-    console.log('  check-versions.ps1: not run here (needs the local Windows checkout of sdd-playbook).');
+    console.log('  check-versions.ps1: not run here (needs the local Windows checkout of software-factory).');
   }
 });
 

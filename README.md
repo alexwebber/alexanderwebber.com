@@ -188,7 +188,7 @@ which only touch `data/running/published/` and only after the gate passes.
 
 The project follows spec-driven development: every feature goes **specify → clarify → plan →
 tasks → implement**, using [Spec Kit](https://github.com/github/spec-kit) and the owner's house
-standards in [sdd-playbook](https://github.com/alexwebber/sdd-playbook).
+standards in [software-factory](https://github.com/alexwebber/software-factory).
 
 - **AI agents did the work.** [Claude Code](https://claude.com/claude-code) agents wrote the
   spec, plan, tasks, code and tests, and ran the process: version checks, CI, deploys, follow-ups
@@ -209,9 +209,9 @@ standards in [sdd-playbook](https://github.com/alexwebber/sdd-playbook).
 - **Decisions and lessons are written down as they happen**, in [DECISIONS.md](DECISIONS.md) and
   [PROJECT_MEMORY.md](PROJECT_MEMORY.md), and the general ones go back into the playbook. Nearly
   90 lessons went upstream in three harvests
-  ([#10](https://github.com/alexwebber/sdd-playbook/pull/10),
-  [#11](https://github.com/alexwebber/sdd-playbook/pull/11),
-  [#12](https://github.com/alexwebber/sdd-playbook/pull/12)).
+  ([#10](https://github.com/alexwebber/software-factory/pull/10),
+  [#11](https://github.com/alexwebber/software-factory/pull/11),
+  [#12](https://github.com/alexwebber/software-factory/pull/12)).
 
 **In figures**, as of 25 October 2026:
 

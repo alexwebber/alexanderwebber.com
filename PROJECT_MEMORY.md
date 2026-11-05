@@ -9,31 +9,21 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
   journey story, has its spec, plan and tasks merged (#101, #105, #108), with nothing visible yet,
-  and the owner approved the whole story on 2026-11-04. The skills inventory's first batch is
-  merged (#113, sdd-playbook#16) and house-process 0.13.0 is installed (the
-  `chore-house-process-0.13.0` PR): the project skills `owner-data-file`, `gate-check` and
-  `tests`, the agent tips as 15 topic skills, and `implement-brief`, `handoff` and
-  `guided-review`.
-- **Next session, first:** `/session-start`, and `/after-merge` for the house-process 0.13.0 PR if
-  it has merged. Ask the owner the unticked box on sdd-playbook#16 (implement subagents commit and
-  stop before pushing?) before the Phase 1 brief relies on it.
-- **Then, in that session: rename sdd-playbook to `software-factory`** (owner, 2026-11-05;
-  `DECISIONS.md`), before 003 Phase 1, so Phase 1 uses the new name and paths:
-  1. **Vision question round first** (in the main conversation): an autonomy ladder, from today
-     (the agent orchestrates, the owner approves every PR) up to brief-to-live, each rung with the
-     evidence that unlocks it (eval suites, canary history, token logs, skill-gap trends) and the
-     constitution or norm changes it would need, proposed for later, never adopted early. Written
-     into the README as *Vision*, tagline "an agentic software factory".
-  2. **The rename**, by checklist: GitHub repo rename (old URLs redirect); every `sdd-playbook`
-     mention in both repos (about 30 files: bundle id, extension `repository`, templates, README,
-     PLAYBOOK, `session-start.ts`'s `check-versions.ps1` path, this repo's `CLAUDE.md` and this
-     file); the local folder `C:\Projects\sdd-playbook` (close the VS Code workspace first; update
-     `C:\Projects\alexanderwebber-workspace.code-workspace`); the owner's `~/.claude/CLAUDE.md` (show
-     the lines first); the agent's memory. The extension id `house-process` stays. A PR in each repo,
-     and a house-process reinstall here.
-  3. Then the next session is 003 Phase 1, as below.
+  and the owner approved the whole story on 2026-11-04. The playbook is now **software-factory**:
+  the GitHub repo is renamed, [software-factory#17](https://github.com/alexwebber/software-factory/pull/17)
+  carries the rename and the README's *Vision* (the autonomy ladder), and this repo's
+  `chore-software-factory-rename` PR carries the new paths and house-process 0.14.0, installed from
+  #17's branch. The owner's `~/.claude/CLAUDE.md` is updated.
+- **Next session, first:** `/session-start`. Check that `C:\temp\rename-software-factory.log` ends
+  with `done`: a watcher started on 2026-11-05 renames `C:\Projects\sdd-playbook` to
+  `C:\Projects\software-factory` once VS Code closes, and updates the alexanderwebber, agents and
+  art workspace files. If it didn't, find out why from the log. Then `/after-merge` for both PRs
+  once merged, and ask #17's two boxes (the streak lengths, rung 5's look-back) if they merged
+  unticked. If #17 changed anything under `extensions/` or `presets/` before merging, reinstall
+  from software-factory's `main`.
 - **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in its own
-  session. Write the brief with `/speckit-house-process-implement-brief`: the skills are
+  session. The subagent commits and stops before pushing (owner, 2026-11-05: software-factory#16's
+  box). Write the brief with `/speckit-house-process-implement-brief`: the skills are
   `owner-data-file` (T002–T011, T020), `gate-check` (T012, T013, T018, T019, T022), `tests`
   (T014–T020), and the topic skills `tips-github-actions`, `tips-privacy-pipelines` and
   `tips-testing`. No private file is read (FR-036; made-up text only). Compare its token cost with
@@ -78,7 +68,7 @@ read on demand (search it for the topic at hand); this file keeps what's next an
     printing nothing. Never a PowerShell pipe, which adds a BOM to the secret.
   - **Private terms** for `/pr-ready` are in `C:\temp\private-terms.txt`. Add one whenever the owner
     shares a private name, place or detail.
-  - **Spec Kit upgrades:** run `C:\Projects\sdd-playbook\scripts\upgrade-speckit.ps1` from the
+  - **Spec Kit upgrades:** run `C:\Projects\software-factory\scripts\upgrade-speckit.ps1` from the
     project folder after upgrading the CLI (PLAYBOOK > Upgrading Spec Kit).
   - **A refresh that logs "Publishing: the last refresh's deploy didn't finish"** redeployed after
     a failed deploy (002 T108). Check why the earlier deploy failed.
@@ -105,7 +95,7 @@ opportunities. Built spec-first with Spec Kit as a modular site that can grow ne
 
 ## Working norms
 
-House defaults from [sdd-playbook](https://github.com/alexwebber/sdd-playbook), plus
+House defaults from [software-factory](https://github.com/alexwebber/software-factory), plus
 project-specific notes.
 
 - **The agent orchestrates.** The coding agent owns, remembers and runs all process (spec-kit
@@ -163,7 +153,7 @@ project-specific notes.
   that matter: new releases of core components (Spec Kit, the main framework, key libraries),
   security fixes that affect us, and fixes/features we'd benefit from. New dependencies start on
   their current release. Routine bumps of supporting tools that work fine can be skipped — the
-  agent recommends rather than blanket-upgrading. `/session-start` runs sdd-playbook's
+  agent recommends rather than blanket-upgrading. `/session-start` runs software-factory's
   `scripts/check-versions.ps1` and checks the core npm packages. A deliberate pin of a core
   component gets a `DECISIONS.md` entry saying why, and a line in `HOLDS` in
   `scripts/process/session-start.ts`.
@@ -173,7 +163,7 @@ project-specific notes.
 - **Capture lessons in the moment; send them upstream later.** Add a one-line entry to
   *Upstream candidates* below **immediately** — don't wait for a milestone — whenever the agent:
   works around a tool/environment problem; is corrected or told a preference by the owner; finds
-  sdd-playbook wrong or missing something; or hits a procedure that behaved unexpectedly.
+  software-factory wrong or missing something; or hits a procedure that behaved unexpectedly.
   Capturing is cheap and needs no approval. Sending upstream happens via
   `/speckit-house-process-harvest-lessons` (offered after `/speckit-plan` and
   `/speckit-implement`, or run any time), which proposes changes for the owner to approve.
@@ -184,13 +174,13 @@ project-specific notes.
   these or adds one. Dated follow-ups go in `process/triggers.yaml`, which `/session-start`
   lists when due. **This covers every part of the SDLC** (owner, 2026-11-05): implementation
   patterns (cards, charts, data files, tests) and reviews become skills too, here or in
-  sdd-playbook when they'd help any project. A lesson about how to do a task updates its skill.
+  software-factory when they'd help any project. A lesson about how to do a task updates its skill.
   **The loop that keeps them improving** (owner, 2026-11-05) is agent-run: each subagent brief
   asks for skill gaps, which the same PR fixes; each handoff adds or counts up tasks done by hand
   in `process/skill-candidates.yaml` (listed by `/session-start`), and a candidate is built before
   the work its `next` names; the lesson harvest reviews skills used, unused or out of date.
 - Spec Kit runs via the Claude integration with PowerShell scripts; house standards are
-  installed from sdd-playbook in dev mode (preset `house-constitution`, extension
+  installed from software-factory in dev mode (preset `house-constitution`, extension
   `house-process`). Open `C:\Projects\alexanderwebber-workspace.code-workspace` to work on the
   site and the playbook side by side.
 
@@ -202,6 +192,10 @@ project-specific notes.
 - Playwright's `webServer` started fine from the Bash tool on 2026-11-05 (Playwright 1.64.1, 174
   passed), against `tips-windows-cloud`'s "run Playwright from PowerShell". Recheck before relying
   on either.
+
+- To outlive the editor, a watcher (e.g. one waiting to rename a folder VS Code holds open) must be
+  started through WMI (`Invoke-CimMethod Win32_Process Create`), not `Start-Process` from the
+  agent's shell, which sits in VS Code's process tree and may be killed with it.
 
 - When analyze's fixes are applied, resume the tasks subagent (`SendMessage`), which already holds
   the docs, rather than starting a fresh one.
