@@ -8,17 +8,19 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phase 1 (files and checks) merged as #117 with all seven boxes ticked. The four
-  skills Phase 2 needs (`preview-state`, `page-tests`, `section-page`, `pr-screenshots`, with
-  `scripts/process/screenshots.ts`) are raised as a process PR.
-- **Next session, first:** `/session-start`. If the skills PR merged, `/after-merge` it and read its
-  box (side screenshot branches stay); if not, ask the owner whether they've reviewed it. The
-  trigger due 2026-11-06 checks that the 00:17 UTC refresh's gate ran `check-links`, then ticks T023.
-- **Then 003 Phase 2** (T024–T041, the story page over made-up previews): write the brief with
-  `/speckit-house-process-implement-brief`, naming the four new skills plus `tests`, and dispatch a
-  `/speckit-implement` subagent that commits and stops before pushing. The main conversation then
-  takes the screenshots (`pr-screenshots`), looks at them, and raises the PR. Phase 1's subagent cost
-  about 352k tokens; compare.
+  journey story: Phase 1 merged (#117), the Phase 2 skills merged (#118), and **Phase 2 (the story
+  page over made-up previews) is raised as #119** with four checkbox questions on the page's look.
+- **Next session, first:** `/session-start`. If #119 merged, `/after-merge 119` and read its four
+  boxes (an unticked one is asked before Phase 3 builds on it); if not, ask the owner whether
+  they've looked at its screenshots. The trigger due 2026-11-06 checks that the 00:17 UTC refresh's
+  gate ran `check-links`, then ticks T023.
+- **Then build the gate-drill skill** (`process/skill-candidates.yaml`, `next: 003 Phase 3`): T049's
+  launch drill is a scratch-copy drill, done by hand four times before. Then **003 Phase 3**
+  (T042–T050, finding the story: route, menu item, share image, landing panel): brief with
+  `/speckit-house-process-implement-brief` naming `section-page`, `page-tests`, `tests`, the new drill
+  skill and `pr-screenshots`, and dispatch as for Phase 2. T049 stops and asks the owner if Donate
+  leaves the first phone screen or the menu wraps to a third line. Subagent costs so far: Phase 1
+  352k, Phase 2 287k tokens.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -314,6 +316,15 @@ project-specific notes.
   a permission.
 - CodeQL's `js/path-injection` didn't credit a `resolve` + `startsWith` containment check in a
   local static server (4 alerts). Serving only from a map of files indexed up front cleared them.
+- An exact-text helper that swaps HTML tags for spaces hides a missing space between inline
+  elements; drop tags without adding spaces, and also compare the browser's `innerText`.
+- To prove several new checks fail when broken, batch the CSS and markup breaks into one preview
+  build and one spec run (32 checks in about a minute), then restore the files.
+- HTML's `<time datetime>` has no range form: a period is two `<time>` elements joined by text.
+- A page that drops a standard line under its `<h1>` (here "Last updated") can leave the next
+  heading reading as a subtitle. Every test passed; only the screenshot showed it.
+- Playwright's per-project counts come from `--reporter=line,json` with
+  `PLAYWRIGHT_JSON_OUTPUT_FILE`, walking `suites` and `specs[].tests[].projectName`.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.

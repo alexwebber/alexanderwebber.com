@@ -1,0 +1,13 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: dolor-enim
+name: Dolor enim
+when: 2026-05-02
+order: 2
+prose: |
+  This is made-up preview text, so the page can be checked before a real story exists. Nothing here is about a real person, place or figure. Magna incididunt ut nostrud consectetur eiusmod. Amet aliquip nisi sit dolore laboris nisi enim amet ut adipiscing exercitation. Exercitation incididunt do dolore tempor ullamco.
+
+  Incididunt aliquip sed aliquip veniam exercitation aliqua do adipiscing. Consequat incididunt quis sed consequat nostrud consectetur amet et dolore quis incididunt ipsum labore quis.
+takeaway: Eiusmod enim ullamco laboris nisi tempor ad aliquip ex exercitation nostrud enim amet exercitation amet consectetur dolore aliquip aliqua ipsum aliqua et nisi elit lorem ut nisi.
+approved:
+  date: 2026-11-01
+  sha256: 237758bf589996f5c4d95270321bebbd089420909498924e2695db53d425bc90

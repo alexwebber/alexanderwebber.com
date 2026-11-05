@@ -1,0 +1,13 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: quis-dolor-tempor
+name: Quis dolor tempor
+when: 2026-05-02
+order: 1
+prose: |
+  Ad aliquip amet minim nisi elit sed consequat sed quis aliqua. Elit incididunt sit lorem consectetur adipiscing aliquip nisi magna ex aliquip labore tempor adipiscing ea labore tempor. Nisi aliquip aliqua ut dolore consectetur dolore quis eiusmod sit nostrud.
+
+  Et incididunt consequat ullamco tempor amet enim aliqua enim eiusmod ipsum lorem minim commodo. Dolor tempor labore consectetur veniam minim adipiscing ut.
+takeaway: Ea dolor exercitation adipiscing consectetur eiusmod quis nostrud consectetur commodo ipsum ad do amet magna ad laboris sed ut ex do sed tempor ex ipsum sed quis incididunt.
+approved:
+  date: 2026-11-01
+  sha256: ee0a527b66f8ec75921697b62eba585ec5553da069f075ccaf67a8c2eacd5890

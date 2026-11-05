@@ -1,0 +1,28 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: ullamco-exercitation-commodo
+name: Ullamco exercitation commodo
+when: 2025-09
+prose: |
+  Do sed elit ad consectetur nisi exercitation veniam laboris lorem consequat incididunt. Ex exercitation veniam consequat dolore tempor. Magna sed minim incididunt laboris eiusmod et incididunt aliquip ex consectetur labore. Amet elit dolor exercitation veniam do. Exercitation nostrud magna amet consequat sed consectetur ad ea eiusmod tempor lorem. Incididunt elit dolore magna eiusmod exercitation. Consequat nostrud ea ex consectetur nostrud aliquip eiusmod consequat nostrud magna ad. Ad elit incididunt do dolore quis.
+
+  Elit nostrud tempor veniam laboris veniam sit lorem. Nisi elit ullamco ipsum veniam consectetur adipiscing aliquip nisi tempor aliqua elit ex ut. Et nostrud elit labore consequat amet laboris nostrud. Dolor elit adipiscing laboris eiusmod sit ex enim ex exercitation nostrud do adipiscing consectetur. Quis nostrud minim adipiscing consectetur dolor magna labore. Eiusmod elit dolor enim dolore enim ad do commodo consectetur ex aliquip dolore ea. Ea adipiscing ipsum commodo laboris aliqua elit amet. Aliqua quis dolore tempor veniam magna nisi consequat lorem enim dolor et ullamco quis.
+
+  Consectetur adipiscing ea nostrud consequat dolore ea incididunt do ullamco ut dolore ea dolor aliquip nostrud. Ullamco quis incididunt sit eiusmod consequat aliqua elit dolor consequat. Ut adipiscing tempor dolore consectetur commodo minim dolor tempor adipiscing sit dolor elit nisi sit dolor. Lorem quis ullamco aliquip dolore ea sed ea amet aliquip. Minim adipiscing elit sed laboris ex tempor ullamco ut dolor do amet magna ad aliquip labore. Sed quis adipiscing minim veniam ut commodo minim adipiscing do. Aliquip adipiscing minim lorem consequat incididunt enim dolore et dolore et nostrud laboris incididunt sit ullamco. Dolore quis dolor ut eiusmod tempor veniam tempor sed quis. Ea ad tempor labore {{distance}} aliqua sit eiusmod laboris dolore.
+
+  Sit adipiscing ipsum ullamco consectetur eiusmod do adipiscing magna ex minim ullamco. Nostrud consectetur dolore consectetur dolore laboris. Tempor veniam ea lorem laboris ullamco consequat ex enim eiusmod laboris incididunt. Commodo consectetur ex ut veniam exercitation. Enim veniam tempor ullamco consequat sed quis amet minim nostrud consequat commodo. Adipiscing consectetur ullamco consectetur eiusmod elit. Laboris veniam exercitation aliqua consectetur adipiscing ut nisi quis amet consectetur lorem. Labore consectetur adipiscing ea dolore consectetur.
+
+  Ipsum veniam minim eiusmod laboris veniam sit aliqua. Veniam consectetur ad quis veniam minim nostrud ut aliqua exercitation adipiscing minim labore sit. Do veniam ipsum dolor consequat ad laboris sed. Ex consectetur dolore et eiusmod enim labore sit dolor consectetur incididunt elit nostrud aliquip. Magna amet ea nisi consectetur dolor ipsum commodo. Amet minim ex elit dolore ipsum amet laboris amet ipsum aliqua laboris lorem minim. Exercitation amet tempor ad laboris lorem exercitation veniam. Incididunt minim ullamco consequat veniam consequat nisi magna adipiscing et nostrud aliquip eiusmod ut.
+
+  Consequat amet exercitation incididunt consequat dolore et ex consequat veniam enim ex et ullamco aliquip dolore. Ad minim adipiscing exercitation eiusmod et aliqua exercitation sed aliquip. Elit amet minim amet consectetur labore consectetur ad ipsum dolor exercitation dolore exercitation aliqua minim nisi. Nisi minim ad magna dolore ut ullamco et eiusmod do. Et amet ipsum ex laboris ex aliquip eiusmod sit dolore ea dolor ipsum eiusmod aliquip adipiscing. Dolor minim dolore do veniam aliquip dolore consectetur incididunt quis. Quis amet et veniam consequat nisi enim lorem consectetur ex sit amet tempor ad minim aliqua. Eiusmod sit ex ipsum eiusmod laboris adipiscing aliquip labore sit.
+takeaway: Adipiscing elit incididunt consequat dolore consequat amet ut incididunt minim aliqua enim commodo laboris ad et ex magna ad magna eiusmod ipsum incididunt.
+figures:
+  - id: distance
+    category: run_distance
+    label: Distance
+    as_of: 2025-09
+    text: 20.5 km
+    source: owner
+    garmin: Example W1
+approved:
+  date: 2026-11-01
+  sha256: b37ca7774889698d80c47fab1589abb7ddeabf8f73a65b937e8ccbe57df48b31

@@ -1,0 +1,44 @@
+---
+// A chapter's prose, or the closing section's text (spec 003; contracts/routes.md *Chapter parts*):
+// one <p> per paragraph, escaped by Astro's normal output (never set:html), so the words reach the
+// page exactly as approved. An inline figure is its text then its Garmin source in brackets, such as
+// "12.3 kg (Garmin Index S2)" (owner decision 1); the owner's own figure shows nothing extra. A
+// paragraph that is a lone placeholder is a set-apart figure (StoryFigure). A link to a page of this
+// site carries its chapter's ID, so check-links names the chapter rather than quoting the link's text.
+//
+// Astro strips the line-break whitespace between inline elements, so every join here is an explicit
+// {' '} (or the text's own spaces), and each paragraph is built on one line.
+import type { FigureView } from '../data/journey.ts';
+import type { Paragraph } from '../domain/journey.ts';
+import StoryFigure from './StoryFigure.astro';
+
+export interface Props {
+  paragraphs: readonly Paragraph[];
+  /** The chapter's figures by ID; none for the closing section. */
+  figures?: Readonly<Record<string, FigureView>>;
+  /** The chapter the links sit in (`data-chapter-link`); none for the closing section. */
+  chapterId?: string;
+}
+
+const { paragraphs, figures = {}, chapterId } = Astro.props;
+---
+
+{
+  paragraphs.map((paragraph) =>
+    paragraph.kind === 'figure' ? (
+      <StoryFigure figure={figures[paragraph.id]!} />
+    ) : (
+      <p>
+        {paragraph.parts.map((part) =>
+          typeof part === 'string' ? (
+            part
+          ) : 'figure' in part ? (
+            <Fragment><span class="story-figure">{figures[part.figure]!.text}</span>{figures[part.figure]!.source && <Fragment>{' '}<span class="story-source">({figures[part.figure]!.source})</span></Fragment>}</Fragment>
+          ) : (
+            <a href={part.link} data-chapter-link={chapterId}>{part.text}</a>
+          ),
+        )}
+      </p>
+    ),
+  )
+}

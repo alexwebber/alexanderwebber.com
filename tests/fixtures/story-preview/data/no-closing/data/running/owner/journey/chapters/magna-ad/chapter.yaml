@@ -1,0 +1,12 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: magna-ad
+name: Magna ad
+when: 2026-01-20
+prose: |
+  Laboris ex quis commodo consectetur commodo sit dolor consectetur commodo laboris commodo. Labore ut amet tempor dolore ea. Ipsum ex enim nostrud tempor ex laboris ullamco elit incididunt consequat aliqua. Veniam ut aliqua enim veniam aliquip.
+
+  Do incididunt consequat commodo consequat incididunt magna lorem do ullamco consectetur amet consectetur amet ea lorem. Ex aliquip labore tempor nisi tempor amet aliquip dolor consequat.
+takeaway: Exercitation ad elit ex tempor lorem consectetur veniam aliquip labore consectetur nostrud laboris eiusmod exercitation nisi sit labore.
+approved:
+  date: 2026-11-01
+  sha256: c25b05a0bf8f1abdad1e6fdb246675f12d976f7382648f4fb3c67356455a0787

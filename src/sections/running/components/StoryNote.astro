@@ -1,0 +1,10 @@
+---
+// The journey story's short note (spec 003; FR-008): one paragraph, after everything else, once.
+export interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<p class="story-note">{text}</p>

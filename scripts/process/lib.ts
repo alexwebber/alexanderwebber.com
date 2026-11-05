@@ -143,6 +143,38 @@ export function tail(text: string, count: number): string[] {
   return text.split(/\r?\n/).filter((line) => line.trim() !== '').slice(-count);
 }
 
+/** A Playwright JSON report's suite tree, as far as counting needs it. */
+interface ReportSuite {
+  specs?: { tests?: { projectName?: string; status?: string }[] }[];
+  suites?: ReportSuite[];
+}
+
+/**
+ * Counts per Playwright project from its JSON reporter's output, one line each:
+ * "mobile-360: 389 passed, 0 failed, 16 skipped" (flaky counts as passed and is named when present).
+ */
+export function playwrightCounts(report: { suites?: ReportSuite[] }): string[] {
+  const counts = new Map<string, { passed: number; failed: number; skipped: number; flaky: number }>();
+  const walk = (suite: ReportSuite) => {
+    for (const spec of suite.specs ?? []) {
+      for (const test of spec.tests ?? []) {
+        const name = test.projectName ?? '(no project)';
+        const c = counts.get(name) ?? { passed: 0, failed: 0, skipped: 0, flaky: 0 };
+        if (test.status === 'expected') c.passed++;
+        else if (test.status === 'flaky') (c.passed++, c.flaky++);
+        else if (test.status === 'skipped') c.skipped++;
+        else c.failed++;
+        counts.set(name, c);
+      }
+    }
+    for (const child of suite.suites ?? []) walk(child);
+  };
+  for (const suite of report.suites ?? []) walk(suite);
+  return [...counts]
+    .toSorted(([a], [b]) => a.localeCompare(b))
+    .map(([name, c]) => `${name}: ${c.passed} passed, ${c.failed} failed, ${c.skipped} skipped${c.flaky ? ` (${c.flaky} flaky)` : ''}`);
+}
+
 // --- Private-term search -----------------------------------------------------------------------
 
 /** One term per line; blank lines and `#` comments are skipped. */

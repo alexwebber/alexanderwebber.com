@@ -1,0 +1,28 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: elit-ullamco-ut
+name: Elit ullamco ut
+when: 2024-03
+prose: |
+  Exercitation ex ea amet consectetur dolore. Incididunt ut incididunt magna dolore et incididunt aliquip nisi do dolor et. Consequat ex tempor ex laboris labore. Ad ut ullamco do veniam ea ad enim ex quis sed ipsum. Elit ex elit veniam consequat ex. Nisi ut adipiscing magna eiusmod aliquip eiusmod do commodo enim labore sit. Et ex minim ex consectetur nisi. Dolor ut dolor do dolore tempor lorem consequat lorem consequat ad quis.
+
+  Quis ex ipsum veniam laboris eiusmod sit nisi do adipiscing et nostrud magna labore. Eiusmod ut dolore ipsum veniam do nostrud quis. Ea ex ea labore consequat sed tempor aliqua tempor ad minim eiusmod laboris adipiscing. Aliqua aliquip ex laboris eiusmod exercitation labore ut. Consectetur incididunt tempor adipiscing consectetur nostrud ipsum sed ut lorem laboris ex minim commodo. Ullamco aliquip ullamco enim dolore quis amet minim. Ut incididunt elit commodo laboris veniam exercitation dolore et labore consequat commodo ea nostrud. Lorem aliquip adipiscing tempor veniam consectetur nisi tempor.
+
+  Minim incididunt minim nostrud consequat amet et adipiscing magna nisi. Sed aliquip dolor sit eiusmod sit dolor ipsum ullamco ipsum lorem enim incididunt aliquip adipiscing ea. Aliquip incididunt ipsum dolore consectetur dolor consectetur ex enim sed. Dolore aliquip dolore aliquip dolore enim ullamco exercitation nisi et adipiscing consectetur veniam minim commodo do. Sit incididunt ea sed laboris aliqua aliquip ad minim veniam. Nostrud aliquip ex minim veniam magna dolore et ex aliquip incididunt elit commodo ut nostrud minim. Tempor nisi tempor lorem consequat dolore enim eiusmod quis aliqua. Commodo tempor ullamco ut eiusmod consequat adipiscing consectetur commodo exercitation aliqua laboris sed consectetur commodo consequat. Ut ullamco ipsum labore {{distance}} lorem do dolore laboris dolore.
+
+  Enim nisi exercitation ullamco consectetur commodo. Adipiscing tempor adipiscing consectetur dolore ea ex ut lorem consectetur nostrud ut. Laboris nisi minim aliqua laboris ex. Labore tempor ad ea veniam ut ad sit dolor enim ex et. Ipsum nisi ipsum eiusmod consequat incididunt. Veniam tempor dolore quis eiusmod tempor eiusmod laboris amet consequat dolor ipsum. Do nisi ea dolor consectetur nisi. Ex tempor ex et dolore laboris lorem magna adipiscing ut sed minim.
+
+  Magna nisi tempor eiusmod laboris ullamco minim incididunt consequat ad sit veniam enim amet. Amet laboris ullamco quis veniam exercitation sed elit. Exercitation eiusmod exercitation dolor consequat sed tempor dolor ipsum lorem do sed aliquip ex. Incididunt laboris adipiscing et eiusmod elit commodo ea. Consequat eiusmod minim nisi consectetur adipiscing ipsum ullamco sit labore et eiusmod consectetur veniam. Ad laboris ad elit dolore consectetur veniam consectetur. Elit eiusmod ipsum ad laboris veniam exercitation lorem consectetur nisi minim ex et labore. Nisi laboris dolore consequat veniam minim incididunt aliquip.
+
+  Et eiusmod et incididunt consequat ad consequat nostrud elit nostrud. Dolor laboris ex exercitation eiusmod enim dolor enim dolore ea veniam magna ex enim nostrud consectetur. Quis eiusmod tempor amet consectetur dolor quis labore do amet. Eiusmod laboris eiusmod magna dolore ipsum ullamco do aliqua tempor nisi enim adipiscing tempor dolore ipsum. Ea eiusmod exercitation ex laboris lorem ut amet tempor aliqua. Aliqua do adipiscing do veniam consequat dolore consequat ad exercitation lorem consectetur dolore sit nostrud ut. Consectetur ullamco consectetur veniam consequat dolore sit nisi ut commodo. Ullamco do ad ipsum eiusmod et nostrud quis veniam consectetur adipiscing exercitation ullamco aliquip dolore exercitation.
+takeaway: Minim sed laboris aliqua consequat veniam quis adipiscing aliquip eiusmod consequat nostrud minim nisi.
+figures:
+  - id: distance
+    category: run_distance
+    label: Distance
+    as_of: 2024-03
+    text: 11.5 km
+    source: owner
+    garmin: Example W1
+approved:
+  date: 2026-11-01
+  sha256: 8fa9328c23b6194f066c77b4d302dcba141e5fda7c2bb7dd0c324d60faa14d6c

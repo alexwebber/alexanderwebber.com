@@ -1,0 +1,12 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: ea-veniam-ea-nostrud
+name: Ea veniam ea nostrud
+when: 2025-08
+prose: |
+  Quis labore enim dolor consectetur nisi. Eiusmod ea lorem et dolore laboris eiusmod ipsum labore consequat aliqua laboris. Ea labore consequat nisi tempor eiusmod.
+
+  Aliqua ea labore elit veniam do aliqua exercitation dolore. Consectetur labore aliquip ad consequat sed minim ad exercitation ad ipsum labore consequat nostrud consectetur.
+takeaway: Ut veniam elit sed consectetur commodo ipsum dolor do nisi aliquip commodo aliquip amet.
+approved:
+  date: 2026-11-01
+  sha256: 1d9a09f1ac0873a62d4734bd222d8a312db10732563d515728339494e5415084

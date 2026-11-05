@@ -1,0 +1,28 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: dolor-exercitation-sed
+name: Dolor exercitation sed
+when: 2024-09
+prose: |
+  Ea lorem quis ullamco laboris ullamco sit ex. Aliqua magna amet consectetur veniam exercitation adipiscing exercitation dolor enim veniam sit dolor exercitation. Consectetur lorem sit aliqua consequat nostrud laboris ad. Ullamco magna aliqua ea eiusmod elit labore et amet consequat nisi quis incididunt magna. Ut lorem consequat eiusmod consectetur adipiscing magna eiusmod. Lorem magna commodo quis dolore consectetur amet consectetur adipiscing ut lorem exercitation veniam do. Minim lorem ut dolor laboris amet elit lorem. Sed magna nisi et veniam minim nisi aliquip sed laboris adipiscing tempor commodo enim.
+
+  Aliquip lorem laboris nisi consequat ad ea nostrud ipsum lorem ipsum incididunt sit commodo consectetur dolore. Dolore consequat sed elit eiusmod enim aliqua enim eiusmod elit. Sit dolore quis ad consectetur aliqua consectetur commodo sit labore elit commodo ut nostrud ea nisi. Nostrud consequat veniam consequat dolore ipsum sed laboris incididunt minim. Tempor dolore sit incididunt laboris lorem aliquip veniam consectetur nisi ut aliqua quis dolore consectetur adipiscing. Commodo consequat aliqua exercitation veniam consequat commodo magna labore ipsum. Enim dolore consequat amet consequat commodo enim incididunt elit sed enim ad consequat sed ea aliqua. Adipiscing consequat commodo magna eiusmod et veniam elit dolore ea.
+
+  Laboris dolore ut ex consectetur labore do dolor do amet exercitation adipiscing. Labore consequat nisi do dolore ut. Ipsum dolore laboris veniam laboris incididunt consequat ullamco tempor aliqua ea sed. Veniam consequat sed ipsum veniam aliquip. Do commodo quis labore consequat nisi quis dolore ut commodo sit nisi. Ex et veniam do eiusmod laboris. Magna commodo sit veniam consectetur ullamco ut nostrud et incididunt do labore. Amet et aliqua ipsum dolore do. Enim ex laboris dolor {{distance}} adipiscing ut ullamco et veniam.
+
+  Exercitation commodo magna labore laboris sed minim labore. Incididunt et commodo laboris veniam elit nostrud do ullamco consequat eiusmod ipsum ad et. Consequat commodo ut adipiscing consequat adipiscing tempor amet. Ad et incididunt enim eiusmod quis labore consequat nisi ut dolore sit ex exercitation. Elit commodo laboris commodo consectetur veniam ipsum nisi. Nisi et sed tempor dolore minim amet quis ex laboris veniam quis adipiscing magna. Et commodo elit nostrud laboris ad exercitation aliqua. Dolor ea veniam sit veniam sit incididunt ut commodo elit nisi do dolore do.
+
+  Quis labore sit dolore consequat dolor et sed exercitation labore quis eiusmod minim veniam quis sed. Eiusmod ea aliqua aliquip eiusmod ipsum dolor sit lorem sit. Ea labore magna sed consectetur lorem consectetur dolore laboris eiusmod aliquip ex ea labore ea ad. Aliqua ea commodo minim dolore magna ullamco tempor dolor magna. Consectetur labore ut lorem laboris dolore aliquip adipiscing aliquip nostrud ipsum commodo elit adipiscing quis commodo. Ullamco ea incididunt ut veniam et dolore ipsum amet ea. Ut labore laboris ullamco consequat labore sit ex ea amet elit aliqua ipsum commodo ea eiusmod. Lorem ea sed consectetur eiusmod ea adipiscing exercitation adipiscing tempor.
+
+  Minim labore elit aliqua consectetur ex laboris ad et aliqua ut ad. Sed ea veniam ea dolore aliquip. Aliquip ex sit eiusmod laboris nisi magna eiusmod magna commodo enim adipiscing. Dolore ut dolor quis veniam tempor. Sit ex magna dolor consequat eiusmod elit lorem enim incididunt exercitation ullamco. Nostrud ut commodo et eiusmod do. Tempor ex ea nisi consectetur sed ea sed minim ullamco ea nisi. Commodo ut incididunt elit dolore exercitation.
+takeaway: Dolore elit veniam quis dolore sit lorem exercitation adipiscing ut lorem tempor dolor magna nisi aliquip dolore.
+figures:
+  - id: distance
+    category: run_distance
+    label: Distance
+    as_of: 2024-09
+    text: 14.5 km
+    source: owner
+    garmin: Example W1
+approved:
+  date: 2026-11-01
+  sha256: cec2b65b4991c97d2b115fc4782a80988e18f78e8d6118c7d88a7f6204ba296a

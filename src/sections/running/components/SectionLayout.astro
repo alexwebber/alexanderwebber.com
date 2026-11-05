@@ -5,6 +5,9 @@
 // "Last updated" with the stale notice.
 //
 // Slots: default = page content; "last-updated" replaces the freshness line (rarely needed).
+// `lastUpdated={false}` leaves the freshness line out altogether, for a page that isn't a data view
+// (the journey story, spec 003 FR-071). A prop rather than an empty slot, because Astro.slots.has
+// reports a conditional slot as filled.
 import Base from '../../../shared/layout/Base.astro';
 import Nav from '../../../shared/layout/Nav.astro';
 import { runningAreas } from '../integration.ts';
@@ -26,14 +29,16 @@ export interface Props {
   garmin?: boolean | { device?: string | readonly string[]; scale?: boolean; derived?: boolean };
   /** href of the nav item this page sits under (e.g. a run page under Training). */
   current?: string;
+  /** Show "Last updated" (default). False only for a page that shows no stored data's freshness. */
+  lastUpdated?: boolean;
 }
 
-const { heading, description, image, imageAlt, garmin = false, current } = Astro.props;
+const { heading, description, image, imageAlt, garmin = false, current, lastUpdated = true } = Astro.props;
 const title = Astro.props.title ?? `${heading} · Running · Alexander Webber`;
 const nav = runningAreas
   .filter((area) => area.inNav !== false)
   .map((area) => ({ label: area.label, href: area.href }));
-const freshness = await buildFreshness();
+const freshness = lastUpdated ? await buildFreshness() : undefined;
 const attribution = garmin === true ? {} : garmin || undefined;
 ---
 
@@ -43,9 +48,13 @@ const attribution = garmin === true ? {} : garmin || undefined;
     <h1>{heading}</h1>
     {attribution && <GarminAttribution {...attribution} />}
   </header>
-  <slot name="last-updated">
-    <LastUpdated lastSuccessAt={freshness.lastSuccessAt} staleAfterHours={freshness.staleAfterHours} />
-  </slot>
+  {
+    freshness && (
+      <slot name="last-updated">
+        <LastUpdated lastSuccessAt={freshness.lastSuccessAt} staleAfterHours={freshness.staleAfterHours} />
+      </slot>
+    )
+  }
   <slot />
 </Base>
 

@@ -500,3 +500,15 @@ it('parses the YAML the helpers write as the loader does (strings stay strings)'
   const value = parse(yaml(chapter()), { version: '1.2', schema: 'core' }) as Value;
   expect(value.when).toBe('2026-03');
 });
+
+// The story previews (T033) pass the same validation as real data, so their approval hashes hold on
+// Windows (autocrlf) and Linux checkouts alike (preview-state skill).
+describe('the story previews', () => {
+  it.each(['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day'])('%s passes validation, like the real data', (state) => {
+    const root = join(REPO_ROOT, `tests/fixtures/story-preview/data/${state}`);
+    const issues = validateData(root, { today: TODAY, schemaRoot: REPO_ROOT });
+    expect(issues.filter((i) => i.severity === 'error').map(formatIssue)).toEqual([]);
+    // The previews hold the story's files only, so the one warning is the missing section.yaml.
+    expect(issues.map((i) => i.file)).toEqual(['data/running/owner/section.yaml']);
+  });
+});

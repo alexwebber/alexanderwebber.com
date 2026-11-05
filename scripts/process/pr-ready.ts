@@ -5,7 +5,8 @@
 //
 // --suites runs the PR routine's suites for what the branch changed (suitesFor in lib.ts; =all runs
 // every one): `npm test`, `astro check`, ingest's pytest, a SHELL_PREVIEW=1 build with Playwright on
-// both projects, and the gate's commands over a deploy build. A failure prints its output's tail.
+// both projects (with passed, failed and skipped counts per project), and the gate's commands over a
+// deploy build. A failure prints its output's tail.
 //
 // Private terms: one per line in the file named by PRIVATE_TERMS_FILE (default
 // C:\temp\private-terms.txt), kept outside the repo. Added lines, new file names, commit messages
@@ -18,8 +19,9 @@
 // Exits 1 when a private term is found or a check failed.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { addedLines, diffTrees, ghJson, hashTree, maskTerm, parseTerms, run, section, suitesFor, summarisePaths, tail, termMatchers, type Suite } from './lib.ts';
+import { addedLines, diffTrees, ghJson, hashTree, maskTerm, parseTerms, playwrightCounts, run, section, suitesFor, summarisePaths, tail, termMatchers, type Suite } from './lib.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const git = (...args: string[]) => run('git', args, ROOT);
@@ -119,7 +121,11 @@ if (suitesArg) {
       spawnSync(`node "${ASTRO}" preview stop`, { cwd: ROOT, shell: true, stdio: 'ignore' });
       dist = 'preview';
       if (step('preview build (SHELL_PREVIEW=1)', BUILD, ROOT, { ...process.env, SHELL_PREVIEW: '1' })) {
-        step('Playwright, both projects', 'npx playwright test --reporter=line', ROOT, { ...process.env, SHELL_PREVIEW: '1' });
+        // The JSON report gives the counts per project; `line` keeps the failure output readable.
+        const report = join(tmpdir(), 'pr-ready-playwright.json');
+        rmSync(report, { force: true });
+        step('Playwright, both projects', 'npx playwright test --reporter=line,json', ROOT, { ...process.env, SHELL_PREVIEW: '1', PLAYWRIGHT_JSON_OUTPUT_FILE: report });
+        if (existsSync(report)) for (const line of playwrightCounts(JSON.parse(readFileSync(report, 'utf8')))) console.log(`      ${line}`);
       }
     }
   });

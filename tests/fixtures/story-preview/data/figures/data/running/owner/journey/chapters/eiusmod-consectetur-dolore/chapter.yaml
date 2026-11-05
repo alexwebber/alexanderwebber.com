@@ -1,0 +1,26 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: eiusmod-consectetur-dolore
+name: Eiusmod consectetur dolore
+when: 2025-03/2025-06
+prose: |
+  Exercitation commodo consequat aliqua consequat lorem aliquip nisi ut amet. Incididunt et labore ut nisi consequat dolore quis adipiscing tempor eiusmod magna incididunt consequat aliqua minim. Consequat commodo aliquip {{fitness}} ad et nisi consectetur.
+
+  Elit commodo do aliqua tempor labore laboris sed magna commodo tempor amet laboris veniam. Nisi et nostrud ea veniam {{total}} et commodo consectetur. Dolor et amet quis nisi aliquip ad tempor incididunt enim nisi elit sed laboris eiusmod quis commodo.
+takeaway: Ullamco consectetur ullamco aliquip nisi consequat commodo elit lorem minim lorem ea adipiscing exercitation incididunt tempor labore ut nisi aliquip adipiscing minim labore consequat nisi elit ullamco laboris aliqua.
+figures:
+  - id: fitness
+    category: fitness
+    label: Fitness
+    as_of: 2025-06
+    text: "42"
+    source: owner
+    garmin: derived
+  - id: total
+    category: training_total
+    label: Distance that spring
+    as_of: 2025-06
+    text: 120 km
+    source: owner
+approved:
+  date: 2026-11-01
+  sha256: 744e952ec5ffa7f36dbc20a71f957c06a70ef8a2267b038452bf3acd146b571c

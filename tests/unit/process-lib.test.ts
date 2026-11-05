@@ -15,6 +15,7 @@ import {
   parseCandidates,
   parseTerms,
   parseTriggers,
+  playwrightCounts,
   suitesFor,
   summarisePaths,
   tail,
@@ -73,6 +74,30 @@ describe('suitesFor', () => {
 describe('tail', () => {
   it('keeps the last non-blank lines', () => {
     expect(tail('a\n\nb\r\nc\n\n', 2)).toEqual(['b', 'c']);
+  });
+});
+
+describe('playwrightCounts', () => {
+  it('counts each project through nested suites, flaky as passed', () => {
+    const test = (projectName: string, status: string) => ({ projectName, status });
+    const report = {
+      suites: [
+        { specs: [{ tests: [test('desktop', 'expected'), test('mobile-360', 'skipped')] }] },
+        {
+          suites: [
+            { specs: [{ tests: [test('desktop', 'unexpected'), test('mobile-360', 'expected')] }, { tests: [test('mobile-360', 'flaky')] }] },
+          ],
+        },
+      ],
+    };
+    expect(playwrightCounts(report)).toEqual([
+      'desktop: 1 passed, 1 failed, 0 skipped',
+      'mobile-360: 2 passed, 0 failed, 1 skipped (1 flaky)',
+    ]);
+  });
+
+  it('gives nothing for an empty report', () => {
+    expect(playwrightCounts({})).toEqual([]);
   });
 });
 

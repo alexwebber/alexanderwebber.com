@@ -28,7 +28,10 @@ triggers no workflow.
    `<path>=<name>` to name a shot. Files land in `spikes/screens/out/` (gitignored).
 3. **Look at every image** (Read them) before publishing: tests have passed with a broken layout
    that only a screenshot showed (a card overflowing its grid cell). Fix, rebuild, reshoot.
-4. **Publish**: rerun with `--publish`. It pushes, then prints the PR body's Markdown (also in
+   Each run clears `out/` first, so shoot every path in one run (a later run for a close-up loses
+   the rest).
+4. **Publish**: rerun with `--publish`. It shoots again from `dist/`, so `dist/` must still be the
+   build you looked at: after `pr-ready` (which leaves a deploy build), add `--build`. It pushes, then prints the PR body's Markdown (also in
    `spikes/screens/out/pr-body.md`): a table of phone shots, light and dark, and desktop links.
    Publishing again adds to the same side branch with a new SHA; use the newest table.
 5. **In the PR body**, under *How to view it*: what each shot shows, what the owner should look at

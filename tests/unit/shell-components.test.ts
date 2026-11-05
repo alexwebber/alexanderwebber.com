@@ -348,6 +348,17 @@ describe('SectionLayout', () => {
     expect(await render(GarminAttribution, { scale: true })).toContain('>Source: Garmin</p>');
   });
 
+  it('leaves "Last updated" out with lastUpdated={false}, and keeps it by default (spec 003 FR-071)', async () => {
+    setRunningStore(fakeStore());
+    const without = await render(SectionLayout, { ...props, lastUpdated: false }, { default: '<p>body</p>' }, '/running/goals/');
+    expect(without).not.toMatch(/data-last-updated|Last updated|data-stale-ms/);
+    expect(without).not.toContain('<script');
+    expect(without).toMatch(/<\/h1>\s*<\/header>\s*<p>body<\/p>/);
+    const withDefault = await render(SectionLayout, { ...props, lastUpdated: true }, { default: '<p>body</p>' }, '/running/goals/');
+    expect(withDefault).toContain('Last updated 17 Oct 2026, 20:17');
+    expect(withDefault).toBe(await render(SectionLayout, props, { default: '<p>body</p>' }, '/running/goals/'));
+  });
+
   it("uses the owner's stale threshold", async () => {
     setRunningStore(fakeStore({ stale_after_hours: 6 }));
     const html = await render(SectionLayout, props, {}, '/running/goals/');
