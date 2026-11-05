@@ -179,7 +179,7 @@ which only touch `data/running/published/` and only after the gate passes.
 | Python ingest (uv, pytest, ruff) | A small, well-tested pipeline package (`awingest`) that runs in Actions | [research R3](specs/001-running-section/research.md), [ingest/README.md](ingest/README.md) |
 | JSON Schema | The single schema source, validated in both TypeScript (Ajv) and Python | [research R4](specs/001-running-section/research.md), [schemas/](schemas/README.md) |
 | Cloudflare Workers static assets and R2 | Cloudflare's recommended path over Pages; a private bucket for raw data; both inside the free tiers | [research R1, R2](specs/001-running-section/research.md) |
-| intervals.icu, not Garmin direct or Strava | An official Garmin sync partner with a personal API key: no unofficial login, no lockout risk. Strava's API terms forbid showing data to others, and it lacks health metrics | [research R0](specs/001-running-section/research.md), [decisions log](PROJECT_MEMORY.md#decisions-log) |
+| intervals.icu, not Garmin direct or Strava | An official Garmin sync partner with a personal API key: no unofficial login, no lockout risk. Strava's API terms forbid showing data to others, and it lacks health metrics | [research R0](specs/001-running-section/research.md), [decisions log](DECISIONS.md) |
 | MapLibre and OpenFreeMap | Open tiles with no API key, loaded only when a visitor opens a race map; a static SVG route shows first | [research R6](specs/001-running-section/research.md) |
 | satori and sharp | Share images rendered at build time | [research R8](specs/001-running-section/research.md) |
 | Vitest, Playwright, axe, Lighthouse | Unit, end-to-end, accessibility and performance checks | [research R10](specs/001-running-section/research.md) |
@@ -206,7 +206,7 @@ standards in [sdd-playbook](https://github.com/alexwebber/sdd-playbook).
   [tasks](specs/001-running-section/tasks.md),
   [quickstart](specs/001-running-section/quickstart.md) and the
   [maintainability review](specs/001-running-section/maintainability-review.md) that followed it.
-- **Decisions and lessons are written down as they happen**, in
+- **Decisions and lessons are written down as they happen**, in [DECISIONS.md](DECISIONS.md) and
   [PROJECT_MEMORY.md](PROJECT_MEMORY.md), and the general ones go back into the playbook. Nearly
   90 lessons went upstream in three harvests
   ([#10](https://github.com/alexwebber/sdd-playbook/pull/10),

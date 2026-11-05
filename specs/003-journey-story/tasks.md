@@ -121,23 +121,22 @@ Referred to below as **the PR routine**:
    Playwright projects (`npx astro preview stop` first if a preview server is running). A deploy build
    (no `SHELL_PREVIEW`) follows for the gate commands: `validate-data`, `scan-images`,
    `check-boundaries`, `build`, `check-links` (from Phase 1 on), `scan-privacy`.
-3. **Slices 1–6: compare `dist/` against `main`** (a deploy build of `main` in a temporary `git
-   worktree` under a gitignored folder such as `spikes/<x>/out/`, then the file list and a byte
-   diff). Expected: byte-identical, because no chapter exists. Explain any difference in the PR
+3. **Slices 1–6: compare `dist/` against `main`** (`/pr-ready` builds the branch's base on `main`
+   in a temporary worktree and compares every file). Expected: byte-identical, because no chapter exists. Explain any difference in the PR
    (Vite's CSS chunking can move when a component is added, research.md R19), and compare computed
    styles if CSS moved.
 4. Look at phone-width screenshots of everything visible (here, the previews) in light and dark, and
    put them in the PR (one commit on a side branch that never merges, linked by SHA; WebP).
-5. **Privacy pass before pushing**: read every new or changed file in full and search the diff, the
-   branch's commit messages and the PR body for anything that isn't made up (FR-036). Fixtures come
+5. **Privacy pass before pushing**: read every new or changed file in full, and `/pr-ready` searches
+   the diff, the branch's commit messages and the PR body for the private terms (FR-036). Fixtures come
    from a fixed seed.
 6. The PR body has a *How to view it* section (the phase header's text) and checkbox questions for
    anything the owner must confirm. Say plainly when nothing is visible yet, with an example of what
    the previews show.
-7. Before saying the PR is ready, `gh pr checks` shows every check green, not just the required ones.
-8. After the merge, wait for `main`'s own Gate run to finish, deploy included. If a box was left
+7. Before saying the PR is ready, `/pr-ready` shows every check green, not just the required ones.
+8. After the merge, `/after-merge <pr>` waits for `main`'s own Gate run to finish, deploy included. If a box was left
    unanswered, ask at the next session start.
-9. Update *Next session* and the decisions log in `PROJECT_MEMORY.md`, add any lesson to *Upstream
+9. Update *Next session* in `PROJECT_MEMORY.md` and the log in `DECISIONS.md`, add any lesson to *Upstream
    candidates*, log the phase's token cost, and tell the owner it's a good point for a new session.
 
 ---

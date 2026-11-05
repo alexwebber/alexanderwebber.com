@@ -1,0 +1,33 @@
+# Dated follow-ups. scripts/process/session-start.ts lists the ones due (and those due within 14
+# days) at each session start. When one is done, remove it here in the same PR as the work, and
+# record the outcome in DECISIONS.md. Follow-ups that wait on an event, not a date (a reply, a lab
+# result), stay in PROJECT_MEMORY.md's Next session block.
+#
+#   - due: YYYY-MM-DD   # first day it's due
+#     task: what to do, and where the details are
+
+- due: 2026-11-19
+  task: >-
+    Goals follow-up, in a PR: unfeature half-sub-1-40, vo2max-52-5 and 10k-sub-43 (their "New"
+    windows end 16 and 18 Nov) and set featured_goal_limit back to 7.
+- due: 2026-11-23
+  task: >-
+    001 T149 (SC-002 follow-up, 30 days after go-live): from `gh run list --workflow refresh.yml`,
+    how often a synced run appears within 3 h (target >= 95%). Details in 001's tasks.md.
+- due: 2026-12-01
+  task: >-
+    002 T118 (SC-002): the month of timing ends. Summarise how each bot commit's time compared
+    with the donation times the owner mentioned in reviews, and record the result.
+- due: 2027-04-05
+  task: >-
+    002 T120 (quickstart.md §13): check the card's and page's change of form after Brighton on the
+    live site, and once the owner records the result, that it shows beside "Raised £X for Martlets".
+    Also look at Brighton's race page: its map's real OpenFreeMap tiles have never been seen live.
+- due: 2027-06-01
+  task: >-
+    002 T121: the Brighton JustGiving page expires on 3 July 2027. Ask the owner whether donations
+    have stopped and whether to mark the Brighton campaign `finished`.
+- due: 2027-10-11
+  task: >-
+    The refresh dispatch token (Worker secret GITHUB_DISPATCH_TOKEN) expires 2027-10-17 23:00 UTC.
+    Raise a new fine-grained token (Actions: write on this repo only) with the owner this week.
