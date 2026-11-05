@@ -1759,3 +1759,18 @@ end. Add each new decision as a dated entry at the end, as it's made.
   - **First run's findings:** wrangler 4.157.0 now uses miniflare 5.20261103.0-beta, which pins
     `undici` 7.30.1 (our override's fix); wrangler stays held while that is a beta. #101's
     unticked photos box was answered in a comment (2026-11-01), so it's settled.
+- **2026-11-05** — **Skills for every part of the SDLC** (owner, after the retro): not only the
+  checks, but repeated implementation work (Astro cards, charts, data files, tests), reviews and
+  process steps become skills, in this project or in sdd-playbook for future projects. Owner picks,
+  all on the recommendation:
+  - **Inventory and a first batch before 003 Phase 1**: the inventory from evidence (how often,
+    cost, project or playbook), the owner's picks, then the skills Phase 1 needs, so Phase 1 uses
+    them and its token cost can be compared with 002's slices. The rest are built the second time
+    a task comes up.
+  - **`AGENT_TIPS.md` becomes topic skills** in sdd-playbook (e.g. astro, cloudflare,
+    github-actions, playwright-testing), shipped by house-process, so they load when the topic
+    comes up, subagents included.
+  - **Normal PR review**: one line per skill in the PR; each is proven by its first real use.
+- **2026-11-05** — **#109 merged** with both boxes ticked: the trimmed *Next session* is complete, and
+  wrangler stays held at 4.152.0 until miniflare 5 is a stable release. `main`'s Gate finished
+  green, deploy included, and `/after-merge` (its first real use) found nothing to act on.
