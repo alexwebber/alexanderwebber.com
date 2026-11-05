@@ -1810,3 +1810,18 @@ end. Add each new decision as a dated entry at the end, as it's made.
     in a throwaway worktree: all 21 skills install.
   - **Kept local branches:** `002-fundraising-card-screens` and `002-story-screens` (PR screenshots
     only) and `003-handoff-interview` (a memory note superseded by #107), for the owner.
+- **2026-11-05** — **#113 and sdd-playbook#16 merged.** `/after-merge 113`: Gate and deploy green,
+  live pages 200, and the new pruning deleted 71 merged local branches. The owner ticked deleting
+  the three kept branches, but the auto-mode permission check refused `git branch -D` and
+  `git push origin --delete` on them, so the owner runs those (or adds a permission rule).
+  sdd-playbook#16's box (implement subagents commit and stop before pushing) merged unticked: ask
+  before the Phase 1 brief relies on it. Reinstalled house-process 0.13.0 from the playbook's
+  `main` (`chore-house-process-0.13.0` PR): 18 new skills, `extensions.yml` unchanged; `CLAUDE.md`
+  now points at the topic skills.
+- **2026-11-05** — **sdd-playbook becomes `software-factory`** (owner raised it; picks all on the
+  recommendation): the repo is heading towards a factory for new software, built from earlier
+  ventures' lessons and moving towards autonomous creation. Name `software-factory`, with "an
+  agentic software factory" as its tagline (the word in the name would date). A *Vision* with an
+  autonomy ladder comes first, from a question round: each rung, the evidence that unlocks it, and
+  the constitution or norm changes it would need, proposed and never adopted early (today's
+  every-PR approval and Principle VIII stand until then). Its own session, next, before 003 Phase 1.

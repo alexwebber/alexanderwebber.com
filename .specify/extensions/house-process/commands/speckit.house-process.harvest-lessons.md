@@ -32,6 +32,14 @@ looks back over the work just completed and proposes which lessons should be sen
      each into a script with a thin project skill that runs it and says how to act on the result,
      or extending one that exists. A script that would help any project is an SDD-general
      candidate for the playbook's `scripts/`.
+   - **Skills.** Go through the skills used since the last harvest (the project's `.claude/skills/`
+     and house-process's): were the skill gaps that subagents and handoffs reported applied? Is a
+     skill unused for several phases (propose merging or removing it), out of date with the code
+     it names (fix it), or general enough to help any project (propose moving it to house-process)?
+     Then the project's skill-candidates list (e.g. `process/skill-candidates.yaml`): recount
+     `times` from the phases since, propose building any task done twice or more by hand (with
+     `next` set to the work that will need it), and add tasks this harvest's evidence shows were
+     repeated.
    - **What every session loads.** Measure the files `CLAUDE.md` auto-loads (`PROJECT_MEMORY.md`,
      the constitution). Every session and every subagent pays for them on each run. If they're past
      about 40 KB, propose moving what's read rarely, usually the decisions log, to its own file
@@ -44,7 +52,10 @@ looks back over the work just completed and proposes which lessons should be sen
    - **SDD-general** → the sdd-playbook repo. Prefer encoding it where it applies
      automatically — a template (`PROJECT_MEMORY.md` working norms, `CLAUDE.md`, constitution
      preset), a hook/command, or `scripts/new-project.ps1` — and fall back to `PLAYBOOK.md`
-     (Lessons, Windows gotchas, or the relevant procedure) only when it can't be automated.
+     (Lessons, Windows gotchas, or the relevant procedure) only when it can't be automated. A
+     technical tip for one area (a framework, CI, a host, a shell) goes in the matching topic
+     skill, `commands/speckit.house-process.tips-<topic>.md`, or a new topic; a procedure any
+     project repeats becomes a house-process command.
    - **Project-specific** → stays in this project's `PROJECT_MEMORY.md`; not sent upstream.
    Skip anything already captured upstream (read the playbook's templates and `PLAYBOOK.md`
    first).
