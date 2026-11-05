@@ -57,6 +57,8 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
 `test.describe.configure({ mode: 'serial' })`, **pinned to the desktop project**
 (`test.skip(testInfo.project.name !== 'desktop', 'builds once, not per device')`) and
 `testInfo.setTimeout(240_000)`. Validation rules go through `validateData(copyRoot)`, not the build.
+Load the `gate-drill` skill: `runGate` runs the gate's steps on the copy, and `serveDist` serves its
+`dist/` to the browser.
 
 ## Running them
 

@@ -1927,3 +1927,14 @@ end. Add each new decision as a dated entry at the end, as it's made.
     exact approved text, batched breaks), `pr-ready` (the subagent's terms file, `dist/` left as a
     deploy build). `pr-ready --suites` now prints Playwright's counts per project (`playwrightCounts`),
     which took the subagent a second four-minute run.
+- **2026-11-05** — **The `gate-drill` skill** (process PR, before 003 Phase 3's brief), drawn from
+  the four drills done so far (002's stale and none drills, 003's T022 and `check-links`). The
+  repeated steps became helpers in `tests/helpers/scratch-site.ts`: `runGate` (the gate's steps on a
+  copy, in the gate's order, stopping where the gate stops; a unit test keeps `GATE_STEPS` equal to
+  `action.yml`'s), `buildFailure`, `snapshotDist` (a failed build leaves `dist/` intact),
+  `scratchRepo` (the journey writers plant files in a copy) and `serveDist` (the copy's `dist/` for a
+  browser, files indexed up front as CodeQL wants). `stale.spec.ts` now uses `runGate` and
+  `serveDist`, which adds `check-links` to that drill. A one-off run: a clean copy passes all six
+  steps (about 10 s with the build), and a changed approved chapter stops validate-data and a plain
+  build with file, entry and field, leaving `dist/`'s 249 files byte-identical. `gate-check` and
+  `page-tests` point at the skill, and its candidate is removed.

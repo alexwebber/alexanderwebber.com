@@ -10,10 +10,6 @@
 #     home: project | playbook
 #     next: the work that next needs it (optional)
 
-- task: Gate drill on a scratch copy (copySite, plant, validateData/buildSite, dist/ intact, the dist/ CLI, scanPrivacy)
-  times: 4
-  home: project
-  next: 003 Phase 3 (T049, the launch drill)
 - task: Chart (SVG with an accessible name, the dataviz palette, label placement)
   times: 8
   home: project

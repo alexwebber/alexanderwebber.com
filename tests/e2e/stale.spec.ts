@@ -1,8 +1,8 @@
 // The SC-003 resilience drill (T145): intervals.icu access broken for 7 days. The drill copies the
 // repo's real data into a scratch site whose refresh.json says the last successful fetch was 7
 // days ago, then checks:
-// - the gate still passes on it (validate-data, scan-images, check-boundaries, astro build,
-//   scan-privacy), so no site update fails because the provider is down;
+// - the gate still passes on it (runGate: validate-data, scan-images, check-boundaries, astro build,
+//   check-links, scan-privacy), so no site update fails because the provider is down;
 // - every built Running page carries its last-updated time and the stale notice in the HTML, so
 //   it holds without JS;
 // - in a browser, a failing freshness endpoint (the Worker's 503 when its record is missing)
@@ -20,18 +20,12 @@
 //
 // The scratch site is tests/helpers/scratch-site.ts's copy. `astro check` isn't run: it type-checks code, which the
 // stale data can't change, and the PR checks already run it.
-import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { createServer, type Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
-import { extname, join } from 'node:path';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { parse, stringify } from 'yaml';
-import { checkBoundaries } from '../../scripts/check-boundaries.ts';
-import { scanImages } from '../../scripts/scan-images.ts';
-import { scanPrivacy } from '../../scripts/scan-privacy.ts';
-import { validateData } from '../../scripts/validate-data.ts';
 import { addDays, formatDateTime, londonDate } from '../../src/shared/format/dates.ts';
-import { buildSite, copySite } from '../helpers/scratch-site.ts';
+import { copySite, GATE_STEPS, runGate, serveDist, type DistServer, type GateRun } from '../helpers/scratch-site.ts';
 
 const DAY_MS = 86_400_000;
 // Whole minutes, as refresh.json carries them; the page shows hours and minutes.
@@ -44,9 +38,9 @@ const FIGURES = { raised: '£1,234', target: '£2,000', supporters: '37 supporte
 const JUSTGIVING = 'https://www.justgiving.com/**';
 
 let root: string;
-let server: Server;
+let server: DistServer | undefined;
 let baseUrl: string;
-let gate: { dataErrors: string[]; images: number; boundaries: number; privacy: number };
+let gate: GateRun;
 /** The focus race's campaign in the scratch copy. */
 let campaign: { id: string; page_url: string };
 
@@ -57,8 +51,6 @@ function builtPages(dir = join(root, 'dist', 'running'), path = '/running/'): st
     return entry.name === 'index.html' ? [path] : [];
   });
 }
-
-const TYPES: Record<string, string> = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2' };
 
 test.describe.configure({ mode: 'serial' });
 
@@ -104,41 +96,24 @@ test.beforeAll(async ({}, testInfo) => {
     }),
   );
 
-  const issues = validateData(root);
-  await buildSite(root);
-  gate = {
-    dataErrors: issues.filter((i) => i.severity === 'error').map((i) => `${i.file}: ${i.message}`),
-    images: (await scanImages(root)).length,
-    boundaries: checkBoundaries(root).length,
-    privacy: (await scanPrivacy(root)).length,
-  };
-
-  const dist = join(root, 'dist');
-  server = createServer((request, response) => {
-    let file = join(dist, decodeURIComponent(new URL(request.url ?? '/', 'http://x').pathname));
-    try {
-      if (statSync(file).isDirectory()) file = join(file, 'index.html');
-      const body = readFileSync(file);
-      response.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' }).end(body);
-    } catch {
-      // No Worker here, so /running/api/freshness is a 404 unless a test routes it.
-      response.writeHead(404).end();
-    }
-  });
-  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
-  baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  // Every gate step, the build included, in the gate's order (tests/helpers/scratch-site.ts).
+  gate = await runGate(root);
+  if (gate.failed) throw new Error(`the gate stopped at ${gate.failed}:
+${gate.messages.join('
+')}`);
+  // No Worker here, so /running/api/freshness is a 404 unless a test routes it.
+  server = await serveDist(join(root, 'dist'));
+  baseUrl = server.base;
 });
 
 test.afterAll(async () => {
-  await new Promise<void>((done) => (server ? server.close(() => done()) : done()));
+  await server?.close();
   if (root) rmSync(root, { recursive: true, force: true });
 });
 
 test('SC-003: the gate passes on data that is 7 days stale', () => {
-  expect(gate.dataErrors).toEqual([]);
-  expect(gate.images).toBe(0);
-  expect(gate.boundaries).toBe(0);
-  expect(gate.privacy).toBe(0);
+  expect(gate.failed, gate.messages.join('\n')).toBeUndefined();
+  expect(gate.ran).toEqual([...GATE_STEPS]);
 });
 
 test('SC-003: every Running page is built with its last-updated time and the stale notice', () => {

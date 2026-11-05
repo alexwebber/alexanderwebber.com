@@ -32,14 +32,12 @@ what's wrong without leaking what it found. Copy `scripts/check-boundaries.ts` (
   each failure planted **alone** fails with its message (a scanner that reports one match per rule per
   file hides a second plant); then two together; and the output never contains a planted private
   word.
-- **The drill, for real**: in a scratch copy (`copySite` in `tests/helpers/scratch-site.ts`, or a
-  temporary folder outside the repo), plant the fault, run the check on the copy, and see it fail
-  with the message; then remove it and see it pass. A `dist/` check takes `--dist=<dir>`, so run the
-  real command line on the copy's `dist/` and see exit 1, then 0 (`check-links` is the precedent).
-  `validate-data` and `scan-privacy` validate the repo they sit in, so call their functions on the
-  copy (`validateData(copyRoot)`, `scanPrivacy(copyRoot)`), plus a plain `buildSite` for a loader
-  rule. A rule in a function isn't a rule in the gate until this passes. Put the drill's output in
-  the PR.
+- **The drill, for real** (load the `gate-drill` skill): in a scratch copy, plant the fault, run
+  `runGate` on the copy and see the new step stop it with the message; then remove it and see it
+  pass. Add the step to `runGate` and `GATE_STEPS` in `tests/helpers/scratch-site.ts`, in the gate's
+  order. A `dist/` check takes `--dist=<dir>`, so also run the real command line on the copy's
+  `dist/` and see exit 1, then 0 (`check-links` is the precedent). A rule in a function isn't a rule
+  in the gate until this passes. Put the drill's output in the PR.
 - The check runs clean on today's site (`npm run <name>` after a deploy build), and
   `node scripts/process/pr-ready.ts --suites` is green.
 - After the merge: `/after-merge` follows `main`'s Gate to the end, then dispatch one refresh
