@@ -12,7 +12,10 @@
  *   by shape and its "What I learned" label in light, dark and forced colours (owner decision 10,
  *   FR-004).
  */
+/* The page has no "Last updated" line under its <h1>, so the first chapter's <h2> needs its own
+   distance from it, or it reads as the title's subtitle. */
 .theme-running .story-page {
+  margin-top: var(--space-6);
   overflow-wrap: anywhere;
 }
 
