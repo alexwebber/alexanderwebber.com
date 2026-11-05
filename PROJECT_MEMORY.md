@@ -304,6 +304,14 @@ project-specific notes.
   the call (exit 144). Use `npx astro preview stop` on its own.
 - `spikes/<x>/out/` (gitignored, outside `tsconfig`) is a good home for a temporary `git worktree`
   used to build `main` for a `dist/` comparison: `astro check` doesn't scan the copy.
+- An ajv-to-message layer that prefixes the offending value leaks free text through schema errors;
+  only a sentinel test across schema-invalid cases caught it. Drop the value for approved text.
+- `sed -i` with `$(` and `|` in its pattern silently didn't match in Git Bash, yet the file showed as
+  modified with an empty diff (line endings). Use the Edit tool or a script file.
+- A subagent barred from `C:\temp` can still run `pr-ready` by pointing `PRIVATE_TERMS_FILE` at a
+  missing file, which skips the term search; the main conversation must rerun it with the real file.
+- A subagent's "waiting on its own background work" notification isn't its report: check the branch
+  (or the process list) for progress rather than calling it finished.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.

@@ -1857,3 +1857,28 @@ end. Add each new decision as a dated entry at the end, as it's made.
   #115 installed 0.14.0 from, so no reinstall. The folder rename was still waiting: VS Code had
   been running since 18 Oct, so closing windows never quit it. The watcher renames it once the
   owner quits VS Code fully (File > Exit).
+- **2026-11-05** — **The software-factory rename finished** at 11:15 once VS Code was quit: the
+  folder is `C:\Projects\software-factory`, and the three workspace files point at it.
+- **2026-11-05** — **Journey story Phase 1 built** (T001–T022, `003-slice-1`; implement subagent
+  about 352k tokens, at the low end of 002's slices, 353–471k, with three project skills loaded for
+  the first time). Nothing visible: no chapter enters the repo before Phase 7. The gate gains
+  `check-links` after the build; its first run on today's site found no dead link (215 pages, 2,520
+  site links), and `dist/` is byte-identical to `main`'s. Made-up text only; the subagent read nothing
+  under `C:\temp`. Choices later tasks build on; the owner confirms them in the PR:
+  - **Figure text is strict**: one space before a unit ("12.3 kg"), `%` with none, calories grouped
+    with commas from 1,000, no negative or "about" values.
+  - **A period must start strictly before it ends**; "same start" means the same first day, so a
+    month and its first day tie and need distinct `order` values.
+  - **"Dated before the stored data"** compares the figure's `as_of` last day with the first record.
+  - **Weight and body-fat figures expect the scale** from `section.yaml`, or "Garmin" if none is set.
+  - **The takeaway and the note take no links or markup**; the closing section takes links, no figures.
+  - **The fundraising-key privacy rule still applies to journey files** (only campaign stories are
+    exempt): a chapter line starting "Donations:" would fail `scan-privacy`.
+  - **Unlisted photos in a chapter folder are accepted silently** for now; Phase 5 adds the warning
+    race photos get.
+  - Beyond the task text: the shared schema messages start with the offending value, so journey
+    files drop it (`withoutValue`); the sentinel test caught the leak.
+  - Skill gaps applied in the same PR: `owner-data-file` (the hand-written fake, `withoutValue` and a
+    sentinel test, two ajv and gen-types pitfalls), `gate-check` (drills on a copy call the functions,
+    `dist/` checks take `--dist=`), `tests` (`tempRepo().write` and binary files, the journey helper).
+    A new skill candidate: the gate drill on a scratch copy.

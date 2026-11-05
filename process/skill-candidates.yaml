@@ -26,6 +26,9 @@
   times: 8
   home: project
   next: 003 Phase 2
+- task: Gate drill on a scratch copy (copySite, plant, validateData/buildSite, dist/ intact, the dist/ CLI, scanPrivacy)
+  times: 4
+  home: project
 - task: Chart (SVG with an accessible name, the dataviz palette, label placement)
   times: 8
   home: project

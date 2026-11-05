@@ -21,13 +21,16 @@ II(a)). Playwright page tests are a separate candidate (`process/skill-candidate
 ## Helpers (`tests/helpers/`)
 
 - `tempRepo()`: a throwaway repo root with the real `schemas/` (a junction on Windows); `write(path,
-  content)`, `cleanup()` in `afterEach`. `run(id, extra)` and `runPath(id)` make a valid published run.
+  content)`, `cleanup()` in `afterEach`. `write` JSON-stringifies anything that isn't a string, so
+  write binary files (photos) with `writePhoto` from `journey.ts`. `run(id, extra)` and `runPath(id)` make a valid published run.
 - `emptyOwner(overrides)` (`owner-data.ts`): a fake store's `getOwner()` value. Never write the
   `OwnerData` literal out in a test.
 - A fake `RunningStore`: an object of async methods, passed to `setRunningStore` (from
   `src/sections/running/data/load.ts`) before rendering with `experimental_AstroContainer`.
 - `copySite(root)` and `buildSite(root)` (`scratch-site.ts`): a scratch copy of the site to edit and
   build for a drill.
+- `journey.ts`: made-up approved story trees (`lorem(seed, n)`, `chapter`, `note`, `page`,
+  `closing`, `approve`, `writeApproved`, `writeStory`) for anything that reads approved text.
 - `stripTags` (`html.ts`) to assert on rendered text; `a11y.ts` for axe in Playwright.
 
 ## Rules
