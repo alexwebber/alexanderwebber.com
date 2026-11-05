@@ -1851,3 +1851,9 @@ end. Add each new decision as a dated entry at the end, as it's made.
   a one-off watcher (`C:\temp\rename-software-factory.ps1`, started through WMI so it outlives VS
   Code) renames it once VS Code closes, and updates the alexanderwebber, agents and art workspace
   files. The agents and art repos have no mentions of the old name.
+- **2026-11-05** — **#115 and software-factory#17 merged** and checked with `/after-merge`: #115's
+  checks, Gate and deploy green, live pages 200. #17's two boxes are ticked (the streak lengths and
+  rung 5's three-month look-back stand as starting numbers), and it merged as the single commit
+  #115 installed 0.14.0 from, so no reinstall. The folder rename was still waiting: VS Code had
+  been running since 18 Oct, so closing windows never quit it. The watcher renames it once the
+  owner quits VS Code fully (File > Exit).

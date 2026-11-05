@@ -9,19 +9,14 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
   journey story, has its spec, plan and tasks merged (#101, #105, #108), with nothing visible yet,
-  and the owner approved the whole story on 2026-11-04. The playbook is now **software-factory**:
-  the GitHub repo is renamed, [software-factory#17](https://github.com/alexwebber/software-factory/pull/17)
-  carries the rename and the README's *Vision* (the autonomy ladder), and this repo's
-  `chore-software-factory-rename` PR carries the new paths and house-process 0.14.0, installed from
-  #17's branch. The owner's `~/.claude/CLAUDE.md` is updated.
+  and the owner approved the whole story on 2026-11-04. The playbook is now **software-factory**
+  (#115 and software-factory#17 merged and checked, house-process 0.14.0).
 - **Next session, first:** `/session-start`. Check that `C:\temp\rename-software-factory.log` ends
-  with `done`: a watcher started on 2026-11-05 renames `C:\Projects\sdd-playbook` to
-  `C:\Projects\software-factory` once VS Code closes, and updates the alexanderwebber, agents and
-  art workspace files. If it didn't, find out why from the log. Then `/after-merge` for both PRs
-  once merged, and ask #17's two boxes (the streak lengths, rung 5's look-back) if they merged
-  unticked. If #17 changed anything under `extensions/` or `presets/` before merging, reinstall
-  from software-factory's `main`.
-- **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in its own
+  with `done` and `C:\Projects\software-factory` exists: the watcher renames `sdd-playbook` once no
+  `Code` process is left, so the owner quits VS Code fully (File > Exit) at the end of the
+  2026-11-05 session. If it still says "waiting", VS Code wasn't fully quit; if it logged "rename
+  still refused", find what else holds the folder.
+- **Then 003 Phase 1** (slice 1, T001–T023) via `/speckit-implement` as a subagent, in this
   session. The subagent commits and stops before pushing (owner, 2026-11-05: software-factory#16's
   box). Write the brief with `/speckit-house-process-implement-brief`: the skills are
   `owner-data-file` (T002–T011, T020), `gate-check` (T012, T013, T018, T019, T022), `tests`
@@ -196,6 +191,9 @@ project-specific notes.
 - To outlive the editor, a watcher (e.g. one waiting to rename a folder VS Code holds open) must be
   started through WMI (`Invoke-CimMethod Win32_Process Create`), not `Start-Process` from the
   agent's shell, which sits in VS Code's process tree and may be killed with it.
+- A watcher waiting for VS Code to close can wait forever: here its `Code` processes had run since
+  18 Oct, through window closes and reopens. Ask the owner to quit with File > Exit, and check that
+  no `Code` process remains.
 
 - When analyze's fixes are applied, resume the tasks subagent (`SendMessage`), which already holds
   the docs, rather than starting a fresh one.
