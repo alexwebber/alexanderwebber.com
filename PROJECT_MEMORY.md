@@ -191,6 +191,9 @@ project-specific notes.
 - To outlive the editor, a watcher (e.g. one waiting to rename a folder VS Code holds open) must be
   started through WMI (`Invoke-CimMethod Win32_Process Create`), not `Start-Process` from the
   agent's shell, which sits in VS Code's process tree and may be killed with it.
+- A watcher waiting for VS Code to close can wait forever: here its `Code` processes had run since
+  18 Oct, through window closes and reopens. Ask the owner to quit with File > Exit, and check that
+  no `Code` process remains.
 
 - When analyze's fixes are applied, resume the tasks subagent (`SendMessage`), which already holds
   the docs, rather than starting a fresh one.
