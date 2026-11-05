@@ -1,0 +1,17 @@
+# Made-up text: lorem-style words only.
+id: chapter-a
+name: Lorem ipsum
+when: 2001-03-15/2002-02-01
+order: 2
+prose: |
+  Lorem ipsum dolor sit amet, {{fig-a}} consectetur adipiscing elit.
+
+  Ut enim ad minim veniam, quis nostrud [exercitation ullamco](/running/fundraising/) laboris.
+
+  {{fig-b}}
+
+  Duis aute irure dolor in reprehenderit in voluptate velit esse.
+takeaway: Sed do eiusmod tempor incididunt ut labore.
+approved:
+  date: 2001-04-01
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

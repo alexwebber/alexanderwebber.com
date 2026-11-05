@@ -14,6 +14,7 @@ export function emptyOwner(overrides: Partial<OwnerData> = {}): OwnerData {
     manualMetrics: { training_status: [], race_predictions: [] },
     campaigns: [],
     stories: [],
+    journey: { chapters: [] },
     ...overrides,
   };
 }

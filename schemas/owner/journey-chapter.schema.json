@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/journey-chapter.schema.json",
+  "title": "JourneyChapter",
+  "description": "data/running/owner/journey/chapters/<chapter-id>/chapter.yaml: one approved chapter of the journey story (specs/003-journey-story/data-model.md §3). Only approved text may enter this file (FR-032, FR-036). Its $defs line, paragraph and paragraphs are shared by the other journey files; each file carries its own approved block.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "when", "prose", "takeaway", "approved"],
+  "properties": {
+    "id": {
+      "description": "A slug. Equals the folder name. Set once, from the name, and never changed (FR-051).",
+      "$ref": "../defs.schema.json#/$defs/slug"
+    },
+    "name": {
+      "description": "Required plain text, one line. The chapter's heading.",
+      "$ref": "#/$defs/line"
+    },
+    "when": {
+      "description": "Required. YYYY-MM-DD, YYYY-MM, or <start>/<end> with each end a month or a day. Start before end and not after today are checked by validate-data.",
+      "type": "string",
+      "pattern": "^(\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])|\\d{4}-(0[1-9]|1[0-2]))(/(\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])|\\d{4}-(0[1-9]|1[0-2])))?$",
+      "x-error": "is not a day, a month or a period (expected YYYY-MM-DD, YYYY-MM, or start/end such as 2001-03/2001-09)"
+    },
+    "order": {
+      "description": "Optional integer. Required, and distinct, when two chapters share the same start (research.md R6).",
+      "type": "integer",
+      "x-error": "must be a whole number"
+    },
+    "prose": {
+      "description": "Required. Plain text in paragraphs separated by blank lines, with only the inline markup of data-model.md §5 ({{figure-id}} placeholders and [text](/path/) links).",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "x-error": "must be the chapter's text, not empty"
+    },
+    "takeaway": {
+      "description": "Required. Plain text, one paragraph, at most 400 characters (FR-004). No markup.",
+      "$ref": "#/$defs/paragraph",
+      "type": "string",
+      "maxLength": 400,
+      "x-error": "must be one paragraph of at most 400 characters"
+    },
+    "figures": {
+      "description": "Optional, at most two (FR-010). Each is used by exactly one placeholder in prose.",
+      "type": "array",
+      "maxItems": 2,
+      "x-error": "has more than two figures (a chapter carries at most two)",
+      "items": { "$ref": "#/$defs/figure" }
+    },
+    "photos": {
+      "description": "Optional, at most three (FR-060).",
+      "type": "array",
+      "maxItems": 3,
+      "x-error": "has more than three photos (a chapter carries at most three)",
+      "items": { "$ref": "#/$defs/photo" }
+    },
+    "approved": {
+      "description": "The owner's approval, written by scripts/approve-story.ts --journey after their explicit yes. sha256 covers the file's hashed fields (data-model.md §2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "sha256"],
+      "x-error": "needs the owner's approval before it can be published",
+      "properties": {
+        "date": {
+          "description": "The date the owner approved the file. Not in the future.",
+          "$ref": "../defs.schema.json#/$defs/date"
+        },
+        "sha256": {
+          "description": "64 lower-case hexadecimal characters: the sha256 of the canonical JSON of the hashed fields. A mismatch means the file changed after approval.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "x-error": "is not a sha256 (64 lower-case hexadecimal characters)"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "line": {
+      "description": "Plain text on one line, with no leading or trailing spaces.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S(?:[^\\n\\r]*\\S)?$",
+      "x-error": "must be one line of text, not empty and not starting or ending with spaces"
+    },
+    "paragraph": {
+      "description": "Plain text, one paragraph: no blank line inside it.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\n]*\\S[^\\n]*(?:\\n[^\\n]*\\S[^\\n]*)*\\n?$",
+      "x-error": "must be one paragraph of text, not empty and with no blank line"
+    },
+    "paragraphs": {
+      "description": "Plain text in paragraphs separated by blank lines. Its own rule, because defs text refuses the trailing line break of a | block.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "x-error": "must be text, not empty"
+    },
+    "dayOrMonth": {
+      "description": "A day (YYYY-MM-DD) or a month (YYYY-MM).",
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])(-(0[1-9]|[12]\\d|3[01]))?$",
+      "x-error": "is not a day or a month (expected YYYY-MM-DD or YYYY-MM)"
+    },
+    "figure": {
+      "title": "JourneyFigure",
+      "description": "A figure placed in the prose by its {{id}} placeholder (research.md R5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "label", "as_of", "text", "source"],
+      "properties": {
+        "id": {
+          "description": "A slug, unique in the chapter. The placeholder's name.",
+          "$ref": "../defs.schema.json#/$defs/slug"
+        },
+        "category": {
+          "description": "One of the approved categories (research.md R5). Anything else needs a schema change, which records the owner's approval (FR-013). calories: approved by the owner on 2026-11-03.",
+          "enum": [
+            "weight", "body_fat", "vo2_max", "resting_hr", "hrv", "training_status", "race_prediction",
+            "fitness", "race_time", "best_effort", "run_distance", "run_pace", "training_total", "calories"
+          ],
+          "x-error": "is not an approved figure category (a new one needs a schema change, which records the owner's approval)"
+        },
+        "label": {
+          "description": "What it measures, plain text. Shown on a set-apart figure.",
+          "$ref": "#/$defs/line"
+        },
+        "as_of": {
+          "description": "A day or a month, not in the future. Shown on a set-apart figure.",
+          "$ref": "#/$defs/dayOrMonth"
+        },
+        "text": {
+          "description": "The figure exactly as approved. Matches its category's pattern (FR-077, data-model.md §3).",
+          "$ref": "#/$defs/line"
+        },
+        "source": {
+          "description": "stored (taken from the site's data) or owner (FR-012).",
+          "enum": ["stored", "owner"],
+          "x-error": "must be stored or owner"
+        },
+        "ref": {
+          "description": "Required with source: stored: { run: <run-id> }, { health: { metric, date } }, { manual: { kind, as_of } } or { race: <slug> }. Not allowed with source: owner.",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["run"],
+              "properties": { "run": { "$ref": "../defs.schema.json#/$defs/runId" } }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["health"],
+              "properties": {
+                "health": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["metric", "date"],
+                  "properties": {
+                    "metric": { "enum": ["weight_avg7", "body_fat_pct", "vo2max", "fitness_ctl", "resting_hr", "hrv"] },
+                    "date": { "$ref": "../defs.schema.json#/$defs/date" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["manual"],
+              "properties": {
+                "manual": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["kind", "as_of"],
+                  "properties": {
+                    "kind": { "enum": ["training_status", "race_predictions"] },
+                    "as_of": { "$ref": "../defs.schema.json#/$defs/date" }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["race"],
+              "properties": { "race": { "$ref": "../defs.schema.json#/$defs/slug" } }
+            }
+          ],
+          "x-error": "is not a record reference (expected { run: <run-id> }, { health: { metric, date } }, { manual: { kind, as_of } } or { race: <slug> })"
+        },
+        "garmin": {
+          "description": "Optional: a Garmin device model (garminDevice from defs), Garmin alone, or derived.",
+          "anyOf": [
+            { "const": "Garmin" },
+            { "const": "derived" },
+            { "$ref": "../defs.schema.json#/$defs/garminDevice" }
+          ],
+          "x-error": "must be a Garmin device model (e.g. Venu X1), Garmin, or derived"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "source": { "const": "stored" } }, "required": ["source"] },
+          "then": { "required": ["ref"] }
+        },
+        {
+          "if": { "properties": { "source": { "const": "owner" } }, "required": ["source"] },
+          "then": { "properties": { "ref": { "not": {}, "x-error": "is not allowed with source: owner (only a stored figure names its record)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "weight" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^\\d+(\\.\\d+)? kg$", "x-error": "must be a number with kg (e.g. 12.3 kg)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "body_fat" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^\\d+(\\.\\d+)?%$", "x-error": "must be a number with % (e.g. 12.3%)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "enum": ["vo2_max", "fitness"] } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^\\d+(\\.\\d+)?$", "x-error": "must be a bare number (e.g. 12)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "resting_hr" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^\\d+ bpm$", "x-error": "must be a number with bpm (e.g. 12 bpm)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "hrv" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^\\d+ ms$", "x-error": "must be a number with ms (e.g. 12 ms)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "enum": ["race_prediction", "race_time", "best_effort"] } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^(\\d{1,2}:[0-5]\\d:[0-5]\\d|\\d{1,3}:[0-5]\\d)$", "x-error": "must be a clock time, m:ss or h:mm:ss (e.g. 1:23:45)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "run_distance" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^\\d+(\\.\\d+)? km$", "x-error": "must be a number with km (e.g. 12.3 km)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "run_pace" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^\\d{1,2}:[0-5]\\d /km$", "x-error": "must be a pace, m:ss /km (e.g. 5:30 /km)" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "training_total" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^((\\d{1,3}(,\\d{3})+|\\d+)(\\.\\d+)? km|\\d+:[0-5]\\d)$", "x-error": "must be a number with km (e.g. 1,234 km) or a duration h:mm" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "training_status" } }, "required": ["category"] },
+          "then": { "properties": { "text": { "type": "string", "pattern": "^[^0-9]+$", "x-error": "must be plain words with no digit" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "calories" } }, "required": ["category"] },
+          "then": {
+            "required": ["garmin"],
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "^(\\d{1,3}(,\\d{3})+|\\d{1,3})( to (\\d{1,3}(,\\d{3})+|\\d{1,3}))? calories$",
+                "x-error": "must be a comma-grouped number, or <n> to <n>, followed by calories (e.g. 1,234 calories)"
+              },
+              "garmin": { "const": "Garmin", "x-error": "must be Garmin: daily calories burned are a Garmin estimate" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "category": { "enum": ["training_total", "calories"] } }, "required": ["category"] },
+          "then": { "properties": { "source": { "const": "owner", "x-error": "must be owner: this category isn't in the stored data" } } }
+        },
+        {
+          "if": { "properties": { "category": { "enum": ["weight", "body_fat", "vo2_max", "fitness", "resting_hr", "hrv"] } }, "required": ["category"] },
+          "then": { "properties": { "ref": { "anyOf": [{ "type": "object", "required": ["health"] }], "x-error": "must be a health reference ({ health: { metric, date } }) for this category" } } }
+        },
+        {
+          "if": { "properties": { "category": { "enum": ["training_status", "race_prediction"] } }, "required": ["category"] },
+          "then": { "properties": { "ref": { "anyOf": [{ "type": "object", "required": ["manual"] }], "x-error": "must be a manual-metrics reference ({ manual: { kind, as_of } }) for this category" } } }
+        },
+        {
+          "if": { "properties": { "category": { "enum": ["run_distance", "run_pace", "best_effort"] } }, "required": ["category"] },
+          "then": { "properties": { "ref": { "anyOf": [{ "type": "object", "required": ["run"] }], "x-error": "must be a run reference ({ run: <run-id> }) for this category" } } }
+        },
+        {
+          "if": { "properties": { "category": { "const": "race_time" } }, "required": ["category"] },
+          "then": { "properties": { "ref": { "anyOf": [{ "type": "object", "required": ["run"] }, { "type": "object", "required": ["race"] }], "x-error": "must be a run or race reference ({ run: <run-id> } or { race: <slug> }) for this category" } } }
+        }
+      ]
+    },
+    "photo": {
+      "title": "JourneyPhoto",
+      "description": "A photo in the chapter's folder (data-model.md §4). Its bytes are in the chapter's approval hash.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "description", "caption"],
+      "properties": {
+        "file": {
+          "description": "A file in the chapter's folder.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*\\.(jpg|webp|avif)$",
+          "x-error": "is not a photo file name (letters, digits, '.', '_' or '-', ending .jpg, .webp or .avif)"
+        },
+        "description": {
+          "description": "Required plain text: the alt text (FR-063).",
+          "$ref": "#/$defs/line"
+        },
+        "caption": {
+          "description": "Required plain text, shown under the photo (FR-063).",
+          "$ref": "#/$defs/line"
+        }
+      }
+    }
+  }
+}

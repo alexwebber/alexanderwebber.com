@@ -1,0 +1,19 @@
+# Made-up text: lorem-style words only.
+id: chapter-a
+name: Lorem ipsum
+when: 2001-03/2001-09
+order: 2
+prose: |
+  Lorem ipsum dolor sit amet, {{fig-c}} consectetur adipiscing elit.
+takeaway: Sed do eiusmod tempor incididunt ut labore.
+figures:
+  - id: fig-c
+    category: weight
+    label: Dolor
+    as_of: 2001-03
+    text: 12.3 kg
+    source: owner
+    ref: { health: { metric: weight_avg7, date: 2001-03-15 } }
+approved:
+  date: 2001-04-01
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

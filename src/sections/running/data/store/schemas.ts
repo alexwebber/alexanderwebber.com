@@ -18,5 +18,9 @@ export const RUNNING_SCHEMAS = [
   'owner/manual-metrics',
   'owner/campaigns',
   'owner/campaign-story',
+  'owner/journey-page',
+  'owner/journey-note',
+  'owner/journey-closing',
+  'owner/journey-chapter',
 ] as const;
 export type RunningSchema = (typeof RUNNING_SCHEMAS)[number];

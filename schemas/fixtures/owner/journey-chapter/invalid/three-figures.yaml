@@ -1,0 +1,49 @@
+# Made-up text: lorem-style words only.
+id: chapter-a
+name: Lorem ipsum
+when: 2001-03/2001-09
+order: 2
+prose: |
+  Lorem ipsum dolor sit amet, {{fig-a}} consectetur adipiscing elit.
+
+  Ut enim ad minim veniam, quis nostrud [exercitation ullamco](/running/fundraising/) laboris.
+
+  {{fig-b}}
+
+  Duis aute irure dolor in reprehenderit in voluptate velit esse.
+takeaway: Sed do eiusmod tempor incididunt ut labore.
+figures:
+  - id: fig-a
+    category: weight
+    label: Lorem
+    as_of: 2001-03
+    text: 12.3 kg
+    source: owner
+    garmin: Index S2
+  - id: fig-b
+    category: vo2_max
+    label: Ipsum
+    as_of: 2001-03-15
+    text: "11"
+    source: stored
+    ref: { health: { metric: vo2max, date: 2001-03-15 } }
+    garmin: Garmin
+  - id: fig-c
+    category: weight
+    label: Dolor
+    as_of: 2001-03
+    text: 12.3 kg
+    source: owner
+photos:
+  - file: lorem-1.jpg
+    description: Lorem ipsum dolor sit amet.
+    caption: Consectetur adipiscing elit.
+  - file: lorem-2.jpg
+    description: Lorem ipsum dolor sit amet.
+    caption: Consectetur adipiscing elit.
+  - file: lorem-3.jpg
+    description: Lorem ipsum dolor sit amet.
+    caption: Consectetur adipiscing elit.
+approved:
+  date: 2001-04-01
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

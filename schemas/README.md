@@ -9,6 +9,19 @@ are in [contracts/data-files.md](../specs/001-running-section/contracts/data-fil
 - `owner/*.schema.json`: hand-edited YAML in `data/running/owner/`. Mapping files may set
   `schema_version` (default: current). List files (goals, upcoming races, run overrides, health
   exclusions, campaigns) can't carry it, so they are always the current version.
+- `owner/journey-*.schema.json`: the journey story's files under `data/running/owner/journey/`
+  ([spec 003's data model](../specs/003-journey-story/data-model.md)), each holding approved text
+  only and an `approved` block (`date`, `sha256`) written by `scripts/approve-story.ts --journey`:
+  - `journey-chapter`: `chapters/<chapter-id>/chapter.yaml`, one chapter: its id (the folder
+    name), name, `when` (a day, a month or a period), optional `order`, prose with
+    `{{figure-id}}` placeholders and site links, a takeaway, at most two figures (each with a
+    category from the approved list, its text in that category's units, and `stored` with a `ref`
+    or `owner`) and at most three photos (file, alt text, caption) beside it. Its `$defs` (`line`,
+    `paragraph`, `paragraphs`) are shared by the other journey schemas.
+  - `journey-page`: `page.yaml`, the story page's title, description, share text (no digits) and
+    landing-link label.
+  - `journey-note`: `note.yaml`, the one-paragraph note that the story isn't medical advice.
+  - `journey-closing`: `closing.yaml`, the optional closing section's heading and text.
 - `defs.schema.json`: shared building blocks (dates, run IDs, owner times and distances), used
   through `$ref: ../defs.schema.json#/$defs/...`.
 - `distances.json`: each named race distance in metres, the one table for both languages

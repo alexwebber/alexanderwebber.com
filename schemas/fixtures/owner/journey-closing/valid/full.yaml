@@ -1,0 +1,9 @@
+# Made-up text: lorem-style words only.
+heading: Lorem ipsum dolor sit amet
+text: |
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+  Sed do eiusmod tempor [incididunt ut labore](/running/) et dolore.
+approved:
+  date: 2001-04-01
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

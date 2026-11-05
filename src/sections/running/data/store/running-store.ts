@@ -8,6 +8,10 @@ import type {
   Goal,
   HealthExclusion,
   HealthSeries,
+  JourneyChapter,
+  JourneyClosing,
+  JourneyNote,
+  JourneyPage,
   LabMeasurement,
   MetricGoal,
   MilestoneGoal,
@@ -31,6 +35,10 @@ export type {
   Goal,
   HealthExclusion,
   HealthSeries,
+  JourneyChapter,
+  JourneyClosing,
+  JourneyNote,
+  JourneyPage,
   LabMeasurement,
   MetricGoal,
   MilestoneGoal,
@@ -45,6 +53,15 @@ export type {
   TrainingStatusEntry,
   UpcomingRace,
 };
+
+/** The journey story's approved files (spec 003). Absent files mean no journey. */
+export interface Journey {
+  /** One per journey/chapters/<id>/chapter.yaml, all approved: anything else stops validation. */
+  chapters: JourneyChapter[];
+  closing?: JourneyClosing;
+  note?: JourneyNote;
+  page?: JourneyPage;
+}
 
 export type HealthMetric = HealthSeries['metric'];
 export type HealthPoint = HealthSeries['points'][number];
@@ -76,6 +93,8 @@ export interface OwnerData {
   campaigns: Campaign[];
   /** One per stories/<campaign-id>.yaml, all approved: anything else stops validation. */
   stories: CampaignStory[];
+  /** `{ chapters: [] }` until a chapter exists. */
+  journey: Journey;
 }
 
 export interface RunningStore {
