@@ -10,22 +10,6 @@
 #     home: project | playbook
 #     next: the work that next needs it (optional)
 
-- task: Test-only preview state (SHELL_PREVIEW pages, a fixed-seed generate.ts, made-up text)
-  times: 3
-  home: project
-  next: 003 Phase 2 (story-preview)
-- task: Playwright page tests (both projects, axe sweeps, 320px fit, exact names, scoped locators)
-  times: 9
-  home: project
-  next: 003 Phase 2
-- task: Section page or landing card in Astro (card shell, dark mode, 320px, share image)
-  times: 6
-  home: project
-  next: 003 Phase 2
-- task: PR screenshots (phone width, light and dark, WebP, side branch linked by SHA)
-  times: 8
-  home: project
-  next: 003 Phase 2
 - task: Gate drill on a scratch copy (copySite, plant, validateData/buildSite, dist/ intact, the dist/ CLI, scanPrivacy)
   times: 4
   home: project

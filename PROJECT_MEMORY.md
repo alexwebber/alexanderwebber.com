@@ -8,21 +8,17 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: spec, plan and tasks merged (#101, #105, #108), the owner approved the whole story on
-  2026-11-04, and **Phase 1 (files and checks, T001–T022) is raised as
-  [#117](https://github.com/alexwebber/alexanderwebber.com/pull/117)**, with nothing visible. The
-  software-factory rename is finished (`C:\Projects\software-factory`).
-- **Next session, first:** `/session-start`. If #117 merged: `/after-merge 117`, then dispatch one
-  refresh (`gh workflow run refresh.yml --ref main`) and confirm its gate passes the new
-  `check-links` step, tick T023 in `specs/003-journey-story/tasks.md`, and ask about any of #117's
-  seven boxes left unticked before building on them (they're how the checks read figures, dates,
-  links and photos). If it hasn't merged, ask the owner whether they've reviewed it.
-- **Then build the four skills 003 Phase 2 needs** (`process/skill-candidates.yaml`, `next: 003
-  Phase 2`): the test-only preview state, Playwright page tests, a section page or landing card,
-  and PR screenshots. Draw each from its precedents in specs 001 and 002, in one process PR, and
-  remove their entries. That's this session's work. Phase 2 (T024 on, the story page) is the session
-  after, via `/speckit-house-process-implement-brief` and a `/speckit-implement` subagent that
-  commits and stops before pushing. Phase 1's subagent cost about 352k tokens; compare.
+  journey story: Phase 1 (files and checks) merged as #117 with all seven boxes ticked. The four
+  skills Phase 2 needs (`preview-state`, `page-tests`, `section-page`, `pr-screenshots`, with
+  `scripts/process/screenshots.ts`) are raised as a process PR.
+- **Next session, first:** `/session-start`. If the skills PR merged, `/after-merge` it and read its
+  box (side screenshot branches stay); if not, ask the owner whether they've reviewed it. The
+  trigger due 2026-11-06 checks that the 00:17 UTC refresh's gate ran `check-links`, then ticks T023.
+- **Then 003 Phase 2** (T024–T041, the story page over made-up previews): write the brief with
+  `/speckit-house-process-implement-brief`, naming the four new skills plus `tests`, and dispatch a
+  `/speckit-implement` subagent that commits and stops before pushing. The main conversation then
+  takes the screenshots (`pr-screenshots`), looks at them, and raises the PR. Phase 1's subagent cost
+  about 352k tokens; compare.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -311,6 +307,11 @@ project-specific notes.
   missing file, which skips the term search; the main conversation must rerun it with the real file.
 - A subagent's "waiting on its own background work" notification isn't its report: check the branch
   (or the process list) for progress rather than calling it finished.
+- A green dispatched run doesn't prove a step ran: an idle Refresh skips its publish job, where the
+  gate (and a new gate step) lives. Check the step's log line, not the run's conclusion.
+- Deleting a PR's screenshot side branch after the merge breaks the merged PR's images once GitHub
+  drops the commit. Keep such branches (made-up or public images only), and the delete never needs
+  a permission.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.

@@ -1,0 +1,217 @@
+// PR screenshots (/pr-screenshots skill): shoots pages of the built site in a real browser, at phone
+// width and on a desktop, light and dark, saves them as WebP, and with --publish puts them on a side
+// branch that never merges, then prints the Markdown for the PR body, linked by commit SHA (`gh`
+// can't attach images to a PR).
+//
+//   node scripts/process/screenshots.ts <path>[=<name>] ... [--build] [--first-screen] [--no-dark]
+//     [--no-desktop] [--width=360] [--publish]
+//
+// - Serves dist/ itself (no `astro preview`, which a coding agent's session backgrounds and which
+//   blocks Playwright's webServer). Preview pages need a SHELL_PREVIEW=1 build: --build makes one.
+// - Each path gives <name>-phone, <name>-phone-dark, <name>-desktop (and -desktop-dark with
+//   --desktop-dark). The name defaults to the path's segments joined by "-".
+// - Phone shots are full-page at 360 px wide (--width) with isMobile off (Playwright can't capture a
+//   full page with it on), at 2x. --first-screen shoots only the first screen (360 x 780), for
+//   "what a visitor sees first" checks. Pages taller than WebP's limit are cropped, and say so.
+// - Files go to spikes/screens/out/ (gitignored). --publish commits them with git plumbing (the
+//   working tree is untouched) to `<branch>-screens`, pushes, and prints the PR body's table. The
+//   side branch stays after the merge, so the merged PR's images keep working. It triggers no
+//   workflow (gate.yml runs on PRs and main only).
+//
+// Made-up data only: the screenshots are public the moment they're pushed (Principle VI).
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createServer, type Server } from 'node:http';
+import { extname, join, normalize, resolve, sep } from 'node:path';
+import { chromium } from '@playwright/test';
+import sharp from 'sharp';
+import { REPO, run } from './lib.ts';
+
+const ROOT = join(import.meta.dirname, '..', '..');
+const DIST = join(ROOT, 'dist');
+const OUT = join(ROOT, 'spikes', 'screens', 'out');
+const ASTRO = join(ROOT, 'node_modules', 'astro', 'bin', 'astro.mjs');
+/** WebP's largest side, in pixels. */
+const WEBP_MAX = 16383;
+const PHONE_HEIGHT = 780;
+const DESKTOP = { width: 1280, height: 800 };
+
+const git = (...args: string[]) => run('git', args, ROOT).trim();
+
+const args = process.argv.slice(2);
+const flag = (name: string) => args.includes(`--${name}`);
+const width = Number(args.find((a) => a.startsWith('--width='))?.slice(8) ?? 360);
+const targets = args
+  .filter((a) => !a.startsWith('--'))
+  .map((a) => {
+    const [path, name] = a.split('=') as [string, string | undefined];
+    const clean = path.endsWith('/') || extname(path) ? path : `${path}/`;
+    return { path: clean, name: name ?? (clean.split('/').filter(Boolean).join('-') || 'home') };
+  });
+const rewritten = targets.find((t) => !t.path.startsWith('/'));
+if (rewritten) {
+  console.error(`! "${rewritten.path}" isn't a site path. Git Bash rewrites /paths into Windows ones: run it from PowerShell, or prefix MSYS_NO_PATHCONV=1.`);
+  process.exit(2);
+}
+if (targets.length === 0) {
+  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>] ... [--build] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
+  process.exit(2);
+}
+
+// --- Build, then serve dist/ ---------------------------------------------------------------------
+
+if (flag('build')) {
+  console.log('Building with SHELL_PREVIEW=1 ...');
+  const env = { ...process.env, SHELL_PREVIEW: '1' };
+  for (const cmd of [[join(ROOT, 'scripts', 'gen-types.ts')], [ASTRO, 'build', '--silent']]) {
+    const result = spawnSync(process.execPath, cmd, { cwd: ROOT, env, stdio: 'inherit' });
+    if (result.status !== 0) process.exit(1);
+  }
+}
+
+const TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css',
+  '.js': 'text/javascript',
+  '.json': 'application/json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.jpg': 'image/jpeg',
+  '.woff2': 'font/woff2',
+  '.xml': 'application/xml',
+  '.txt': 'text/plain',
+  '.ico': 'image/x-icon',
+};
+
+/** The file under dist/ a URL path maps to, as Cloudflare's static assets serve it. */
+function distFile(urlPath: string): string | undefined {
+  const rel = normalize(decodeURIComponent(urlPath.split('?')[0]!)).replace(/^[/\\]+/, '');
+  const file = resolve(DIST, rel);
+  if (file !== DIST && !file.startsWith(DIST + sep)) return undefined;
+  if (existsSync(file) && statSync(file).isFile()) return file;
+  const index = join(file, 'index.html');
+  return existsSync(index) ? index : undefined;
+}
+
+function serve(): Promise<{ server: Server; base: string }> {
+  const server = createServer((req, res) => {
+    const file = distFile(req.url ?? '/');
+    const notFound = join(DIST, '404.html');
+    const path = file ?? (existsSync(notFound) ? notFound : undefined);
+    res.writeHead(file ? 200 : 404, { 'content-type': TYPES[extname(path ?? '.txt')] ?? 'application/octet-stream' });
+    res.end(path ? readFileSync(path) : 'Not found');
+  });
+  return new Promise((done) => server.listen(0, '127.0.0.1', () => {
+    const address = server.address();
+    done({ server, base: `http://127.0.0.1:${typeof address === 'object' && address ? address.port : 0}` });
+  }));
+}
+
+for (const { path } of targets) {
+  if (!distFile(path)) {
+    console.error(`! ${path} isn't in dist/. Build first (--build makes a SHELL_PREVIEW=1 build, which the preview pages need).`);
+    process.exit(1);
+  }
+}
+
+// --- Shoot ---------------------------------------------------------------------------------------
+
+interface Shot {
+  file: string;
+  path: string;
+  variant: string;
+  cropped: boolean;
+}
+
+const variants = [
+  { suffix: 'phone', viewport: { width, height: PHONE_HEIGHT }, scale: 2, scheme: 'light' as const },
+  ...(flag('no-dark') ? [] : [{ suffix: 'phone-dark', viewport: { width, height: PHONE_HEIGHT }, scale: 2, scheme: 'dark' as const }]),
+  ...(flag('no-desktop') ? [] : [{ suffix: 'desktop', viewport: DESKTOP, scale: 1, scheme: 'light' as const }]),
+  ...(flag('desktop-dark') ? [{ suffix: 'desktop-dark', viewport: DESKTOP, scale: 1, scheme: 'dark' as const }] : []),
+];
+
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
+const { server, base } = await serve();
+const browser = await chromium.launch();
+const shots: Shot[] = [];
+try {
+  for (const target of targets) {
+    for (const v of variants) {
+      const context = await browser.newContext({ viewport: v.viewport, deviceScaleFactor: v.scale, colorScheme: v.scheme, isMobile: false });
+      const page = await context.newPage();
+      const response = await page.goto(`${base}${target.path}`, { waitUntil: 'load' });
+      if (response?.status() !== 200) throw new Error(`${target.path} answered ${response?.status()}`);
+      await page.evaluate(() => document.fonts.ready);
+      const png = await page.screenshot({ fullPage: !flag('first-screen') });
+      await context.close();
+      const image = sharp(png);
+      const { width: w = 0, height: h = 0 } = await image.metadata();
+      const cropped = h > WEBP_MAX;
+      const file = `${target.name}-${v.suffix}.webp`;
+      await (cropped ? image.extract({ left: 0, top: 0, width: w, height: WEBP_MAX }) : image).webp({ quality: 80 }).toFile(join(OUT, file));
+      shots.push({ file, path: target.path, variant: v.suffix, cropped });
+      console.log(`  ${file}${cropped ? ` (cropped to the first ${WEBP_MAX / v.scale} px of ${h / v.scale})` : ''}`);
+    }
+  }
+} finally {
+  await browser.close();
+  server.close();
+}
+console.log(`\n${shots.length} screenshot(s) in ${OUT}`);
+
+// --- Publish to the side branch -------------------------------------------------------------------
+
+if (!flag('publish')) {
+  console.log('Look at them, then rerun with --publish to push them and print the PR body\'s table.');
+  process.exit(0);
+}
+
+const branch = git('rev-parse', '--abbrev-ref', 'HEAD');
+if (branch === 'main' || branch === 'HEAD') {
+  console.error('! On main or a detached HEAD: switch to the PR\'s branch first.');
+  process.exit(1);
+}
+const side = `${branch.replace(/\//g, '-')}-screens`;
+
+// Keep what an earlier publish put there; a file of the same name is replaced.
+const entries = new Map<string, string>();
+let parent: string | undefined;
+if (git('ls-remote', '--heads', 'origin', side) !== '') {
+  git('fetch', '--quiet', 'origin', side);
+  parent = git('rev-parse', 'FETCH_HEAD');
+  for (const line of git('ls-tree', parent).split('\n').filter(Boolean)) {
+    const [meta, name] = line.split('\t') as [string, string];
+    entries.set(name, meta);
+  }
+}
+for (const shot of shots) entries.set(shot.file, `100644 blob ${git('hash-object', '-w', join(OUT, shot.file))}`);
+const tree = execFileSync('git', ['mktree'], { cwd: ROOT, input: [...entries].map(([name, meta]) => `${meta}\t${name}\n`).join(''), encoding: 'utf8' }).trim();
+const message = `PR screenshots for ${branch} (never merges)`;
+const sha = git('commit-tree', tree, '-m', message, ...(parent ? ['-p', parent] : []));
+git('push', '--quiet', 'origin', `${sha}:refs/heads/${side}`);
+console.log(`Pushed ${shots.length} file(s) to ${side} at ${sha}.\n`);
+
+// --- The PR body's Markdown ----------------------------------------------------------------------
+
+const url = (file: string) => `https://raw.githubusercontent.com/${REPO}/${sha}/${file}`;
+const img = (shot: Shot) => `<img src="${url(shot.file)}" width="240" alt="${shot.path} ${shot.variant}">`;
+const phones = (p: string) => shots.filter((s) => s.path === p && s.variant.startsWith('phone'));
+const desktops = (p: string) => shots.filter((s) => s.path === p && s.variant.startsWith('desktop'));
+const columns = variants.filter((v) => v.suffix.startsWith('phone')).map((v) => (v.suffix === 'phone' ? 'Phone' : 'Phone, dark'));
+const lines = [
+  '## Screenshots (made-up data)',
+  '',
+  `| Page | ${columns.join(' | ')} |`,
+  `|---|${columns.map(() => '---').join('|')}|`,
+  ...targets.map(({ path }) => `| \`${path}\` | ${phones(path).map(img).join(' | ')} |`),
+];
+const desktopLinks = targets.flatMap(({ path }) => desktops(path).map((s) => `[\`${path}\`${s.variant === 'desktop' ? '' : ' (dark)'}](${url(s.file)})`));
+if (desktopLinks.length > 0) lines.push('', `Desktop: ${desktopLinks.join(' · ')}`);
+if (shots.some((s) => s.cropped)) lines.push('', 'Long pages are cropped to their top part.');
+const markdown = `${lines.join('\n')}\n`;
+writeFileSync(join(OUT, 'pr-body.md'), markdown);
+console.log(markdown);
+console.log(`(Also in ${join(OUT, 'pr-body.md')}.)`);
