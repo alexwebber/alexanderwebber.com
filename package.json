@@ -15,6 +15,7 @@
     "validate-data": "node scripts/validate-data.ts",
     "scan-images": "node scripts/scan-images.ts",
     "check-boundaries": "node scripts/check-boundaries.ts",
+    "check-links": "node scripts/check-links.ts",
     "scan-privacy": "node scripts/scan-privacy.ts",
     "approve-story": "node scripts/approve-story.ts",
     "pretest": "npm run gen-types",

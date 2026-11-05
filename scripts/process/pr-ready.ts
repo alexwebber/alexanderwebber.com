@@ -151,7 +151,7 @@ if (suites.includes('gate')) {
   await section('Gate commands (deploy build)', () => {
     if (dist !== 'deploy' && !step('deploy build', BUILD)) return;
     const scripts = (JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as { scripts: Record<string, string> }).scripts;
-    // In the gate's order (.github/actions/gate/action.yml); check-links once 003 adds it.
+    // In the gate's order (.github/actions/gate/action.yml).
     for (const name of ['validate-data', 'scan-images', 'check-boundaries', 'check-links', 'scan-privacy']) {
       if (scripts[name]) step(name, `npm run ${name} --silent`);
     }

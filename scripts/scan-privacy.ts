@@ -12,7 +12,10 @@
 //
 // Findings give a line and column, never the surrounding text: the gate runs on unpublished bot
 // output, so its log must not carry the values it caught. Rules whose match is itself a value
-// (a time, an ID) redact the match too.
+// (a time, an ID) redact the match too, and so does every finding in story text (the journey's
+// files, the campaign stories and the built story page: specs/003-journey-story/contracts/gate.md
+// §2, FR-035), whatever the rule, because there the match is a word of the story. The rules still
+// apply to those files unchanged (FR-022).
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { IMAGE, metadataKinds } from './scan-images.ts';
@@ -54,6 +57,8 @@ const FUNDRAISING_KEYS =
   'donor\\w*|donations?|donation_?amount|gift_?aid\\w*|totalEstimatedGiftAid|owner_?guid|page_?guid|campaign_?guid|consumer_?id|page_?id|event_?id';
 // An approved story is the owner's own text and may say "Gift Aid: ...".
 const STORY_FILE = /^data\/running\/owner\/stories\//;
+/** Story text: a finding here is redacted, whatever the rule (FR-035). */
+export const STORY_TEXT = /^(?:data\/running\/owner\/journey\/|data\/running\/owner\/stories\/|dist\/running\/story\/)/;
 
 export const RULES: Rule[] = [
   {
@@ -128,7 +133,7 @@ function finding(file: string, rule: string, text: string, match: RegExpExecArra
   const before = text.slice(0, match.index);
   const line = before.split('\n').length;
   const column = match.index! - before.lastIndexOf('\n');
-  const excerpt = redact ? `[${match[0].length} chars redacted]` : match[0].replace(/\s+/g, ' ').trim();
+  const excerpt = redact || STORY_TEXT.test(file) ? `[${match[0].length} chars redacted]` : match[0].replace(/\s+/g, ' ').trim();
   return { file, rule, line, column, excerpt };
 }
 
