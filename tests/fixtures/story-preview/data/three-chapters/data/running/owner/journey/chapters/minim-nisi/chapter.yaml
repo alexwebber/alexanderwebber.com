@@ -1,0 +1,14 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: minim-nisi
+name: Minim nisi
+when: 2024-06-15
+prose: |
+  This is made-up preview text, so the page can be checked before a real story exists. Nothing here is about a real person, place or figure. Amet sit nisi laboris veniam magna aliqua consequat ullamco. Exercitation ad laboris adipiscing consequat dolore minim nisi enim adipiscing minim ullamco laboris sed do. Incididunt sit sed enim eiusmod et sed quis nisi.
+
+  Consequat dolor quis commodo consectetur labore tempor aliqua minim ad laboris incididunt. Ad enim veniam tempor dolore ea. Elit dolor sit nostrud laboris ex ipsum sed quis dolore consequat commodo. Nisi enim aliqua sit veniam aliquip.
+
+  Et dolor consequat dolore consequat nisi do commodo exercitation ex quis lorem quis aliqua magna amet. Dolor enim commodo aliquip eiusmod tempor incididunt laboris lorem sit. Loremipsumdolorsitametconsecteturadipiscingelitseddoeiusmodtemporincididunt Quis dolor ut sed consectetur eiusmod.
+takeaway: Dolore laboris nisi exercitation veniam aliquip commodo quis adipiscing et dolore magna aliqua et dolor.
+approved:
+  date: 2026-11-01
+  sha256: 3526d03aa8f3a05cbc7e249a147323d7e119754d2be7d933bcf7a44a6e070d45

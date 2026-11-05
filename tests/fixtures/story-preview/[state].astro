@@ -1,0 +1,21 @@
+---
+// /story-preview/<state>/ (SHELL_PREVIEW=1 only): each made-up state through the real loader and the
+// real StoryPage, for tests/e2e/story.spec.ts, tests/a11y/story.spec.ts and the PR's screenshots.
+// The menu is the real Running menu, so a preview never adds "Story" to it.
+import type { GetStaticPaths } from 'astro';
+import StoryPage from '../../../src/sections/running/components/StoryPage.astro';
+import { loadJourney } from '../../../src/sections/running/data/journey.ts';
+import { PREVIEW_STATES, previewStore, type PreviewState } from './store.ts';
+
+export const getStaticPaths = (() => PREVIEW_STATES.map((state) => ({ params: { state }, props: { state } }))) satisfies GetStaticPaths;
+
+interface Props {
+  state: PreviewState;
+}
+
+const { state } = Astro.props;
+const journey = await loadJourney(previewStore(state));
+if (!journey) throw new Error(`story preview ${state}: no chapter`);
+---
+
+<StoryPage journey={journey} image="/og/running.png" title={`Story preview: ${state} (made-up text)`} />

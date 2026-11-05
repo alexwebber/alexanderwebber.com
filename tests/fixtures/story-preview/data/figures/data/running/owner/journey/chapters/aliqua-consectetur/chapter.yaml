@@ -1,0 +1,30 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: aliqua-consectetur
+name: Aliqua consectetur
+when: 2025-10/2026-02
+prose: |
+  Ullamco ea nisi consequat nisi elit sed et aliqua laboris ex. Ut labore do incididunt consectetur nostrud tempor eiusmod laboris lorem elit lorem do dolore ea veniam quis. Lorem ea nostrud exercitation {{calories}} minim labore quis amet.
+
+  Sed ea amet magna veniam minim veniam aliquip veniam minim sed minim nostrud minim aliqua. Aliquip labore enim ex consequat amet do sed ea.
+
+  {{race}}
+
+  Dolore ut aliqua do nisi sit incididunt sit nostrud magna labore quis lorem ut eiusmod laboris ullamco.
+takeaway: Lorem consectetur veniam minim dolore et veniam ea dolor ipsum nostrud consequat lorem magna ad.
+figures:
+  - id: calories
+    category: calories
+    label: Calories burned
+    as_of: 2025-10-04
+    text: 1,234 calories
+    source: owner
+    garmin: Garmin
+  - id: race
+    category: race_time
+    label: Race time
+    as_of: 2026-02-01
+    text: 3:45:12
+    source: owner
+approved:
+  date: 2026-11-01
+  sha256: 329f602c4b97b17df60df02615d6ac43595b43ed90efdebbcefecaea5e2631e5

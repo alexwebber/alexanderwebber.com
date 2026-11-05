@@ -1,0 +1,21 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: quis-nisi-ut
+name: Quis nisi ut
+when: 2026-03
+prose: |
+  This is made-up preview text, so the page can be checked before a real story exists. Nothing here is about a real person, place or figure. Dolore minim aliqua consequat dolore laboris dolor. Sit amet consequat incididunt laboris ullamco consectetur incididunt consectetur eiusmod ut sed elit. Nostrud minim commodo exercitation veniam do ullamco.
+
+  Tempor amet ut amet consequat sed aliquip dolor elit nostrud. Commodo minim nisi magna eiusmod elit dolore ea dolore ea ex aliquip veniam magna amet aliquip. Enim amet do ex consectetur {{weight}} adipiscing sit sed do dolore quis. Laboris ad quis amet laboris veniam laboris dolore tempor aliqua ea dolore sit adipiscing. Labore sit amet magna veniam minim ex tempor.
+
+  Ipsum ad sit ex consequat ad magna adipiscing ut commodo sit aliqua ea commodo magna lorem. Veniam sit aliqua do eiusmod sit ad ipsum veniam consectetur. Do ad consequat [ex sit](/running/) magna ad ut labore.
+takeaway: Eiusmod tempor nisi ea nisi enim ex minim ex ea dolor minim dolor sit eiusmod enim commodo ut labore quis ad.
+figures:
+  - id: weight
+    category: weight
+    label: Weight
+    as_of: 2026-03
+    text: 12.3 kg
+    source: owner
+approved:
+  date: 2026-11-01
+  sha256: 8ea3103bf64827a7ebf3e78ec397350b5786f21f019120a4330a141826f924db

@@ -1,0 +1,10 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: sed-tempor-commodo
+name: Sed tempor commodo
+when: 2025-02
+prose: |
+  Eiusmod enim nisi minim dolore do dolor magna dolor magna adipiscing minim.
+takeaway: Sit eiusmod laboris amet consequat nisi ipsum aliqua consequat veniam laboris aliqua quis nisi et ullamco.
+approved:
+  date: 2026-11-01
+  sha256: 7e6a8e2f03c66d5b0c529724f1572a71547ab9f4854b0df884a08198b81202a5

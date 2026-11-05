@@ -1,0 +1,31 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: quis-veniam
+name: Quis veniam
+when: 2025-01-15
+prose: |
+  This is made-up preview text, so the page can be checked before a real story exists. Nothing here is about a real person, place or figure. Laboris dolore aliquip dolore tempor adipiscing ipsum dolore consectetur lorem exercitation veniam ipsum aliqua. Labore consequat eiusmod aliquip veniam consectetur amet tempor.
+
+  Ipsum dolore do sed consequat veniam exercitation nostrud elit labore ea nostrud tempor eiusmod ut amet. Veniam consequat nostrud minim nisi minim incididunt enim lorem minim. Do dolore consectetur lorem {{weight}} ex et amet ut dolore.
+
+  {{vo2}}
+
+  Magna commodo enim ullamco tempor dolor consectetur amet. Amet et lorem consectetur veniam ipsum ullamco consequat amet et amet ea dolor elit.
+takeaway: Consectetur veniam tempor dolore consequat lorem tempor incididunt elit labore quis incididunt ipsum incididunt consequat labore sit lorem et lorem et incididunt et eiusmod do incididunt et ex.
+figures:
+  - id: weight
+    category: weight
+    label: Weight
+    as_of: 2025-01
+    text: 12.3 kg
+    source: owner
+    garmin: Example S1
+  - id: vo2
+    category: vo2_max
+    label: VO2 max
+    as_of: 2025-01-15
+    text: "11"
+    source: owner
+    garmin: Garmin
+approved:
+  date: 2026-11-01
+  sha256: ba514678c5c7511c5745bad63fbdb8e7b00bbac4845b1f1ffc0139e7fbe64f67

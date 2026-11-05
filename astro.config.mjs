@@ -10,7 +10,9 @@ import running from './src/sections/running/integration.ts';
 // synthetic data with lab results (tests/e2e/health.spec.ts, tests/a11y/health.spec.ts; there are
 // no real lab results yet), and /fundraising-preview/<state>/, the fundraising page and card over
 // synthetic campaigns, in the states the real one can't show yet (tests/e2e/fundraising.spec.ts,
-// tests/a11y/fundraising.spec.ts). Deploy builds never set it.
+// tests/a11y/fundraising.spec.ts), and /story-preview/<state>/, the journey story page over made-up
+// chapters, before the real story is in the repo (tests/e2e/story.spec.ts, tests/a11y/story.spec.ts).
+// Deploy builds never set it.
 /** @type {import('astro').AstroIntegration} */
 const shellPreview = {
   name: 'alexanderwebber:shell-preview',
@@ -24,6 +26,7 @@ const shellPreview = {
       injectRoute({ pattern: '/og/race-preview-[slug].png', entrypoint: `${races}/og.ts` });
       injectRoute({ pattern: '/health-preview', entrypoint: './tests/fixtures/health-preview/index.astro' });
       injectRoute({ pattern: '/fundraising-preview/[state]', entrypoint: './tests/fixtures/fundraising-preview/[state].astro' });
+      injectRoute({ pattern: '/story-preview/[state]', entrypoint: './tests/fixtures/story-preview/[state].astro' });
     },
   },
 };

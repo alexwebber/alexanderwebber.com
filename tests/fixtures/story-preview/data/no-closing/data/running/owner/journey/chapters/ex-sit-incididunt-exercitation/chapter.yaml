@@ -1,0 +1,12 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: ex-sit-incididunt-exercitation
+name: Ex sit incididunt exercitation
+when: 2025-05
+prose: |
+  This is made-up preview text, so the page can be checked before a real story exists. Nothing here is about a real person, place or figure. Sit ex consequat veniam consectetur dolor. Nostrud ut labore ipsum dolore ipsum dolor laboris ullamco ea ad do. Tempor ex aliquip labore tempor aliqua.
+
+  Commodo ut nisi laboris veniam magna ullamco magna nisi. Enim ex do adipiscing consequat dolore ut incididunt sit aliqua minim ex exercitation nisi quis. Adipiscing ut nostrud enim nisi et lorem elit ex.
+takeaway: Amet sit ullamco magna dolore ipsum aliqua laboris ad elit eiusmod quis veniam ea incididunt ut ullamco.
+approved:
+  date: 2026-11-01
+  sha256: 14976ba169cf7254b4771bbf0580bbf96c05ef285071dfbf4a9abb8e0eb1f89d
