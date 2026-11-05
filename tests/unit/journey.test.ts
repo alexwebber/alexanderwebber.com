@@ -1,8 +1,22 @@
 // The journey story's pure parsing (specs/003-journey-story/data-model.md §5, research.md R6):
 // every prose form, each stray-markup case with its paragraph number, the closing and note
-// variants, and `when` in each form. All text here is made up.
+// variants, and `when` in each form; then the display half (Phase 2): chapter order, dates as shown
+// and Garmin attribution text. All text here is made up.
 import { describe, expect, it } from 'vitest';
-import { isAfter, parseProse, parseText, parseWhen, placedFigures, PROSE_MESSAGES, startsBeforeEnd } from '../../src/sections/running/domain/journey.ts';
+import {
+  DERIVED_SOURCE,
+  isAfter,
+  parseProse,
+  parseText,
+  parseWhen,
+  placedFigures,
+  PROSE_MESSAGES,
+  sortChapters,
+  sourceText,
+  startsBeforeEnd,
+  whenParts,
+  whenText,
+} from '../../src/sections/running/domain/journey.ts';
 
 const problems = (prose: string, options = {}) => parseProse(prose, options).issues.map((i) => [i.paragraph, i.problem, i.message]);
 
@@ -87,5 +101,77 @@ describe('parseWhen', () => {
     expect(isAfter(parseWhen('2026-12')!, '2026-11-10')).toBe(true);
     expect(isAfter(parseWhen('2026-11-11')!, '2026-11-10')).toBe(true);
     expect(isAfter(parseWhen('2026-01/2026-11')!, '2026-11-10')).toBe(false);
+  });
+});
+
+describe('sortChapters (FR-002)', () => {
+  const ids = (chapters: { id: string; when: string; order?: number }[]) => sortChapters(chapters).map((c) => c.id);
+
+  it('puts chapters oldest first by the first day they cover', () => {
+    expect(ids([
+      { id: 'c', when: '2003-01' },
+      { id: 'a', when: '2001-03-15' },
+      { id: 'b', when: '2002-06/2004-01' },
+    ])).toEqual(['a', 'b', 'c']);
+  });
+
+  it('puts a month before a later day in the same month, and a period by its start', () => {
+    expect(ids([
+      { id: 'day', when: '2001-03-02' },
+      { id: 'month', when: '2001-03' },
+      { id: 'period', when: '2001-02/2001-12' },
+    ])).toEqual(['period', 'month', 'day']);
+  });
+
+  it('breaks a tie by order, whatever the ids or the input order', () => {
+    const tied = [
+      { id: 'a', when: '2001-03-01', order: 2 },
+      { id: 'b', when: '2001-03', order: 1 },
+    ];
+    expect(ids(tied)).toEqual(['b', 'a']);
+    expect(ids(tied.toReversed())).toEqual(['b', 'a']);
+  });
+
+  it('gives the same order on every run, and leaves its input alone', () => {
+    const chapters = [
+      { id: 'b', when: '2001-03' },
+      { id: 'a', when: '2001-03' },
+      { id: 'c', when: '2000-01' },
+    ];
+    const once = ids(chapters);
+    expect(ids(chapters.toReversed())).toEqual(once);
+    expect(once).toEqual(['c', 'a', 'b']);
+    expect(chapters.map((c) => c.id)).toEqual(['b', 'a', 'c']);
+  });
+});
+
+describe('whenText and whenParts (owner decision 2, FR-077)', () => {
+  it.each([
+    ['2001-03-15', '15 Mar 2001', ['2001-03-15']],
+    ['2001-03-05', '5 Mar 2001', ['2001-03-05']],
+    ['2001-03', 'March 2001', ['2001-03']],
+    ['2001-03/2001-09', 'March to September 2001', ['2001-03', '2001-09']],
+    ['2001-03/2002-02', 'March 2001 to February 2002', ['2001-03', '2002-02']],
+    ['2001-03-15/2001-09-20', '15 Mar to 20 Sep 2001', ['2001-03-15', '2001-09-20']],
+    ['2001-03-15/2002-01', '15 Mar 2001 to January 2002', ['2001-03-15', '2002-01']],
+    ['2001-03/2001-09-20', 'March to 20 Sep 2001', ['2001-03', '2001-09-20']],
+  ])('%s reads "%s", with datetime values %j', (when, text, datetimes) => {
+    const parsed = parseWhen(when)!;
+    expect(whenText(parsed)).toBe(text);
+    expect(whenParts(parsed).map((p) => p.datetime)).toEqual(datetimes);
+    expect(whenParts(parsed).map((p) => p.text).join(' to ')).toBe(text);
+  });
+});
+
+describe('sourceText (owner decision 1, research.md R1)', () => {
+  it('names the device, plain Garmin, or the derived wording', () => {
+    expect(sourceText('Example S1')).toBe('Garmin Example S1');
+    expect(sourceText('Garmin')).toBe('Garmin');
+    expect(sourceText('derived')).toBe(DERIVED_SOURCE);
+    expect(DERIVED_SOURCE).toBe('derived in part from Garmin device-sourced data');
+  });
+
+  it("shows nothing for the owner's own figure", () => {
+    expect(sourceText(undefined)).toBeUndefined();
   });
 });
