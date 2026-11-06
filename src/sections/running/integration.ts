@@ -37,8 +37,9 @@ const fundraisingArea: RunningArea = {
 
 /**
  * The journey story (spec 003): exists only once a chapter does, so no visitor reaches an empty page
- * and nothing about the story shows before then (FR-001, FR-042, SC-002). Last in the menu, after
- * Fundraising (owner, #101). No description: SectionLinks lists it only when section.yaml has no
+ * and nothing about the story shows before then (FR-001, FR-042, SC-002). Second in the menu, after
+ * Overview, so it shows on a phone's sideways-scrolling menu without a scroll (owner, 2026-11-06;
+ * it was last, after Fundraising, from #101). No description: SectionLinks lists it only when section.yaml has no
  * `story_link` (the panel above already leads there), and then shows the label alone, because any
  * words about the story need the owner's approval (FR-039).
  */
@@ -63,6 +64,7 @@ export const runningAreas: readonly RunningArea[] = [
       { pattern: '/og/running.png', entrypoint: './src/sections/running/og/landing.ts' },
     ],
   },
+  ...(journeyChapterIds().length > 0 ? [storyArea] : []),
   {
     key: 'goals',
     label: 'Goals',
@@ -112,7 +114,6 @@ export const runningAreas: readonly RunningArea[] = [
     ],
   },
   ...(campaignsWithFigures().length > 0 ? [fundraisingArea] : []),
-  ...(journeyChapterIds().length > 0 ? [storyArea] : []),
 ];
 
 /**

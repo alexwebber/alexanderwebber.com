@@ -261,8 +261,8 @@ only: no provider, no client JavaScript, no "Last updated" (it isn't a data view
   the closing section doesn't. An empty or all-comment journey file is refused, naming it. A chapter
   id that would repeat another element's id on the page (`main`, `story-chapter-list`,
   `story-closing-title`, another chapter's `-title` or `-learned`) is refused before it's approved.
-- **Nothing shows before a chapter**: `integration.ts` adds the story area (page, "Story" last in the
-  menu, `/og/running-story.png`, sitemap entry) only when `journeyChapterIds()` finds one. "Story" isn't
+- **Nothing shows before a chapter**: `integration.ts` adds the story area (page, "Story" second in
+  the menu, `/og/running-story.png`, sitemap entry) only when `journeyChapterIds()` finds one. "Story" isn't
   repeated in the landing's section links while the panel sits above them.
 - **Components**: `StoryPage.astro`, `StoryChapter.astro`, `StoryProse.astro`, `StoryFigure.astro`,
   `ChapterList.astro` (a closed "Chapters" list from four chapters, with "Back to chapters" after each),
