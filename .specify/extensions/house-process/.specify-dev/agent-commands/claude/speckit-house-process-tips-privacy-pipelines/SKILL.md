@@ -1,6 +1,6 @@
 ---
 name: speckit-house-process-tips-privacy-pipelines
-description: 'Agent tips for privacy and data pipelines: checks that report position and rule never the value, dry-running aggregate reports, versioned cache keys, shared fixtures across languages, running a new published field through the full gate, versioned raw bundles, approval hashes, scans over prose, first-match scanners, and values leaking through error messages. Read before writing an ingest stage, a scan or validator, or anything that prints data in CI.'
+description: 'Agent tips for privacy and data pipelines: checks that report position and rule never the value, dry-running aggregate reports, versioned cache keys, shared fixtures across languages, running a new published field through the full gate, versioned raw bundles, approval hashes, scans over prose, first-match scanners, values leaking through error messages, and YAML aliases that throw. Read before writing an ingest stage, a scan or validator, or anything that prints data in CI.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
@@ -45,3 +45,7 @@ candidates* in the moment, and the lesson harvest adds it here.
   plants two in one file. Plant each alone, then both.
 - **An error layer that prefixes the offending value leaks free text through schema errors.**
   Drop the value for approved text; only a sentinel test across schema-invalid cases caught it.
+- **The JS `yaml` library throws, rather than reports, on an alias naming no anchor,** and the
+  message quotes the name. In prose, Markdown emphasis at the start of a value (`*word*`) is such
+  an alias, so a stack trace carried a word of private text. Walk the document with `visit()`
+  before `toJS()`, and report each unresolved alias by line.

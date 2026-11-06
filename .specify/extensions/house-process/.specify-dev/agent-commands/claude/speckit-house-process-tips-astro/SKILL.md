@@ -1,6 +1,6 @@
 ---
 name: speckit-house-process-tips-astro
-description: 'Agent tips for Astro: stripped inline whitespace, failed builds emptying dist/, astro preview under a coding agent, Node floors in patch releases, date-driven page tests, client scripts, scoped-style bloat, building a site copy, chunk renames and CSS chunking changes in dist/ diffs, Astro.slots.has, script is:inline, and building main beside a branch. Read before changing Astro pages, components, config or builds.'
+description: 'Agent tips for Astro: stripped inline whitespace, failed builds emptying or partly rewriting dist/, import.meta.glob outside Vite, astro preview under a coding agent, Node floors in patch releases, date-driven page tests, client scripts, scoped-style bloat, building a site copy, chunk renames and CSS chunking changes in dist/ diffs, Astro.slots.has, script is:inline, and building main beside a branch. Read before changing Astro pages, components, config or builds.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
@@ -19,7 +19,12 @@ candidates* in the moment, and the lesson harvest adds it here.
   helper hid it).
 - **A failed build still empties `dist/`.** Astro 7 empties `outDir` before rendering, so a data
   error thrown while rendering wipes the last good build. Validate in an integration's
-  `astro:build:start` hook.
+  `astro:build:start` hook. A check that can only run at render (a page's own data check) leaves
+  `dist/` partly rewritten when it fails, so a drill that plants faults snapshots `dist/` before
+  each build and restores it after.
+- **Keep `import.meta.glob` out of modules that Playwright or plain Node also import.** It's
+  Vite-only, so such a module throws at load outside Vite. Put the glob in a `.astro` file or a
+  small module only Vite loads, and keep shared helpers glob-free.
 - **`astro preview` runs in the background when it detects a coding agent** (`CLAUDECODE` set),
   so Playwright's `webServer` reports "exited early" locally while CI works. Clear
   `CLAUDECODE`/`AI_AGENT` in the web server's env, and stop strays with `astro preview stop`.

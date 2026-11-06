@@ -2178,3 +2178,13 @@ end. Add each new decision as a dated entry at the end, as it's made.
   gaps were applied in #130 and software-factory#20; no skill unused or out of date; the
   skill-candidates counts are unchanged (no task done by hand this session). Auto-loaded files 28 KB.
   House-process 0.16.1 isn't installed yet: one upgrade to 0.16.2 after #21 merges.
+- **2026-11-06** — **#131 and software-factory#21 merged** (the Phase 6 handoff; house-process
+  0.16.2). `/after-merge 131`: no boxes, the PR's 10 checks and `main`'s Gate green, deploy included;
+  `/` and `/running/` answer 200.
+- **2026-11-06** — **House-process 0.16.0 → 0.16.2 installed** (covers 0.16.1 too) with
+  `upgrade-speckit.ps1`; Spec Kit stays 1.3.2 (latest), git extension 1.0.4 and the
+  `house-constitution` preset 0.1.2 unchanged, `extensions.yml` the same content, the constitution
+  template still resolves to the house preset. The diff is the two releases' skills only:
+  `graduation-review` (0.16.1's gaps from Phase 6) and `tips-testing`, `tips-astro`, `tips-shell`,
+  `tips-privacy-pipelines` (0.16.2's harvest). No project skill wraps them, so nothing else to
+  change. Nothing held.

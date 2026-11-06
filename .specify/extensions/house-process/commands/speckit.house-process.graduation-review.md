@@ -46,7 +46,10 @@ them first.
    - **Performance** on the deploy build, mobile, with the plan's budget: score, LCP, page weight,
      script files, third-party requests. Add each new page type to the budget script, skipped
      until the page exists, so the scheduled run checks the real page from launch. Pages that
-     only exist as test previews are measured by hand with the script's settings. A score near
+     only exist as test previews are measured by the same script, given their paths (add a
+     `--path=` option if it lacks one), not by hand. If the script's page weight counts only HTML,
+     CSS and JS, also report Lighthouse's total byte weight for a page with images: lazy images
+     load nothing at first. A score near
      the line on a shared CI runner is noise until shown otherwise: judge on the median of three,
      and find the real cost (a script forcing a relayout after first paint) rather than retrying.
    - **Accessibility**: zero axe violations in every preview state, light and dark; usable in
@@ -55,7 +58,9 @@ them first.
    - **SEO and sharing**: every page has a unique title, description, canonical URL and share
      image.
    - **Boundaries**: shared code is untouched unless the plan says otherwise, and the project's
-     boundary check passes.
+     boundary check passes. If a finding's right fix is in shared code, make it there, rerun the
+     boundary check, and give it its own checkbox (step 4). Don't bend the fix to leave shared
+     code untouched.
 3. **The adversarial self-review.** Write the attack questions **before** reading the code, from
    the principles and the hardest success criteria; then try to make each one happen. Questions
    past reviews needed:
@@ -64,22 +69,36 @@ them first.
      Can any of them publish something unapproved, stale or changed?
    - **Edges of values**: a figure that rounds to its target, a fraction that rounds up to 100%, the
      first and last item, none at all, the maximum allowed. Does the wording still tell the truth?
+     Is an empty or comment-only file treated as "no data yet" where it should be an error?
+   - **Malformed input**: can input make a parser library throw instead of report (YAML's `*word`
+     is an alias; one naming no anchor threw, quoting the word), so the stack trace carries
+     content?
+   - **Permanent identifiers**: can an anchor, slug or id the owner sets collide with another on
+     the page or site, when it can never change once published?
    - **Failure means staleness, never an outage, and never silence**: a provider down, a corrupt
      state file, a failed deploy, a step inside `continue-on-error`. Does the next run heal it,
-     does someone get told, and does the page still show when its data was last updated?
+     does someone get told, and does the page still show when its data was last updated? Does
+     owner content cite records a bot publishes, so a later bot change stops every deploy, and
+     who hears about it?
    - **What leaks**: can any message, warning, log line or error quote private or unapproved
      content, a secret or an identifier? Can a new published field go out without the owner's
-     approval? Can a file's metadata (EXIF, GPS) reach git?
+     approval? Can a file's metadata (EXIF, GPS) reach git? Can a stray file beside the listed
+     ones (an unlisted photo) reach the public repo without approval?
    - **Changes that need a manual step**: a processor or schema change that existing data only
      picks up after a command no workflow runs (put a version in the input hash instead).
    - **Platform and environment**: do the tests and scripts run where the next session will run
-     them (Windows and Linux, local and cloud, with and without secrets)?
+     them (Windows and Linux, local and cloud, with and without secrets)? Do date tests pass in a
+     far time zone (`Pacific/Kiritimati`, `America/Los_Angeles`)? On Windows set `$env:TZ` from
+     PowerShell, because Git Bash doesn't pass an IANA `TZ` through to Node.
    - **Dependencies**: open advisories, a pinned version's reason still true, a framework's new
      runtime floor.
 
    **Prove each answer**: a test, a drill on a scratch copy with the fault planted and then
    removed, or a command's output. Reading the code is a lead, not evidence. A check you rely on
-   is shown failing on a planted case before it's trusted.
+   is shown failing on a planted case before it's trusted. Keep the questions as first written
+   (a scratch file), so the PR lists them in that order with their answers. Many "can it deploy"
+   questions are best proven together by a drill script that plants one fault at a time on a
+   scratch copy, with a sentinel word in every text field, printing one line per fault.
 4. **Triage the findings** into a table: finding, severity, outcome.
    - **Medium or worse**: fix it in this PR, with a test that fails without the fix.
    - **Low or cosmetic**: leave it with the reason (it heals at the next run, the cost is bounded),
@@ -97,8 +116,12 @@ them first.
 7. **Write the PR body**, by the project's PR routine:
    - *How to view it*: usually "nothing visible changes", with the live URLs that stay as they are,
      or what a behaviour change shows and where (a run's log line).
-   - *What's in it*: the drills, the quality-bar figures as a table, the docs.
-   - *Graduation review*: the findings table, then the *checked and found fine* list.
+   - *What's in it*: the drills, the quality-bar figures as a table, the docs, and the built site
+     compared with the base branch's (files identical, changed, added), if the project compares
+     them.
+   - *Graduation review*: the attack questions in the order written, each with its answer and
+     proof (or a pointer to them in the decisions log), then the findings table and the *checked
+     and found fine* list.
    - *Tests*: a table of suites and counts.
    - *Please confirm*: one checkbox per real owner decision, each with a recommended answer. A
      success criterion that needs people (a usability or hallway test) is offered as run-or-skip,
@@ -115,7 +138,8 @@ them first.
 - [ ] Every graduating unit has its design note, contract tests, eval suite if needed, and error
       handling and logging, each with evidence.
 - [ ] Performance, accessibility, SEO and boundaries are measured, with figures in the PR.
-- [ ] The attack questions were written first, each answered with a test, drill or output.
+- [ ] The attack questions were written first, each answered with a test, drill or output, and
+      they appear in the PR in the order written.
 - [ ] Medium-or-worse findings are fixed with a failing-first test; the rest are left with reasons
       or in the backlog, and the owner has one checkbox for them.
 - [ ] The quickstart scenarios have *Result* lines; the suites' counts are in the PR.

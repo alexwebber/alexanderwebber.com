@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, beforeAll per project, exact and scoped locators, fixture seeds, absence checks, proving checks fail, per-project counts, accessible names of SVGs, and failures from a sleeping machine. Read before writing or debugging tests, Playwright ones especially."
+description: "Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, beforeAll per project, exact and scoped locators, fixture seeds, absence checks, proving checks fail, per-project counts, lazy images and screenshots, toBeInViewport on focused links, accessible names of SVGs, and failures from a sleeping machine. Read before writing or debugging tests, Playwright ones especially."
 ---
 
 # Agent tips: Testing and End-to-end testing
@@ -53,6 +53,12 @@ candidates* in the moment, and the lesson harvest adds it here.
   `PLAYWRIGHT_JSON_OUTPUT_FILE`, walking `suites` and `specs[].tests[].projectName`.
 - **A full-page screenshot with `isMobile` can fail** ("Unable to capture screenshot"). Use a
   phone-width viewport with `isMobile` off for that shot.
+- **Lazy images:** a `loading="lazy"` `<img>` the browser hasn't requested yet reads
+  `complete === true`, so waiting on `complete` waits for nothing; await `img.decode()`. Full-page
+  screenshots don't trigger lazy loading either: images below the first screen come out empty
+  unless the test sets them to eager and decodes them first.
+- **`toBeInViewport({ ratio: 1 })` fails at 0.99 on a focused inline link** (its box sits a
+  fraction of a pixel outside). Check its bounding box against the viewport within a pixel.
 - **For an SVG with `aria-labelledby` on its title and desc, the desc is part of the accessible
   name,** so `toHaveAccessibleDescription` reads empty. Assert on `toHaveAccessibleName`.
 - **Run a quickstart's failure scenario for real, not only as unit tests.** A check in the
