@@ -2058,3 +2058,14 @@ end. Add each new decision as a dated entry at the end, as it's made.
   Charts (8 times) are built before the next chart work. The generic parts of `session-start.ts`,
   `after-merge.ts` and `pr-ready.ts` went to software-factory's `BACKLOG.md`. Auto-loaded files went
   from about 41 KB to 25 KB with the candidate list emptied.
+- **2026-11-06** — **#126 and software-factory#18 merged.** `/after-merge 126`: 10 checks and
+  `main`'s Gate green, deploy included; `/` and `/running/` answer 200; no boxes. **house-process
+  0.15.0 reinstalled** with `upgrade-speckit.ps1` (Spec Kit stays 1.3.1; `git` 1.0.4 and
+  `house-constitution` 0.1.2 unchanged, their diffs only timestamps and line endings). New skills:
+  `question-round`, `tips-owner-content`, `upgrade-speckit`. `CLAUDE.md` takes the template's two
+  changes: `owner-content` in the topic list, and fetching before reading the handoff.
+  **Astro 7.4.5 → 7.4.7** (core framework, so adopted): 7.4.7 fixes the image endpoint's
+  build-folder check on case-sensitive file systems (on-demand only; our site is static), 7.4.6 makes
+  `astro check` fail when TypeScript or `@astrojs/check` is missing, plus dev-server and i18n fixes.
+  It pins rolldown 1.3.0 beside Vite's 1.2.14, so the lockfile grows by a nested rolldown. Build,
+  `astro check` and 1,062 unit tests pass.

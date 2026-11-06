@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, and beforeAll per project. Read before writing or debugging tests, Playwright ones especially."
+description: "Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, beforeAll per project, exact and scoped locators, fixture seeds, absence checks, proving checks fail, per-project counts, accessible names of SVGs, and failures from a sleeping machine. Read before writing or debugging tests, Playwright ones especially."
 ---
 
 # Agent tips: Testing and End-to-end testing
@@ -36,3 +36,34 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **`beforeAll` runs once per project and worker.** Expensive setup (building a site copy) and
   viewport-independent checks (full axe sweeps) double with a phone and a desktop project. Pin
   them to one project.
+- **Use `exact: true` with `getByRole(..., { name })`.** Names match substrings by default, so
+  real data adding a heading "Just achieved" beside "Achieved" broke strict mode.
+- **Scope each locator to its container** when a page renders a component twice (a card and a
+  page). Older tests otherwise hit strict mode.
+- **Add a fixture state last, from its own seed.** In a generator with one seed counter, a new
+  state shifts every later state's words and hashes. Check `git diff --stat` shows only the new
+  state.
+- **Make absence checks follow the repo's data.** "No 'Story' in the menu" on a preview that
+  renders the real menu becomes a launch-day failure; derive what's expected from the data.
+- **An exact-text helper that swaps tags for spaces hides a missing space between inline
+  elements.** Drop tags without adding spaces, and also compare the browser's `innerText`.
+- **Prove new checks fail by breaking them in one batch:** every CSS and markup break in one
+  build and one spec run (32 checks in about a minute), then restore the files.
+- **Per-project Playwright counts** come from `--reporter=line,json` with
+  `PLAYWRIGHT_JSON_OUTPUT_FILE`, walking `suites` and `specs[].tests[].projectName`.
+- **A full-page screenshot with `isMobile` can fail** ("Unable to capture screenshot"). Use a
+  phone-width viewport with `isMobile` off for that shot.
+- **For an SVG with `aria-labelledby` on its title and desc, the desc is part of the accessible
+  name,** so `toHaveAccessibleDescription` reads empty. Assert on `toHaveAccessibleName`.
+- **Run a quickstart's failure scenario for real, not only as unit tests.** A check in the
+  validator isn't a check in the build: a plain build rendered text the validator would have
+  refused.
+- **Timeouts across unrelated tests usually mean the machine, not the code.** A run left going
+  overnight took 2–4 h and failed different tests each time (the laptop slept); a mid-morning run
+  hit `ERR_NETWORK_IO_SUSPENDED`. Check wall-clock times and the JSON report's messages, then
+  rerun the failed specs alone while the machine is in use.
+- **For "X mustn't move Y", measure the same page with X shown and hidden,** not against an
+  absolute position: with a `system-ui` font stack, "Donate within 780 px" passed on Windows and
+  failed on CI's Linux by 24 px. To compare layouts before touching code, inject CSS and DOM
+  changes into the built site with Playwright and measure under several fonts: DejaVu Sans (from
+  jsdelivr) reproduced CI's Linux exactly, and Roboto stands in for Android.

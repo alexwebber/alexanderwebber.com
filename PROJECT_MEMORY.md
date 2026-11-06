@@ -9,15 +9,11 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 - **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
   journey story: Phases 1–4 merged (#125, the chapter list, nothing visible until a chapter exists;
-  its look kept as is). The lesson harvest is raised as
-  [software-factory#18](https://github.com/alexwebber/software-factory/pull/18) (house-process
-  0.15.0), and this project's side (empty candidate list, harvest logged) as a `chore-after-merge-125`
-  PR.
-- **Next session, first:** `/session-start`; if software-factory#18 merged, reinstall house-process
-  0.15.0 from software-factory's `main` (pulled; `specify extension add house-process --dev --force`
-  from the playbook folder, or the new `/speckit-house-process-upgrade-speckit`), add `owner-content`
-  to the topic list in this `CLAUDE.md`, and raise that as a small PR before Phase 5's brief. If it
-  hasn't merged, ask whether the owner has looked at it.
+  its look kept as is). The lesson harvest merged (software-factory#18, #126); house-process 0.15.0
+  and Astro 7.4.7 are raised as a `chore-house-process-0.15.0` PR.
+- **Next session, first:** `/session-start`; if the `chore-house-process-0.15.0` PR merged, run
+  `/after-merge` on it (no visible change, so `/` and `/running/` only). If not, ask whether the owner
+  has looked at it; Phase 5 can still start from `main`.
 - **Then 003 Phase 5** (T062–T070, photos in a chapter), branched from a `main` holding #125: brief
   with `/speckit-house-process-implement-brief` naming `preview-state` (a `photos` state),
   `section-page`, `tests`, `page-tests`, `gate-drill` and `pr-screenshots` (`photos` and `long`), plus

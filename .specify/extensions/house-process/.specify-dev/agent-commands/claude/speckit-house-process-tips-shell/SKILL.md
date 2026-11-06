@@ -41,3 +41,21 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **Re-read a setting after setting it.** `gh api -X PUT
   .../actions/permissions/fork-pr-contributor-approval -f approval_policy=...` answered 204 and
   changed nothing; the same body sent as JSON with `--input -` worked.
+- **`python -I` also ignores user site-packages.** Isolated mode drops modules installed with
+  `pip install --user` (PyYAML here). A script in a folder you created yourself doesn't need it.
+- **PowerShell 5.1 mangles quotes in native arguments.** It strips embedded double quotes, so
+  `python -c` with quotes fails, and a `gh --jq` expression containing `\(...)` loses its quotes
+  (`gh` reports "unknown command"). Run those through Bash, or use a script file.
+- **Write long Python scripts to a file, not `python - <<'EOF'`.** A long heredoc through the Bash
+  tool failed with "unexpected EOF while looking for matching quote".
+- **Keep `Remove-Item` out of chained PowerShell commands.** On a variable-built scratchpad path
+  it was refused as a "system path", which rejected the whole call.
+- **`sed -i` with `$(` or `|` in its pattern can silently not match** in Git Bash, while the file
+  shows as modified with an empty diff (line endings). Use the Edit tool or a script file.
+- **On a `core.autocrlf` checkout, normalise line endings before a scripted edit,** and expect a
+  generator's LF output to show as modified until `git add`.
+- **PowerShell 5.1's `Invoke-WebRequest` shows a UTF-8 `£` as `Â£`,** so a text pattern misses it
+  and looks like a site bug. Check bytes, or use `curl`.
+- **Retry a live-site check before calling the site down.** Node's `fetch` failed twice ("fetch
+  failed") right after a long `gh` wait, while curl, and Node moments later, got 200. Retry a few
+  times, about 10 s apart, and print the cause's code if all fail.

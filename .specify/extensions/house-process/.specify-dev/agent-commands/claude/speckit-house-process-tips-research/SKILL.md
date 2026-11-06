@@ -1,6 +1,6 @@
 ---
 name: speckit-house-process-tips-research
-description: 'Agent tips for research: reading a platform''s terms first, product-specific API subscriptions, docs that need a real browser, and verifying what a form is for before sending the owner to it. Read before researching a platform, an API or a sign-up step for the owner.'
+description: 'Agent tips for research: reading a platform''s terms first, product-specific API subscriptions, docs that need a real browser, verifying what a form is for before sending the owner to it, and trying a test environment''s existing items before calling it broken. Read before researching a platform, an API or a sign-up step for the owner.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
@@ -29,3 +29,7 @@ candidates* in the moment, and the lesson harvest adds it here.
   form a fundraiser sign-up form, and the owner was sent to it. Before sending the owner to a form
   or step, fetch the page with a prompt that asks what the form is for and quotes its fields, or
   say it's unverified.
+- **Before calling a third-party test environment broken, try something already in it.** A
+  sandbox's new pages vanished minutes after creation, but its existing shared test pages worked
+  and accepted test payments. The agent gave up after one failed page; the owner found a working
+  one.
