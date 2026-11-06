@@ -127,7 +127,8 @@ async function open(page: Page, path: string) {
 
 const menu = (page: Page) => page.getByRole('navigation', { name: 'Running', exact: true });
 /** How many lines the Running menu takes: its items' distinct tops. */
-const menuLines = (page: Page) => menu(page).locator('li').evaluateAll((items) => new Set(items.map((li) => Math.round(li.getBoundingClientRect().top))).size);
+/** The menu's lines: its shown items' distinct tops (a hidden item has no box, so it isn't counted). */
+const menuLines = (page: Page) => menu(page).locator('li').evaluateAll((items) => new Set(items.filter((li) => li.getClientRects().length > 0).map((li) => Math.round(li.getBoundingClientRect().top))).size);
 
 test('SC-006: the gate passes on the copy: no validation error, and check-links passes', () => {
   expect(gate.ran).toEqual([...GATE_STEPS]);
@@ -164,23 +165,33 @@ test('US3.2, US3.5: "Story" is last in the menu on every Running page, and curre
   await expect(menu(page).getByRole('link', { name: 'Story', exact: true })).not.toHaveAttribute('aria-current');
 });
 
-// Research R8 / FR-043: Donate cleared the first screen by 3 px before the story. If this fails, the
-// owner decides (the PR stops); don't change the layout or the threshold to pass it.
-test('FR-043, SC-006: on a 360 x 780 phone, the menu has no third line and Donate is fully on the first screen', async ({ browser }, testInfo) => {
+// Research R8 / FR-043: adding "Story" must not push Donate down. Donate's absolute position depends
+// on the system font (`system-ui`): on Windows it ends at 777 px of 780, on CI's Linux at 804 px, with
+// or without "Story". So this asserts the cause, on any font (owner, 2026-11-06, #122): the same page
+// with "Story" shown and then hidden has the same menu lines and Donate at the same height. The
+// absolute position is printed for the PR, not asserted. If the menu wraps to a third line, the owner
+// decides (the PR stops); don't change the layout or the threshold to pass it.
+test('FR-043, SC-006: on a 360 x 780 phone, "Story" adds no menu line and doesn\'t move Donate', async ({ browser }, testInfo) => {
   const { page, close } = await phone(browser);
   try {
     await open(page, '/running/');
     await page.evaluate(() => document.fonts.ready);
-    const lines = await menuLines(page);
     const donate = page.locator('.fundraising-card').getByRole('link', { name: 'Donate on JustGiving', exact: true });
+    const story = menu(page).getByRole('link', { name: 'Story', exact: true });
     await expect(donate).toBeVisible();
+    await expect(story).toBeVisible();
+    const lines = await menuLines(page);
     const box = (await donate.boundingBox())!;
-    const measured = `menu lines at 360 px: ${lines}; Donate from ${box.y.toFixed(1)} to ${(box.y + box.height).toFixed(1)} px of ${FIRST_SCREEN.height}`;
+    await story.evaluate((link) => { link.closest('li')!.style.display = 'none'; });
+    await expect(story).toBeHidden();
+    const linesWithout = await menuLines(page);
+    const boxWithout = (await donate.boundingBox())!;
+    const measured = `menu lines at 360 px: ${lines} (${linesWithout} without "Story"); Donate from ${box.y.toFixed(1)} to ${(box.y + box.height).toFixed(1)} px of ${FIRST_SCREEN.height} (${(boxWithout.y + boxWithout.height).toFixed(1)} without "Story")`;
     testInfo.annotations.push({ type: 'measured', description: measured });
     console.log(`story-launch: ${measured}`);
     expect(lines, 'the menu wraps to a third line: stop and ask the owner (research.md R8)').toBeLessThanOrEqual(2);
-    expect(box.y).toBeGreaterThanOrEqual(0);
-    expect(box.y + box.height, 'Donate leaves the first screen: stop and ask the owner (research.md R8)').toBeLessThanOrEqual(FIRST_SCREEN.height);
+    expect(lines, '"Story" adds a menu line').toBe(linesWithout);
+    expect(Math.abs(box.y - boxWithout.y), '"Story" moves Donate').toBeLessThan(0.5);
   } finally {
     await close();
   }

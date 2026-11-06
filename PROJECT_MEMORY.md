@@ -13,7 +13,7 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   `003-slice-3`; nothing visible changes until a chapter exists.
 - **Next session, first:** `/session-start`, then `/after-merge` the Phase 3 PR if it merged, and
   ask about any box left unticked (the share image without a "Running" eyebrow; the 320 px check's
-  page sample; Donate below the first screen at 320 px, as on `main` today). If it hasn't merged,
+  page sample; Donate below the first screen at 320 px and under some fonts, as on `main` today). If it hasn't merged,
   ask whether the owner has looked at it.
 - **Then 003 Phase 4** (T053–T061, the chapter list at four or more chapters, "Back to chapters",
   and the growth proof), branched from a `main` holding Phase 3: brief with
@@ -336,6 +336,9 @@ project-specific notes.
 - A Playwright run can hit `ERR_NETWORK_IO_SUSPENDED` plus timeouts even mid-morning with the laptop
   in use (4 unrelated mobile tests, 6 Nov); the same specs rerun alone passed. Read the JSON report's
   error messages to tell suspend failures from real ones.
+- With a `system-ui` font stack, an absolute first-screen check (Donate within 780 px) passed on
+  Windows and failed on CI's Linux by 24 px. For "X mustn't move Y", measure the same page with X
+  shown and hidden instead.
 - A test asserting something is absent from a preview that renders the real menu ("no 'Story'") is a
   launch-time trap. Make such checks follow the repo's data (here `journeyChapterIds()`).
 

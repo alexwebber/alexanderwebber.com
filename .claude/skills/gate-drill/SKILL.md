@@ -66,7 +66,11 @@ runs as its real command line on the copy (`node scripts/check-links.ts --dist=<
    A drill that builds once in the desktop project measures a phone's first screen in its own
    context, as the `mobile-360` project sets it up:
    `browser.newContext({ ...devices['Pixel 7'], viewport: { width: 360, height: 780 } })`. Print
-   the measurements (`testInfo.annotations` and a log line), so the PR can quote them.
+   the measurements (`testInfo.annotations` and a log line), so the PR can quote them. Positions
+   depend on the system font (`system-ui`): Donate ended at 777 px of 780 on Windows and 804 on CI's
+   Linux. So assert what the change causes, on the same page (hide the new item, measure again:
+   same lines, same position), and print the absolute numbers rather than asserting them
+   (`story-launch.spec.ts`, owner on #122).
 8. **Screenshots of the drill's site** (`pr-screenshots`): run the spec with
    `DRILL_KEEP_DIST=spikes/<name>/out/dist` (as `story-launch.spec.ts` supports; add the same few
    lines to a new drill) so the copy's `dist/` outlives `afterAll`, then

@@ -1968,6 +1968,13 @@ end. Add each new decision as a dated entry at the end, as it's made.
   - **T050** also found `story.spec.ts` asserting the preview menu has no "Story", which would fail
     at launch; it now follows `journeyChapterIds()`. All four every-page fixes were proven by
     planting a made-up story into the drill copies (15 passed), then reverted.
+  - **Donate's first-screen check is relative** (owner, 2026-11-06, on #122). CI's `playwright` job
+    failed it: under Linux's system font Donate ends at 804 px of 780, against 777 on Windows, with
+    or without "Story", because the site uses `system-ui`. The owner chose "Check Story moves
+    nothing": the drill now measures the same page with "Story" shown and hidden, and asserts the
+    same menu lines (and at most two) and Donate at the same height, which fails on any font (proven
+    by also hiding "Fundraising": a line fewer, Donate 36 px higher). The absolute position is
+    printed, not asserted. Real phones' fonts (Roboto, San Francisco) differ again.
   - **Skill gaps applied in the same PR**: `screenshots.ts` gained `--dist=<dir>` and per-path
     `,width=` and `,first-screen` (a drill's copy, shot several ways in one table); `gate-drill`
     (measuring a phone's first screen from the desktop project, `DRILL_KEEP_DIST`, rebuilds last);
