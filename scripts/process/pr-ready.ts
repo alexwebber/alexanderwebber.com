@@ -175,6 +175,10 @@ await section('PR checks', () => {
   }
   const pending = pr.statusCheckRollup.filter((c) => (c.status ?? '').toUpperCase() !== 'COMPLETED' && c.state === undefined);
   const bad = pr.statusCheckRollup.filter((c) => !pending.includes(c) && !['SUCCESS', 'SKIPPED', 'NEUTRAL'].includes((c.conclusion ?? c.state ?? '').toUpperCase()));
+  if (pr.statusCheckRollup.length === 0) {
+    flag(false, `#${pr.number}: no checks yet (just pushed?): run again in a minute.`);
+    return;
+  }
   flag(bad.length === 0 && pending.length === 0, `#${pr.number}: ${pr.statusCheckRollup.length} checks, ${pending.length} pending, ${bad.length} not green`);
   for (const c of [...pending, ...bad]) console.log(`    - ${c.name ?? c.context}: ${c.conclusion || c.status || c.state}`);
 });
