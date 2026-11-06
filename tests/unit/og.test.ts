@@ -52,17 +52,17 @@ describe('ogPath', () => {
   });
 });
 
-// The story page's share image (spec 003 T045, FR-075, SC-012): the approved share_text and the site
-// name, nothing else, so no figure can reach it.
+// The story page's share image (spec 003 T045, FR-075, SC-012): the "Running" label, the approved
+// share_text and the site name, nothing else, so no figure can reach it.
 describe('story share image', () => {
   it('is /og/running-story.png for /running/story/', () => {
     expect(ogPath('/running/story/')).toBe('/og/running-story.png');
   });
 
-  it('carries the share text and the site name only, with no digit and no attribution', () => {
+  it('carries the Running label, the share text and the site name only, with no digit and no attribution', () => {
     const shareText = lorem(12, 5);
     const card = storyCard({ share_text: shareText });
-    expect(texts(cardTree(card))).toEqual([shareText, 'alexanderwebber.com']);
+    expect(texts(cardTree(card))).toEqual(['Running', shareText, 'alexanderwebber.com']);
     expect(card.attribution).toBeUndefined();
     expect(card.colours).toBe(RUNNING_OG_COLOURS);
     expect(texts(cardTree(card)).join(' ')).not.toMatch(/\d/);

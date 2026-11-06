@@ -1962,9 +1962,16 @@ end. Add each new decision as a dated entry at the end, as it's made.
   (a copy of the real data plus a made-up approved chapter) measured, at 360 x 780, the menu on two
   lines with "Story" beside "Fundraising", and Donate from 733 to 777 px, unchanged from `main`; so
   the stop-and-ask rule (research.md R8) wasn't triggered. At 320 px Donate is below the first
-  screen with or without "Story", as on `main` today (FR-043 covers 360 x 780 only). Choices for the
-  owner to confirm in the PR: the share image has no "Running" eyebrow (share text and site name
-  only, as the task says); the drill's 320 px check covers one page of each type plus the story page.
+  screen with or without "Story", as on `main` today (FR-043 covers 360 x 780 only). The drill's
+  320 px check covers one page of each type plus the story page (the menu is the same on all).
+  - **The owner's answers on #122** (2026-11-06), after the agent's three PR boxes were reviewed
+    with them: the story's share image gets the "Running" label every Running card has (the task
+    text had share text and site name only; the spec's rule is "words only", no figure); the 320 px
+    sample was a test choice, not an owner question, so it moved to the PR's checks; and **Donate
+    should always be on the first screen**, which the live landing page doesn't manage today (below
+    it at 320 px, and at 360 x 780 under Linux's font). That is its own piece of work, a live layout
+    change with a firmer target (about 360 x 640 on every font we can test, with a margin), taken
+    before 003 Phase 4.
   - **T050** also found `story.spec.ts` asserting the preview menu has no "Story", which would fail
     at launch; it now follows `journeyChapterIds()`. All four every-page fixes were proven by
     planting a made-up story into the drill copies (15 passed), then reverted.
