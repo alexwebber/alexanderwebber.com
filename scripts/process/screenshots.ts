@@ -237,11 +237,12 @@ console.log(`Pushed ${shots.length} file(s) to ${side} at ${sha}.\n`);
 // --- The PR body's Markdown ----------------------------------------------------------------------
 
 const url = (file: string) => `https://raw.githubusercontent.com/${REPO}/${sha}/${file}`;
-/** A target as its row and links name it: the path, and its width and first screen when they differ. */
+/** A target as its row and links name it: the path, and its width, first screen and open details when they differ. */
 const label = (t: (typeof targets)[number]) => {
   const notes = [
     ...(t.width !== width || t.height !== PHONE_HEIGHT ? [t.height !== PHONE_HEIGHT ? `${t.width} x ${t.height}` : `${t.width} px`] : []),
     ...(t.firstScreen && !flag('first-screen') ? ['first screen'] : []),
+    ...(t.open ? ['details open'] : []),
   ];
   return `\`${t.path}\`${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`;
 };
