@@ -187,6 +187,18 @@ describe('JsonFileStore', () => {
     ]);
   });
 
+  // Graduation review of spec 003 (T073): `*word*` (Markdown emphasis) is a YAML alias naming no
+  // anchor. The YAML library throws on it, quoting the word; a story file's word is story text (FR-035).
+  it('reports an alias naming no anchor as a YAML error, quoting nothing', async () => {
+    repo = tempRepo();
+    repo.write('data/running/owner/upcoming-races.yaml', '- id: a\n  name: *Quuxsentinel*\n');
+    const error = (await new JsonFileStore(repo.root).listRuns().catch((e: unknown) => e)) as DataValidationError;
+    expect(error).toBeInstanceOf(DataValidationError);
+    expect(error.issues.map((i) => [i.file, i.message])).toEqual([
+      ['data/running/owner/upcoming-races.yaml', 'is not valid YAML (line 2): an alias (*…) names no anchor; put quotes around a value that starts with *'],
+    ]);
+  });
+
   it('lists 5,000 runs quickly', { timeout: 60_000 }, async () => {
     repo = tempRepo();
     for (let n = 0; n < 5000; n++) {

@@ -108,7 +108,13 @@ export function approveJourney({ root, target, date = londonToday() }: ApproveJo
   const doc = parseDocument(readFileSync(path, 'utf8'), YAML_OPTIONS);
   if (doc.errors.length > 0) throw new StoryError(`${file} is not valid YAML`);
   if (!isMap(doc.contents)) throw new StoryError(`${file} has nothing to approve`);
-  const value: unknown = doc.toJS();
+  let value: unknown;
+  try {
+    value = doc.toJS();
+  } catch {
+    // An alias naming no anchor (`*word`) throws, quoting the word: the file's text (FR-035).
+    throw new StoryError(`${file} is not valid YAML`);
+  }
   const { bytes, missing } = kind === 'chapter' ? chapterPhotoBytes(root, file, value) : { bytes: new Map<string, Uint8Array>(), missing: [] };
   if (missing.length > 0) throw new StoryError(`${file}: photos[${missing[0]}].file is listed but isn't in the chapter's folder`);
 
