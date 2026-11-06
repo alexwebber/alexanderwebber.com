@@ -2110,3 +2110,5 @@ end. Add each new decision as a dated entry at the end, as it's made.
   1.3.2 is docs, catalog entries and a fix to uninstall manifests; the diff here is version stamps,
   the implement-brief line and the new skill. `extensions.yml` unchanged (reordered only, backup
   restored); the constitution template still resolves to the house preset.
+- **2026-11-06** — **#129 merged** (Spec Kit 1.3.2, house-process 0.16.0). `/after-merge`: no boxes;
+  the PR's 10 checks and `main`'s Gate green, deploy included; `/` and `/running/` answer 200.
