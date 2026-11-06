@@ -2150,3 +2150,14 @@ end. Add each new decision as a dated entry at the end, as it's made.
     mobile-360 459 passed (33 skipped); `astro check` clean; every gate command green on the deploy
     build; `dist/` 250 files identical to `main`'s; `pr-ready`: no private-term match. pytest not run
     (no ingest or schema change).
+  - **Cost**: implement subagent about **302k tokens**, 172 tool calls, 34 min (Phase 1 352k, Phase 2
+    287k, Phase 3 291k, Phase 4 272k, Phase 5 300k), with `graduation-review`, `page-tests`,
+    `gate-drill` and `tests` loaded.
+  - **Skill gaps applied**: `gate-drill` here (snapshot `dist/` before each build, since a
+    render-time failure leaves it partly rewritten; the fault-matrix pattern; a fresh copy path when
+    schemas change), and `page-tests` here (the keyboard sweep; check a focused link's box within a
+    pixel). The new `graduation-review` skill's gaps (measuring previews with the budget script, a
+    fix in shared code gets its own box, five new attack questions, time zones, the questions
+    listed in the PR in the order written) and `tips-shell`'s (`TZ` and `--path=` under Git Bash) go
+    upstream in a software-factory PR. No new skill candidate: the three tasks done by hand are now
+    a script option (`--path=`), a test and the `gate-drill` matrix.

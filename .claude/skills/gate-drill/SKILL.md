@@ -53,7 +53,11 @@ runs as its real command line on the copy (`node scripts/check-links.ts --dist=<
    together if the check reports one match per rule per file.
 4. **Rules that also run at build time** (schema and loader checks, `astro:build:start`): also
    `buildFailure(root)`, with `snapshotDist` equal before and after. The `validate.ts` rules don't
-   run in the build, so assert those through `validateData` (or `runGate`) only.
+   run in the build, so assert those through `validateData` (or `runGate`) only. Take the snapshot
+   just before each build, not once per drill. A build that fails at render time (a page's own data
+   check: a missing note, a bad link) leaves `dist/` partly rewritten, unlike one that fails in
+   `astro:build:start`. For those, assert that `validate-data` stops the fault first in `runGate`,
+   and don't assert that `dist/` is intact.
 5. **A fault only the built site shows** (a dead link, a missing page): to get past validation,
    re-approve changed story text in the copy (`approveJourney({ root, target })` from
    `scripts/approve-story.ts`), so the failure comes from the check you're drilling, not the hash.
@@ -76,6 +80,15 @@ runs as its real command line on the copy (`node scripts/check-links.ts --dist=<
    lines to a new drill) so the copy's `dist/` outlives `afterAll`, then
    `node scripts/process/screenshots.ts ... --dist=spikes/<name>/out/dist`.
 
+## Many faults: a matrix
+
+For a review's "can it deploy" questions (graduation), write one script with a list of
+`[what, plant, viaBuild]` entries. Put a sentinel word in every text field of the made-up story.
+Then, for each entry: re-copy, plant, `runGate` (and `buildFailure` when `viaBuild` is set), and print
+one line with the step that stopped it, the message, and whether the sentinel appears anywhere in
+the output. Then restore and check it passes. Keep the script under `spikes/<name>/out/` (gitignored)
+and quote its report lines in the PR (003's graduation planted 18 faults this way).
+
 ## In a Playwright spec
 
 `test.describe.configure({ mode: 'serial' })`; `beforeAll` pinned to the desktop project
@@ -94,6 +107,9 @@ several checks fail when broken, run each with `-g`.
   checkout. Keep git out of drills.
 - `validateData`'s date-relative rules use today: pass `today` when the drill pins dates.
 - An approval date can't be in the future (`approveJourney` refuses it).
+- A drill that edits the copy's schemas (a new field, SC-013) needs a fresh copy path. The loader
+  caches each root's compiled schemas for the life of the process, so reusing a path validates
+  against the old schemas.
 - Drilling a removal ("every chapter removed") also removes what depends on it: `story_link` in
   `section.yaml` is an error with no chapter, so remove it too, unless that error is the point.
 - A clean copy plus a full build takes about 10–30 s locally; each extra build adds about as much.
