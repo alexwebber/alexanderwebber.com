@@ -293,7 +293,7 @@ third line or Donate leaves the first screen, the PR stops for the owner's decis
 
 ### Ship the slice
 
-- [ ] T051 Run the PR routine's suites and both drills, and compare `dist/` against `main` (expected byte-identical: no chapter exists, so there's no area, and `SectionLinks`' output is unchanged)
+- [X] T051 Run the PR routine's suites and both drills, and compare `dist/` against `main` (expected byte-identical: no chapter exists, so there's no area, and `SectionLinks`' output is unchanged)
 - [ ] T052 [US3] (owner, guided by the agent) Raise the PR by the PR routine, with the launch drill's screenshots. The owner looks at them in the PR review. Nothing is visible on the live site
 
 **Checkpoint**: everything a visitor needs to find the story is built and proven on a copy of the real
