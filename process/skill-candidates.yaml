@@ -35,3 +35,6 @@
 - task: Spec Kit or house-process upgrade (reinstall, check-versions, record)
   times: 11
   home: playbook
+- task: First-screen measurement against main (menu lines, Donate's position, on main's build and a drill's)
+  times: 1
+  home: project

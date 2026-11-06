@@ -1950,3 +1950,25 @@ end. Add each new decision as a dated entry at the end, as it's made.
 - **2026-11-06** — **003 T023 done**: the 00:17 UTC catch-all refresh (run 42135693545) published,
   and its gate's `check-links` passed (216 pages, 2,532 site links, 0 issues) before the deploy,
   which succeeded. The bot's deploys now go through the link check; the trigger is removed.
+- **2026-11-06** — **#120 and #121 merged** (Spec Kit 1.3.1; the `gate-drill` skill). Neither had
+  boxes. `/after-merge`: each PR's 10 checks and `main`'s Gate green, deploy included; `/` and
+  `/running/` answer 200 (nothing live changed). **Astro 7.4.7 skipped** as a routine patch (an image
+  endpoint fix for case-sensitive filesystems, which a static site doesn't serve).
+- **2026-11-06** — **003 Phase 3** (T042–T051, finding the story). Implement subagent about **291k
+  tokens** (Phase 1 352k, Phase 2 287k), with `section-page`, `tests`, `gate-drill`, `page-tests` and
+  `pr-screenshots` loaded. The `story` area (route, "Story" last in the menu, share image, sitemap)
+  exists only when `journeyChapterIds()` finds a chapter, and `SectionLinks` leaves out the area the
+  story panel already leads to. `dist/` byte-identical to `main`'s (250 files). The launch drill
+  (a copy of the real data plus a made-up approved chapter) measured, at 360 x 780, the menu on two
+  lines with "Story" beside "Fundraising", and Donate from 733 to 777 px, unchanged from `main`; so
+  the stop-and-ask rule (research.md R8) wasn't triggered. At 320 px Donate is below the first
+  screen with or without "Story", as on `main` today (FR-043 covers 360 x 780 only). Choices for the
+  owner to confirm in the PR: the share image has no "Running" eyebrow (share text and site name
+  only, as the task says); the drill's 320 px check covers one page of each type plus the story page.
+  - **T050** also found `story.spec.ts` asserting the preview menu has no "Story", which would fail
+    at launch; it now follows `journeyChapterIds()`. All four every-page fixes were proven by
+    planting a made-up story into the drill copies (15 passed), then reverted.
+  - **Skill gaps applied in the same PR**: `screenshots.ts` gained `--dist=<dir>` and per-path
+    `,width=` and `,first-screen` (a drill's copy, shot several ways in one table); `gate-drill`
+    (measuring a phone's first screen from the desktop project, `DRILL_KEEP_DIST`, rebuilds last);
+    `section-page` (export a conditional area so tests can force it with a `vi.mock` getter).
