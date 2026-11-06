@@ -27,6 +27,7 @@ Write it in this order, as plain instructions:
    view it* text. Say what's out of scope.
 2. **Skills to load**, by name, each with the tasks it covers ("`owner-data-file` for T002–T006"),
    plus the house-process topic skills (`speckit-house-process-tips-*`) for the areas touched.
+   A feature's graduation or polish slice names `speckit-house-process-graduation-review`.
    Ask it to follow each skill's *Done when* list.
 3. **The owner's answers, quoted word for word**, with their dates, and the decisions-log entries
    the slice builds on. Never paraphrase an answer: "no one else in the family appears" became

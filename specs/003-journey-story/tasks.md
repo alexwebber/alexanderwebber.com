@@ -372,7 +372,7 @@ update naming the chapter and photo; a story with no photos looks complete.
 
 ### Ship the slice
 
-- [ ] T070 [US5] (owner, guided by the agent) Run the PR routine's suites (including `npm run scan-images`), compare `dist/` against `main` (expected byte-identical; `add-race-photo.ts`'s refactor changes no output), and raise the PR by the PR routine with screenshots of `photos`. The owner looks at them in the PR review
+- [x] T070 [US5] (owner, guided by the agent) Run the PR routine's suites (including `npm run scan-images`), compare `dist/` against `main` (expected byte-identical; `add-race-photo.ts`'s refactor changes no output), and raise the PR by the PR routine with screenshots of `photos`. The owner looks at them in the PR review
 
 **Checkpoint**: every state in contracts/routes.md is built and tested.
 

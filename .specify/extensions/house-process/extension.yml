@@ -3,8 +3,8 @@ schema_version: "1.0"
 extension:
   id: house-process
   name: "House Process Scaffolding"
-  version: "0.15.0"
-  description: "Scaffolds PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md house-style process files; offers to harvest lessons upstream at milestones; briefs subagents, writes handoffs, runs guided reviews and question rounds, and upgrades Spec Kit; and ships the agent tips as topic skills"
+  version: "0.16.0"
+  description: "Scaffolds PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md house-style process files; offers to harvest lessons upstream at milestones; briefs subagents, writes handoffs, runs guided reviews, question rounds and graduation reviews, and upgrades Spec Kit; and ships the agent tips as topic skills"
   author: "Alex Webber"
   repository: "https://github.com/alexwebber/software-factory"
   license: "Proprietary"
@@ -32,6 +32,9 @@ provides:
     - name: speckit.house-process.guided-review
       file: commands/speckit.house-process.guided-review.md
       description: "Guide the owner through what a phase put live, page by page on a phone and then a desktop, with a question round on what they saw, and record the outcome. Use at the start of the session after a phase that changed visible pages has merged and deployed, or whenever the owner asks to review the live site."
+    - name: speckit.house-process.graduation-review
+      file: commands/speckit.house-process.graduation-review.md
+      description: "Run a feature's graduation: the house constitution's bar (design note, contract tests, eval suite, error handling and logging) unit by unit, the quality bars measured (Lighthouse, axe and the rest), an adversarial self-review with findings proven and triaged, the quickstart run, and a PR that reports it all. Use for a feature's graduation or polish phase, or whenever a unit goes live, becomes shared, or something starts depending on it."
     - name: speckit.house-process.question-round
       file: commands/speckit.house-process.question-round.md
       description: "Run a question round with the owner: draw out requirements and design decisions in focused rounds of up to four questions, each with a recommended option first, check stated facts against stored data, and record every answer with its reason in the decisions log. Use before a spec, plan or implementation phase, at a clarification, or whenever a decision is the owner's to make."

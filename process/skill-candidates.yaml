@@ -16,10 +16,6 @@
 - task: Provider adapter or ingest stage (Python, provider contract, archive)
   times: 2
   home: project
-- task: Graduation review (adversarial self-review, design note, Lighthouse, axe, Principle II bar)
-  times: 3
-  home: playbook
-  next: 003 Phase 6
 - task: Maintainability review (knip, vulture, findings grouped into refactor PRs)
   times: 1
   home: playbook
