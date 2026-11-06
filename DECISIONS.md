@@ -2095,3 +2095,18 @@ end. Add each new decision as a dated entry at the end, as it's made.
     its position (`photos[0].caption`), as every schema error does.
   - **For the owner**: the photos' look in the PR's screenshots (a portrait photo narrower than the
     text; small secondary-colour captions, as the race gallery's).
+- **2026-11-06** — **#128 merged** (003 Phase 5, photos in a chapter). `/after-merge`: the one box
+  ticked (the photos' look kept as is), the PR's 11 checks and `main`'s Gate green, deploy included;
+  `/` and `/running/` answer 200. T070 ticked.
+- **2026-11-06** — **Graduation review skill built** (skill candidate, 3 times by hand: #27, #46,
+  #98): `speckit-house-process-graduation-review` in house-process 0.16.0
+  ([software-factory#19](https://github.com/alexwebber/software-factory/pull/19)). It checks the
+  graduation bar unit by unit with evidence, measures the quality bars, writes the adversarial
+  review's attack questions before reading the code and proves each answer with a test, drill or
+  output, triages findings (medium or worse fixed with a failing-first test; low left with a reason
+  behind one owner checkbox), and sets the PR body's layout. `implement-brief` names it for
+  graduation slices. The candidate is removed from `process/skill-candidates.yaml`.
+- **2026-11-06** — **Spec Kit 1.3.2 and house-process 0.16.0 installed** (`upgrade-speckit.ps1`).
+  1.3.2 is docs, catalog entries and a fix to uninstall manifests; the diff here is version stamps,
+  the implement-brief line and the new skill. `extensions.yml` unchanged (reordered only, backup
+  restored); the constitution template still resolves to the house preset.

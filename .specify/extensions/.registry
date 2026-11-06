@@ -17,12 +17,12 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-11-06T17:02:41.544229+00:00"
+      "installed_at": "2026-11-06T19:29:29.937501+00:00"
     },
     "house-process": {
-      "version": "0.15.0",
+      "version": "0.16.0",
       "source": "local",
-      "manifest_hash": "sha256:2a138dbcd6a4ea9fa245aa5c4edcbde85227947d9ef2e059e24c090a91070ab9",
+      "manifest_hash": "sha256:8a507bbf0edc4c44c0313b33e6691751549029cb0de1cc36b6af0feeb51db6db",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
@@ -33,6 +33,7 @@
           "speckit.house-process.implement-brief",
           "speckit.house-process.handoff",
           "speckit.house-process.guided-review",
+          "speckit.house-process.graduation-review",
           "speckit.house-process.question-round",
           "speckit.house-process.upgrade-speckit",
           "speckit.house-process.tips-astro",
@@ -54,7 +55,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-11-06T17:02:44.411732+00:00"
+      "installed_at": "2026-11-06T19:29:32.140246+00:00"
     }
   }
 }
