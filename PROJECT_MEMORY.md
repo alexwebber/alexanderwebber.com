@@ -7,15 +7,17 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 ## Next session
 
-- **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. #123 (Donate on
-  a small phone's first screen) and #124 (Garmin reading of 6 Nov) are live and reviewed fine. Spec
-  003, the journey story: Phases 1–3 merged; **Phase 4** (T053–T061, the chapter list) is raised as
-  [#125](https://github.com/alexwebber/alexanderwebber.com/pull/125) from `003-slice-4`. Nothing
-  visible until a chapter exists.
-- **Next session, first:** `/session-start`, then `/after-merge 125` if it merged (no boxes; the
-  owner's only look is the screenshots; nothing goes live). If it hasn't merged, ask whether the owner
-  has looked at the screenshots. Then an upstream harvest is due
-  (`/speckit-house-process-harvest-lessons`, offered after implement; many candidates below).
+- **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
+  journey story: Phases 1–4 merged (#125, the chapter list, nothing visible until a chapter exists;
+  its look kept as is). The lesson harvest is raised as
+  [software-factory#18](https://github.com/alexwebber/software-factory/pull/18) (house-process
+  0.15.0), and this project's side (empty candidate list, harvest logged) as a `chore-after-merge-125`
+  PR.
+- **Next session, first:** `/session-start`; if software-factory#18 merged, reinstall house-process
+  0.15.0 from software-factory's `main` (pulled; `specify extension add house-process --dev --force`
+  from the playbook folder, or the new `/speckit-house-process-upgrade-speckit`), add `owner-content`
+  to the topic list in this `CLAUDE.md`, and raise that as a small PR before Phase 5's brief. If it
+  hasn't merged, ask whether the owner has looked at it.
 - **Then 003 Phase 5** (T062–T070, photos in a chapter), branched from a `main` holding #125: brief
   with `/speckit-house-process-implement-brief` naming `preview-state` (a `photos` state),
   `section-page`, `tests`, `page-tests`, `gate-drill` and `pr-screenshots` (`photos` and `long`), plus
@@ -179,195 +181,7 @@ project-specific notes.
 
 ## Upstream candidates
 
-- `git worktree remove --force` from the Bash tool failed with "Permission denied" on the folder but
-  still unregistered the worktree; PowerShell's `Remove-Item -Recurse -Force` on the literal path,
-  alone in its call, removed the rest.
-- Playwright's `webServer` started fine from the Bash tool on 2026-11-05 (Playwright 1.64.1, 174
-  passed), against `tips-windows-cloud`'s "run Playwright from PowerShell". Recheck before relying
-  on either.
-
-- To outlive the editor, a watcher (e.g. one waiting to rename a folder VS Code holds open) must be
-  started through WMI (`Invoke-CimMethod Win32_Process Create`), not `Start-Process` from the
-  agent's shell, which sits in VS Code's process tree and may be killed with it.
-- A watcher waiting for VS Code to close can wait forever: here its `Code` processes had run since
-  18 Oct, through window closes and reopens. Ask the owner to quit with File > Exit, and check that
-  no `Code` process remains.
-
-- When analyze's fixes are applied, resume the tasks subagent (`SendMessage`), which already holds
-  the docs, rather than starting a fresh one.
-- sharp given a file path keeps the file open in its cache (`sharp.cache` holds up to 20 files), so
-  an in-process caller can't delete it on Windows (EPERM, retries don't help) until the process exits.
-  Pass `readFileSync(path)` for read-only checks.
-- To convert a supplied logo without altering it, use lossless WebP with `exact: true` and compare the
-  raw RGBA of both files; without `exact`, the hidden colour under transparent pixels changes.
-- A cosmetic element beside a heading that doesn't wrap (`white-space: nowrap` dates) can push a
-  320 px page into sideways scrolling; the existing "fits 320px" tests across every preview state
-  caught it, where the active state alone looked fine.
-
-- `python -I` (isolated mode) also ignores user site-packages, so a module installed with
-  `pip install --user` (PyYAML here) is missing. Safe scripts in a folder you created don't need it.
-
-- When recording an approval hash outside the repo, record exactly what was hashed (byte range, line
-  endings, trailing newline) or the script. The journey story's private hashes couldn't be reproduced
-  a day later, and only the files' modified times showed the text was unchanged.
-- A privacy scan that prints its matched excerpt is harmless over data files but quotes free text
-  when run over prose. Redact findings in prose files before a scan's output reaches a public log.
-
-- Hidden minor axis labels (`visibility: hidden`) still take up layout, so a label at a chart's edge
-  can widen the page at 320 px though nobody sees it. Find these by walking text nodes' ranges, not
-  element boxes.
-- Playwright's `getByRole(..., { name })` matches substrings by default, so real data that adds a
-  heading containing the name ("Just achieved" vs "Achieved") breaks strict mode. Use `exact: true`.
-- In an owner interview, people volunteer private details they then ask to keep out. Redact them in
-  the private notes too (a placeholder plus a rule), and search the public repo for earlier mentions.
-- Owner-volunteered figures from a data export still need the owner's confirmation before a story
-  uses them: the export misses activities recorded in other apps.
-- If the owner asks to review a multi-part draft once at the end, keep a clean read-through file
-  apart from the working notes, with choices marked inline.
-
-- With both cloud and local sessions, a local session auto-loads `PROJECT_MEMORY.md` from whatever
-  its checkout holds, so a stale `main` means a stale handoff. Here it pointed at work already done,
-  until `git log` showed 27 new commits. Fast-forward first, then read the handoff.
-- Write a brief for a spec from the owner's exact answer. "No one else in the family appears" became
-  "names no one else" in the agent's brief and reached the spec, where it would have banned crediting
-  a published source. Only the agent's own read of the spec caught it.
-- For a personal story in a public repo, tell the specify subagent what mustn't appear, then search
-  its output yourself. Keep the owner's raw answers in a private file the next session can find.
-- PowerShell 5.1 breaks `gh --jq` expressions that contain `\(...)`: the quotes are lost, and `gh`
-  reports "unknown command". Run those through Bash.
-- `scan-privacy` (and scanners like it) report only a rule's first match per file, so a test that
-  plants two forbidden keys in one file proves only one. Plant each alone, then both.
-- Cloud image: there's no `pwsh`, so Spec Kit's PowerShell prerequisite scripts can't run in a cloud
-  session; the implement subagent took the feature folder from `feature.json` instead.
-
-- `gh` can't attach images to a PR. Commit them to a side branch that never merges, link
-  `raw.githubusercontent.com` by commit SHA, and delete the branch after the merge.
-- `Astro.slots.has('x')` is true for `{cond && <C slot="x" />}` even when `cond` is false. Test the
-  empty case, or pass a prop.
-- A percentage height shared from a card shell resolves against a stretched grid item, so a card
-  placed lower in it overflows. Every test passed; only a phone screenshot caught it.
-- Growing a shared stylesheet by a few bytes can pass Vite's 4 KB inline limit and turn inline CSS
-  into a new render-blocking file on some pages. Check `dist/`'s file list, not just the HTML.
-- For a before/after computed-style check, a temporary `git worktree` under a gitignored folder finds
-  `node_modules` by walking up. Run `gen-types` there, then call Astro's bin by its relative path.
-- A long `python - <<'EOF'` heredoc through the Bash tool failed with "unexpected EOF while looking
-  for matching quote". Write the script to a scratchpad file and run that.
-- `Remove-Item` on a variable-built scratchpad path was refused as a "system path", which rejected
-  the whole PowerShell call. Keep cleanup out of chained commands.
-- `gh run list --commit` needs the full SHA; a short one returns nothing, not an error.
-- CodeQL's PR alerts don't show under `?ref=refs/pull/N/merge` here; `alerts?pr=N` and the check run's
-  annotations do. A CodeQL fail in `gh pr checks` is the results check, not the Analyze jobs.
-- JustGiving's staging: new pages can vanish minutes after creation, but existing shared test pages
-  work and accept test-card donations, which reach the API at once (1 Nov 2026).
-- Before calling a third-party test environment broken, try something already in it. The agent
-  gave up after one failed page, and the owner found a working one.
-- Removing a scratch folder that holds a Windows junction: delete the junction first with
-  `cmd /c rmdir`, as a recursive delete could reach the junction's target.
-- PowerShell 5.1 strips embedded double quotes from native arguments, so `python -c` with quotes
-  fails. Use a script file, and don't hide stderr while checking it.
-- `gh run list` and `gh run view` showed `createdAt` an hour ahead of the run's own log timestamps
-  (09:24:08Z listed, 08:24:16Z logged, 1 Nov 2026), which looked like a missed refresh slot. Check
-  a run's log before trusting a gap in the listing.
-- A second page sharing a component can change Vite's CSS chunking either way; here it removed a
-  chunk file from two pages. Compare `dist/`'s file list and computed styles, not just the HTML.
-- A running `astro preview` blocks Playwright's `webServer` even on another port ("Another astro
-  preview server is already running"). Run `astro preview stop` first.
-- On a `core.autocrlf` checkout, scripted edits must normalise line endings first, and a generator's
-  LF output shows as modified until `git add`.
-- For an SVG with `aria-labelledby` on its title and desc, the desc is part of the accessible name, so
-  `toHaveAccessibleDescription` reads empty. Assert on `toHaveAccessibleName`.
-- On a chart climbing towards a target, put the target label at the start of the line; at the end it
-  collides with the last point.
-- When a preview renders a component twice (card and page), older tests hit Playwright's strict mode.
-  Scope each locator to its container.
-- PowerShell 5.1's `Invoke-WebRequest` shows a UTF-8 page's `£` as `Â£`, so a text pattern misses it
-  and looks like a site bug. Check bytes or use `curl`.
-- Run a quickstart's failure scenario for real, not only as unit tests. A check in the validator isn't
-  a check in the build: a plain build rendered text the validator would have refused.
-- A `<style>` in a new component a page imports can reorder that page's inlined CSS even when the
-  component isn't rendered. Keep the rule on the page, or compare `dist/`.
-- A Bash-tool heredoc lost backslashes even with a quoted `'EOF'` (`\\S` became `\S`). Write such
-  files with the Write tool.
-- A full-page Playwright screenshot with `isMobile` failed with "Unable to capture screenshot". Use a
-  phone-width viewport with `isMobile` off for that shot.
-- The auto-mode permission check refused `git push origin --delete` on the agent's own screenshot side
-  branch, so the routine of deleting it after a merge needs the owner, or a permission rule.
-- Cloud image: the preinstalled Chromium (build 1243) didn't match the project's pinned Playwright
-  1.64.1 (wants 1248). Symlinking `/opt/pw-browsers/chromium*-1248` to the 1243 folders let the
-  whole suite run without `playwright install`.
-- A cloud session may push only to its own branch, so PR screenshots can't use a side branch: add
-  them in one commit, link by that SHA, remove them in the next. Convert to WebP first (1.6 MB of
-  PNG became 420 KB).
-- `pkill -f "astro preview"` inside a compound Bash command matched the tool's own shell and killed
-  the call (exit 144). Use `npx astro preview stop` on its own.
-- `spikes/<x>/out/` (gitignored, outside `tsconfig`) is a good home for a temporary `git worktree`
-  used to build `main` for a `dist/` comparison: `astro check` doesn't scan the copy.
-- An ajv-to-message layer that prefixes the offending value leaks free text through schema errors;
-  only a sentinel test across schema-invalid cases caught it. Drop the value for approved text.
-- `sed -i` with `$(` and `|` in its pattern silently didn't match in Git Bash, yet the file showed as
-  modified with an empty diff (line endings). Use the Edit tool or a script file.
-- A subagent barred from `C:\temp` can still run `pr-ready` by pointing `PRIVATE_TERMS_FILE` at a
-  missing file, which skips the term search; the main conversation must rerun it with the real file.
-- A subagent's "waiting on its own background work" notification isn't its report: check the branch
-  (or the process list) for progress rather than calling it finished.
-- A green dispatched run doesn't prove a step ran: an idle Refresh skips its publish job, where the
-  gate (and a new gate step) lives. Check the step's log line, not the run's conclusion.
-- Deleting a PR's screenshot side branch after the merge breaks the merged PR's images once GitHub
-  drops the commit. Keep such branches (made-up or public images only), and the delete never needs
-  a permission.
-- CodeQL's `js/path-injection` didn't credit a `resolve` + `startsWith` containment check in a
-  local static server (4 alerts). Serving only from a map of files indexed up front cleared them.
-- An exact-text helper that swaps HTML tags for spaces hides a missing space between inline
-  elements; drop tags without adding spaces, and also compare the browser's `innerText`.
-- To prove several new checks fail when broken, batch the CSS and markup breaks into one preview
-  build and one spec run (32 checks in about a minute), then restore the files.
-- HTML's `<time datetime>` has no range form: a period is two `<time>` elements joined by text.
-- A page that drops a standard line under its `<h1>` (here "Last updated") can leave the next
-  heading reading as a subtitle. Every test passed; only the screenshot showed it.
-- Playwright's per-project counts come from `--reporter=line,json` with
-  `PLAYWRIGHT_JSON_OUTPUT_FILE`, walking `suites` and `specs[].tests[].projectName`.
-- A local Playwright run left going overnight took 2–4 h and failed 5–9 different tests each time,
-  all timeouts (unit tests too): the laptop slept. Awake, the same specs passed in a minute. Check
-  wall-clock times before reading failures, and rerun while the machine is in use.
-- `upgrade-speckit.ps1` makes its own `chore-speckit-<version>` branch from `main`, so run it from
-  `main`; a branch made first is left empty.
-- For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
-  installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
-  in a PR, and needs no settings screen. Only the network allowlist still needs the owner.
-- A Playwright run can hit `ERR_NETWORK_IO_SUSPENDED` plus timeouts even mid-morning with the laptop
-  in use (4 unrelated mobile tests, 6 Nov); the same specs rerun alone passed. Read the JSON report's
-  error messages to tell suspend failures from real ones.
-- With a `system-ui` font stack, an absolute first-screen check (Donate within 780 px) passed on
-  Windows and failed on CI's Linux by 24 px. For "X mustn't move Y", measure the same page with X
-  shown and hidden instead.
-- A subagent's "choices for the owner to confirm" went into the PR as boxes unfiltered: one was a
-  test-coverage choice the owner can't judge, and none had a recommendation; the owner had to ask.
-  The main conversation filters them, keeps only real owner decisions, and recommends an answer
-  for each (implement-brief's *When it returns*).
-- A test asserting something is absent from a preview that renders the real menu ("no 'Story'") is a
-  launch-time trap. Make such checks follow the repo's data (here `journeyChapterIds()`).
-
-- To compare layouts before touching code, inject CSS and DOM moves into the built site with
-  Playwright and measure under several fonts. DejaVu Sans from jsdelivr reproduced CI's Linux exactly
-  (Donate at 804 px, as CI reported), and Roboto from Google Fonts stands in for Android.
-- An owner's phone screenshot can show something other than the complaint: Donate was whole, and the
-  card's foot was cut. Say what the screenshot shows and ask which target they mean.
-- Astro's `<script is:inline>` emits its content literally: a `{`...`}` expression around the code
-  reached the page as text. Write the JavaScript plainly inside the tag.
-- In a sideways-scrolling list, Chrome's focus treats a link with a sliver showing at the edge as in
-  view and doesn't scroll, so a keyboard user sees a faded fragment. `scroll-padding-inline` equal to
-  the gutter and the fade fixes it; only a Tab-through test found it.
-
-- In a fixture generator with one seed counter, adding a state shifts every later state's words and
-  hashes. Add it last, from its own seed, and check `git diff --stat` shows only the new state.
-- axe's `target-size` (WCAG 2.2) fails a short inline link right under a `<summary>`: its box is only
-  the text's height. `display: inline-block` makes the line height the target. Run axe with each
-  `<details>` open.
-- Node's `fetch` from a script failed twice ("fetch failed") right after a long `gh` wait, while curl
-  and Node itself moments later got 200. Retry a live-site check a few times and print the cause's
-  code before calling the site down.
-- When a background script and a subagent share one checkout, check the script's clean-up first:
-  `after-merge.ts` skips the checked-out branch, so it was safe to run while the subagent worked.
+- None yet since the harvest of 2026-11-06 ([software-factory#18](https://github.com/alexwebber/software-factory/pull/18)).
 
 ## Open questions
 

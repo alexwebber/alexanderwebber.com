@@ -2039,3 +2039,22 @@ end. Add each new decision as a dated entry at the end, as it's made.
     (`screenshots.ts` gained `,open`, which opens every `<details>` before the shot).
   - **For the owner**: only the list's look, shown in the PR's screenshots (behaviour was settled by
     plan question 3 on #105).
+- **2026-11-06** — **#125 merged** (003 Phase 4, the chapter list). Nothing visible until a chapter
+  exists. `/after-merge`: the PR's 11 checks and `main`'s Gate green, deploy included; `/` and
+  `/running/` answer 200 (the live fetch passed first time with the retries). Its one box, **the
+  list's look** ("Chapters" between two thin rules, accent triangle, a bulleted list of names, "Back
+  to chapters" in small text under each takeaway): **keep as is** (owner, at the next session start).
+- **2026-11-06** — **Lesson harvest** (owner: all as proposed, and both new commands), as
+  [software-factory#18](https://github.com/alexwebber/software-factory/pull/18), house-process
+  0.15.0. All 75 *Upstream candidates* processed: about 65 into the topic skills (shell 8,
+  windows-cloud 9, astro 4, ui-accessibility 8, testing 12, privacy-pipelines 4, github-actions 5,
+  git, research and share-images 1 each), 5 into a new `tips-owner-content` skill, 5 into
+  `implement-brief`'s *When it returns*, the stale-handoff lesson into the template `CLAUDE.md` and
+  PLAYBOOK, and a warning in `upgrade-speckit.ps1` for a run from an empty branch. Six were already
+  upstream (`pkill`, heredoc backslashes, `astro preview stop`, word-for-word briefs, the sharp
+  cache, and the JustGiving staging detail, which stays here as project-specific). The skill
+  candidates *question round* (9 times) and *Spec Kit upgrade* (11 times) became the house-process
+  commands `question-round` and `upgrade-speckit`, so they leave `process/skill-candidates.yaml`.
+  Charts (8 times) are built before the next chart work. The generic parts of `session-start.ts`,
+  `after-merge.ts` and `pr-ready.ts` went to software-factory's `BACKLOG.md`. Auto-loaded files went
+  from about 41 KB to 25 KB with the candidate list emptied.
