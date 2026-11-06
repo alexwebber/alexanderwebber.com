@@ -6,16 +6,33 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadLanding } from '../../src/sections/running/data/landing.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
-import { campaignsWithFigures } from '../../src/sections/running/data/store/index.ts';
+import { campaignsWithFigures, journeyChapterIds } from '../../src/sections/running/data/store/index.ts';
 import type { Campaign, CampaignFigures, Goal, HealthMetric, OwnerData, RefreshRecord, Run, RunningStore, SectionSettings, UpcomingRace } from '../../src/sections/running/data/store/index.ts';
-import { runningAreas } from '../../src/sections/running/integration.ts';
+import { runningAreas, storyArea } from '../../src/sections/running/integration.ts';
 import { landingCard } from '../../src/sections/running/og/landing.ts';
 import GoalsPage from '../../src/sections/running/pages/goals.astro';
 import Landing from '../../src/sections/running/pages/index.astro';
 import RunPage from '../../src/sections/running/pages/runs/[id].astro';
 import { stripTags } from '../helpers/html.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
+import { lorem } from '../helpers/journey.ts';
 import { emptyOwner } from '../helpers/owner-data.ts';
+
+// The route registry as the real data makes it, unless a test asks for the story area to be there
+// (or not): the real data has no chapter until spec 003's content PR, and the landing page's links
+// must be right either way (T047). SectionLinks and the menu read the registry on every render.
+const registry = vi.hoisted(() => ({ story: undefined as boolean | undefined }));
+vi.mock('../../src/sections/running/integration.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/sections/running/integration.ts')>();
+  return {
+    ...actual,
+    get runningAreas() {
+      const others = actual.runningAreas.filter((area) => area !== actual.storyArea);
+      if (registry.story === undefined) return actual.runningAreas;
+      return registry.story ? [...others, actual.storyArea] : others;
+    },
+  };
+});
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -97,6 +114,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   setRunningStore(undefined);
+  registry.story = undefined;
 });
 
 const clean = (html: string) => html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
@@ -283,9 +301,27 @@ describe('landing page (US1)', () => {
     const area = runningAreas.find((a) => a.key === 'fundraising');
     expect(area !== undefined).toBe(campaignsWithFigures().length > 0);
     if (!area) return;
-    expect(runningAreas.at(-1)).toBe(area);
+    // Directly after Health; only the story area (spec 003), when there is one, comes after it.
+    const keys = runningAreas.map((a) => a.key);
+    expect(keys[keys.indexOf('fundraising') - 1]).toBe('health');
+    expect(keys.slice(keys.indexOf('fundraising') + 1).filter((key) => key !== 'story')).toEqual([]);
     expect(area).toMatchObject({ label: 'Fundraising', href: '/running/fundraising/', description: 'Fundraising for charity, and how to give.' });
     expect(area.routes.map((route) => route.pattern)).toEqual(['/running/fundraising', '/og/running-fundraising.png']);
+  });
+
+  it('adds the Story area, last and with no description, exactly when a chapter exists (spec 003 FR-001, FR-039, FR-041)', () => {
+    const area = runningAreas.find((a) => a.key === 'story');
+    expect(area !== undefined).toBe(journeyChapterIds().length > 0);
+    expect(storyArea).toEqual({
+      key: 'story',
+      label: 'Story',
+      href: '/running/story/',
+      routes: [
+        { pattern: '/running/story', entrypoint: './src/sections/running/pages/story.astro' },
+        { pattern: '/og/running-story.png', entrypoint: './src/sections/running/og/story.png.ts' },
+      ],
+    });
+    if (area) expect(runningAreas.at(-1)).toBe(area);
   });
 
   it('puts Garmin attribution under the page heading, the hero heading, the chart and every Garmin card (FR-077)', async () => {
@@ -320,6 +356,52 @@ describe('landing page (US1)', () => {
     expect(html).toContain('<title>Running · Alexander Webber</title>');
     expect(html).toContain(`<meta name="description" content="Alexander Webber's running: Brighton Marathon on 4 Apr 2027: 182 days to go, aiming for sub-3:30, for Martlets. Goals, this week's training and the latest run.">`);
     expect(html).toContain('/og/running.png');
+  });
+});
+
+// The landing page's links to the other areas, with the story area there (spec 003 T046, owner
+// decision 4, data-model.md §9): "Story" is left out under a story link panel that already leads to
+// it, and listed, by its label alone, when section.yaml has no story_link. Expectations come from the
+// route registry itself, not a pinned list.
+describe('section links with the story area (spec 003 US3)', () => {
+  const LINK = { href: '/running/story/', label: lorem(13, 3) };
+  const sectionLinks = (html: string) => html.match(/<nav class="section-links"[\s\S]*?<\/nav>/)![0];
+  const hrefs = (html: string) => [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+  const others = () => runningAreas.filter((area) => area.key !== 'landing' && area.key !== 'story').map((area) => area.href);
+
+  beforeEach(() => {
+    registry.story = true;
+  });
+
+  it('lists "Story" last, by its label alone, when there is no story link panel', async () => {
+    expect(runningAreas.at(-1)).toBe(storyArea);
+    const links = sectionLinks(await page());
+    expect(hrefs(links)).toEqual([...others(), '/running/story/']);
+    const story = links.match(/<a href="\/running\/story\/">[\s\S]*?<\/a>/)![0];
+    expect(story).toBe('<a href="/running/story/"><span class="section-link-label">Story</span></a>');
+  });
+
+  it('leaves "Story" out under the story link panel, which leads there instead', async () => {
+    use({ section: { ...SECTION, story_link: LINK } as SectionSettings });
+    const html = await page();
+    expect(hrefs(sectionLinks(html))).toEqual(others());
+    expect(html).toContain(`<p class="story-link" data-story-link><a href="/running/story/">${LINK.label}</a></p>`);
+  });
+
+  it('puts "Story" last in the menu either way', async () => {
+    for (const section of [SECTION, { ...SECTION, story_link: LINK } as SectionSettings]) {
+      use({ section });
+      const menu = (await page()).match(/<nav aria-label="Running">[\s\S]*?<\/nav>/)![0];
+      expect(hrefs(menu)).toEqual(runningAreas.map((area) => area.href));
+      expect(hrefs(menu).at(-1)).toBe('/running/story/');
+    }
+  });
+
+  it('lists nothing of the story without the area', async () => {
+    registry.story = false;
+    const html = await page();
+    expect(hrefs(sectionLinks(html))).toEqual(others());
+    expect(html).not.toContain('/running/story/');
   });
 });
 

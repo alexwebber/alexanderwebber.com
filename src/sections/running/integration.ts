@@ -1,9 +1,12 @@
 import type { AstroIntegration } from 'astro';
-import { campaignsWithFigures, JsonFileStore } from './data/store/index.ts';
+import { campaignsWithFigures, journeyChapterIds, JsonFileStore } from './data/store/index.ts';
 
 /**
  * One area of the Running section (landing, goals, training, ...). An area is
  * added here when it ships, so the nav never links to an unbuilt page (FR-027).
+ * Fundraising and the story are added only once their data exists (a campaign with figures, a
+ * chapter), so their menu items, routes, sitemap entries and share images all follow from one
+ * condition each, checked from files while the config loads.
  */
 export interface RunningArea {
   /** Stable key, e.g. 'landing', 'goals'. */
@@ -29,6 +32,23 @@ const fundraisingArea: RunningArea = {
   routes: [
     { pattern: '/running/fundraising', entrypoint: './src/sections/running/pages/fundraising.astro' },
     { pattern: '/og/running-fundraising.png', entrypoint: './src/sections/running/og/fundraising.png.ts' },
+  ],
+};
+
+/**
+ * The journey story (spec 003): exists only once a chapter does, so no visitor reaches an empty page
+ * and nothing about the story shows before then (FR-001, FR-042, SC-002). Last in the menu, after
+ * Fundraising (owner, #101). No description: SectionLinks lists it only when section.yaml has no
+ * `story_link` (the panel above already leads there), and then shows the label alone, because any
+ * words about the story need the owner's approval (FR-039).
+ */
+export const storyArea: RunningArea = {
+  key: 'story',
+  label: 'Story',
+  href: '/running/story/',
+  routes: [
+    { pattern: '/running/story', entrypoint: './src/sections/running/pages/story.astro' },
+    { pattern: '/og/running-story.png', entrypoint: './src/sections/running/og/story.png.ts' },
   ],
 };
 
@@ -92,6 +112,7 @@ export const runningAreas: readonly RunningArea[] = [
     ],
   },
   ...(campaignsWithFigures().length > 0 ? [fundraisingArea] : []),
+  ...(journeyChapterIds().length > 0 ? [storyArea] : []),
 ];
 
 /**

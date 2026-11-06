@@ -1,7 +1,12 @@
 ---
 // Links from the landing page to the section's other areas (T100, FR-027): Goals, Training,
-// Races, Health and, once a campaign has figures, Fundraising, from the route registry
-// (integration.ts). No client JS.
+// Races, Health and, once a campaign has figures, Fundraising, then, once a chapter exists, the
+// story, from the route registry (integration.ts). An area the story link panel (StoryLink.astro)
+// already leads to is left out, because the panel sits directly above these links: with
+// section.yaml's `story_link` set, "Story" isn't listed here; without it, it is, so the landing page
+// always has a way in (spec 003 owner decision 4, data-model.md §9). The story area has no
+// description, so it shows its label alone (FR-039). No client JS.
+import { sectionSettings } from '../data/load.ts';
 import { runningAreas } from '../integration.ts';
 
 export interface Props {
@@ -10,7 +15,8 @@ export interface Props {
 
 const { heading = 2 } = Astro.props;
 const Heading = `h${heading}` as const;
-const areas = runningAreas.filter((area) => area.key !== 'landing' && area.inNav !== false);
+const { story_link: storyLink } = await sectionSettings();
+const areas = runningAreas.filter((area) => area.key !== 'landing' && area.inNav !== false && area.href !== storyLink?.href);
 ---
 
 {

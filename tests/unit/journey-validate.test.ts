@@ -2,13 +2,13 @@
 // R18): the loader's approval rules and every validate.ts rule, each refused case planted alone and
 // asserted by file, entry, field and severity; the approval hash's edges; and the sentinel test
 // (FR-035, SC-003): no message carries a word of the story. All text here is made up.
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parse } from 'yaml';
 import { main as approveMain } from '../../scripts/approve-story.ts';
 import { validateData } from '../../scripts/validate-data.ts';
-import { journeySha256, loadRunningData } from '../../src/sections/running/data/store/files.ts';
+import { journeyChapterIds, journeySha256, loadRunningData } from '../../src/sections/running/data/store/files.ts';
 import { JsonFileStore } from '../../src/sections/running/data/store/index.ts';
 import { DataValidationError, formatIssue } from '../../src/shared/storage/errors.ts';
 import {
@@ -510,5 +510,37 @@ describe('the story previews', () => {
     expect(issues.filter((i) => i.severity === 'error').map(formatIssue)).toEqual([]);
     // The previews hold the story's files only, so the one warning is the missing section.yaml.
     expect(issues.map((i) => i.file)).toEqual(['data/running/owner/section.yaml']);
+  });
+});
+
+// integration.ts adds the story area only when this finds a chapter (T042, data-model.md §10), so
+// the page, menu item, share image and sitemap entry all follow from it.
+describe('journeyChapterIds', () => {
+  it('finds nothing with no journey folder', () => {
+    repo = tempRepo();
+    expect(journeyChapterIds(repo.root)).toEqual([]);
+  });
+
+  it('finds nothing for an empty chapter folder', () => {
+    repo = tempRepo();
+    mkdirSync(join(repo.root, 'data/running/owner/journey/chapters/chapter-a'), { recursive: true });
+    expect(journeyChapterIds(repo.root)).toEqual([]);
+  });
+
+  it('finds nothing for a closing section and a note alone, nor for a photo with no chapter.yaml', () => {
+    repo = tempRepo();
+    writeApproved(repo, CLOSING, 'closing', closing());
+    writeApproved(repo, NOTE, 'note', note());
+    writeApproved(repo, PAGE, 'page', page());
+    writePhoto(repo, 'data/running/owner/journey/chapters/chapter-a/lorem.jpg', PHOTO);
+    expect(journeyChapterIds(repo.root)).toEqual([]);
+  });
+
+  it('finds each folder holding a chapter.yaml, sorted, and only those', () => {
+    repo = tempRepo();
+    writeStory(repo, { chapter: chapter('chapter-b') });
+    writeApproved(repo, chapterFile('chapter-a'), 'chapter', chapter('chapter-a'));
+    mkdirSync(join(repo.root, 'data/running/owner/journey/chapters/chapter-c'), { recursive: true });
+    expect(journeyChapterIds(repo.root)).toEqual(['chapter-a', 'chapter-b']);
   });
 });
