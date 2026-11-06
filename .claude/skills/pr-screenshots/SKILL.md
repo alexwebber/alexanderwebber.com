@@ -13,8 +13,8 @@ triggers no workflow.
 ## Steps
 
 1. **Build** what you'll shoot: `--build` makes a `SHELL_PREVIEW=1` build, which preview pages
-   need. For a scratch-copy drill, point the shots at that copy's pages by building it into `dist/`
-   first (or shoot inside the drill with Playwright and convert with `sharp`).
+   need. For a scratch-copy drill, keep the copy's `dist/` (`DRILL_KEEP_DIST=<dir>`, `gate-drill`
+   step 8) and shoot it with `--dist=<dir>`.
 2. **Shoot**, from PowerShell (in Git Bash, prefix `MSYS_NO_PATHCONV=1`, or `/paths` become
    Windows paths):
 
@@ -25,7 +25,10 @@ triggers no workflow.
    Each path gives `-phone` and `-phone-dark` (full page, 360 px wide, 2x) and `-desktop`
    (1280 x 800, full page). Options: `--first-screen` (only the first 360 x 780 screen, for "what a
    visitor sees first"), `--no-dark`, `--no-desktop`, `--desktop-dark`, `--width=320`, and
-   `<path>=<name>` to name a shot. Files land in `spikes/screens/out/` (gitignored).
+   `<path>=<name>` to name a shot. Per path, `,width=320` and `,first-screen` override those two,
+   so one run can shoot the same page several ways under different names:
+   `'/running/=landing,first-screen' '/running/=menu-320,width=320,first-screen' '/running/story/'`.
+   Files land in `spikes/screens/out/` (gitignored).
 3. **Look at every image** (Read them) before publishing: tests have passed with a broken layout
    that only a screenshot showed (a card overflowing its grid cell). Fix, rebuild, reshoot.
    Each run clears `out/` first, so shoot every path in one run (a later run for a close-up loses
