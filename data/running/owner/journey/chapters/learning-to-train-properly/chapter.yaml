@@ -1,0 +1,32 @@
+id: learning-to-train-properly
+name: "Learning to train properly"
+when: "2026-04/2026-10"
+prose: |-
+  In the spring I pulled a hamstring, then a calf, and then came proximal hamstring tendinopathy. My running dropped right down. So I changed tack with my strength training and prioritised my legs, especially my hamstrings: Romanian deadlifts, hamstring curls and deep, controlled goblet squats, plus calf raises and stability work like step-ups. I rotate three full-body workouts, but the leg work comes first. Once I'd recovered, I ramped up again.
+
+  Then I signed up for Brighton. A couple of friends were running marathons: one was already signed up for Brighton, and the other has signed up since. I was sold on the fact that a marathon really gives you a target, a focus point to aim for, and it keeps you honest. So does building this site: sharing with others keeps you accountable.
+
+  I follow a Garmin Coach plan, because it's easy to have something else do the thinking for you. I can override it with my own runs, say when I feel really good and want to push myself, and it adjusts in the background based on my exertion, sleep and HRV. It's just very convenient.
+
+  I've learned about everything to do with running: form and technique, and how to vary the types of run to push certain boundaries, like VO2 max and the two lactate thresholds, and why. Gear too: a shoe rotation for different types of run, how best to carry water and fuel, and what you need for longer runs. Basically the whole running ecosystem, and how to improve performance based on science.
+
+  At peak training I burn {{calories-average}} a day on average, and as many as {{calories-long-run}} on long-run days.
+takeaway: "Train smarter, not just harder: build the body that lets you keep running."
+figures:
+  - id: calories-average
+    category: calories
+    label: "Calories burned a day at peak training"
+    as_of: "2026-11"
+    text: "3,250 to 3,500 calories"
+    source: owner
+    garmin: "Garmin"
+  - id: calories-long-run
+    category: calories
+    label: "Calories burned on a long-run day"
+    as_of: "2026-11"
+    text: "4,500 to 5,000 calories"
+    source: owner
+    garmin: "Garmin"
+approved:
+  date: 2026-11-06
+  sha256: e0aed88e1a2c04a37efe2c7518914fe94f6e6347d23d6722a858443331d95546

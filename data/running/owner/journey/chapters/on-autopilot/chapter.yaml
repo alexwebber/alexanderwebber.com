@@ -1,0 +1,25 @@
+id: on-autopilot
+name: "On autopilot"
+when: "2023-01"
+prose: |-
+  By January 2023 my life was on autopilot. I had gotten dangerously close to 300lbs, I was always tired and I probably drank too much. I was just existing, not actually living. I could have carried on letting life slide by.
+
+  It hadn't always been like that. About 15 years earlier I was pretty fit. Then I discovered craft beer and spent too much time in circles of people who preferred drinking to exercising. For many years, social events always centred around bars and pubs. I'm not blaming anyone else: it's a slippery slope that anyone can fall down. It didn't help that I have a very addictive personality: I either fully commit or don't commit at all.
+
+  I knew all of this was bad for my physical and mental health, for my respect for myself, and for my kids. You need to reserve bandwidth for yourself, because if you burn it all up you find there isn't enough left for anyone else. My kids needed more from me than I had left.
+
+  January 2023 was the time to fight back.
+
+  {{weight-jan-2023}}
+takeaway: "Left on autopilot, life just slides by. Change starts when you decide to fight back."
+figures:
+  - id: weight-jan-2023
+    category: weight
+    label: "Weight"
+    as_of: "2023-01-31"
+    text: "133.2 kg"
+    source: owner
+    garmin: "Index S2"
+approved:
+  date: 2026-11-06
+  sha256: 171d6dcd0d11c551bdad6db56116f5ea0f184afe7e68409b448d2cc87cf87255

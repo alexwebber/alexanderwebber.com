@@ -1,0 +1,9 @@
+id: another-new-years-resolution
+name: "Another new year's resolution"
+when: "2025-01/2025-07"
+prose: |-
+  So January 2025 brought another new year's resolution, and I started again. It felt good to get going again. Starting is always the problem, but as soon as you stop putting off that first session and do it, carrying on is easy. By July I was running over 10 km. Then I lost my motivation again.
+takeaway: "It really is a getting-started problem. Do that first session, and routine takes care of the rest."
+approved:
+  date: 2026-11-04
+  sha256: 472c28b1689cf2a812078754cb84a0b4d9c6374c2ca0a6a43c25f728a87676ce

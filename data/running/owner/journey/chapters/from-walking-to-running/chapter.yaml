@@ -1,0 +1,21 @@
+id: from-walking-to-running
+name: "From walking to running"
+when: "2023-06/2023-08"
+prose: |-
+  I finished all ten Namibia walks. Then I gradually got into running with Casey Gilbert's beginner series. He was great, and running felt great on that treadmill. After that came Tommy Rivs, and I ended up doing all of his running series because he was so motivational.
+
+  I soaked up all the running and fitness science, but what he gave me was as much mental hardening as anything: his philosophy on life, and an onslaught of quotes, both his own and from others. One I hold very close now is a line usually credited to George Eliot, which he used to counter the fear of starting too late: "It is never too late to be what you might have been."
+
+  By August I was down to {{weight-aug-2023}}, although glandular fever accounted for a few of those kilos. That was a very low amount, probably because of the illness and dehydration.
+takeaway: "The right coach changes how you think, not just how you run."
+figures:
+  - id: weight-aug-2023
+    category: weight
+    label: "Weight"
+    as_of: "2023-08"
+    text: "115 kg"
+    source: owner
+    garmin: "Index S2"
+approved:
+  date: 2026-11-06
+  sha256: 221ca20bc5d256426134f081fc77a921139c0f4ffa8ef65a35d6798008cee49a
