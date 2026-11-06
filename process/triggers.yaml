@@ -6,12 +6,6 @@
 #   - due: YYYY-MM-DD   # first day it's due
 #     task: what to do, and where the details are
 
-- due: 2026-11-06
-  task: >-
-    003 T023: the dispatched refresh after #117 was idle, so its publish job (and the gate's new
-    check-links step) didn't run. Check the 00:17 UTC catch-all's publish job ran check-links and
-    passed (`gh run view <id> --log | grep check-links`), then tick T023 in
-    specs/003-journey-story/tasks.md.
 - due: 2026-11-19
   task: >-
     Goals follow-up, in a PR: unfeature half-sub-1-40, vo2max-52-5 and 10k-sub-43 (their "New"

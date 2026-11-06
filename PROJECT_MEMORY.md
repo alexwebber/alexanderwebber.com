@@ -12,8 +12,8 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   green). Raised for the owner: **#120** (Spec Kit 1.3.1) and **#121** (the `gate-drill` skill, with
   `runGate`, `serveDist` and `snapshotDist` in `tests/helpers/scratch-site.ts`).
 - **Next session, first:** `/session-start`. `/after-merge` each of #120 and #121 that merged; if
-  #121 hasn't, ask the owner whether they've looked at it, as Phase 3 builds on it. The trigger due
-  2026-11-06 checks that the 00:17 UTC refresh's gate ran `check-links`, then ticks T023.
+  #121 hasn't, ask the owner whether they've looked at it, as Phase 3 builds on it. (T023 is done:
+  the bot's gate ran `check-links` on 6 Nov.)
 - **Then 003 Phase 3** (T042–T050, finding the story: route, menu item, share image, landing
   panel), branched from a `main` holding #121: brief with `/speckit-house-process-implement-brief`
   naming `section-page`, `page-tests`, `tests`, `gate-drill` and `pr-screenshots`, and dispatch as
@@ -324,6 +324,9 @@ project-specific notes.
   heading reading as a subtitle. Every test passed; only the screenshot showed it.
 - Playwright's per-project counts come from `--reporter=line,json` with
   `PLAYWRIGHT_JSON_OUTPUT_FILE`, walking `suites` and `specs[].tests[].projectName`.
+- A local Playwright run left going overnight took 2–4 h and failed 5–9 different tests each time,
+  all timeouts (unit tests too): the laptop slept. Awake, the same specs passed in a minute. Check
+  wall-clock times before reading failures, and rerun while the machine is in use.
 - `upgrade-speckit.ps1` makes its own `chore-speckit-<version>` branch from `main`, so run it from
   `main`; a branch made first is left empty.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,

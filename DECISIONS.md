@@ -1938,3 +1938,6 @@ end. Add each new decision as a dated entry at the end, as it's made.
   steps (about 10 s with the build), and a changed approved chapter stops validate-data and a plain
   build with file, entry and field, leaving `dist/`'s 249 files byte-identical. `gate-check` and
   `page-tests` point at the skill, and its candidate is removed.
+- **2026-11-06** — **003 T023 done**: the 00:17 UTC catch-all refresh (run 42135693545) published,
+  and its gate's `check-links` passed (216 pages, 2,532 site links, 0 issues) before the deploy,
+  which succeeded. The bot's deploys now go through the link check; the trigger is removed.
