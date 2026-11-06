@@ -155,6 +155,8 @@ target, the supporters and a Donate link to the JustGiving page, on a landing ca
   no stale notice. After race day, before that, the figures lead with "Raised £X for <charity>" and
   the race result once it is recorded (FR-033).
 - **Removing a campaign** from `campaigns.yaml` hides it; its published file stays as history (FR-008).
+  A journey story chapter linking to `/running/fundraising/` must be edited and re-approved before
+  the last campaign with figures is removed, or `check-links` fails every deploy, the bot's included.
 - **Previews (tests only):** with `SHELL_PREVIEW=1`, `/fundraising-preview/<state>/` renders the page
   and card over the synthetic campaigns in `tests/fixtures/fundraising-preview/` (`generate.ts`), one
   per state in contracts/routes.md (13 states: active, first day, no target, zero, beaten, stale, race
@@ -195,6 +197,102 @@ through the owner's approval (constitution Principle VIII):
   update (FR-054). The site never writes to JustGiving, so the owner pastes the approved text there.
 
 The owner's edits to a draft become lessons in `VOICE.md` when the first story is approved (FR-053).
+
+## Journey story (specs/003-journey-story)
+
+The owner's fitness journey at `/running/story/`, in chapters, oldest first: each with a name, a date
+or period, the owner's prose and a "What I learned" box, then a closing section for someone at the
+start and a short "not medical advice" note. Text the owner approved, word for word, from owner files
+only: no provider, no client JavaScript, no "Last updated" (it isn't a data view).
+
+- **Drafts and raw answers stay outside the repository** (FR-036), as for campaign stories: not in a
+  file, PR, commit message or test. Only approved text enters, in the files below. Specs, plans, PRs and
+  this note describe the story by its shape only.
+- **Files** (`data/running/owner/journey/`, schemas `owner/journey-*`, data-model.md):
+  - `chapters/<id>/chapter.yaml`: `id` (the folder's name and the page anchor `#<id>`, a slug set from
+    the chapter's name when first written and **never changed**, FR-051), `name`, `when` (a day
+    `2001-03-15`, a month `2001-03` or a period `2001-03/2001-09`; shown "15 Mar 2001", "March 2001",
+    "March to September 2001"), `order` (only to break a tie on the same start), `prose`, `takeaway`,
+    up to two `figures` and up to three `photos`, then `approved`. Its photos sit beside it.
+  - `closing.yaml` (`heading`, `text`), `note.yaml` (`text`) and `page.yaml` (`title` at most 70
+    characters, `description` at most 160, `share_text` at most 90 with no digit, `link_label`).
+  - `section.yaml`'s `story_link` (`href: /running/story/`, `label` equal to `link_label`): the
+    landing page's panel.
+- **Inline markup**, the only two forms (`domain/journey.ts`, `parseProse`): `{{figure-id}}` places a
+  figure (inside a sentence it reads "12.3 kg (Garmin Index S2)"; alone in its paragraph it's set
+  apart with its label and date; never the first paragraph), and `[text](/path/)` or
+  `[text](/path/#anchor)` links a page of this site (chapters' prose and the closing section only).
+  Anything else that looks like markup (a tag, stray braces or brackets, an external link) is refused
+  by paragraph number. A value that starts with `*` (Markdown emphasis) is a YAML alias: quote it.
+- **Figures**: each has `category`, `label`, `as_of`, the exact approved `text`, and `source`: `owner`,
+  or `stored` with a `ref` to the record (a run, a health point, a manual-metrics entry or a race with
+  an official time). A stored figure needs the record to exist and to be no earlier than the first of
+  its kind; before that only the owner can supply it. `garmin` names the attribution shown beside it
+  (a device, `Garmin`, or `derived`), and must match a stored figure's record. The share image carries
+  `share_text` only, which can't hold a digit, so no figure reaches it.
+- **Approval** works as for campaign stories, per file: `node scripts/approve-story.ts
+  --journey=<chapter-id|closing|note|page> [--date=YYYY-MM-DD]`, run **only after the owner's explicit
+  yes**, writes `approved.date` and `approved.sha256`: the hash of the file's named fields
+  (`JOURNEY_HASHED_FIELDS` in `data/store/files.ts`) as parsed, plus each listed photo's bytes. Line
+  endings, comments and fields outside the list don't move it. The loader refuses a file with no
+  approval or a changed one, so the store, a plain `astro build` and `validate-data` all stop on it,
+  naming the file, entry and field, never quoting text (FR-034, FR-035).
+- **Adding a chapter** touches nothing else (SC-008): a new folder named by its id, the approved file,
+  then `approve-story --journey=<id>`. **Correcting one**: edit the file, keep its id, and approve it
+  again with that day's date; every other chapter's hash is unchanged. **Removing one**: delete its
+  folder. Removing the last also needs `story_link` removed (validation refuses a link with no
+  chapter); the page, menu item, share image and sitemap entry then go with the next deploy.
+- **Links are checked on every deploy** (`check-links`, after the build): a chapter linking to a page
+  the build didn't make stops the deploy, the bot's included, naming the chapter. So before a page a
+  chapter links to goes away, the chapter is edited and re-approved first. The same goes for a link to
+  another chapter's anchor.
+- **Photos**: `node scripts/add-chapter-photo.ts --chapter=<id> --source=<path outside the repo>
+  --caption="…" --description="…"` strips all metadata, applies the orientation, caps the long edge,
+  writes the file beside the chapter and lists it; the chapter then needs approving again (FR-033). At
+  approval the owner confirms FR-062: no other people outside races, and no recognisable strangers in a
+  race crowd. A photo beside a chapter that its `chapter.yaml` doesn't list is warned about: it's
+  neither shown nor approved, but it would be public in git.
+- **The reserved video place** is in `StoryChapter.astro`, after the photos and before the takeaway.
+  Adding a video touches the chapter schema (a new optional field), the `video` field in the chapter,
+  its own approval (a new hashed field or its own hash, decided then), the component, and `scan-*` if
+  it brings files. `video` isn't in `JOURNEY_HASHED_FIELDS`, so adding the field to the schema and a
+  chapter leaves every approval intact (SC-013, drilled at graduation).
+- **What holds back launch**: chapters need the approved `note.yaml` and `page.yaml` (FR-008, FR-039);
+  the closing section doesn't. An empty or all-comment journey file is refused, naming it. A chapter
+  id that would repeat another element's id on the page (`main`, `story-chapter-list`,
+  `story-closing-title`, another chapter's `-title` or `-learned`) is refused before it's approved.
+- **Nothing shows before a chapter**: `integration.ts` adds the story area (page, "Story" last in the
+  menu, `/og/running-story.png`, sitemap entry) only when `journeyChapterIds()` finds one. "Story" isn't
+  repeated in the landing's section links while the panel sits above them.
+- **Components**: `StoryPage.astro`, `StoryChapter.astro`, `StoryProse.astro`, `StoryFigure.astro`,
+  `ChapterList.astro` (a closed "Chapters" list from four chapters, with "Back to chapters" after each),
+  `StoryClosing.astro`, `StoryNote.astro`; styles in `styles/story.css`. Data: `data/journey.ts`
+  (`loadJourney`). Share image: `og/story.png.ts`.
+- **Previews (tests only)**: with `SHELL_PREVIEW=1`, `/story-preview/<state>/` renders made-up journeys
+  from `tests/fixtures/story-preview/` (`generate.ts`, fixed seeds, generated photos): one chapter, three
+  chapters, long (12 chapters of about 600 words, with photos), figures, no closing, same day, four
+  chapters, photos.
+- **Tests and drills**: `tests/unit/journey*.test.ts`, `story-page.test.ts`, `approve-story.test.ts`,
+  `check-links.test.ts`, `scan-privacy.test.ts`, `add-chapter-photo.test.ts`,
+  `tests/contract/journey-schemas.test.ts`; `tests/e2e/story.spec.ts` and `tests/a11y/story.spec.ts`
+  over the previews; `story-none.spec.ts` (nothing before a chapter, SC-002) and `story-launch.spec.ts`
+  (menu, Donate on a phone's first screen, growth, a dead link, removal, SC-006, SC-008) on scratch
+  copies of the real site.
+- **Known limits**: a stored weight or body-fat figure's expected attribution is the scale named in
+  `section.yaml` today, since health points don't record their device. If the scale changes, older
+  chapters with such figures stop validating until that rule learns the date of the change
+  (`BACKLOG.md`).
+- **Graduation (T071–T075, 2026-11-06)**, on made-up text: Lighthouse (mobile, local, the budget
+  script's settings via `--path=`) gives the `long` preview (12 chapters, photos) 100/100, LCP 0.91 s,
+  14.4 KB gzip of HTML and CSS, no script file and no third-party request (its lazy photos load none at
+  first); the landing page 100, LCP 1.13 s, 13.0 KB. Zero axe violations in all eight preview states,
+  light and dark, in forced colours, and with the chapter list open; Tab reaches every link and
+  control in every state; nothing scrolls sideways at 320 px; the same text with JavaScript off. The
+  adversarial review found four faults, each fixed with a test: Markdown emphasis (`*word*`, a YAML
+  alias) crashed the loader and quoted the word; an emptied journey file passed validation; a chapter
+  id could repeat another element's id; an unlisted chapter photo went unnoticed. A gate drill on a
+  scratch copy planted each "can it deploy" fault (`spikes/graduation/out/drill.ts`, not kept): every
+  one stopped at the step it should, naming the file, and no message quoted the story.
 
 ## Known limits
 

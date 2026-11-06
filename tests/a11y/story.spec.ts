@@ -107,3 +107,32 @@ for (const state of ['four-chapters', 'long']) {
     await expect(list.locator('li').first().locator('a')).toBeFocused();
   });
 }
+
+// Graduation (T072): in every state, Tab alone reaches every link and control in the story, each in
+// view when focused (the chapter list opened first, so its links are reachable too).
+for (const state of STATES) {
+  test(`${state}: Tab reaches every link and control in the story, each in view when focused`, async ({ page }) => {
+    await open(page, state);
+    const story = page.locator('.story-page');
+    // Opened without focusing it, so the first Tab starts at the top of the page.
+    await story.locator('details.story-chapters').evaluateAll((els) => els.forEach((el) => ((el as HTMLDetailsElement).open = true)));
+    const controls = await story.locator('a, summary').evaluateAll((els) => els.map((el, i) => (el.setAttribute('data-tab-check', String(i)), String(i))));
+    // A state with no link in its text and fewer than four chapters (no-closing) has none to reach.
+    const reached = new Set<string>();
+    // Each control once, plus the page's links before and after the story, with room to spare.
+    for (let i = 0; i < controls.length + 60 && reached.size < controls.length; i++) {
+      await page.keyboard.press('Tab');
+      const id = await page.evaluate(() => document.activeElement?.getAttribute('data-tab-check') ?? null);
+      if (id === null) continue;
+      reached.add(id);
+      // In view within a pixel: focus scrolling can leave an inline link a fraction of a pixel short.
+      const box = (await story.locator(`[data-tab-check="${id}"]`).boundingBox())!;
+      const viewport = page.viewportSize()!;
+      expect(box.y, `control ${id} top`).toBeGreaterThanOrEqual(-1);
+      expect(box.y + box.height, `control ${id} bottom`).toBeLessThanOrEqual(viewport.height + 1);
+      expect(box.x, `control ${id} left`).toBeGreaterThanOrEqual(-1);
+      expect(box.x + box.width, `control ${id} right`).toBeLessThanOrEqual(viewport.width + 1);
+    }
+    expect([...reached].toSorted(), 'every link and control in the story').toEqual(controls.toSorted());
+  });
+}

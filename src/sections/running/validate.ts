@@ -8,12 +8,12 @@ import { join } from 'node:path';
 import { today as londonToday } from '../../shared/format/dates.ts';
 import { parseTime } from '../../shared/format/parse.ts';
 import type { DataIssue } from '../../shared/storage/index.ts';
-import { LOGO_FILE, OWNER_DIR, PHOTO_FILE, PUBLISHED_DIR, locate, loadRunningData } from './data/store/files.ts';
+import { JOURNEY_PHOTO_FILE, LOGO_FILE, OWNER_DIR, PHOTO_FILE, PUBLISHED_DIR, locate, loadRunningData } from './data/store/files.ts';
 import type { JourneyChapter, RacePredictionEntry } from './data/store/index.ts';
 import { SECTION_DEFAULTS } from './data/load.ts';
 import type { RunningSchema } from './data/store/schemas.ts';
 import { parseDistance } from './domain/distances.ts';
-import { isAfter, parseProse, parseText, parseWhen, placedFigures, startsBeforeEnd, type ProseIssue } from './domain/journey.ts';
+import { chapterElementIds, isAfter, parseProse, parseText, parseWhen, placedFigures, startsBeforeEnd, STORY_PAGE_IDS, type ProseIssue } from './domain/journey.ts';
 
 const DUPLICATE_RACE_TOLERANCE = 0.02;
 
@@ -407,11 +407,22 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
     return { exists: race !== undefined, first: earliest([...officialRaces.values()].map((r) => r.date)), garmin: undefined };
   };
 
+  // The ids other elements on the page carry, with what they are: a chapter's id is its anchor and
+  // permanent (FR-051), so one repeating them is refused before it's approved.
+  const elementIds = new Map(Object.entries(STORY_PAGE_IDS));
+  for (const { value: chapter } of journey.chapters) {
+    const [, title, learned] = chapterElementIds(chapter.id);
+    elementIds.set(title, `chapter "${chapter.id}"'s heading`);
+    elementIds.set(learned, `chapter "${chapter.id}"'s takeaway heading`);
+  }
+
   const starts = new Map<string, { id: string; order: number | undefined }[]>();
   for (const { file, value: chapter } of journey.chapters) {
     const entry = `chapter "${chapter.id}"`;
     const folder = file.split('/').at(-2);
     if (chapter.id !== folder) error(file, entry, 'id', 'does not match the name of its folder (a chapter\'s id is its folder name, FR-051)');
+    const element = elementIds.get(chapter.id);
+    if (element) error(file, entry, 'id', `is also the id of ${element} on the page; choose another before it's approved (a chapter's id is permanent)`);
 
     const when = parseWhen(chapter.when);
     if (!when) error(file, entry, 'when', "names a day that doesn't exist");
@@ -495,6 +506,17 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
     const page = `${JOURNEY_DIR}/page.yaml`;
     if (!data.files.includes(note)) error(note, 'note', '', 'is missing: the story needs its approved note before it can be published (FR-008)');
     if (!data.files.includes(page)) error(page, 'page wording', '', 'is missing: the story needs its approved page wording before it can be published (FR-039)');
+  }
+  // A photo beside a chapter that doesn't list it is neither shown nor approved, but would be in the
+  // public repository. Only beside chapters that loaded: a refused one is reported already.
+  const listedPhotos = new Map(
+    journey.chapters.map(({ file, value }) => [file.slice(0, file.lastIndexOf('/')), new Set((value.photos ?? []).map((p) => p.file))]),
+  );
+  for (const file of data.files.filter((f) => JOURNEY_PHOTO_FILE.test(f))) {
+    const listed = listedPhotos.get(file.slice(0, file.lastIndexOf('/')));
+    if (listed && !listed.has(file.slice(file.lastIndexOf('/') + 1))) {
+      warning(file, '', '', "is not listed in its chapter.yaml photos, so it is not shown or approved; delete it unless it's to be added (add-chapter-photo)");
+    }
   }
   if (journey.closing) {
     const { file, value: closing } = journey.closing;

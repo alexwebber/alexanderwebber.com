@@ -255,6 +255,27 @@ describe('journey validation: refused cases (validate.ts)', () => {
     expect(errors()).toEqual([at(chapterFile('chapter-b'), 'chapter "chapter-c"', 'id', "does not match the name of its folder (a chapter's id is its folder name, FR-051)")]);
   });
 
+  // Graduation review (T073): a chapter's id is its anchor and permanent (FR-051), so one that
+  // repeats an id the page already gives an element (the skip link's target, the chapter list,
+  // another chapter's heading) is refused before it's ever approved.
+  it("refuses a chapter id the page already uses for another element", () => {
+    const taken = (id: string, what: string) => at(chapterFile(id), `chapter "${id}"`, 'id', `is also the id of ${what} on the page; choose another before it's approved (a chapter's id is permanent)`);
+    for (const [id, what] of [['main', 'the main content'], ['story-chapter-list', 'the chapter list'], ['story-closing-title', "the closing section's heading"]] as const) {
+      setUp();
+      writeStory(repo, { chapter: chapter(id) });
+      expect(errors()).toEqual([taken(id, what)]);
+      repo.cleanup();
+    }
+    setUp();
+    writeStory(repo);
+    writeApproved(repo, chapterFile('chapter-a-title'), 'chapter', chapter('chapter-a-title', { when: '2026-04' }));
+    writeApproved(repo, chapterFile('chapter-a-learned'), 'chapter', chapter('chapter-a-learned', { when: '2026-05' }));
+    expect(errors()).toEqual([
+      taken('chapter-a-learned', 'chapter "chapter-a"\'s takeaway heading'),
+      taken('chapter-a-title', 'chapter "chapter-a"\'s heading'),
+    ]);
+  });
+
   it('refuses a future when, a future as_of and a future approval date', () => {
     expect(plant(chapter('chapter-a', { when: '2026-12' }))).toEqual([at(A, ENTRY, 'when', 'is in the future')]);
     expect(plant(chapter('chapter-a', { when: '2026-03/2026-12' }))).toEqual([at(A, ENTRY, 'when', 'is in the future')]);
@@ -339,6 +360,24 @@ ${lorem(3, 3)} {{fig-a}}.
     expect(errors()).toEqual([at(PAGE, 'page wording', '', 'is missing: the story needs its approved page wording before it can be published (FR-039)')]);
   });
 
+  // Graduation review (T073): an empty or all-comment owner file is skipped as "no data yet". For a
+  // journey file that passed validate-data silently, then stopped the build with a misleading
+  // message ("note.yaml is missing") or none naming the file (an emptied only chapter still made
+  // the story area, and its page found no chapter).
+  it('refuses an empty or all-comment journey file, naming it', () => {
+    const EMPTY = 'is empty: write the approved text into it, or delete the file';
+    for (const [file, entry] of [[NOTE, 'note'], [PAGE, 'page wording'], [CLOSING, 'closing section'], [A, 'chapter']] as const) {
+      for (const text of ['', '# A made-up comment.\n']) {
+        setUp();
+        writeStory(repo);
+        if (file === A) writeApproved(repo, chapterFile('chapter-b'), 'chapter', chapter('chapter-b', { when: '2026-04' }));
+        repo.write(file, text);
+        expect(errors(), `${file} ${JSON.stringify(text)}`).toEqual([at(file, entry, '', EMPTY)]);
+        repo.cleanup();
+      }
+    }
+  });
+
   it('refuses markup in the note and a placeholder in the closing section', () => {
     setUp();
     writeStory(repo);
@@ -349,6 +388,19 @@ ${lorem(3, 3)} {{fig-a}}.
     expect(errors()).toEqual([
       at(CLOSING, 'closing section', 'text, paragraph 2', "has a figure placeholder, which isn't allowed here: figures belong in a chapter's prose"),
     ]);
+  });
+
+  // Graduation review (T073): a photo in a chapter's folder that chapter.yaml doesn't list isn't
+  // hashed or shown, yet it would be committed to the public repository; race photos warn the same way.
+  it('warns about a photo in a chapter folder that the chapter does not list, and only warns', () => {
+    setUp();
+    writeStory(repo, { chapter: withPhoto(), photos: { 'lorem.jpg': PHOTO } });
+    writePhoto(repo, 'data/running/owner/journey/chapters/chapter-a/ipsum.webp', OTHER_PHOTO);
+    expect(errors()).toEqual([]);
+    expect(issues('warning')).toContain(
+      at('data/running/owner/journey/chapters/chapter-a/ipsum.webp', '', '', "is not listed in its chapter.yaml photos, so it is not shown or approved; delete it unless it's to be added (add-chapter-photo)"),
+    );
+    expect(issues('warning').filter((w) => w.includes('lorem.jpg'))).toEqual([]);
   });
 
   it('warns about a closing section with no chapter, and only warns', () => {
@@ -468,6 +520,9 @@ describe('journey validation: messages quote nothing (FR-035, SC-003)', () => {
     ['a future chapter', () => story({ chapter: sentinelChapter({ when: '2026-12' }) })],
     ['an id that differs from its folder', () => story({ chapter: sentinelChapter({ id: 'chapter-z' }) })],
     ['a provider-like number in the prose', () => story({ chapter: sentinelChapter({ prose: `${SENTINEL} 1234567890 {{fig-a}}.\n` }) })],
+    // Graduation review (T073): Markdown emphasis is a YAML alias naming no anchor, which the YAML
+    // library threw on, quoting the word.
+    ['an alias naming no anchor', () => (story(), repo.write(NOTE, `text: *${SENTINEL}*\n`), repo.write(PAGE, `title: *${SENTINEL}\n`))],
     ['no note and no page', () => (story(), repo.cleanup(), setUp(LINK), writeApproved(repo, A, 'chapter', sentinelChapter(), photos))],
   ];
 

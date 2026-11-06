@@ -8,17 +8,19 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1–5 merged (#128, photos; nothing visible). The graduation review skill is
-  built (house-process 0.16.0, software-factory#19) and installed with Spec Kit 1.3.2 in the
-  `chore-speckit-1.3.2` PR.
-- **Next session, first:** `/session-start`; if the `chore-speckit-1.3.2` PR merged, run
-  `/after-merge` on it (nothing visible, so `/` and `/running/` only).
-- **Then 003 Phase 6** (T071–T077, graduation), branched from `main`: brief with
-  `/speckit-house-process-implement-brief` naming `speckit-house-process-graduation-review`,
-  `page-tests`, `gate-drill` and `tests`. T076 writes Phase 7 (the content PR, a session with the
-  owner) into this block after the merge; T077 offers the lesson harvest. Subagent costs so far:
-  Phase 1 352k, Phase 2 287k, Phase 3 291k, Phase 4 272k, Phase 5 300k tokens. Report back any
-  gaps in the new graduation skill: it's its first use, so fix them upstream.
+  journey story: Phases 1–5 merged; Phase 6, the graduation, is
+  [#130](https://github.com/alexwebber/alexanderwebber.com/pull/130) (nothing visible; two owner
+  boxes). The graduation skill's gaps are in house-process 0.16.1,
+  [software-factory#20](https://github.com/alexwebber/software-factory/pull/20).
+- **Next session, first:** `/session-start`. If #130 merged: `/after-merge 130` (nothing visible, so
+  `/` and `/running/` only), ask about any unticked box, and read the first nightly Quality run after
+  the merge (T071: the `story` page type shows as skipped). If software-factory#20 merged, install
+  0.16.1 with `/speckit-house-process-upgrade-speckit` (a process PR).
+- **Then close 003 Phase 6**: T076, write Phase 7 into this block (the content PR is a session with
+  the owner, T078–T088; the approved text's location, below; the committed text is compared with the
+  approved text, not with the private hashes; the standing follow-ups' triggers, T089–T092, into
+  `process/triggers.yaml`); T077, offer `/speckit-house-process-harvest-lessons` in the main
+  conversation. Both go in one small docs PR, then the owner starts the Phase 7 session.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -186,6 +188,14 @@ Since the harvest of 2026-11-06 ([software-factory#18](https://github.com/alexwe
 - `node -e` scripts with nested quotes and backticks fail under Git Bash; write a file instead (shell).
 - On a `core.autocrlf` checkout, rerunning a generator that writes `\n` shows changes in files whose
   content didn't change: check `git diff --ignore-cr-at-eol --stat` first (git).
+- The `yaml` library throws, rather than reports, on an alias naming no anchor (`*word*`, Markdown
+  emphasis), quoting the name: find unresolved aliases with `visit` before `toJS` (privacy-pipelines).
+- A drill that edits a scratch copy's schemas needs a fresh copy path: the loader caches each root's
+  compiled schemas for the life of the process (testing).
+- `toBeInViewport({ ratio: 1 })` fails at 0.99 on a focused inline link; check its box within a pixel
+  (testing).
+- A plain build that fails at render (a page's own data check) leaves `dist/` partly rewritten, unlike
+  one failing in `astro:build:start`: snapshot `dist/` before each build in a drill (astro).
 
 ## Open questions
 

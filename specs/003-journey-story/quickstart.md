@@ -23,6 +23,11 @@ case naming its file, entry and field; the sentinel test finds the sentinel in n
 script round-trips every target and refuses each bad input without touching the file; `parseProse`
 covers every form in data-model.md §5 and each stray-markup case.
 
+**Result (2026-11-06, graduation, T075):** 6 files, 182 tests passed (the full Vitest suite 1,083).
+The sentinel test now also plants an alias naming no anchor (`*word*`), which the YAML library used to
+throw on, quoting the word; and the refused cases gained an empty journey file and a chapter id
+repeating another element's id (contracts/content-files.md *Validation*).
+
 ## 2. Approval holds (SC-003, US2)
 
 In a temporary data tree with one made-up chapter:
@@ -33,6 +38,13 @@ In a temporary data tree with one made-up chapter:
    `chapter "<id>"` and `approved.sha256`, and `dist/` from step 1 is still there.
 3. Remove the `approved` block: both stop with "needs the owner's approval before it can be published".
 4. Replace a photo with another under the same name: stops as in step 2.
+
+**Result (2026-11-06, graduation):** run for real on a scratch copy of the site with a made-up
+story (the graduation drill): step 1 renders exactly as written (`story-launch.spec.ts` US2.2, 1 passed);
+steps 2 and 3 stop `validate-data` and a plain build alike with the messages above, naming the file,
+`chapter "chapter-a"` and the field, with `dist/` from the last good build intact. Step 4 is proven by
+`journey-validate.test.ts` (a photo swapped under the same name) and Phase 5's drill (a photo added
+with the real script needs re-approval).
 
 ## 3. The page on previews (US1, US4, US5)
 
@@ -57,6 +69,10 @@ Expected, at 360 x 780 and on desktop:
 - Paragraph width at most 75 times the width of "0" in its font (FR-072).
 - With JavaScript disabled, the page is identical (FR-071).
 
+**Result (2026-11-06, graduation):** 266 passed, 22 skipped by design (forced colours and the
+phone-only sweeps run in one project), both projects. Graduation added a keyboard check: Tab reaches
+every link and control in every state, each in view when focused.
+
 ## 4. Nothing before the first chapter (SC-002)
 
 ```text
@@ -66,6 +82,9 @@ npx playwright test tests/e2e/story-none.spec.ts
 A scratch-site deploy build of today's data: no `dist/running/story/`, no `/og/running-story.png`, no
 "Story" in any page's menu, no story panel on the landing page, no `/running/story/` in the sitemap,
 and `/running/story/` answers with the 404 page.
+
+**Result (2026-11-06, graduation):** 5 passed, 5 skipped by design (it builds once, in the desktop
+project).
 
 ## 5. Launch layout (SC-006, US3)
 
@@ -84,6 +103,10 @@ a `story_link` with a made-up label:
 - Removing the chapter and building again: page and menu item gone, and the `story_link` stops the update,
   naming `section.yaml` `story_link.href` (US3.4, US4.6).
 
+**Result (2026-11-06, graduation):** 10 passed, 10 skipped by design (desktop builds once). At
+360 x 780 on Windows fonts, the menu keeps one line with "Story" and Donate ends at 582 px of 780,
+the same as without it; one line at 320 px too.
+
 ## 6. Growth (US4, SC-008)
 
 In the scratch copy from §5, add a second made-up chapter dated earlier than the first, approve it, and
@@ -93,6 +116,8 @@ build:
   chapter's anchor still works.
 - Every other journey file's bytes equal the copies recorded before the edit, so only the new chapter's
   folder changed (the scratch copy isn't a git repository).
+
+**Result (2026-11-06, graduation):** passes, as `story-launch.spec.ts`'s SC-008 test (in §5's count).
 
 ## 7. Gate and budgets
 
@@ -107,6 +132,19 @@ node scripts/lighthouse-budget.mjs
 - Lighthouse (mobile): the `long` preview and the landing page at 90 or more, no script files on the
   story page, no third-party requests (SC-009, FR-073). Add `story` to `PAGE_TYPES` so the nightly Quality
   run checks the real page once it exists.
+
+**Result (2026-11-06, graduation):** every gate command passes on today's site (deploy build;
+`check-links`: no issue). A planted dead chapter link stops `check-links` with `chapter "chapter-a"
+links to /running/nowhere/` and no text (graduation drill); the redacted privacy finding in a story file
+is `scan-privacy.test.ts`'s (no rule reaches story text in a real gate run first: `validate-data`
+stops a provider-like number earlier, quoting nothing). Lighthouse (mobile, local): the `long` preview
+100 (LCP 0.91 s, 14.4 KB gzip, no script, no third-party request), the landing page 100 (LCP 1.13 s).
+Previews are measured with `--path=`, on a `SHELL_PREVIEW=1` build (from Git Bash, prefix
+`MSYS_NO_PATHCONV=1`, or the path is rewritten to a Windows one and the page is skipped):
+
+```text
+node scripts/lighthouse-budget.mjs --path=/story-preview/long/
+```
 
 ## 8. The real story (content PR)
 

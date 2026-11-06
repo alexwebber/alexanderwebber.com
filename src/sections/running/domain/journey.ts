@@ -261,6 +261,21 @@ export function sortChapters<T extends Sortable>(chapters: readonly T[]): T[] {
   return chapters.toSorted((a, b) => start(a).localeCompare(start(b)) || order(a) - order(b) || a.id.localeCompare(b.id));
 }
 
+/**
+ * The ids the story page gives elements other than chapters' (the layout's <main>, ChapterList,
+ * StoryClosing), with what each is. A chapter's id is its anchor and permanent (FR-051), so
+ * validation refuses one that repeats any of these or another chapter's (chapterElementIds).
+ * tests/unit/story-page.test.ts fails when the page gains an id missing here.
+ */
+export const STORY_PAGE_IDS: Readonly<Record<string, string>> = {
+  main: 'the main content',
+  'story-chapter-list': 'the chapter list',
+  'story-closing-title': "the closing section's heading",
+};
+
+/** The ids a chapter's elements carry (StoryChapter): its section (the anchor), its heading and its takeaway's. */
+export const chapterElementIds = (id: string): [string, string, string] => [id, `${id}-title`, `${id}-learned`];
+
 export const DERIVED_SOURCE = 'derived in part from Garmin device-sourced data';
 
 /**

@@ -2110,3 +2110,54 @@ end. Add each new decision as a dated entry at the end, as it's made.
   1.3.2 is docs, catalog entries and a fix to uninstall manifests; the diff here is version stamps,
   the implement-brief line and the new skill. `extensions.yml` unchanged (reordered only, backup
   restored); the constitution template still resolves to the house preset.
+- **2026-11-06** — **#129 merged** (Spec Kit 1.3.2, house-process 0.16.0). `/after-merge`: no boxes;
+  the PR's 10 checks and `main`'s Gate green, deploy included; `/` and `/running/` answer 200.
+- **2026-11-06** — **003 Phase 6, graduation** (T071–T075, `003-slice-6`; implement subagent, token
+  cost below). The graduation review skill's first use, on made-up text.
+  - **Figures**: Lighthouse (mobile, local, the budget script's settings) gives the `long` preview
+    100/100, LCP 0.91 s, 14.4 KB gzip HTML and CSS, no script, no third-party request (median of
+    three runs, all 100); `photos`, `figures` and `one-chapter` 100 too; the landing page 100, LCP
+    1.13 s, 13.0 KB, on a deploy build. `scripts/lighthouse-budget.mjs` gains the `story` page type
+    (skipped until the page exists) and `--path=` for previews, so preview figures come from the
+    script, not by hand. Zero axe violations in every preview state, light, dark and forced colours,
+    the list closed and open; a new test has Tab reach every link and control in every state.
+  - **Review findings, fixed with failing-first tests**: (1) medium: `*word*` (Markdown emphasis) at
+    the start of a YAML value is an alias naming no anchor, and the YAML library threw on it, quoting
+    the word, so validate-data, the build and approve-story crashed with a stack trace holding a word
+    of story text (FR-035). `parseDataFile` (shared storage) now reports it by line; approve-story
+    refuses it. (2) medium: an empty or all-comment journey file passed validate-data as "no data
+    yet", then stopped the build with a misleading message, or none naming the file; the loader now
+    refuses it. (3) medium: a chapter id repeating another element's id on the page (`main`, the
+    list, the closing heading, another chapter's `-title`/`-learned`) wasn't refused, and ids are
+    permanent; validation now refuses it, and a page test fails if the page gains an id validation
+    doesn't know. (4) low, fixed: a photo beside a chapter that doesn't list it now warns, as race
+    photos do.
+  - **Left, with reasons (one owner checkbox)**: a stored weight figure's expected scale is today's
+    `garmin_devices.scale`, so a scale change would demand the new name for old readings (backlog
+    entry; one scale so far, and the changing PR's own gate stops it); a cited run or health point
+    that the bot later unpublishes stops every refresh at validate-data until the chapter is edited,
+    with no alert (drilled; added to the *Alert on publish failures* backlog entry); a plain
+    `astro build` that fails on a render-time check (note missing, a bad link) leaves `dist/`
+    partly rewritten, unlike the loader's checks (the gate's validate-data stops both first).
+  - **A shared-code change**: the alias fix is in `src/shared/storage/files.ts`, so T072's "`src/shared`
+    untouched" doesn't hold; `check-boundaries` passes. Behaviour changes only for a file that used to
+    crash the loader. Own checkbox in the PR.
+  - **Gate drill** (`spikes/graduation/out/drill.ts`, not kept): every "can it deploy" fault stopped at
+    the step it should, naming the file, with a sentinel word in every text field found in none of 22
+    messages; SC-013's future `video` field, added to a copy's schema and an approved chapter, passed
+    the full gate with the approval untouched.
+  - **Tests**: Vitest 1,083 (43 files); Playwright desktop 433 passed (59 skipped by design),
+    mobile-360 459 passed (33 skipped); `astro check` clean; every gate command green on the deploy
+    build; `dist/` 250 files identical to `main`'s; `pr-ready`: no private-term match. pytest not run
+    (no ingest or schema change).
+  - **Cost**: implement subagent about **302k tokens**, 172 tool calls, 34 min (Phase 1 352k, Phase 2
+    287k, Phase 3 291k, Phase 4 272k, Phase 5 300k), with `graduation-review`, `page-tests`,
+    `gate-drill` and `tests` loaded.
+  - **Skill gaps applied**: `gate-drill` here (snapshot `dist/` before each build, since a
+    render-time failure leaves it partly rewritten; the fault-matrix pattern; a fresh copy path when
+    schemas change), and `page-tests` here (the keyboard sweep; check a focused link's box within a
+    pixel). The new `graduation-review` skill's gaps (measuring previews with the budget script, a
+    fix in shared code gets its own box, five new attack questions, time zones, the questions
+    listed in the PR in the order written) and `tips-shell`'s (`TZ` and `--path=` under Git Bash) go
+    upstream in software-factory#20 (house-process 0.16.1), taking the `TZ` upstream candidate with them. No new skill candidate: the three tasks done by hand are now
+    a script option (`--path=`), a test and the `gate-drill` matrix.

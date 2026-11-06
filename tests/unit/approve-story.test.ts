@@ -262,6 +262,16 @@ describe('approve-story --journey', () => {
     expect(run(['--journey=note'])).toEqual({ code: 1, output: `error: ${NOTE} is not valid YAML` });
   });
 
+  // Graduation review (T073): a value written as Markdown emphasis, `*word*`, is a YAML alias naming
+  // no anchor, which the YAML library throws on, quoting the word, rather than reporting.
+  it('refuses an alias naming no anchor without quoting it or throwing, touching nothing', () => {
+    journey();
+    const text = `text: *${SECRET}*\n`;
+    repo.write(NOTE, text);
+    expect(run(['--journey=note'])).toEqual({ code: 1, output: `error: ${NOTE} is not valid YAML` });
+    expect(readFileSync(join(repo.root, NOTE), 'utf8')).toBe(text);
+  });
+
   it('leaves campaign mode as it was', () => {
     setUp();
     const { code, output } = run([ID, '--date=2026-10-30']);

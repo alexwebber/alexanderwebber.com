@@ -14,6 +14,11 @@ the decisions log in `DECISIONS.md` and remove it from here.
   Owner agreed on 2026-10-17 (PR #23); deferred because it's a separate slice from Phase 2g.
   It happened on 2026-10-24: a zone backfill's publish failed the gate (a `name` key, fixed
   in #53), and no issue opened. The agent was watching that run, so it was caught.
+  Spec 003 adds a way in (graduation review, 2026-11-06): a journey chapter's stored figure or link
+  names a run or health point, so if the bot later unpublishes it (a run's type changed in
+  intervals.icu, a weigh-in deleted), every refresh stops at `validate-data` (or `check-links`)
+  until the chapter is edited and re-approved, drilled on a scratch copy. Worth doing before more
+  owner text cites bot records.
 - **The Running menu wraps on a phone** (2026-11-01). With a sixth item, "Fundraising" sits on a
   second line at 360 px on every Running page, about 36 px taller, and the landing card's Donate
   clears a 360 x 780 first screen by only 3 px. The owner accepted this for now. The menu is shared
@@ -50,6 +55,13 @@ the decisions log in `DECISIONS.md` and remove it from here.
   out of the row hash if they don't affect what's published. Deferred: correct, just slower.
 - **"Couch to runner" videos (Running)** — educational videos that join the story's chapters. Spec
   003 (`specs/003-journey-story/`) leaves a place for them (FR-053) and makes no hosting decision.
+- **A story figure's scale after a scale change** (003 graduation review, 2026-11-06). A stored
+  weight or body-fat figure in a journey chapter must carry the attribution of the scale named in
+  `section.yaml` today (`garmin_devices.scale`), because health points don't record their device.
+  If the owner changes scale, chapters citing older weigh-ins stop validating, and the fix would
+  demand the new scale's name for the old reading. Before changing `garmin_devices.scale`, give the
+  setting a date (the scale from that day), and check figures against the scale of their `as_of`.
+  Deferred: one scale so far, and the PR changing it is stopped by its own gate, not the live site.
 - **Training-run photos (Running)** — still deferred. Spec 003 adds photos in story chapters only.
 - **CV & Blog section** — phase 2, after Running.
 - **Report Spec Kit 1.1.0 Windows issue upstream?** — PowerShell scripts prefer `python3` even

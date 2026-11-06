@@ -8,6 +8,8 @@
 //
 //   node scripts/lighthouse-budget.mjs                        # against astro preview of dist/
 //   node scripts/lighthouse-budget.mjs --base-url=https://... # against a deployed site
+//   node scripts/lighthouse-budget.mjs --path=/story-preview/long/ [--path=...]
+//                                       # only these pages, e.g. previews in a SHELL_PREVIEW=1 build
 //
 // A page under the performance budget is measured twice more and judged on the median run, because
 // scores on a shared 2-core CI runner are noisy. On PR #46 the first two pages measured lost 1-23
@@ -76,6 +78,7 @@ const PAGE_TYPES = [
   { type: 'race', path: () => firstBuilt('running/races') },
   { type: 'health', path: () => '/running/health/' },
   { type: 'fundraising', path: () => '/running/fundraising/' },
+  { type: 'story', path: () => '/running/story/' },
 ];
 
 async function exists(baseUrl, path, local) {
@@ -207,6 +210,9 @@ function report(results, skipped) {
 }
 
 const baseArg = process.argv.find((a) => a.startsWith('--base-url='))?.slice('--base-url='.length);
+// Pages that only exist as test previews are measured with the same settings and budgets, by path.
+const onlyPaths = process.argv.filter((a) => a.startsWith('--path=')).map((a) => a.slice('--path='.length));
+const pageTypes = onlyPaths.length > 0 ? onlyPaths.map((path) => ({ type: path, path: () => path })) : PAGE_TYPES;
 const local = !baseArg;
 if (local && !existsSync(DIST)) {
   console.error('lighthouse-budget: dist/ not found; run `npm run build` first');
@@ -217,7 +223,7 @@ const baseUrl = baseArg ?? server.url;
 const results = [];
 const skipped = [];
 try {
-  for (const page of PAGE_TYPES) {
+  for (const page of pageTypes) {
     const path = page.path();
     if (!path || !(await exists(baseUrl, path, local))) {
       skipped.push(page.type);

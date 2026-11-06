@@ -61,7 +61,12 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
   before committing to it.
 - **Keyboard paths press Tab** (`page.keyboard.press('Tab')`), the path a visitor takes, and check
   the focused element is fully in view, not just focused: a sideways-scrolling menu left a focused
-  link faded at its edge until `scroll-padding-inline` was set.
+  link faded at its edge until `scroll-padding-inline` was set. Check that it's in view by its box,
+  within a pixel: `toBeInViewport({ ratio: 1 })` fails at 0.99 on a focused inline link.
+  **To sweep a whole page** (every link reachable, `tests/a11y/story.spec.ts`), tag every `a` and
+  `summary` with a `data-` index, open each `<details>` by setting `.open` (a click would move focus,
+  so Tab would no longer start at the top), then press Tab until every index has been focused,
+  checking each one's box as you go.
 - **An SVG labelled by title and desc**: `toHaveAccessibleName`, not the description.
 - **Dates**: previews pin "today" (`PREVIEW_TODAY`); never read the clock in an expectation.
 
