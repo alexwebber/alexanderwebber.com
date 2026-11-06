@@ -198,6 +198,13 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
   `chore-speckit-<version>` on a bundle-only reinstall), and a PR's checks list is empty for a few
   seconds after a push: a "checks green" routine filters to `state == OPEN` and treats zero checks as
   not ready (fixed in `pr-ready.ts`, 2026-11-06).
+- A site copy outside the repo (a scratchpad, to keep it out of git) can't build: Astro resolves
+  `astro/tsconfigs/strict` by walking up to `node_modules`. Add a junction to the repo's
+  `node_modules` (`mklink /J`), and remove it on its own (`cmd /c rmdir`) before deleting the copy,
+  so a recursive delete can't reach the repo's packages (003 T080, 2026-11-06).
+- A test that plants files into a copy of the real data must set aside and restore what was there,
+  not delete the folder afterwards: it passed while the folder was empty, and broke the next test
+  once the content PR filled it with real files (`scratch-site.test.ts`, 2026-11-06).
 
 ## Open questions
 

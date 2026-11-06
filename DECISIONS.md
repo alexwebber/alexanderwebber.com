@@ -2188,3 +2188,37 @@ end. Add each new decision as a dated entry at the end, as it's made.
   `graduation-review` (0.16.1's gaps from Phase 6) and `tips-testing`, `tips-astro`, `tips-shell`,
   `tips-privacy-pipelines` (0.16.2's harvest). No project skill wraps them, so nothing else to
   change. Nothing held.
+- **2026-11-06** — **#132 merged** (house-process 0.16.2). `/after-merge 132`: no boxes, the PR's 10
+  checks and `main`'s Gate green, deploy included; `/` and `/running/` answer 200. The Martlets story
+  reviewers haven't replied yet (owner, asked at session start).
+- **2026-11-06** — **003 Phase 7, the content PR: the owner's question rounds** (T078–T082; their
+  words, the approved text and the drafts stay in the private notes, FR-036). Every pick was the
+  recommended option.
+  - **The note and the page wording** (T078; plan open question 5): one draft set of two to three
+    options each, from the approved text, in the owner's voice; the owner picked one of each and then
+    answered "Approve all as written". Approved 6 Nov 2026, so launch is no longer held back.
+  - **Dates the schema can't show** (T079): four approved chapters had a year, or "late" a year, as
+    their date line, which `when` can't hold (a day, a month or a range). The owner chose month ranges
+    taken from their answers and the Garmin export over teaching the site plain years (a code and
+    spec change, and one chapter would still change). Those chapters' words are unchanged; their date
+    lines are approved afresh.
+  - **Figures** (T079): the three weights (the owner's figures, from the Index S2, before the stored
+    series begins on 21 Oct 2025), a run distance (a stored run), and three calorie figures (the owner's,
+    Garmin estimates). Every other number in the prose is a target, a limit or an expression, so
+    stays prose (data-model.md §3; FR-077 note confirmed). One chapter gains the word "calories"
+    after its second range, because a figure carries its unit. Chapter 9's link is words already in
+    the sentence.
+  - **The rendered look** (T081, desktop; the phone check waits for the live site, as the preview
+    couldn't be reached from the owner's phone): one sentence in chapter 1 reworded at the owner's
+    request, towards what was missing rather than a fault (now in `VOICE.md`). Then "Approve as
+    shown". Dates: four files keep 4 Nov 2026 (words unchanged); six chapters, the note and the page
+    wording carry 6 Nov 2026.
+  - **SC-005** (T080): on a scratch copy in the session's scratchpad, every file approved, the full
+    gate (validate-data with every `ref` and `garmin` checked, a deploy build, check-links,
+    scan-privacy) passed, and the built page's words compared with the approved text found exactly
+    the seven agreed differences and no others. The copy needs a `node_modules` junction, as copies
+    outside the repo can't resolve packages; the junction is removed on its own before the copy.
+  - **Menu order** (owner): "Story" moves from last to second, after Overview. On a phone the menu
+    is one sideways-scrolling line, so the last items start off-screen. This replaces the #101 choice.
+    The Overview gets no Story tile: the story panel above already leads there (data-model.md §9,
+    unchanged).
