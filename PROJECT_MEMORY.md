@@ -186,6 +186,16 @@ Since the harvest of 2026-11-06 ([software-factory#18](https://github.com/alexwe
 - `node -e` scripts with nested quotes and backticks fail under Git Bash; write a file instead (shell).
 - On a `core.autocrlf` checkout, rerunning a generator that writes `\n` shows changes in files whose
   content didn't change: check `git diff --ignore-cr-at-eol --stat` first (git).
+- The `yaml` library throws, rather than reports, on an alias naming no anchor (`*word*`, Markdown
+  emphasis), quoting the name: find unresolved aliases with `visit` before `toJS` (privacy-pipelines).
+- Git Bash doesn't pass an IANA `TZ` through to Node on Windows; set `$env:TZ` in PowerShell to run
+  tests in another time zone (shell).
+- A drill that edits a scratch copy's schemas needs a fresh copy path: the loader caches each root's
+  compiled schemas for the life of the process (testing).
+- `toBeInViewport({ ratio: 1 })` fails at 0.99 on a focused inline link; check its box within a pixel
+  (testing).
+- A plain build that fails at render (a page's own data check) leaves `dist/` partly rewritten, unlike
+  one failing in `astro:build:start`: snapshot `dist/` before each build in a drill (astro).
 
 ## Open questions
 
