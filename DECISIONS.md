@@ -1927,6 +1927,15 @@ end. Add each new decision as a dated entry at the end, as it's made.
     exact approved text, batched breaks), `pr-ready` (the subagent's terms file, `dist/` left as a
     deploy build). `pr-ready --suites` now prints Playwright's counts per project (`playwrightCounts`),
     which took the subagent a second four-minute run.
+- **2026-11-05** — **#119 merged** (003 Phase 2). The owner ticked all four boxes, so the brackets
+  on a set-apart figure's source, the "15 Mar to 20 Sep 2001" periods, the takeaway box and the
+  smaller set-apart figure and note stand as built. `/after-merge 119`: the PR's 11 checks and
+  `main`'s Gate green, deploy included; `/` and `/running/` answer 200 (nothing live changed).
+- **2026-11-05** — **Spec Kit 1.3.0 → 1.3.1** (core), via `upgrade-speckit.ps1`. The only real
+  file change is the git extension's `initialize-repo.ps1` keeping git warnings from failing on
+  Windows PowerShell 5.1 (#5252), plus version stamps; no skill changed. The CLI fix that stops uv
+  tool installs upgrading themselves on Windows (#5149) is why it matters here. **Astro 7.4.6
+  skipped** as a routine patch (i18n, dev server, `astro check` exit codes; no security fix).
 - **2026-11-05** — **The `gate-drill` skill** (process PR, before 003 Phase 3's brief), drawn from
   the four drills done so far (002's stale and none drills, 003's T022 and `check-links`). The
   repeated steps became helpers in `tests/helpers/scratch-site.ts`: `runGate` (the gate's steps on a
