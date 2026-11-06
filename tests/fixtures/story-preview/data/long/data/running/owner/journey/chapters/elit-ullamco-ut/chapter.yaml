@@ -23,6 +23,10 @@ figures:
     text: 11.5 km
     source: owner
     garmin: Example W1
+photos:
+  - file: lorem.jpg
+    description: "A made-up picture: a gradient from blue to cream with a pale circle in the middle"
+    caption: Ex minim ex do lorem.
 approved:
   date: 2026-11-01
-  sha256: 8fa9328c23b6194f066c77b4d302dcba141e5fda7c2bb7dd0c324d60faa14d6c
+  sha256: 05988d7367ce98d168d97d317ef6658fe0151eebc2292b68edcd8cd79f70248d

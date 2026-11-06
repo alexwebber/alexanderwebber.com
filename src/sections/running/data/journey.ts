@@ -46,6 +46,8 @@ export interface ChapterView {
   when: WhenPart[];
   paragraphs: Paragraph[];
   figures: Readonly<Record<string, FigureView>>;
+  /** The listed photos (file, alt text, caption), in chapter.yaml order; data/photos.ts finds their files. */
+  photos: NonNullable<JourneyChapter['photos']>;
   takeaway: string;
 }
 
@@ -113,5 +115,5 @@ function chapterView(
     if (!figures[id]) issue(file, entry, 'prose', `has a placeholder naming no figure in this chapter's figures`);
   }
 
-  return { id: chapter.id, name: chapter.name, when: when ? whenParts(when) : [], paragraphs, figures, takeaway: chapter.takeaway };
+  return { id: chapter.id, name: chapter.name, when: when ? whenParts(when) : [], paragraphs, figures, photos: chapter.photos ?? [], takeaway: chapter.takeaway };
 }

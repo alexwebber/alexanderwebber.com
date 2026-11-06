@@ -58,6 +58,11 @@ Read `speckit-house-process-tips-astro` and `-tips-ui-accessibility` first, and
 - **320 px**: `overflow-wrap: anywhere` on free text; no `white-space: nowrap` beside a heading;
   hidden labels (`visibility: hidden`) still take width. Text blocks at `max-width: 66ch`.
 - **Forced colours**: a box drawn only by its background disappears; give it a border.
+- **Photos**: `Picture` from `astro:assets` with AVIF and WebP, a JPEG fallback, `widths` 640 and
+  1280, `loading="lazy"`, and `sizes` per orientation (a portrait photo narrower, so it doesn't fill
+  a desktop screen top to bottom); `width: 100%; height: auto` so the set width and height reserve
+  the box; a `--color-border` background on the `<img>` so the box shows before the photo loads or if
+  it fails; a visible `<figcaption>` in the secondary colour (`StoryChapter.astro`, `story.css`).
 - **Target size** (WCAG 2.2, axe's `target-size`): a list of short links right under another
   control (a `<summary>`, a button) fails, because an inline link is only as tall as its text. Make
   each `display: inline-block`, so the line height (24 px at 16 px, 1.5) is the target, and run axe

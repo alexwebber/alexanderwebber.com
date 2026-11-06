@@ -32,6 +32,8 @@ interface ChapterFile {
   prose: string;
   takeaway: string;
   figures?: FigureFile[];
+  /** Photos: not story text here (alt text and captions are checked in tests/e2e/story.spec.ts). */
+  photos?: { file: string; description: string; caption: string }[];
 }
 /** A journey's approved files, as written. */
 export interface JourneyFiles {

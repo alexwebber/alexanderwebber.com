@@ -47,7 +47,10 @@ triggers no workflow.
 - **Made-up data only** for anything not yet public: a pushed image is public at once (Principle
   VI). Shots of the live site's real pages are fine; nothing from a private draft, ever.
 - Long pages over WebP's 16,383 px limit are cropped to their top part, and the script says so.
-  Shoot such a page with `--first-screen` too, or split it by state.
+  Shoot such a page with `--first-screen` too, or split it by state. Anything far down a long page
+  (e.g. `long`'s later chapter photos) needs its own state or shot to be seen.
+- Full-page shots load every lazy image first (a full-page shot doesn't scroll, so they'd show as
+  empty boxes). First-screen shots don't; they show what a visitor sees.
 - A cloud session may push only to its own branch: there, skip `--publish`, commit the images
   on the PR's branch (`git add -f spikes/screens/out/*.webp`, as `out/` is gitignored), link by
   that commit's SHA, and remove them in the next commit.

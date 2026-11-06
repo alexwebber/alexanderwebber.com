@@ -1,27 +1,52 @@
 ---
 // One chapter of the journey story (spec 003; contracts/routes.md *The page*), in order: its name
 // (an unnumbered <h2>, FR-003), when (one <time>, or two for a period), the prose with its figures,
-// the place photos will take (Phase 5), the one place reserved for a future video (FR-053, SC-013),
+// its photos (up to three, each a <figure> with its alt text and a visible caption, FR-060, FR-063,
+// FR-064), the one place reserved for a future video (FR-053, SC-013),
 // then the "What I learned" box (FR-004), and at four or more chapters a "Back to chapters" link to the
 // chapter list (FR-052, ChapterList.astro). A chapter with no figures or photos renders no empty
 // wrapper for them (US1.4). Its ID is its anchor (`#<id>`), stable for the chapter's life (FR-051).
+import { Picture } from 'astro:assets';
 import type { ChapterView } from '../data/journey.ts';
+import type { ChapterPhoto } from '../data/photos.ts';
 import StoryProse from './StoryProse.astro';
 
 export interface Props {
   chapter: ChapterView;
   /** "Back to chapters" after the takeaway: when the page shows the chapter list. */
   backLink?: boolean;
+  /** The chapter's photos with their files (data/photos.ts chapterPhotos). None: nothing renders. */
+  photos?: readonly ChapterPhoto[];
 }
 
-const { chapter, backLink = false } = Astro.props;
+const { chapter, backLink = false, photos = [] } = Astro.props;
+// A photo fills the text column (66ch, about 38rem); a portrait one stops at 24rem, so it doesn't fill
+// a desktop screen top to bottom (story.css). sizes says so, so the browser picks the 640 px file.
+const portrait = (photo: ChapterPhoto) => photo.image.height > photo.image.width;
 ---
 
 <section class="story-chapter" id={chapter.id} aria-labelledby={`${chapter.id}-title`}>
   <h2 id={`${chapter.id}-title`}>{chapter.name}</h2>
   <p class="story-when">{chapter.when.map((part, i) => <Fragment>{i > 0 && ' to '}<time datetime={part.datetime}>{part.text}</time></Fragment>)}</p>
   <StoryProse paragraphs={chapter.paragraphs} figures={chapter.figures} chapterId={chapter.id} />
-  {/* Photos go here (Phase 5). */}
+  {
+    photos.map((photo) => (
+      <figure class:list={['story-photo', { 'story-photo-portrait': portrait(photo) }]}>
+        <Picture
+          src={photo.image}
+          alt={photo.description}
+          formats={['avif', 'webp']}
+          fallbackFormat="jpg"
+          widths={[640, 1280]}
+          width={1280}
+          sizes={portrait(photo) ? '(min-width: 28rem) 24rem, calc(100vw - 2rem)' : '(min-width: 42rem) 38rem, calc(100vw - 2rem)'}
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption>{photo.caption}</figcaption>
+      </figure>
+    ))
+  }
   {/* ChapterVideo goes here, once a later spec approves a chapter's video (FR-053, SC-013): the one reserved place, rendering nothing until then. */}
   <div class="story-takeaway">
     <h3 id={`${chapter.id}-learned`}>What I learned</h3>

@@ -18,8 +18,8 @@
 //   (Playwright can't capture a full page with it on), at 2x. --first-screen (or `,first-screen`)
 //   shoots only the first screen (width x 780, or `,height=` for one path, e.g. 640 for the small
 //   phone landing.spec.ts holds Donate to), for "what a visitor sees first" checks. `,open` opens
-//   every <details> on the page first (e.g. the story's chapter list shown open). Pages taller than
-//   WebP's limit are cropped, and say so.
+//   every <details> on the page first (e.g. the story's chapter list shown open). A full-page shot
+//   loads every lazy image first. Pages taller than WebP's limit are cropped, and say so.
 // - Files go to spikes/screens/out/ (gitignored). --publish commits them with git plumbing (the
 //   working tree is untouched) to `<branch>-screens`, pushes, and prints the PR body's table. The
 //   side branch stays after the merge, so the merged PR's images keep working. It triggers no
@@ -185,6 +185,16 @@ try {
       if (response?.status() !== 200) throw new Error(`${target.path} answered ${response?.status()}`);
       await page.evaluate(() => document.fonts.ready);
       if (target.open) await page.evaluate(() => document.querySelectorAll('details').forEach((details) => (details.open = true)));
+      // A full-page shot doesn't scroll, so lazy images below the first screen would show as empty
+      // boxes: load every image first (one that fails stays as the page shows it).
+      if (!target.firstScreen) {
+        await page.evaluate(async () => {
+          const images = [...document.images];
+          for (const image of images) image.loading = 'eager';
+          // `complete` reads true for a lazy image not yet requested, so wait on decode() instead.
+          await Promise.all(images.map((image) => image.decode().catch(() => undefined)));
+        });
+      }
       const png = await page.screenshot({ fullPage: !target.firstScreen });
       await context.close();
       const image = sharp(png);

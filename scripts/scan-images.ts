@@ -1,7 +1,7 @@
 // Image metadata gate (T040): no EXIF, XMP, IPTC or text metadata (GPS lives in EXIF) in any
-// image under data/, src/ or public/; owner race photos are .jpg/.webp/.avif with a long edge of
-// at most 2400 px. Photos are stripped before they are committed (add-race-photo), so a hit here
-// means a photo skipped that step.
+// image under data/, src/ or public/; owner photos (races and story chapters) are .jpg/.webp/.avif
+// with a long edge of at most 2400 px. Photos are stripped before they are committed
+// (add-race-photo, add-chapter-photo), so a hit here means a photo skipped that step.
 //
 //   node scripts/scan-images.ts
 import { readFileSync } from 'node:fs';

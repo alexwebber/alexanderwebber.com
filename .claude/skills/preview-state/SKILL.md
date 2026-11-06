@@ -44,9 +44,17 @@ screenshots run against it (`page-tests`, `pr-screenshots`).
      preview proves the hash holds on Windows (autocrlf) and Linux checkouts alike.
    - Cover the edge cases the tasks name: the shortest and longest content, one long unbroken word
      (320 px), ties, empty optional parts.
+   - **Photos** (`story-preview`'s `photos` state, `race-preview`): generated gradients with
+     planted GPS and device EXIF, written through `scripts/lib/photo.ts`, so the preview proves the
+     pipeline strips them. Alt text truthfully describes the gradient. Captions get a seed counter
+     of their own, so adding photos shifts no other word or hash, and `await` every `writeState`, so
+     the seed order holds. Include a portrait photo.
 2. **`store.ts`**: one `JsonFileStore` per state over the repo's schemas, `PREVIEW_STATES` as a
    `const` tuple, and a pinned `PREVIEW_TODAY` (and `PREVIEW_NOW` if a component reads the clock),
-   so date-driven text doesn't drift. Paths resolve from the repo root.
+   so date-driven text doesn't drift. Paths resolve from the repo root. **No `import.meta.glob`
+   here**: Playwright specs import `store.ts`, and the glob exists only under Vite. Photo globs go in
+   the `.astro` page (as `story-preview/[state].astro` does), even though `race-preview`'s
+   `store.ts` holds one.
 3. **The page** (`[state].astro` or `index.astro`): `getStaticPaths` over the states, loading through
    the section's real loader with the preview store, and rendering the real page component. Extra
    preview-only wrappers (a heading over a card) are fine; say so in the PR's screenshots.

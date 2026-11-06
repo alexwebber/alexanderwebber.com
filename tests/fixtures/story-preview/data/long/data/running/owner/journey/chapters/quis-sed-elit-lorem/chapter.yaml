@@ -15,6 +15,13 @@ prose: |
 
   Magna ullamco elit ad laboris ullamco ipsum incididunt ea sed aliquip aliqua elit labore. Amet do adipiscing consequat veniam do veniam elit. Exercitation ullamco minim incididunt consequat sed exercitation dolor consequat veniam ipsum amet magna adipiscing. Incididunt do dolor exercitation eiusmod elit incididunt ea. Consequat ullamco ipsum amet consectetur adipiscing et eiusmod ipsum dolor exercitation adipiscing laboris commodo. Ad do dolore magna dolore quis dolor consectetur. Elit ullamco ea ex laboris veniam quis lorem sit dolore ea ullamco sit nostrud. Nisi exercitation ex do veniam minim ullamco aliquip.
 takeaway: Sit nostrud sit dolor tempor dolor sit ad consequat ad aliquip incididunt elit ex elit eiusmod laboris ad.
+photos:
+  - file: ipsum.jpg
+    description: "A made-up picture: a gradient from green to cream with a pale band across it"
+    caption: Magna amet tempor veniam tempor.
+  - file: dolor.jpg
+    description: "A made-up picture: a gradient from purple to cream with a pale circle in the middle"
+    caption: Amet minim ullamco ipsum veniam.
 approved:
   date: 2026-11-01
-  sha256: a81b2c6afc573056bf67f5b5d4c074581e102ad01a6d2547e3088ca0ab7b17dd
+  sha256: c09d0569b6e274d873a7beacb243834dcc296a354070bc7b47ba75935b1ad1fb

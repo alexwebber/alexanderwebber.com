@@ -2069,3 +2069,29 @@ end. Add each new decision as a dated entry at the end, as it's made.
   `astro check` fail when TypeScript or `@astrojs/check` is missing, plus dev-server and i18n fixes.
   It pins rolldown 1.3.0 beside Vite's 1.2.14, so the lockfile grows by a nested rolldown. Build,
   `astro check` and 1,062 unit tests pass.
+- **2026-11-06** — **#127 merged** (house-process 0.15.0 and Astro 7.4.7). `/after-merge`: the PR's
+  11 checks and `main`'s Gate green, deploy included; `/` and `/running/` answer 200; no boxes.
+- **2026-11-06** — **003 Phase 5** (T062–T069, photos in a chapter). Implement subagent about **300k
+  tokens**, 147 tool calls, 26 min (Phase 1 352k, Phase 2 287k, Phase 3 291k, Phase 4 272k), with
+  `preview-state`, `section-page`, `tests`, `page-tests`, `gate-drill` and `pr-screenshots` loaded.
+  The strip, rotate, resize and re-check steps moved to `scripts/lib/photo.ts`, given bytes, not a
+  path; `add-race-photo.ts` is unchanged in behaviour (its tests pass unedited, and regenerated race
+  preview photos are byte-identical). New `add-chapter-photo.ts` refuses a blank caption or alt
+  text, a non-chapter target, a fourth photo, a source inside the repo and an existing name, and
+  prints neither caption nor alt text. Chapter photos render as `<figure>`s with `Picture` (AVIF,
+  WebP, JPEG; 640 and 1280 px; lazy, sized), a portrait one at most 24rem wide. The `photos`
+  preview is written last from its own seeds; `long` gains photos in chapters 1, 5 and 9. Gate drill
+  on a scratch copy: a photo added with the real script needs re-approval (validate-data stops on the
+  hash); planted GPS EXIF stops scan-images naming the file; a missing caption or alt text stops
+  validate-data naming the chapter and `photos[0]`; restored, the gate passes. `dist/`
+  byte-identical to `main`'s (250 files). `screenshots.ts` now loads lazy images before a full-page
+  shot (they came out as empty boxes).
+  - **Skill gaps applied in the same PR**: `preview-state` (no `import.meta.glob` in `store.ts`;
+    generated photos with planted EXIF and their own caption seed), `pr-screenshots` (lazy images,
+    content far down a long page), `tests` (`Picture` in the container; regexes over attributes),
+    `page-tests` (a photos recipe: layout shift, aborted image, metadata in built files),
+    `section-page` (`Picture` settings, sizes per orientation, the image box).
+  - **Kept without asking** (the agent's call, recorded here): a missing caption names the photo by
+    its position (`photos[0].caption`), as every schema error does.
+  - **For the owner**: the photos' look in the PR's screenshots (a portrait photo narrower than the
+    text; small secondary-colour captions, as the race gallery's).

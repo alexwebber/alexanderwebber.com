@@ -6,9 +6,11 @@
 // tests/e2e/story.spec.ts and tests/a11y/story.spec.ts. All text here is made up.
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import type { ImageMetadata } from 'astro';
 import StoryPage from '../../src/sections/running/components/StoryPage.astro';
 import { CHAPTER_LIST_AT, loadJourney, showChapterList, type JourneyView } from '../../src/sections/running/data/journey.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
+import type { PhotoFiles } from '../../src/sections/running/data/photos.ts';
 import type { Journey, JourneyChapter, JourneyClosing, JourneyNote, JourneyPage, RunningStore } from '../../src/sections/running/data/store/index.ts';
 import { DataValidationError } from '../../src/shared/storage/errors.ts';
 import { approve, chapter, closing, lorem, note, page, type Value } from '../helpers/journey.ts';
@@ -111,6 +113,76 @@ describe('a chapter (US1.1, FR-003, FR-004)', () => {
     const html = chapterHtml(await render({ chapters: [asChapter(chapter('chapter-a', { figures: undefined, prose: `${lorem(30, 9)}.\n` }))] }), 'chapter-a');
     expect(html).toMatch(/<\/time><\/p><p>[^<]*<\/p><div class="story-takeaway">/);
     expect(html).not.toMatch(/<figure|<video|<!--/);
+  });
+});
+
+// Photos (T068; FR-060, FR-063, FR-064, research.md R10): the generated gradients of the `photos`
+// preview, under made-up names, so astro:assets has real files to size.
+describe('a chapter with photos (US5)', () => {
+  const generated = Object.values(import.meta.glob<ImageMetadata>('/tests/fixtures/story-preview/data/photos/**/*.jpg', { eager: true, import: 'default' }));
+  const landscape = generated.find((image) => image.width > image.height)!;
+  const portrait = generated.find((image) => image.height > image.width)!;
+  const FOLDER = '/made-up/chapters';
+  const files: PhotoFiles = { [`${FOLDER}/chapter-a/one.jpg`]: landscape, [`${FOLDER}/chapter-a/two.jpg`]: portrait, [`${FOLDER}/chapter-a/three.jpg`]: landscape };
+  const escape = (text: string) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  const listed = [
+    { file: 'one.jpg', description: `${lorem(100, 6)} <b>bold</b> & co`, caption: `${lorem(101, 4)} <i>x</i> & y.` },
+    { file: 'two.jpg', description: `${lorem(102, 6)}.`, caption: `${lorem(103, 4)}.` },
+    { file: 'three.jpg', description: `${lorem(104, 6)}.`, caption: `${lorem(105, 4)}.` },
+  ];
+
+  async function renderPhotos(photos: Value[], photoFiles: PhotoFiles = files): Promise<string> {
+    // The fake store hands over what it's given: the loader checks hashes, and its tests cover photos.
+    const unhashed = (value: Value) => ({ ...value, approved: { date: '2026-11-01', sha256: '0'.repeat(64) } }) as unknown as JourneyChapter;
+    const from = store({ note: NOTE, page: PAGE, chapters: [unhashed(chapter('chapter-a', { photos })), asChapter(chapter('chapter-b', { when: '2026-04' }))] });
+    setRunningStore(from);
+    const view = (await loadJourney(from))!;
+    const html = await container.renderToString(StoryPage, {
+      props: { journey: view, image: '/og/running-story.png', photoFiles, photoFolder: FOLDER },
+      request: new Request('https://alexanderwebber.com/running/story/'),
+    });
+    return html.replace(/ data-astro-cid-[a-z0-9]+(="[^"]*")?/g, '');
+  }
+
+  it('renders each photo as a <figure> with its alt text and a visible caption, after the prose and before the takeaway', async () => {
+    const html = chapterHtml(await renderPhotos(listed), 'chapter-a');
+    const figures = [...html.matchAll(/<figure class="([^"]+)">([\s\S]*?)<\/figure>/g)];
+    expect(figures.map((f) => f[1])).toEqual(['story-photo', 'story-photo story-photo-portrait', 'story-photo']);
+    for (const [i, [, , inner]] of figures.entries()) {
+      // Attribute values may hold < and > (Astro escapes only & and "), so tags are matched attribute by attribute.
+      const tag = (start: string) => `<${start}(?:[^>"]|"[^"]*")*>`;
+      expect(inner).toMatch(new RegExp(`^<picture>${tag('source (?:[^>"]|"[^"]*")*type="image/avif"')}${tag('source (?:[^>"]|"[^"]*")*type="image/webp"')}${tag('img ')}</picture><figcaption>`));
+      const img = new RegExp(tag('img ')).exec(inner!)![0];
+      expect(img).toMatch(/ loading="lazy"/);
+      expect(img).toMatch(/ width="\d+"/);
+      expect(img).toMatch(/ height="\d+"/);
+      // 640 and 1280 px wide (FR-064).
+      expect(inner).toMatch(/srcset="[^"]*640w[^"]*1280w/);
+      expect(img).toMatch(/ alt="[^"]+"/);
+      expect(inner).toContain(`<figcaption>${escape(listed[i]!.caption)}</figcaption>`);
+    }
+    // In place: the last paragraph, the photos, then the takeaway.
+    expect(html).toMatch(/<\/p><figure class="story-photo">[\s\S]*<\/figure><div class="story-takeaway">/);
+  });
+
+  it('gives each photo its own alt text, escaped, never markup', async () => {
+    const html = chapterHtml(await renderPhotos(listed), 'chapter-a');
+    const alts = [...html.matchAll(/<img [^>]*\balt="([^"]*)"/g)].map((m) => m[1]!.replace(/&(lt|gt|amp|#38|#60|#62);/g, (_, name: string) => ({ lt: '<', gt: '>', amp: '&', '#38': '&', '#60': '<', '#62': '>' })[name]!));
+    expect(alts).toEqual(listed.map((p) => p.description));
+    // Markup in the alt text stays inside its attribute and the caption's is escaped: no element made.
+    expect(html.replace(/="[^"]*"/g, '=""')).not.toMatch(/<(b|i)[\s>]/i);
+  });
+
+  it('renders a chapter with no photos with no frame, heading or gap (FR-060)', async () => {
+    const html = chapterHtml(await renderPhotos(listed), 'chapter-b');
+    expect(html).not.toMatch(/<figure|<picture|<img/);
+    expect(html).toMatch(/<\/p><div class="story-takeaway">/);
+  });
+
+  it('leaves out a listed photo whose file is missing (validate-data reports it), and renders the rest', async () => {
+    const html = chapterHtml(await renderPhotos(listed, { [`${FOLDER}/chapter-a/one.jpg`]: landscape }), 'chapter-a');
+    expect(html.match(/<figure /g)).toHaveLength(1);
+    expect(html).toContain(`<figcaption>${escape(listed[0]!.caption)}</figcaption>`);
   });
 });
 
