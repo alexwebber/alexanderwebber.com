@@ -59,6 +59,10 @@ The gate deploys only when every step passes, so a problem at any layer leaves t
 | Chapters without `note.yaml` or `page.yaml` | `validate.ts` | FR-008, FR-039 |
 | `story_link` with no chapter; href not the story page; label ≠ `link_label` | `validate.ts` | FR-040, FR-042 |
 | `closing.yaml` with no chapter | Warning only | Edge case |
+| An empty or all-comment journey file (graduation review) | Loader | FR-034 |
+| A YAML alias naming no anchor (`*word` at the start of a value), reported by line, never quoted (graduation review) | Parse (`parseDataFile`; `approve-story` refuses it too) | FR-035 |
+| A chapter `id` that repeats another element's id on the page: `main`, `story-chapter-list`, `story-closing-title`, or another chapter's `-title` or `-learned` (graduation review) | `validate.ts` | FR-051 |
+| A photo beside a chapter that its `chapter.yaml` doesn't list (graduation review) | Warning only | FR-036 |
 | Photo metadata or size | `scan-images` (unchanged) | FR-061 |
 | A link that leads nowhere | `check-links` after the build ([gate.md](gate.md)) | FR-015, FR-042 |
 
