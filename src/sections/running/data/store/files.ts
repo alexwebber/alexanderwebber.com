@@ -341,6 +341,12 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
       issues.push({ file, entry: '', field: '', severity: 'error', message: parsed.error });
       continue;
     }
+    if (parsed.value === null && JOURNEY_SCHEMAS.has(schema)) {
+      // Not "no data yet": a story file exists to be published, and an emptied one would otherwise
+      // stop the build with a message naming no file (an only chapter still makes the story area).
+      issues.push({ file, ...locate(schema, null, []), message: 'is empty: write the approved text into it, or delete the file', severity: 'error' });
+      continue;
+    }
     if (parsed.value === null && schema.startsWith('owner/')) continue; // an empty or all-comment file
     const value = parsed.value;
     const problems = schemas.validate(schema, value);

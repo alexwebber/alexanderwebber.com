@@ -12,6 +12,7 @@ import { CHAPTER_LIST_AT, loadJourney, showChapterList, type JourneyView } from 
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import type { PhotoFiles } from '../../src/sections/running/data/photos.ts';
 import type { Journey, JourneyChapter, JourneyClosing, JourneyNote, JourneyPage, RunningStore } from '../../src/sections/running/data/store/index.ts';
+import { chapterElementIds, STORY_PAGE_IDS } from '../../src/sections/running/domain/journey.ts';
 import { DataValidationError } from '../../src/shared/storage/errors.ts';
 import { approve, chapter, closing, lorem, note, page, type Value } from '../helpers/journey.ts';
 import { emptyOwner } from '../helpers/owner-data.ts';
@@ -289,6 +290,16 @@ describe('the chapter list and "Back to chapters" (FR-052, SC-010, research.md R
     expect(shown).toEqual(['chapter-d', 'chapter-c', 'chapter-b', 'chapter-a']);
     expect(links).toEqual(shown.map((id) => [id, chapters.find((c) => c.id === id)!.name]));
     expect(count(html, /<details/)).toBe(1);
+  });
+
+  // Graduation review (T073): validate-data refuses a chapter id that another element's id would
+  // repeat, from these two lists, so a new id on the page must be added to them.
+  it('gives elements only the ids validation knows: the page\'s own and each chapter\'s', async () => {
+    const chapters = many(12);
+    const html = await render({ chapters, closing: CLOSING });
+    const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]!);
+    expect(new Set(ids).size, 'no id repeats').toBe(ids.length);
+    expect(ids.toSorted()).toEqual([...Object.keys(STORY_PAGE_IDS), ...chapters.flatMap((c) => chapterElementIds(c.id))].toSorted());
   });
 
   it('every list link and back link has its target on the page', async () => {
