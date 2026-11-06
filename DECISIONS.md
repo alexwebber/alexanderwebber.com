@@ -2161,3 +2161,20 @@ end. Add each new decision as a dated entry at the end, as it's made.
     listed in the PR in the order written) and `tips-shell`'s (`TZ` and `--path=` under Git Bash) go
     upstream in software-factory#20 (house-process 0.16.1), taking the `TZ` upstream candidate with them. No new skill candidate: the three tasks done by hand are now
     a script option (`--path=`), a test and the `gate-drill` matrix.
+- **2026-11-06** — **#130 and software-factory#20 merged** (003 Phase 6, graduation; house-process
+  0.16.1). `/after-merge 130`: both boxes ticked (the shared-storage alias fix accepted; the three low
+  findings left as described), the PR's 11 checks and `main`'s Gate green, deploy included; `/` and
+  `/running/` answer 200. T076 done: Phase 7 written into *Next session*; the standing follow-ups'
+  triggers placed, T090 (a new chapter after Brighton) as a dated trigger from 2027-04-05 and T089,
+  T091, T092 (each waiting on an event) in *Next session*. T071's nightly Quality read waits for the
+  first scheduled run after the merge (03:41 UTC, 7 Nov).
+- **2026-11-06** — **Lesson harvest (003 T077)**, the owner's pick: send all.
+  [software-factory#21](https://github.com/alexwebber/software-factory/pull/21) (house-process 0.16.2)
+  takes eight candidates into `tips-testing` (lazy images and `decode()`, screenshots and lazy
+  loading, `toBeInViewport` on focused links), `tips-astro` (render-time failures partly rewrite
+  `dist/`, `import.meta.glob` outside Vite), `tips-shell` (`node -e` quoting, `--ignore-cr-at-eol`
+  after a generator) and `tips-privacy-pipelines` (unresolved YAML aliases throw). The ninth (a fresh
+  copy path when a drill edits schemas) stays here, already in `gate-drill`. Skills review: Phase 6's
+  gaps were applied in #130 and software-factory#20; no skill unused or out of date; the
+  skill-candidates counts are unchanged (no task done by hand this session). Auto-loaded files 28 KB.
+  House-process 0.16.1 isn't installed yet: one upgrade to 0.16.2 after #21 merges.

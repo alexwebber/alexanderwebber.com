@@ -8,19 +8,29 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1–5 merged; Phase 6, the graduation, is
-  [#130](https://github.com/alexwebber/alexanderwebber.com/pull/130) (nothing visible; two owner
-  boxes). The graduation skill's gaps are in house-process 0.16.1,
-  [software-factory#20](https://github.com/alexwebber/software-factory/pull/20).
-- **Next session, first:** `/session-start`. If #130 merged: `/after-merge 130` (nothing visible, so
-  `/` and `/running/` only), ask about any unticked box, and read the first nightly Quality run after
-  the merge (T071: the `story` page type shows as skipped). If software-factory#20 merged, install
-  0.16.1 with `/speckit-house-process-upgrade-speckit` (a process PR).
-- **Then close 003 Phase 6**: T076, write Phase 7 into this block (the content PR is a session with
-  the owner, T078–T088; the approved text's location, below; the committed text is compared with the
-  approved text, not with the private hashes; the standing follow-ups' triggers, T089–T092, into
-  `process/triggers.yaml`); T077, offer `/speckit-house-process-harvest-lessons` in the main
-  conversation. Both go in one small docs PR, then the owner starts the Phase 7 session.
+  journey story: Phases 1–6 merged (graduated, nothing visible yet). From the session that closed
+  Phase 6: this handoff's PR here, and the lesson harvest as house-process 0.16.2,
+  [software-factory#21](https://github.com/alexwebber/software-factory/pull/21) (0.16.1 is merged
+  but not installed; one upgrade covers both).
+- **Next session, first:** `/session-start`; `/after-merge` the handoff PR if it merged (no visible
+  change, so `/` and `/running/` only). If software-factory#21 merged, install 0.16.2 with
+  `/speckit-house-process-upgrade-speckit` (a process PR, before Phase 7 so its tips load). Read the
+  first nightly Quality run after #130 (03:41 UTC on 7 Nov or later; 003 T071: the `story` page type
+  shows as skipped, every other page type within budget) and record it in `DECISIONS.md`.
+- **Then 003 Phase 7, the content PR: a session with the owner** (T078–T088 in
+  `specs/003-journey-story/tasks.md`; its header has the *How to view it*). In order: draft the "not
+  medical advice" note and the page wording (title ≤ 70, description ≤ 160, share text ≤ 90 with no
+  digits, link label) outside the repo, from the approved text, in the owner's voice, for the
+  owner's edits and explicit yes (T078); write the journey files from the approved text only, with
+  figures traced statement by statement and a scale question for each weight (T079); the SC-005
+  comparison on a scratch copy in the scratchpad, **against the approved text itself, not the private
+  hashes** (they can't be reproduced; T080); the owner looks at the rendered chapters on that copy's
+  local preview, phone width and desktop (T081); `approve-story --journey` in the repo only after
+  their yes, with `--date=2026-11-04` for unchanged chapters and the closing section, and set
+  `story_link` (T082); create `VOICE.md` (T083); the full gate, tests, drills, Lighthouse and axe on
+  the real data (T084); the privacy search and a PR body by shape only (T085, T086). After the merge,
+  the live checks (T087), and the session after that starts with a guided review (T088). Load
+  `tips-owner-content` and `owner-data-file` first.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -49,6 +59,13 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   - **Still to approve at the content PR** (plan open questions 5 and 6): the "not medical advice"
     note, which holds back launch, and the page's title, description, share text and landing-link
     label (FR-039). Draft them from the approved text, in the owner's voice.
+  - **Standing follow-ups after launch** (event-triggered; T090, a new chapter after Brighton, is in
+    `process/triggers.yaml`): **T089**, at the first review after launch, offer the reader test once
+    (≥ 5 non-runners on phones; ≥ 4 call it a story and name one thing that worked), or record the
+    owner's choice to skip it; **T091**, whenever the owner wants photos in a chapter, check each
+    against FR-062 with them, `npm run add-chapter-photo`, and a fresh approval; **T092**, when the
+    Martlets reviewers reply, that story extends `VOICE.md` (keep this until both stories have
+    contributed).
 - **Spec order after 003** (owner, 2026-11-01): **a private family-admin section** (details in the
   agent's local memory), then CV & Blog, which is parked. Before specifying it, raise that it
   clashes with the constitution: the site has no logins (Principle V) and is public, repo included
@@ -178,24 +195,9 @@ project-specific notes.
 
 ## Upstream candidates
 
-Since the harvest of 2026-11-06 ([software-factory#18](https://github.com/alexwebber/software-factory/pull/18)):
+Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.com/alexwebber/software-factory/pull/21)):
 
-- `import.meta.glob` in a module that Playwright or plain Node also imports throws at load: keep
-  Vite-only globs in `.astro` files (astro, testing).
-- A lazy `<img>` not yet requested reads `complete === true`; wait on `decode()` (testing).
-- Full-page Playwright screenshots don't trigger lazy loading: images below the first screen come out
-  empty unless set to eager and decoded first (testing).
-- `node -e` scripts with nested quotes and backticks fail under Git Bash; write a file instead (shell).
-- On a `core.autocrlf` checkout, rerunning a generator that writes `\n` shows changes in files whose
-  content didn't change: check `git diff --ignore-cr-at-eol --stat` first (git).
-- The `yaml` library throws, rather than reports, on an alias naming no anchor (`*word*`, Markdown
-  emphasis), quoting the name: find unresolved aliases with `visit` before `toJS` (privacy-pipelines).
-- A drill that edits a scratch copy's schemas needs a fresh copy path: the loader caches each root's
-  compiled schemas for the life of the process (testing).
-- `toBeInViewport({ ratio: 1 })` fails at 0.99 on a focused inline link; check its box within a pixel
-  (testing).
-- A plain build that fails at render (a page's own data check) leaves `dist/` partly rewritten, unlike
-  one failing in `astro:build:start`: snapshot `dist/` before each build in a drill (astro).
+- None yet.
 
 ## Open questions
 
