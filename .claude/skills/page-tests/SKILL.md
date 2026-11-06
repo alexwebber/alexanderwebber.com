@@ -40,6 +40,13 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
   tags *without* adding spaces (`tests/helpers/story-text.ts`), compare with the fixture, and also
   compare the browser's `innerText`. A helper that swaps tags for spaces hides a missing space.
 
+- **Photos** (`tests/e2e/story.spec.ts`, the `photos` state): alt text and a visible caption; lazy
+  loading with width and height set; zero layout shift, measured by a `PerformanceObserver` on
+  `layout-shift` while scrolling through; an aborted image (`page.route(..., (r) => r.abort())`)
+  keeps its alt text and caption; and every built `/_astro/` file the page's HTML references has no
+  metadata (read with sharp, from the bytes). A lazy `<img>` not yet requested reads
+  `complete === true`: wait on `decode()`.
+
 ## Rules that kept failing
 
 - **Scope every locator** to its container (`page.locator('.fundraising-card').getByRole(...)`):

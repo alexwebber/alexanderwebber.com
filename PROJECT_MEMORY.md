@@ -8,18 +8,21 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1–4 merged (#125, the chapter list, nothing visible until a chapter exists;
-  its look kept as is). The lesson harvest merged (software-factory#18, #126); house-process 0.15.0
-  and Astro 7.4.7 are raised as a `chore-house-process-0.15.0` PR.
-- **Next session, first:** `/session-start`; if the `chore-house-process-0.15.0` PR merged, run
-  `/after-merge` on it (no visible change, so `/` and `/running/` only). If not, ask whether the owner
-  has looked at it; Phase 5 can still start from `main`.
-- **Then 003 Phase 5** (T062–T070, photos in a chapter), branched from a `main` holding #125: brief
-  with `/speckit-house-process-implement-brief` naming `preview-state` (a `photos` state),
-  `section-page`, `tests`, `page-tests`, `gate-drill` and `pr-screenshots` (`photos` and `long`), plus
-  `speckit-house-process-tips-windows-cloud` (sharp's file cache: pass bytes). T062 must leave
-  `add-race-photo.ts` behaving exactly as before. Subagent costs so far: Phase 1 352k, Phase 2 287k,
-  Phase 3 291k, Phase 4 272k tokens.
+  journey story: Phases 1–4 merged (#125); house-process 0.15.0 and Astro 7.4.7 merged (#127).
+  **Phase 5** (T062–T069, photos in a chapter) is raised as the `003-slice-5` PR, with screenshots of
+  the `photos` and `long` previews. Nothing visible on the live site.
+- **Next session, first:** `/session-start`; if the `003-slice-5` PR merged, run `/after-merge` on it
+  (nothing visible, so `/` and `/running/` only), record its boxes, and tick T070. If not, ask whether
+  the owner has looked at the photo screenshots.
+- **Then build the *Graduation review* skill** (`process/skill-candidates.yaml`, 3 times, home:
+  playbook, `next: 003 Phase 6`) before Phase 6's brief: adversarial self-review, design note,
+  Lighthouse, axe, the Principle II bar, from 001's and 002's graduation PRs. It goes to
+  software-factory (house-process), with a PR there, then a reinstall here.
+- **Then 003 Phase 6** (T071–T077, graduation), branched from a `main` holding the Phase 5 PR: brief
+  with `/speckit-house-process-implement-brief` naming the new graduation skill, `page-tests`,
+  `gate-drill` and `tests`. T076 writes Phase 7 (the content PR, a session with the owner) into this
+  block after the merge; T077 offers the lesson harvest. Subagent costs so far: Phase 1 352k,
+  Phase 2 287k, Phase 3 291k, Phase 4 272k, Phase 5 300k tokens.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -177,7 +180,16 @@ project-specific notes.
 
 ## Upstream candidates
 
-- None yet since the harvest of 2026-11-06 ([software-factory#18](https://github.com/alexwebber/software-factory/pull/18)).
+Since the harvest of 2026-11-06 ([software-factory#18](https://github.com/alexwebber/software-factory/pull/18)):
+
+- `import.meta.glob` in a module that Playwright or plain Node also imports throws at load: keep
+  Vite-only globs in `.astro` files (astro, testing).
+- A lazy `<img>` not yet requested reads `complete === true`; wait on `decode()` (testing).
+- Full-page Playwright screenshots don't trigger lazy loading: images below the first screen come out
+  empty unless set to eager and decoded first (testing).
+- `node -e` scripts with nested quotes and backticks fail under Git Bash; write a file instead (shell).
+- On a `core.autocrlf` checkout, rerunning a generator that writes `\n` shows changes in files whose
+  content didn't change: check `git diff --ignore-cr-at-eol --stat` first (git).
 
 ## Open questions
 
