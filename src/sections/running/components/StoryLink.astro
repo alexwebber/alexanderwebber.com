@@ -1,7 +1,13 @@
 ---
 // The link to Alex's personal story (T100; FR-024, US1.6). It appears only once section.yaml has
-// `story_link` (the story page is a separate, future spec); until then nothing renders: no link,
-// no placeholder. Adding the link needs no other change to the landing page. No client JS.
+// `story_link`; until then nothing renders: no link, no placeholder. Adding the link needs no other
+// change to the landing page. No client JS.
+//
+// The story page now exists in code (spec 003: pages/story.astro, built once a chapter exists), and
+// this panel is its landing link, unchanged (FR-040). validate-data holds the setting to it:
+// `href` must be /running/story/, the setting is refused while no chapter exists, and `label` must
+// equal page.yaml's approved `link_label` (data-model.md §9). SectionLinks then leaves "Story" out
+// of the links below, as this panel already leads there.
 import { sectionSettings } from '../data/load.ts';
 
 const { story_link: link } = await sectionSettings();

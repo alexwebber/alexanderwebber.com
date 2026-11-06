@@ -2,6 +2,9 @@
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import { OG_HEIGHT, OG_WIDTH, cardTree, ogEndpoint, ogPath, renderOgPng } from '../../src/shared/og/render.ts';
+import { RUNNING_OG_COLOURS } from '../../src/sections/running/og/colours.ts';
+import { storyCard } from '../../src/sections/running/og/story.png.ts';
+import { lorem } from '../helpers/journey.ts';
 
 const texts = (node: unknown): string[] => {
   if (typeof node === 'string') return [node];
@@ -46,5 +49,27 @@ describe('ogPath', () => {
     ['/running/races/brighton-2027/', '/og/running-races-brighton-2027.png'],
   ])('%s -> %s', (page, image) => {
     expect(ogPath(page)).toBe(image);
+  });
+});
+
+// The story page's share image (spec 003 T045, FR-075, SC-012): the "Running" label, the approved
+// share_text and the site name, nothing else, so no figure can reach it.
+describe('story share image', () => {
+  it('is /og/running-story.png for /running/story/', () => {
+    expect(ogPath('/running/story/')).toBe('/og/running-story.png');
+  });
+
+  it('carries the Running label, the share text and the site name only, with no digit and no attribution', () => {
+    const shareText = lorem(12, 5);
+    const card = storyCard({ share_text: shareText });
+    expect(texts(cardTree(card))).toEqual(['Running', shareText, 'alexanderwebber.com']);
+    expect(card.attribution).toBeUndefined();
+    expect(card.colours).toBe(RUNNING_OG_COLOURS);
+    expect(texts(cardTree(card)).join(' ')).not.toMatch(/\d/);
+  });
+
+  it('renders a 1200 x 630 PNG of made-up share text', async () => {
+    const meta = await sharp(await renderOgPng(storyCard({ share_text: lorem(12, 14) }))).metadata();
+    expect([meta.width, meta.height]).toEqual([OG_WIDTH, OG_HEIGHT]);
   });
 });

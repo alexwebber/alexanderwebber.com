@@ -114,8 +114,12 @@ test('SC-003: the gate passes on data that is 7 days stale', () => {
   expect(gate.ran).toEqual([...GATE_STEPS]);
 });
 
+// The journey story (spec 003, once a chapter exists) isn't a data view and shows no freshness
+// (FR-071), so it's the one Running page left out here and in pageTypes().
+const NO_FRESHNESS = ['/running/story/'];
+
 test('SC-003: every Running page is built with its last-updated time and the stale notice', () => {
-  const pages = builtPages();
+  const pages = builtPages().filter((path) => !NO_FRESHNESS.includes(path));
   expect(pages.length).toBeGreaterThan(5);
   for (const path of pages) {
     const html = readFileSync(join(root, 'dist', path, 'index.html'), 'utf8');
@@ -127,7 +131,8 @@ test('SC-003: every Running page is built with its last-updated time and the sta
   }
 });
 
-/** One page of each type that exists in the real data (no race pages until the first race). */
+/** One page of each type that exists in the real data (no race pages until the first race), each
+ * showing freshness: not the story page (NO_FRESHNESS). */
 function pageTypes(): string[] {
   const pages = builtPages();
   const first = (prefix: string) => pages.find((p) => p.startsWith(prefix) && p !== prefix);

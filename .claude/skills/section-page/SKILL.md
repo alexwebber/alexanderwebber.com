@@ -27,8 +27,11 @@ Read `speckit-house-process-tips-astro` and `-tips-ui-accessibility` first, and
 - **Register the area** in `src/sections/running/integration.ts`'s `runningAreas`, in menu order,
   with its routes and share image route. An area that would be empty without data is added only
   when its data exists, checked from files without loading the tree (`campaignsWithFigures()`,
-  `fundraisingArea`), so no visitor reaches an empty page. `SectionLinks` lists areas with a
-  `description` on the landing page; words a visitor sees need the owner's approval.
+  `fundraisingArea`, `journeyChapterIds()`, `storyArea`), so no visitor reaches an empty page.
+  Export a conditional area so unit tests can force it on or off with a `vi.mock` getter over
+  `runningAreas` (as `tests/unit/landing.test.ts` does for the story), and take expectations from
+  `runningAreas` rather than a pinned list. `SectionLinks` lists areas with a `description` on
+  the landing page; words a visitor sees need the owner's approval.
 - **Share image**: `src/sections/running/og/<area>.png.ts` with `ogEndpoint` and
   `RUNNING_OG_COLOURS`; the page passes `image={ogPath(PATH)}` and an `imageAlt`. Look at a
   rendered PNG before trusting the layout.

@@ -31,7 +31,9 @@ runs as its real command line on the copy (`node scripts/check-links.ts --dist=<
 
 - **A drill a task or success criterion names** (SC-xxx, "the launch drill", "the none drill"): a
   committed spec, `tests/e2e/<area>-<case>.spec.ts`. Copy `fundraising-none.spec.ts` (built files
-  only) or `stale.spec.ts` (gate, built files and a browser over `serveDist`).
+  only), `stale.spec.ts` (gate, built files and a browser over `serveDist`), `story-none.spec.ts`
+  (gate, built files and a 404), or `story-launch.spec.ts` (a made-up approved story, a phone-sized
+  context, rebuilds at the end).
 - **A one-off proof for a PR** (gate-check's "drill, for real", a quickstart step "run for real" that
   no spec keeps): a script at `spikes/<name>/out/drill.ts` (gitignored, outside `tsconfig`), run with
   `node spikes/<name>/out/drill.ts`, its output pasted into the PR. Put the copy beside it
@@ -61,6 +63,18 @@ runs as its real command line on the copy (`node scripts/check-links.ts --dist=<
 7. **In a browser** (layout, menus, the first screen): `serveDist(join(root, 'dist'))`, then the
    page checks from `page-tests` (320 px fit, viewport size, exact names). If a check the task
    marks as "stop and ask the owner" fails, stop and ask; don't change the layout to pass it.
+   A drill that builds once in the desktop project measures a phone's first screen in its own
+   context, as the `mobile-360` project sets it up:
+   `browser.newContext({ ...devices['Pixel 7'], viewport: { width: 360, height: 780 } })`. Print
+   the measurements (`testInfo.annotations` and a log line), so the PR can quote them. Positions
+   depend on the system font (`system-ui`): Donate ended at 777 px of 780 on Windows and 804 on CI's
+   Linux. So assert what the change causes, on the same page (hide the new item, measure again:
+   same lines, same position), and print the absolute numbers rather than asserting them
+   (`story-launch.spec.ts`, owner on #122).
+8. **Screenshots of the drill's site** (`pr-screenshots`): run the spec with
+   `DRILL_KEEP_DIST=spikes/<name>/out/dist` (as `story-launch.spec.ts` supports; add the same few
+   lines to a new drill) so the copy's `dist/` outlives `afterAll`, then
+   `node scripts/process/screenshots.ts ... --dist=spikes/<name>/out/dist`.
 
 ## In a Playwright spec
 
@@ -70,7 +84,9 @@ runs as its real command line on the copy (`node scripts/check-links.ts --dist=<
 `afterAll`, `await server?.close()` then `rmSync(root, …)`. Throw from `beforeAll` with
 `gate.messages` if the clean gate fails, so the cause shows. Assert on elements, not strings: class
 names also appear in inlined CSS. Several builds in one spec: one `beforeAll` per state, or rebuild
-in the test with its own timeout.
+in the test with its own timeout. Put rebuilds last: each replaces the `dist/` that `serveDist`
+indexed, so close the server first. In serial mode a failing test skips the rest, so to prove
+several checks fail when broken, run each with `-g`.
 
 ## Pitfalls
 

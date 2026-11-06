@@ -7,7 +7,7 @@
 // bytes included (specs/003-journey-story/data-model.md §2). Messages about journey files never
 // quote a value from them (FR-035).
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fieldPath, listDataFiles, parseDataFile, SchemaSet, type DataIssue, type SchemaIssue } from '../../../../shared/storage/index.ts';
 import type {
@@ -395,6 +395,22 @@ export function campaignsWithFigures(root: string = process.cwd()): string[] {
   return parsed.value
     .map((campaign) => at(campaign, 'id'))
     .filter((id): id is string => typeof id === 'string' && existsSync(join(root, PUBLISHED_DIR, 'fundraising', `${id}.json`)));
+}
+
+/**
+ * The IDs of the journey story's chapters (data-model.md §10): the folder names under
+ * journey/chapters/ that hold a chapter.yaml, sorted. For integration.ts, which asks while the
+ * site's config loads, as campaignsWithFigures() does, so the tree isn't loaded twice. A closing
+ * section or note alone gives none, and so does a chapter folder with no chapter.yaml. Whether each
+ * chapter is valid and approved is the build's first step's to say, which stops on any that isn't.
+ */
+export function journeyChapterIds(root: string = process.cwd()): string[] {
+  const dir = join(root, OWNER_DIR, 'journey', 'chapters');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && existsSync(join(dir, entry.name, 'chapter.yaml')))
+    .map((entry) => entry.name)
+    .sort();
 }
 
 function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>): void {

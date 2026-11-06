@@ -3,77 +3,20 @@
 // (SHELL_PREVIEW=1, tests/fixtures/story-preview/): made-up chapters through the real StoryPage. Every
 // expectation comes from the preview's own files, never a pinned list. The real page arrives in
 // Phase 3 and its words in Phase 7.
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { parse } from 'yaml';
-import { parseProse, parseText, parseWhen, sourceText, whenText } from '../../src/sections/running/domain/journey.ts';
-import { storyText, type StoryText } from '../helpers/story-text.ts';
+import { journeyChapterIds } from '../../src/sections/running/data/store/files.ts';
+import { parseProse, parseWhen } from '../../src/sections/running/domain/journey.ts';
+import { approvedText, inlineFigure as inline, readJourney, storyText, type JourneyFiles } from '../helpers/story-text.ts';
 
 const STATES = ['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day'] as const;
 type State = (typeof STATES)[number];
+const REPO = resolve(import.meta.dirname, '../..');
 const FIXTURES = resolve(import.meta.dirname, '../fixtures/story-preview/data');
 
-interface Figure {
-  id: string;
-  label: string;
-  as_of: string;
-  text: string;
-  garmin?: string;
-}
-interface Chapter {
-  id: string;
-  name: string;
-  when: string;
-  order?: number;
-  prose: string;
-  takeaway: string;
-  figures?: Figure[];
-}
-interface Fixture {
-  chapters: Chapter[];
-  closing?: { heading: string; text: string };
-  note: { text: string };
-}
-
 /** A state's approved files, as the preview's generate.ts wrote them. */
-function fixture(state: State): Fixture {
-  const dir = join(FIXTURES, state, 'data/running/owner/journey');
-  const read = <T,>(file: string): T | undefined => (existsSync(file) ? (parse(readFileSync(file, 'utf8')) as T) : undefined);
-  const chapters = readdirSync(join(dir, 'chapters')).map((id) => read<Chapter>(join(dir, 'chapters', id, 'chapter.yaml'))!);
-  const closing = read<Fixture['closing']>(join(dir, 'closing.yaml'));
-  return { chapters, ...(closing ? { closing } : {}), note: read<Fixture['note']>(join(dir, 'note.yaml'))! };
-}
-
-const norm = (text: string) => text.replace(/\s+/g, ' ').trim();
-
-/** A figure as the approved text reads once its placeholder is replaced: "12.3 kg (Garmin Example S1)". */
-const inline = (figure: Figure) => [figure.text, ...(sourceText(figure.garmin) ? [`(${sourceText(figure.garmin)})`] : [])].join(' ');
-
-/**
- * The approved text with each placeholder replaced by its figure (and source) and each link by its
- * text (SC-003): what the page must show, character for character once whitespace is normalised.
- */
-function expected(data: Fixture, order: string[]): StoryText {
-  const byId = new Map(data.chapters.map((c) => [c.id, c]));
-  const chapters = order.map((id) => {
-    const chapter = byId.get(id)!;
-    const figures = new Map((chapter.figures ?? []).map((f) => [f.id, f]));
-    const paragraphs = parseProse(chapter.prose).paragraphs.map((p) => {
-      if (p.kind === 'figure') {
-        const figure = figures.get(p.id)!;
-        return `${figure.label}, ${whenText(parseWhen(figure.as_of)!)}: ${inline(figure)}`;
-      }
-      return p.parts.map((part) => (typeof part === 'string' ? part : 'figure' in part ? inline(figures.get(part.figure)!) : part.text)).join('');
-    });
-    return { id, name: norm(chapter.name), when: whenText(parseWhen(chapter.when)!), paragraphs: paragraphs.map(norm), takeaway: norm(chapter.takeaway) };
-  });
-  const closing = data.closing && {
-    heading: norm(data.closing.heading),
-    paragraphs: parseText(data.closing.text).paragraphs.map((p) => norm(p.kind === 'text' ? p.parts.map((part) => (typeof part === 'string' ? part : 'text' in part ? part.text : '')).join('') : '')),
-  };
-  return { chapters, ...(closing ? { closing } : {}), note: norm(data.note.text) };
-}
+const fixture = (state: State): JourneyFiles => readJourney(join(FIXTURES, state));
+const expected = approvedText;
 
 async function open(page: Page, state: State) {
   const response = await page.goto(`/story-preview/${state}/`);
@@ -120,13 +63,15 @@ for (const state of STATES) {
     // And as a browser lays it out: no two inline parts run together.
     for (const chapter of shown.chapters) {
       const rendered = await story(page).locator(`section#${chapter.id} > p:not(.story-when)`).allInnerTexts();
-      expect(rendered.map(norm)).toEqual(chapter.paragraphs);
+      expect(rendered.map((text) => text.replace(/\s+/g, ' ').trim())).toEqual(chapter.paragraphs);
     }
   });
 
-  test(`${state}: the menu is the real Running menu, with no "Story" item`, async ({ page }) => {
+  test(`${state}: the menu is the real Running menu, with "Story" only once the real data has a chapter`, async ({ page }) => {
     await open(page, state);
-    await expect(page.getByRole('navigation', { name: 'Running', exact: true }).getByRole('link', { name: 'Story', exact: true })).toHaveCount(0);
+    // A preview never adds the item: it follows the repo's own chapters (none until spec 003's content PR).
+    const item = page.getByRole('navigation', { name: 'Running', exact: true }).getByRole('link', { name: 'Story', exact: true });
+    await expect(item).toHaveCount(journeyChapterIds(REPO).length > 0 ? 1 : 0);
   });
 
   test(`${state}: the takeaway is a box with a heavier start edge, kept in forced colours (FR-004)`, async ({ page }) => {

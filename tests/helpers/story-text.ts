@@ -8,6 +8,77 @@
 // It reads the markup of contracts/routes.md *The page* (StoryChapter, StoryProse, StoryFigure,
 // StoryClosing, StoryNote), our own build output, not arbitrary HTML. The page's own labels ("What I
 // learned") are structure, not story text, so they're left out.
+//
+// The other side of the comparison is approvedText(): the approved files' words as the page must show
+// them, read from a data tree by readJourney() (a preview's fixture, or a drill's scratch copy,
+// tests/e2e/story-launch.spec.ts).
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parse } from 'yaml';
+import { parseProse, parseText, parseWhen, sourceText, whenText } from '../../src/sections/running/domain/journey.ts';
+
+interface FigureFile {
+  id: string;
+  label: string;
+  as_of: string;
+  text: string;
+  garmin?: string;
+}
+interface ChapterFile {
+  id: string;
+  name: string;
+  when: string;
+  order?: number;
+  prose: string;
+  takeaway: string;
+  figures?: FigureFile[];
+}
+/** A journey's approved files, as written. */
+export interface JourneyFiles {
+  chapters: ChapterFile[];
+  closing?: { heading: string; text: string };
+  note: { text: string };
+}
+
+/** The journey files under `root`'s data/running/owner/journey/. */
+export function readJourney(root: string): JourneyFiles {
+  const dir = join(root, 'data/running/owner/journey');
+  const read = <T,>(file: string): T | undefined => (existsSync(file) ? (parse(readFileSync(file, 'utf8')) as T) : undefined);
+  const chapters = readdirSync(join(dir, 'chapters')).map((id) => read<ChapterFile>(join(dir, 'chapters', id, 'chapter.yaml'))!);
+  const closing = read<JourneyFiles['closing']>(join(dir, 'closing.yaml'));
+  return { chapters, ...(closing ? { closing } : {}), note: read<JourneyFiles['note']>(join(dir, 'note.yaml'))! };
+}
+
+const norm = (text: string) => text.replace(/\s+/g, ' ').trim();
+
+/** A figure as the approved text reads once its placeholder is replaced: "12.3 kg (Garmin Example S1)". */
+export const inlineFigure = (figure: FigureFile) => [figure.text, ...(sourceText(figure.garmin) ? [`(${sourceText(figure.garmin)})`] : [])].join(' ');
+
+/**
+ * The approved text with each placeholder replaced by its figure (and source) and each link by its
+ * text (SC-003): what the page must show, character for character once whitespace is normalised.
+ * `order` is the chapters' IDs as the page shows them.
+ */
+export function approvedText(data: JourneyFiles, order: string[]): StoryText {
+  const byId = new Map(data.chapters.map((c) => [c.id, c]));
+  const chapters = order.map((id) => {
+    const chapter = byId.get(id)!;
+    const figures = new Map((chapter.figures ?? []).map((f) => [f.id, f]));
+    const paragraphs = parseProse(chapter.prose).paragraphs.map((p) => {
+      if (p.kind === 'figure') {
+        const figure = figures.get(p.id)!;
+        return `${figure.label}, ${whenText(parseWhen(figure.as_of)!)}: ${inlineFigure(figure)}`;
+      }
+      return p.parts.map((part) => (typeof part === 'string' ? part : 'figure' in part ? inlineFigure(figures.get(part.figure)!) : part.text)).join('');
+    });
+    return { id, name: norm(chapter.name), when: whenText(parseWhen(chapter.when)!), paragraphs: paragraphs.map(norm), takeaway: norm(chapter.takeaway) };
+  });
+  const closing = data.closing && {
+    heading: norm(data.closing.heading),
+    paragraphs: parseText(data.closing.text).paragraphs.map((p) => norm(p.kind === 'text' ? p.parts.map((part) => (typeof part === 'string' ? part : 'text' in part ? part.text : '')).join('') : '')),
+  };
+  return { chapters, ...(closing ? { closing } : {}), note: norm(data.note.text) };
+}
 
 export interface ChapterText {
   id: string;

@@ -7,19 +7,26 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 ## Next session
 
-- **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1 and 2 merged (#117, #119; all of #119's boxes ticked, post-merge checks
-  green). Raised for the owner: **#120** (Spec Kit 1.3.1) and **#121** (the `gate-drill` skill, with
-  `runGate`, `serveDist` and `snapshotDist` in `tests/helpers/scratch-site.ts`).
-- **Next session, first:** `/session-start`. `/after-merge` each of #120 and #121 that merged; if
-  #121 hasn't, ask the owner whether they've looked at it, as Phase 3 builds on it. (T023 is done:
-  the bot's gate ran `check-links` on 6 Nov.)
-- **Then 003 Phase 3** (T042–T050, finding the story: route, menu item, share image, landing
-  panel), branched from a `main` holding #121: brief with `/speckit-house-process-implement-brief`
-  naming `section-page`, `page-tests`, `tests`, `gate-drill` and `pr-screenshots`, and dispatch as
-  for Phase 2. T048 and T049 use `runGate`, `scratchRepo` and `serveDist`. T049 stops and asks the
-  owner if Donate leaves the first phone screen or the menu wraps to a third line. Subagent costs so
-  far: Phase 1 352k, Phase 2 287k tokens.
+- **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
+  journey story: Phases 1 and 2 merged (#117, #119), and #120 and #121 merged with post-merge checks
+  green. **Phase 3** (T042–T051, finding the story) is raised for the owner as a PR from
+  `003-slice-3`; nothing visible changes until a chapter exists.
+- **Next session, first:** `/session-start`, then `/after-merge 122` if it merged (it has no boxes).
+  If it hasn't, ask whether the owner has looked at it.
+- **Then Donate always on the first screen** (owner, 2026-11-06, on #122), its own PR and session,
+  before Phase 4. Today the landing page's Donate button ends at 777 px of 780 on Windows, 804 on
+  CI's Linux, and below the first screen at 320 px. First ask where it falls on the owner's own
+  phone at `/running/` (a real screen, browser bar included). Then set a firm target (about 360 x
+  640, on every font we can test, with a margin) and show the owner two or three layouts as
+  screenshots: a tighter page top (the two source lines, "Last updated", the race name wrapping,
+  spacing) and Donate higher in the card (above the progress bar). The check asserts the target with
+  its margin, beside `landing.spec.ts`'s "total on the first screen" test.
+- **Then 003 Phase 4** (T053–T061, the chapter list at four or more chapters, "Back to chapters",
+  and the growth proof), branched from a `main` holding Phase 3: brief with
+  `/speckit-house-process-implement-brief` naming `preview-state` (T056's `four-chapters` state),
+  `tests`, `page-tests`, `gate-drill` (T059 extends `story-launch.spec.ts`) and `pr-screenshots`
+  (list closed and open), and dispatch as for Phase 3. Subagent costs so far: Phase 1 352k, Phase 2
+  287k, Phase 3 291k tokens.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -332,6 +339,18 @@ project-specific notes.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.
+- A Playwright run can hit `ERR_NETWORK_IO_SUSPENDED` plus timeouts even mid-morning with the laptop
+  in use (4 unrelated mobile tests, 6 Nov); the same specs rerun alone passed. Read the JSON report's
+  error messages to tell suspend failures from real ones.
+- With a `system-ui` font stack, an absolute first-screen check (Donate within 780 px) passed on
+  Windows and failed on CI's Linux by 24 px. For "X mustn't move Y", measure the same page with X
+  shown and hidden instead.
+- A subagent's "choices for the owner to confirm" went into the PR as boxes unfiltered: one was a
+  test-coverage choice the owner can't judge, and none had a recommendation; the owner had to ask.
+  The main conversation filters them, keeps only real owner decisions, and recommends an answer
+  for each (implement-brief's *When it returns*).
+- A test asserting something is absent from a preview that renders the real menu ("no 'Story'") is a
+  launch-time trap. Make such checks follow the repo's data (here `journeyChapterIds()`).
 
 ## Open questions
 

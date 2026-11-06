@@ -1,0 +1,15 @@
+---
+// /running/story/ (T044, spec 003 US3; contracts/routes.md): the journey story. It exists only once
+// a chapter exists (integration.ts's story area), so loadJourney always finds one here. The <h1> is
+// the approved title, and the <title> is "<title> · Running · Alexander Webber"; the description
+// and share image's alt text are the approved page wording (FR-039, FR-075). See StoryPage.astro.
+// No client JS.
+import { ogPath } from '../../../shared/og/render.ts';
+import StoryPage from '../components/StoryPage.astro';
+import { loadJourney } from '../data/journey.ts';
+
+const journey = await loadJourney();
+if (!journey) throw new Error('/running/story/ was built with no chapter: the story area should exist only once one does');
+---
+
+<StoryPage journey={journey} image={ogPath('/running/story/')} />

@@ -3,16 +3,21 @@
 // branch that never merges, then prints the Markdown for the PR body, linked by commit SHA (`gh`
 // can't attach images to a PR).
 //
-//   node scripts/process/screenshots.ts <path>[=<name>] ... [--build] [--first-screen] [--no-dark]
-//     [--no-desktop] [--width=360] [--publish]
+//   node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,first-screen] ... [--build]
+//     [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--width=360] [--publish]
 //
 // - Serves dist/ itself (no `astro preview`, which a coding agent's session backgrounds and which
 //   blocks Playwright's webServer). Preview pages need a SHELL_PREVIEW=1 build: --build makes one.
+//   --dist=<dir> serves another built site instead, e.g. a drill's scratch copy kept with
+//   DRILL_KEEP_DIST (tests/e2e/story-launch.spec.ts).
 // - Each path gives <name>-phone, <name>-phone-dark, <name>-desktop (and -desktop-dark with
-//   --desktop-dark). The name defaults to the path's segments joined by "-".
-// - Phone shots are full-page at 360 px wide (--width) with isMobile off (Playwright can't capture a
-//   full page with it on), at 2x. --first-screen shoots only the first screen (360 x 780), for
-//   "what a visitor sees first" checks. Pages taller than WebP's limit are cropped, and say so.
+//   --desktop-dark). The name defaults to the path's segments joined by "-". One path can be shot
+//   more than once under different names, e.g. `/running/=landing,first-screen
+//   /running/=menu-320,width=320,first-screen`.
+// - Phone shots are full-page at 360 px wide (--width, or `,width=` for one path) with isMobile off
+//   (Playwright can't capture a full page with it on), at 2x. --first-screen (or `,first-screen`)
+//   shoots only the first screen (width x 780), for "what a visitor sees first" checks. Pages taller
+//   than WebP's limit are cropped, and say so.
 // - Files go to spikes/screens/out/ (gitignored). --publish commits them with git plumbing (the
 //   working tree is untouched) to `<branch>-screens`, pushes, and prints the PR body's table. The
 //   side branch stays after the merge, so the merged PR's images keep working. It triggers no
@@ -22,14 +27,16 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
-import { extname, join } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 import sharp from 'sharp';
 import { walk } from '../lib/walk.ts';
 import { REPO, run } from './lib.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
-const DIST = join(ROOT, 'dist');
+const args = process.argv.slice(2);
+const distArg = args.find((a) => a.startsWith('--dist='))?.slice('--dist='.length);
+const DIST = distArg ? resolve(ROOT, distArg) : join(ROOT, 'dist');
 const OUT = join(ROOT, 'spikes', 'screens', 'out');
 const ASTRO = join(ROOT, 'node_modules', 'astro', 'bin', 'astro.mjs');
 /** WebP's largest side, in pixels. */
@@ -39,23 +46,37 @@ const DESKTOP = { width: 1280, height: 800 };
 
 const git = (...args: string[]) => run('git', args, ROOT).trim();
 
-const args = process.argv.slice(2);
 const flag = (name: string) => args.includes(`--${name}`);
 const width = Number(args.find((a) => a.startsWith('--width='))?.slice(8) ?? 360);
 const targets = args
   .filter((a) => !a.startsWith('--'))
   .map((a) => {
-    const [path, name] = a.split('=') as [string, string | undefined];
+    const [spec, ...options] = a.split(',') as [string, ...string[]];
+    const [path, name] = spec.split('=') as [string, string | undefined];
     const clean = path.endsWith('/') || extname(path) ? path : `${path}/`;
-    return { path: clean, name: name ?? (clean.split('/').filter(Boolean).join('-') || 'home') };
+    const own = options.find((o) => o.startsWith('width='));
+    return {
+      path: clean,
+      name: name ?? (clean.split('/').filter(Boolean).join('-') || 'home'),
+      width: own ? Number(own.slice('width='.length)) : width,
+      firstScreen: options.includes('first-screen') || flag('first-screen'),
+    };
   });
+if (distArg && flag('build')) {
+  console.error('! --build builds dist/, so it can\'t be used with --dist.');
+  process.exit(2);
+}
+if (new Set(targets.map((t) => t.name)).size !== targets.length) {
+  console.error('! Two shots share a name: name each with <path>=<name>.');
+  process.exit(2);
+}
 const rewritten = targets.find((t) => !t.path.startsWith('/'));
 if (rewritten) {
   console.error(`! "${rewritten.path}" isn't a site path. Git Bash rewrites /paths into Windows ones: run it from PowerShell, or prefix MSYS_NO_PATHCONV=1.`);
   process.exit(2);
 }
 if (targets.length === 0) {
-  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>] ... [--build] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
+  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,first-screen] ... [--build] [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
   process.exit(2);
 }
 
@@ -122,7 +143,7 @@ function serve(): Promise<{ server: Server; base: string }> {
 
 for (const { path } of targets) {
   if (!distFile(path)) {
-    console.error(`! ${path} isn't in dist/. Build first (--build makes a SHELL_PREVIEW=1 build, which the preview pages need).`);
+    console.error(`! ${path} isn't in ${distArg ?? 'dist/'}. Build first (--build makes a SHELL_PREVIEW=1 build, which the preview pages need).`);
     process.exit(1);
   }
 }
@@ -131,17 +152,19 @@ for (const { path } of targets) {
 
 interface Shot {
   file: string;
-  path: string;
+  /** The target's name: one path can be shot under several names. */
+  name: string;
   variant: string;
   cropped: boolean;
 }
 
-const variants = [
-  { suffix: 'phone', viewport: { width, height: PHONE_HEIGHT }, scale: 2, scheme: 'light' as const },
-  ...(flag('no-dark') ? [] : [{ suffix: 'phone-dark', viewport: { width, height: PHONE_HEIGHT }, scale: 2, scheme: 'dark' as const }]),
+const variantsFor = (w: number) => [
+  { suffix: 'phone', viewport: { width: w, height: PHONE_HEIGHT }, scale: 2, scheme: 'light' as const },
+  ...(flag('no-dark') ? [] : [{ suffix: 'phone-dark', viewport: { width: w, height: PHONE_HEIGHT }, scale: 2, scheme: 'dark' as const }]),
   ...(flag('no-desktop') ? [] : [{ suffix: 'desktop', viewport: DESKTOP, scale: 1, scheme: 'light' as const }]),
   ...(flag('desktop-dark') ? [{ suffix: 'desktop-dark', viewport: DESKTOP, scale: 1, scheme: 'dark' as const }] : []),
 ];
+const variants = variantsFor(width);
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
@@ -150,20 +173,20 @@ const browser = await chromium.launch();
 const shots: Shot[] = [];
 try {
   for (const target of targets) {
-    for (const v of variants) {
+    for (const v of variantsFor(target.width)) {
       const context = await browser.newContext({ viewport: v.viewport, deviceScaleFactor: v.scale, colorScheme: v.scheme, isMobile: false });
       const page = await context.newPage();
       const response = await page.goto(`${base}${target.path}`, { waitUntil: 'load' });
       if (response?.status() !== 200) throw new Error(`${target.path} answered ${response?.status()}`);
       await page.evaluate(() => document.fonts.ready);
-      const png = await page.screenshot({ fullPage: !flag('first-screen') });
+      const png = await page.screenshot({ fullPage: !target.firstScreen });
       await context.close();
       const image = sharp(png);
       const { width: w = 0, height: h = 0 } = await image.metadata();
       const cropped = h > WEBP_MAX;
       const file = `${target.name}-${v.suffix}.webp`;
       await (cropped ? image.extract({ left: 0, top: 0, width: w, height: WEBP_MAX }) : image).webp({ quality: 80 }).toFile(join(OUT, file));
-      shots.push({ file, path: target.path, variant: v.suffix, cropped });
+      shots.push({ file, name: target.name, variant: v.suffix, cropped });
       console.log(`  ${file}${cropped ? ` (cropped to the first ${WEBP_MAX / v.scale} px of ${h / v.scale})` : ''}`);
     }
   }
@@ -208,18 +231,24 @@ console.log(`Pushed ${shots.length} file(s) to ${side} at ${sha}.\n`);
 // --- The PR body's Markdown ----------------------------------------------------------------------
 
 const url = (file: string) => `https://raw.githubusercontent.com/${REPO}/${sha}/${file}`;
-const img = (shot: Shot) => `<img src="${url(shot.file)}" width="240" alt="${shot.path} ${shot.variant}">`;
-const phones = (p: string) => shots.filter((s) => s.path === p && s.variant.startsWith('phone'));
-const desktops = (p: string) => shots.filter((s) => s.path === p && s.variant.startsWith('desktop'));
+/** A target as its row and links name it: the path, and its width and first screen when they differ. */
+const label = (t: (typeof targets)[number]) => {
+  const notes = [...(t.width !== width ? [`${t.width} px`] : []), ...(t.firstScreen && !flag('first-screen') ? ['first screen'] : [])];
+  return `\`${t.path}\`${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`;
+};
+const pathOf = new Map(targets.map((t) => [t.name, t.path]));
+const img = (shot: Shot) => `<img src="${url(shot.file)}" width="240" alt="${pathOf.get(shot.name)} ${shot.variant}">`;
+const phones = (name: string) => shots.filter((s) => s.name === name && s.variant.startsWith('phone'));
+const desktops = (name: string) => shots.filter((s) => s.name === name && s.variant.startsWith('desktop'));
 const columns = variants.filter((v) => v.suffix.startsWith('phone')).map((v) => (v.suffix === 'phone' ? 'Phone' : 'Phone, dark'));
 const lines = [
   '## Screenshots (made-up data)',
   '',
   `| Page | ${columns.join(' | ')} |`,
   `|---|${columns.map(() => '---').join('|')}|`,
-  ...targets.map(({ path }) => `| \`${path}\` | ${phones(path).map(img).join(' | ')} |`),
+  ...targets.map((t) => `| ${label(t)} | ${phones(t.name).map(img).join(' | ')} |`),
 ];
-const desktopLinks = targets.flatMap(({ path }) => desktops(path).map((s) => `[\`${path}\`${s.variant === 'desktop' ? '' : ' (dark)'}](${url(s.file)})`));
+const desktopLinks = targets.flatMap((t) => desktops(t.name).map((s) => `[${label(t)}${s.variant === 'desktop' ? '' : ' (dark)'}](${url(s.file)})`));
 if (desktopLinks.length > 0) lines.push('', `Desktop: ${desktopLinks.join(' · ')}`);
 if (shots.some((s) => s.cropped)) lines.push('', 'Long pages are cropped to their top part.');
 const markdown = `${lines.join('\n')}\n`;
