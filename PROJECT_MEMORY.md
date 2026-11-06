@@ -8,19 +8,18 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-05):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phase 1 merged (#117), the Phase 2 skills merged (#118), and **Phase 2 (the story
-  page over made-up previews) is raised as #119** with four checkbox questions on the page's look.
-- **Next session, first:** `/session-start`. If #119 merged, `/after-merge 119` and read its four
-  boxes (an unticked one is asked before Phase 3 builds on it); if not, ask the owner whether
-  they've looked at its screenshots. The trigger due 2026-11-06 checks that the 00:17 UTC refresh's
-  gate ran `check-links`, then ticks T023.
-- **Then build the gate-drill skill** (`process/skill-candidates.yaml`, `next: 003 Phase 3`): T049's
-  launch drill is a scratch-copy drill, done by hand four times before. Then **003 Phase 3**
-  (T042–T050, finding the story: route, menu item, share image, landing panel): brief with
-  `/speckit-house-process-implement-brief` naming `section-page`, `page-tests`, `tests`, the new drill
-  skill and `pr-screenshots`, and dispatch as for Phase 2. T049 stops and asks the owner if Donate
-  leaves the first phone screen or the menu wraps to a third line. Subagent costs so far: Phase 1
-  352k, Phase 2 287k tokens.
+  journey story: Phases 1 and 2 merged (#117, #119; all of #119's boxes ticked, post-merge checks
+  green). Raised for the owner: **#120** (Spec Kit 1.3.1) and **#121** (the `gate-drill` skill, with
+  `runGate`, `serveDist` and `snapshotDist` in `tests/helpers/scratch-site.ts`).
+- **Next session, first:** `/session-start`. `/after-merge` each of #120 and #121 that merged; if
+  #121 hasn't, ask the owner whether they've looked at it, as Phase 3 builds on it. (T023 is done:
+  the bot's gate ran `check-links` on 6 Nov.)
+- **Then 003 Phase 3** (T042–T050, finding the story: route, menu item, share image, landing
+  panel), branched from a `main` holding #121: brief with `/speckit-house-process-implement-brief`
+  naming `section-page`, `page-tests`, `tests`, `gate-drill` and `pr-screenshots`, and dispatch as
+  for Phase 2. T048 and T049 use `runGate`, `scratchRepo` and `serveDist`. T049 stops and asks the
+  owner if Donate leaves the first phone screen or the menu wraps to a third line. Subagent costs so
+  far: Phase 1 352k, Phase 2 287k tokens.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -325,6 +324,11 @@ project-specific notes.
   heading reading as a subtitle. Every test passed; only the screenshot showed it.
 - Playwright's per-project counts come from `--reporter=line,json` with
   `PLAYWRIGHT_JSON_OUTPUT_FILE`, walking `suites` and `specs[].tests[].projectName`.
+- A local Playwright run left going overnight took 2–4 h and failed 5–9 different tests each time,
+  all timeouts (unit tests too): the laptop slept. Awake, the same specs passed in a minute. Check
+  wall-clock times before reading failures, and rerun while the machine is in use.
+- `upgrade-speckit.ps1` makes its own `chore-speckit-<version>` branch from `main`, so run it from
+  `main`; a branch made first is left empty.
 - For cloud-session set-up, a SessionStart hook committed to the repo (gated on `CLAUDE_CODE_REMOTE`,
   installs gated on lockfile hashes) beats the environment's setup script: it's versioned, reviewed
   in a PR, and needs no settings screen. Only the network allowlist still needs the owner.
