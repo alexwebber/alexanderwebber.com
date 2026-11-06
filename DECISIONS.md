@@ -2159,5 +2159,5 @@ end. Add each new decision as a dated entry at the end, as it's made.
     pixel). The new `graduation-review` skill's gaps (measuring previews with the budget script, a
     fix in shared code gets its own box, five new attack questions, time zones, the questions
     listed in the PR in the order written) and `tips-shell`'s (`TZ` and `--path=` under Git Bash) go
-    upstream in a software-factory PR. No new skill candidate: the three tasks done by hand are now
+    upstream in software-factory#20 (house-process 0.16.1), taking the `TZ` upstream candidate with them. No new skill candidate: the three tasks done by hand are now
     a script option (`--path=`), a test and the `gate-drill` matrix.
