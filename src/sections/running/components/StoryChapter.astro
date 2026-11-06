@@ -2,16 +2,19 @@
 // One chapter of the journey story (spec 003; contracts/routes.md *The page*), in order: its name
 // (an unnumbered <h2>, FR-003), when (one <time>, or two for a period), the prose with its figures,
 // the place photos will take (Phase 5), the one place reserved for a future video (FR-053, SC-013),
-// then the "What I learned" box (FR-004). A chapter with no figures or photos renders no empty
+// then the "What I learned" box (FR-004), and at four or more chapters a "Back to chapters" link to the
+// chapter list (FR-052, ChapterList.astro). A chapter with no figures or photos renders no empty
 // wrapper for them (US1.4). Its ID is its anchor (`#<id>`), stable for the chapter's life (FR-051).
 import type { ChapterView } from '../data/journey.ts';
 import StoryProse from './StoryProse.astro';
 
 export interface Props {
   chapter: ChapterView;
+  /** "Back to chapters" after the takeaway: when the page shows the chapter list. */
+  backLink?: boolean;
 }
 
-const { chapter } = Astro.props;
+const { chapter, backLink = false } = Astro.props;
 ---
 
 <section class="story-chapter" id={chapter.id} aria-labelledby={`${chapter.id}-title`}>
@@ -24,4 +27,11 @@ const { chapter } = Astro.props;
     <h3 id={`${chapter.id}-learned`}>What I learned</h3>
     <p>{chapter.takeaway}</p>
   </div>
+  {
+    backLink && (
+      <p class="story-back">
+        <a href="#story-chapter-list">Back to chapters</a>
+      </p>
+    )
+  }
 </section>

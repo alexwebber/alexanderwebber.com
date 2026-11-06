@@ -1,7 +1,8 @@
 // The journey story as its page shows it (spec 003; data-model.md §10): the approved files from
 // the store, chapters oldest first with their prose parsed, their dates as shown and their figures
 // by ID, then the closing section and the note. Undefined until a chapter exists, so nothing
-// anywhere renders (FR-042). Memoised per store.
+// anywhere renders (FR-042). Memoised per store. From four chapters on, the page also lists them
+// (showChapterList, FR-052).
 //
 // validate-data refuses everything the page couldn't show before the gate builds. A plain build
 // runs only the schema and loader checks, so this still throws DataValidationError on what would
@@ -55,6 +56,12 @@ export interface JourneyView {
   closing?: { heading: string; paragraphs: Paragraph[] };
   note: string;
 }
+
+/** The chapter list and "Back to chapters" links show from this many chapters on (FR-052, research.md R7). */
+export const CHAPTER_LIST_AT = 4;
+
+/** True when the page shows the closed chapter list and a "Back to chapters" link after each chapter. */
+export const showChapterList = (journey: Pick<JourneyView, 'chapters'>): boolean => journey.chapters.length >= CHAPTER_LIST_AT;
 
 export function loadJourney(store: RunningStore = runningStore()): Promise<JourneyView | undefined> {
   return load(store);

@@ -11,6 +11,8 @@
  * - The takeaway is a box with a border on every side and a heavier start edge, so it stands apart
  *   by shape and its "What I learned" label in light, dark and forced colours (owner decision 10,
  *   FR-004).
+ * - At four or more chapters, a closed "Chapters" list sits under the title and each chapter ends with
+ *   "Back to chapters" (owner decision 3, FR-052). Both are plain links and a native <details>.
  */
 /* The page has no "Last updated" line under its <h1>, so the first chapter's <h2> needs its own
    distance from it, or it reads as the title's subtitle. */
@@ -19,8 +21,45 @@
   overflow-wrap: anywhere;
 }
 
+/* The chapter list (four or more chapters, FR-052): closed, one line between the rules, so the first
+   chapter still starts on a phone's first screen; open, the names, each a 24 px target at least
+   (WCAG 2.2's target size). */
+.theme-running .story-chapters {
+  max-width: 66ch;
+  margin: 0 0 var(--space-6);
+  border-block: 1px solid var(--color-border);
+}
+
+.theme-running .story-chapters > summary {
+  min-height: 1.5rem;
+  padding-block: var(--space-2);
+  font-weight: 600;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.theme-running .story-chapters > ul {
+  margin: 0 0 var(--space-3);
+  padding-inline-start: var(--space-5);
+}
+
+.theme-running .story-chapters li + li {
+  margin-top: var(--space-2);
+}
+
+/* A whole line's height, not just the text's, so a short name next to the summary is still a 24 px
+   target. */
+.theme-running .story-chapters li > a {
+  display: inline-block;
+}
+
 .theme-running .story-chapter {
   margin: 0 0 var(--space-7);
+}
+
+.theme-running .story-back {
+  margin: var(--space-4) 0 0;
+  font-size: var(--step--1);
 }
 
 .theme-running .story-chapter > h2,
