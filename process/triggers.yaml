@@ -37,3 +37,9 @@
     said so on 2026-11-05). When a result comes, offer the plainer wording first: "Lab test (Clinic,
     15 Mar 2026): 51.0. Your Garmin said 54 that day, 3.0 higher than the lab." The built wording is
     the alternative. If not booked, move this trigger on.
+- due: 2027-04-05
+  task: >-
+    003 T090: at the first review after Brighton, raise a possible new journey-story chapter (and
+    after later milestones). If the owner wants one: interview and draft outside the repo, the
+    owner's approval, then 003 quickstart.md §8 for that chapter alone. Ask whether the closing
+    section still holds. Move this trigger on to the next milestone afterwards.
