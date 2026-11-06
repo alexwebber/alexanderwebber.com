@@ -3,8 +3,8 @@ schema_version: "1.0"
 extension:
   id: house-process
   name: "House Process Scaffolding"
-  version: "0.14.0"
-  description: "Scaffolds PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md house-style process files; offers to harvest lessons upstream at milestones; briefs subagents, writes handoffs and runs guided reviews; and ships the agent tips as topic skills"
+  version: "0.15.0"
+  description: "Scaffolds PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md house-style process files; offers to harvest lessons upstream at milestones; briefs subagents, writes handoffs, runs guided reviews and question rounds, and upgrades Spec Kit; and ships the agent tips as topic skills"
   author: "Alex Webber"
   repository: "https://github.com/alexwebber/software-factory"
   license: "Proprietary"
@@ -19,10 +19,10 @@ provides:
       description: "Create PROJECT_MEMORY.md, BACKLOG.md and CLAUDE.md from the house templates if they do not already exist"
     - name: speckit.house-process.harvest-lessons
       file: commands/speckit.house-process.harvest-lessons.md
-      description: "Review recent work for lessons worth sending upstream to software-factory or global norms"
+      description: "Review recent work for lessons that should be sent upstream to software-factory (or global norms) instead of staying trapped in this project"
     - name: speckit.house-process.model-canary
       file: commands/speckit.house-process.model-canary.md
-      description: "Agent-run model canary: same step on two models, blind-judged, logged to canaries.md"
+      description: "Run a model canary: the same workflow step on two models, compared blind, so model selection evolves from evidence"
     - name: speckit.house-process.implement-brief
       file: commands/speckit.house-process.implement-brief.md
       description: "Write the brief for a Spec Kit subagent (implement, or specify, plan, tasks): the slice's tasks, the skills it must load, the owner's answers word for word, privacy limits, what it may push, and what it reports back (token cost, skill gaps). Use before dispatching any /speckit-* command to a subagent."
@@ -32,9 +32,15 @@ provides:
     - name: speckit.house-process.guided-review
       file: commands/speckit.house-process.guided-review.md
       description: "Guide the owner through what a phase put live, page by page on a phone and then a desktop, with a question round on what they saw, and record the outcome. Use at the start of the session after a phase that changed visible pages has merged and deployed, or whenever the owner asks to review the live site."
+    - name: speckit.house-process.question-round
+      file: commands/speckit.house-process.question-round.md
+      description: "Run a question round with the owner: draw out requirements and design decisions in focused rounds of up to four questions, each with a recommended option first, check stated facts against stored data, and record every answer with its reason in the decisions log. Use before a spec, plan or implementation phase, at a clarification, or whenever a decision is the owner's to make."
+    - name: speckit.house-process.upgrade-speckit
+      file: commands/speckit.house-process.upgrade-speckit.md
+      description: "Upgrade Spec Kit or the house bundle in a project: check the release notes, upgrade the specify CLI, run scripts/upgrade-speckit.ps1 from the project's main, review the diff, record it and raise a PR. Use when the session-start version check shows a new Spec Kit release, or after a house-process or preset change has merged in software-factory."
     - name: speckit.house-process.tips-astro
       file: commands/speckit.house-process.tips-astro.md
-      description: "Agent tips for Astro: stripped inline whitespace, failed builds emptying dist/, astro preview under a coding agent, Node floors in patch releases, date-driven page tests, client scripts, scoped-style bloat, building a site copy, and chunk renames in dist/ diffs. Read before changing Astro pages, components, config or builds."
+      description: "Agent tips for Astro: stripped inline whitespace, failed builds emptying dist/, astro preview under a coding agent, Node floors in patch releases, date-driven page tests, client scripts, scoped-style bloat, building a site copy, chunk renames and CSS chunking changes in dist/ diffs, Astro.slots.has, script is:inline, and building main beside a branch. Read before changing Astro pages, components, config or builds."
     - name: speckit.house-process.tips-cloudflare
       file: commands/speckit.house-process.tips-cloudflare.md
       description: "Agent tips for Cloudflare: moving nameservers, Worker custom domains and token permissions, workers.dev certificates, 404 pages with static assets, Worker entry exports, Real User Monitoring, and least-privilege CI deploy tokens. Read before DNS, Workers, R2 or Cloudflare token work."
@@ -43,40 +49,43 @@ provides:
       description: "Agent tips for docs: rendering Mermaid diagrams locally before a PR, and diagram direction for GitHub mobile. Read before adding or changing a diagram in Markdown."
     - name: speckit.house-process.tips-git
       file: commands/speckit.house-process.tips-git.md
-      description: "Agent tips for git and GitHub PR history: upstream tracking after branching from origin/main, scanning PR refs, and confirming deleted PR description revisions. Read before branching, pushing, or cleaning a repo's history."
+      description: "Agent tips for git and GitHub PR history: upstream tracking after branching from origin/main, scanning PR refs, confirming deleted PR description revisions, and images in PR bodies. Read before branching, pushing, or cleaning a repo's history."
     - name: speckit.house-process.tips-github-actions
       file: commands/speckit.house-process.tips-github-actions.md
-      description: "Agent tips for GitHub Actions: unreliable schedule triggers, billed minutes per job, read-only builds with a separate write job, bash -e in retry loops, setup-node, Playwright installs, red non-required checks, continue-on-error, jq, rulesets and npm overrides. Read before writing or changing a workflow, a composite action, or CI checks."
+      description: "Agent tips for GitHub Actions: unreliable schedule triggers, billed minutes per job, read-only builds with a separate write job, bash -e in retry loops, setup-node, Playwright installs, red non-required checks, continue-on-error, jq, rulesets, npm overrides, finding runs by commit, createdAt in run listings, CodeQL PR alerts and path-injection, and proving a step ran. Read before writing or changing a workflow, a composite action, or CI checks."
     - name: speckit.house-process.tips-maps
       file: commands/speckit.house-process.tips-maps.md
       description: "Agent tips for web maps: maplibre-gl 6's worker URL under a bundler, and lazy-loading the library on click. Read before adding or changing an interactive map."
+    - name: speckit.house-process.tips-owner-content
+      file: commands/speckit.house-process.tips-owner-content.md
+      description: "Agent tips for content written with or about the owner: interviews and the private details people volunteer, figures from data exports, a draft reviewed once at the end, briefs for personal stories, and reading an owner's screenshot. Read before interviewing the owner, drafting a personal story or page text, or acting on an owner's review."
     - name: speckit.house-process.tips-privacy-pipelines
       file: commands/speckit.house-process.tips-privacy-pipelines.md
-      description: "Agent tips for privacy and data pipelines: checks that report position and rule never the value, dry-running aggregate reports, versioned cache keys, shared fixtures across languages, running a new published field through the full gate, and versioned raw bundles. Read before writing an ingest stage, a scan or validator, or anything that prints data in CI."
+      description: "Agent tips for privacy and data pipelines: checks that report position and rule never the value, dry-running aggregate reports, versioned cache keys, shared fixtures across languages, running a new published field through the full gate, versioned raw bundles, approval hashes, scans over prose, first-match scanners, and values leaking through error messages. Read before writing an ingest stage, a scan or validator, or anything that prints data in CI."
     - name: speckit.house-process.tips-providers
       file: commands/speckit.house-process.tips-providers.md
       description: "Agent tips for external providers and file formats: intervals.icu FIT endpoints, garmin-fit-sdk, proving a response with a live call, urllib redirects and headers, credential shape checks, Decimal precision and strict Python regexes. Read before writing or changing a provider adapter or parser."
     - name: speckit.house-process.tips-research
       file: commands/speckit.house-process.tips-research.md
-      description: "Agent tips for research: reading a platform's terms first, product-specific API subscriptions, docs that need a real browser, and verifying what a form is for before sending the owner to it. Read before researching a platform, an API or a sign-up step for the owner."
+      description: "Agent tips for research: reading a platform's terms first, product-specific API subscriptions, docs that need a real browser, verifying what a form is for before sending the owner to it, and trying a test environment's existing items before calling it broken. Read before researching a platform, an API or a sign-up step for the owner."
     - name: speckit.house-process.tips-secrets
       file: commands/speckit.house-process.tips-secrets.md
       description: "Agent tips for handling secrets: never printing a secrets file's lines, taking secrets from a file, no PowerShell pipes into gh secret set, and keeping throwaway probes to what they may print. Read before reading, checking or setting any token, key or credential."
     - name: speckit.house-process.tips-share-images
       file: commands/speckit.house-process.tips-share-images.md
-      description: "Agent tips for share images rendered with satori: content-box sizing, and checking a rendered PNG. Read before changing Open Graph or share image layouts."
+      description: "Agent tips for share images rendered with satori: content-box sizing, checking a rendered PNG, and converting a supplied logo without altering it. Read before changing Open Graph or share image layouts, or converting a supplied image."
     - name: speckit.house-process.tips-shell
       file: commands/speckit.house-process.tips-shell.md
       description: "Agent tips for shell commands and processes: stopping servers safely, heredocs and backslashes, reading test output, Git Bash path rewriting, sed on Windows, User-Agents and re-reading settings. Read before starting or stopping a long-running process, writing files from a shell, or scripting gh."
     - name: speckit.house-process.tips-testing
       file: commands/speckit.house-process.tips-testing.md
-      description: "Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, and beforeAll per project. Read before writing or debugging tests, Playwright ones especially."
+      description: "Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, beforeAll per project, exact and scoped locators, fixture seeds, absence checks, proving checks fail, per-project counts, accessible names of SVGs, and failures from a sleeping machine. Read before writing or debugging tests, Playwright ones especially."
     - name: speckit.house-process.tips-ui-accessibility
       file: commands/speckit.house-process.tips-ui-accessibility.md
-      description: "Agent tips for UI and accessibility: short labels that mustn't wrap, keyboard-path tests, visually-hidden inputs, and round chart dots on a stretched SVG. Read before changing page layout, CSS toggles, charts, or keyboard and screen-reader behaviour."
+      description: "Agent tips for UI and accessibility: short labels that mustn't wrap, keyboard-path tests, visually-hidden inputs, round chart dots on a stretched SVG, 320 px overflow from nowrap and hidden labels, stretched grid items, focus in sideways lists, target size under a summary, time ranges, target labels, and what only screenshots catch. Read before changing page layout, CSS toggles, charts, or keyboard and screen-reader behaviour."
     - name: speckit.house-process.tips-windows-cloud
       file: commands/speckit.house-process.tips-windows-cloud.md
-      description: "Agent tips for Windows and cloud test environments: symlinks and junctions, running bins with node not npx, Playwright from PowerShell, sharp's file cache, and MSYS_NO_PATHCONV paths. Read before writing cross-platform scripts or test helpers, or running suites on Windows or in a cloud session."
+      description: "Agent tips for Windows and cloud test environments: symlinks and junctions, running bins with node not npx, Playwright's webServer from Git Bash, sharp's file cache, MSYS_NO_PATHCONV paths, removing worktrees and junctions, watchers that outlive the editor, and cloud sessions (set-up hooks, no pwsh, browser builds, pushing only to their own branch). Read before writing cross-platform scripts or test helpers, or running suites on Windows or in a cloud session."
 
 hooks:
   after_constitution:

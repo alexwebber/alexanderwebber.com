@@ -56,4 +56,18 @@ Write it in this order, as plain instructions:
 2. **Apply the skill gaps** in the same PR: a lesson about how to do a task updates its skill.
    Add or count up skill candidates for tasks done by hand.
 3. Add its lessons to *Upstream candidates*.
-4. Read every new or changed file before pushing (privacy), then run the PR routine.
+4. **Filter what it lists for the owner.** Keep only real owner decisions (not, say, a
+   test-coverage choice the owner can't judge), and give each a recommended answer before it goes
+   in the PR as a box. Unfiltered choices without recommendations sent the owner back to ask.
+5. Read every new or changed file before pushing (privacy), then run the PR routine. If the
+   subagent couldn't reach a private file a check needs (e.g. a private-terms list outside the
+   repo, so its search was skipped), rerun that check here with the real file.
+
+While it runs, and for follow-ups:
+
+- **A notice that the subagent is waiting on its own background work isn't its report.** Check
+  the branch (or the process list) for progress rather than calling it finished.
+- **When a background script shares the checkout with it,** check the script's clean-up first
+  (e.g. a post-merge tidy-up must skip the checked-out branch).
+- **To apply follow-up fixes to its output** (e.g. analyze's findings on `tasks.md`), resume the
+  same subagent with `SendMessage`, which already holds the docs, rather than starting a fresh one.

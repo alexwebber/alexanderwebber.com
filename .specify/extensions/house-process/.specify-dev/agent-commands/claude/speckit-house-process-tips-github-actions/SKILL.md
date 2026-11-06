@@ -1,6 +1,6 @@
 ---
 name: speckit-house-process-tips-github-actions
-description: 'Agent tips for GitHub Actions: unreliable schedule triggers, billed minutes per job, read-only builds with a separate write job, bash -e in retry loops, setup-node, Playwright installs, red non-required checks, continue-on-error, jq, rulesets and npm overrides. Read before writing or changing a workflow, a composite action, or CI checks.'
+description: 'Agent tips for GitHub Actions: unreliable schedule triggers, billed minutes per job, read-only builds with a separate write job, bash -e in retry loops, setup-node, Playwright installs, red non-required checks, continue-on-error, jq, rulesets, npm overrides, finding runs by commit, createdAt in run listings, CodeQL PR alerts and path-injection, and proving a step ran. Read before writing or changing a workflow, a composite action, or CI checks.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
@@ -72,3 +72,14 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **Measure CI speed-ups on one runner, back to back.** Hosted runners differ enough (the same
   Playwright suite took 292 s and 414 s) that a PR's own job time can't show a 30% gain. A
   throwaway branch workflow that runs the old and new versions in one job can.
+- **`gh run list --commit` needs the full SHA;** a short one returns nothing, not an error.
+- **`gh run list` and `gh run view` can show `createdAt` an hour off the run's own log
+  timestamps,** which looked like a missed scheduled slot. Check a run's log before trusting a
+  gap in the listing.
+- **CodeQL's PR alerts show under `code-scanning/alerts?pr=N`** and the check run's annotations,
+  not under `?ref=refs/pull/N/merge`. A CodeQL fail in `gh pr checks` is the results check, not
+  the Analyze jobs.
+- **CodeQL's `js/path-injection` doesn't credit a `resolve` + `startsWith` containment check** in
+  a local static server. Serving only from a map of files indexed up front cleared the alerts.
+- **A green run doesn't prove a step ran.** An idle scheduled run skipped the job where a new gate
+  step lives. Check for the step's log line, not the run's conclusion.

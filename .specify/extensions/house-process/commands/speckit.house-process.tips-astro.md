@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for Astro: stripped inline whitespace, failed builds emptying dist/, astro preview under a coding agent, Node floors in patch releases, date-driven page tests, client scripts, scoped-style bloat, building a site copy, and chunk renames in dist/ diffs. Read before changing Astro pages, components, config or builds."
+description: "Agent tips for Astro: stripped inline whitespace, failed builds emptying dist/, astro preview under a coding agent, Node floors in patch releases, date-driven page tests, client scripts, scoped-style bloat, building a site copy, chunk renames and CSS chunking changes in dist/ diffs, Astro.slots.has, script is:inline, and building main beside a branch. Read before changing Astro pages, components, config or builds."
 ---
 
 # Agent tips: Astro
@@ -37,3 +37,16 @@ candidates* in the moment, and the lesson harvest adds it here.
   shared CSS chunk after the first module importing it, so dropping an import renamed
   `integration.<hash>.css` to `Base.<hash>.css` (same hash) on all 208 pages. Compare the file
   with `cmp`, normalise the name, then diff again.
+- **`Astro.slots.has('x')` is true for `{cond && <C slot="x" />}` even when `cond` is false.**
+  Test the empty case, or pass a prop.
+- **`<script is:inline>` emits its content literally:** a `{`...`}` expression around the code
+  reached the page as text. Write the JavaScript plainly inside the tag.
+- **Small changes move CSS chunks; compare `dist/`'s file list and computed styles, not only the
+  HTML.** Growing a shared stylesheet by a few bytes passed Vite's 4 KB inline limit and made a
+  new render-blocking CSS file on some pages. A second page sharing a component removed a chunk
+  file from two pages. A `<style>` in a newly imported component reordered a page's inlined CSS
+  even though the component wasn't rendered: keep such a rule on the page.
+- **To compare a branch with `main`, build `main` in a temporary `git worktree` under a
+  gitignored folder outside `tsconfig`** (e.g. `spikes/<x>/out/`). It finds `node_modules` by
+  walking up, and `astro check` doesn't scan the copy. Run the type generator there, then call
+  Astro's bin by its relative path.

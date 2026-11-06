@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for privacy and data pipelines: checks that report position and rule never the value, dry-running aggregate reports, versioned cache keys, shared fixtures across languages, running a new published field through the full gate, and versioned raw bundles. Read before writing an ingest stage, a scan or validator, or anything that prints data in CI."
+description: "Agent tips for privacy and data pipelines: checks that report position and rule never the value, dry-running aggregate reports, versioned cache keys, shared fixtures across languages, running a new published field through the full gate, versioned raw bundles, approval hashes, scans over prose, first-match scanners, and values leaking through error messages. Read before writing an ingest stage, a scan or validator, or anything that prints data in CI."
 ---
 
 # Agent tips: Privacy and data pipelines
@@ -31,3 +31,12 @@ candidates* in the moment, and the lesson harvest adds it here.
   the fetch stage can then top up older items with just the new part (one call per item), rather
   than re-importing all history. For 200 runs that was about 7 minutes instead of an hour of
   Actions minutes.
+- **Record exactly what an approval hash covers** (byte range, line endings, trailing newline),
+  or keep the script that made it. A story's private hashes couldn't be reproduced a day later,
+  and only the files' modified times showed the text was unchanged.
+- **A scan that prints its matched excerpt quotes free text when run over prose.** Redact the
+  findings in prose files before a scan's output reaches a public log.
+- **A scanner that reports only a rule's first match per file** proves one case in a test that
+  plants two in one file. Plant each alone, then both.
+- **An error layer that prefixes the offending value leaks free text through schema errors.**
+  Drop the value for approved text; only a sentinel test across schema-invalid cases caught it.
