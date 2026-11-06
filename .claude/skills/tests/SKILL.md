@@ -46,6 +46,8 @@ II(a)). Playwright page tests have their own skill, `page-tests`.
   and pass them under made-up keys (`tests/unit/story-page.test.ts`).
 - **Regexes over Astro output** allow `<` and `>` inside attribute values (Astro escapes only `&`
   and `"` there): match a tag's attributes with `(?:[^>"]|"[^"]*")*`, not `[^>]*`.
+- **Decoding entities** in an assertion: one `replace(/&(lt|gt|amp);/g, ...)` with a lookup, never
+  chained `replaceAll`s, or CodeQL's `js/double-escaping` fails the PR.
 - An SVG labelled by its title and desc: assert `toHaveAccessibleName`, not the description.
 - A regex that looks for HTML tags, even in an assertion, is case-insensitive and allows attributes
   (`/<(b|script)[\s>]/i`), or CodeQL's `js/bad-tag-filter` fails the PR.

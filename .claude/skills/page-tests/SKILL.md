@@ -41,7 +41,8 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
   compare the browser's `innerText`. A helper that swaps tags for spaces hides a missing space.
 
 - **Photos** (`tests/e2e/story.spec.ts`, the `photos` state): alt text and a visible caption; lazy
-  loading with width and height set; zero layout shift, measured by a `PerformanceObserver` on
+  loading with width and height set (the box's shape checked within 1 px: a `ch`-based column is
+  fractional under CI's font, and `toBeCloseTo(..., 0)` failed by 0.52 px); zero layout shift, measured by a `PerformanceObserver` on
   `layout-shift` while scrolling through; an aborted image (`page.route(..., (r) => r.abort())`)
   keeps its alt text and caption; and every built `/_astro/` file the page's HTML references has no
   metadata (read with sharp, from the bytes). A lazy `<img>` not yet requested reads

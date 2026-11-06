@@ -167,7 +167,7 @@ describe('a chapter with photos (US5)', () => {
 
   it('gives each photo its own alt text, escaped, never markup', async () => {
     const html = chapterHtml(await renderPhotos(listed), 'chapter-a');
-    const alts = [...html.matchAll(/<img [^>]*\balt="([^"]*)"/g)].map((m) => m[1]!.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&').replaceAll('&#38;', '&').replaceAll('&#60;', '<').replaceAll('&#62;', '>'));
+    const alts = [...html.matchAll(/<img [^>]*\balt="([^"]*)"/g)].map((m) => m[1]!.replace(/&(lt|gt|amp|#38|#60|#62);/g, (_, name: string) => ({ lt: '<', gt: '>', amp: '&', '#38': '&', '#60': '<', '#62': '>' })[name]!));
     expect(alts).toEqual(listed.map((p) => p.description));
     // Markup in the alt text stays inside its attribute and the caption's is escaped: no element made.
     expect(html.replace(/="[^"]*"/g, '=""')).not.toMatch(/<(b|i)[\s>]/i);

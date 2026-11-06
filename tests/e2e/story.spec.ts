@@ -380,9 +380,11 @@ for (const state of ['photos', 'long'] as const) {
       await expect(img).toHaveAttribute('loading', 'lazy');
       const [width, height] = [Number(await img.getAttribute('width')), Number(await img.getAttribute('height'))];
       expect(width * height).toBeGreaterThan(0);
-      // Before it loads, its box already has the photo's shape.
+      // Before it loads, its box already has the photo's shape. Within a pixel: the column's width
+      // comes from 66ch, so it's fractional under some fonts and the height is rounded (CI's
+      // DejaVu Sans gave 0.52 px).
       const box = (await img.boundingBox())!;
-      expect(box.height).toBeCloseTo((box.width * height) / width, 0);
+      expect(Math.abs(box.height - (box.width * height) / width)).toBeLessThanOrEqual(1);
     }
     for (const img of await images.all()) {
       await img.scrollIntoViewIfNeeded();
