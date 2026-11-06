@@ -8,6 +8,8 @@
 //   or the landing links, no sitemap entry and no fundraising card on any page. The card's class
 //   name is in two pages' inlined CSS, so the check looks for the element, not the string;
 // - the hero keeps its charity line, which the card replaces only when it shows.
+// The story's chapters and story link are removed from the copy too (spec 003 T050), so the build
+// doesn't depend on whether the real story is in yet.
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
@@ -30,7 +32,14 @@ test.beforeAll(async ({}, testInfo) => {
   copySite(root);
 
   const owner = join(root, 'data/running/owner');
-  const focus = parse(readFileSync(join(owner, 'section.yaml'), 'utf8')).focus_race as { race_id: string; charity: { name: string } };
+  // No story either (spec 003), so this build doesn't depend on it: no chapter, and so no story link,
+  // which validation refuses without one.
+  rmSync(join(owner, 'journey/chapters'), { recursive: true, force: true });
+  const sectionFile = join(owner, 'section.yaml');
+  const section = parse(readFileSync(sectionFile, 'utf8')) as { focus_race: { race_id: string; charity: { name: string } }; story_link?: unknown };
+  delete section.story_link;
+  writeFileSync(sectionFile, stringify(section));
+  const focus = section.focus_race;
   charity = focus.charity.name;
   const campaignsFile = join(owner, 'campaigns.yaml');
   const campaigns = (parse(readFileSync(campaignsFile, 'utf8')) ?? []) as { race_id: string; finished?: boolean }[];
