@@ -27,7 +27,7 @@
   times: 3
   home: project
 - task: Question round before a phase (owner picks, recommended options, recorded in DECISIONS.md)
-  times: 8
+  times: 9
   home: playbook
 - task: Dependency research (current release, maintenance, a comparison in DECISIONS.md)
   times: 4
@@ -35,6 +35,6 @@
 - task: Spec Kit or house-process upgrade (reinstall, check-versions, record)
   times: 11
   home: playbook
-- task: First-screen measurement against main (menu lines, Donate's position, on main's build and a drill's)
-  times: 1
+- task: First-screen measurement and layout mock-ups (CSS and DOM injected into the built site, measured under Segoe UI, Roboto and DejaVu Sans, a side-by-side image for the owner)
+  times: 2
   home: project

@@ -48,6 +48,12 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
 - **Assert elements, not strings**, on built HTML: class names appear in inlined CSS.
 - **Layout that depends on fonts**: assert the geometry that causes it (a label inside its box),
   not a pixel count; Linux CI fonts differ. Hidden text still takes layout: walk text-node ranges.
+  The exception is a target the owner set (Donate on a 360 x 640 first screen, 24 px to spare,
+  `landing.spec.ts`): assert it, with the margin measured under CI's font (DejaVu Sans, the widest)
+  before committing to it.
+- **Keyboard paths press Tab** (`page.keyboard.press('Tab')`), the path a visitor takes, and check
+  the focused element is fully in view, not just focused: a sideways-scrolling menu left a focused
+  link faded at its edge until `scroll-padding-inline` was set.
 - **An SVG labelled by title and desc**: `toHaveAccessibleName`, not the description.
 - **Dates**: previews pin "today" (`PREVIEW_TODAY`); never read the clock in an expectation.
 
