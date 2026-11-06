@@ -1,0 +1,12 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: consequat-incididunt
+name: Consequat incididunt
+when: 2025-10
+prose: |
+  Adipiscing ut adipiscing consectetur dolore exercitation sed consectetur ullamco minim dolore ut veniam. Laboris ex consectetur aliqua tempor nostrud aliquip. Labore ut ad ea veniam quis dolore aliquip nisi magna veniam consequat commodo.
+
+  Ipsum ex ipsum eiusmod consequat adipiscing enim nostrud minim nostrud consequat lorem sit ex consectetur aliqua. Veniam ut lorem quis nisi consectetur adipiscing enim ex ea. Do ex et [ex aliquip](/running/) magna incididunt aliquip nisi.
+takeaway: Et incididunt et incididunt consequat labore tempor dolore consequat adipiscing enim dolore aliquip dolore quis veniam laboris ad magna incididunt do amet ipsum ad.
+approved:
+  date: 2026-11-01
+  sha256: ee822b4476b961bd59e583ac09db550023c61ddd6e31364cbcdd205c26612cb7

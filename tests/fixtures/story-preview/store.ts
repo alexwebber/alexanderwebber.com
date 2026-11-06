@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { JsonFileStore } from '../../../src/sections/running/data/store/index.ts';
 
 export const PREVIEW_TODAY = '2026-11-10';
-export const PREVIEW_STATES = ['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day'] as const;
+export const PREVIEW_STATES = ['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day', 'four-chapters'] as const;
 export type PreviewState = (typeof PREVIEW_STATES)[number];
 
 /** A state's data root (holding data/running/). */
