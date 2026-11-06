@@ -188,7 +188,7 @@ describe('the fundraising card on the landing page (US1)', () => {
 describe('landing page (US1)', () => {
   it('US1.1: leads with the Brighton hero: date, 182 days, target, the Garmin prediction as of its date, the charity', async () => {
     const t = text(await page());
-    expect(t).toContain('Brighton Marathon · 4 April 2027');
+    expect(t).toContain('Focus race · 4 April 2027 Brighton Marathon');
     expect(t).toContain('182 days to go');
     expect(t).toContain('Target: sub-3:30');
     expect(t).toContain('Garmin predicts 3:28:40 at current fitness (1 Oct 2026)');

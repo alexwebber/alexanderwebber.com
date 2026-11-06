@@ -13,6 +13,10 @@
 // The charity's logo, when the campaign has one (T116), sits at the bottom right, beside the updated
 // line and the page link: Donate has almost no room to spare on a phone's first screen, so nothing is
 // added above it.
+//
+// To keep Donate on a 360 x 640 phone's first screen (owner, 2026-11-06), the card's "Fundraising"
+// heading is there for screen readers only (the accent edge and the total say what the card is),
+// and Donate comes straight after the total, before the bar (FundraisingFigures' donateFirst).
 import type { CampaignView } from '../data/fundraising.ts';
 import type { CharityLogo as Logo } from '../data/logos.ts';
 import CharityLogo from './CharityLogo.astro';
@@ -33,8 +37,8 @@ const id = `fundraising-${campaign.campaign.id}`;
 ---
 
 <article class="fundraising-card" aria-labelledby={id} data-campaign-id={campaign.campaign.id}>
-  <h3 class="fundraising-card-title" id={id}>Fundraising</h3>
-  <FundraisingFigures campaign={campaign} />
+  <h3 class="fundraising-card-title visually-hidden" id={id}>Fundraising</h3>
+  <FundraisingFigures campaign={campaign} donateFirst />
   <div class="fundraising-card-foot">
     <div>
       {campaign.phase !== 'finished' && <FundraisingUpdated campaignId={campaign.campaign.id} lastReadAt={campaign.lastReadAt} staleAfterHours={campaign.staleAfterHours} {...now ? { now } : {}} />}

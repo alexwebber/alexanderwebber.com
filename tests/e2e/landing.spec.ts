@@ -92,7 +92,10 @@ test('the site home links to the landing page', async ({ page }) => {
 test('US1.1/US1.2: the hero shows the focus race, its date, the days left, its target and the charity', async ({ page }) => {
   await open(page);
   const hero = page.locator('[data-hero]');
-  await expect(hero.getByRole('heading', { level: 2 })).toHaveText(`${focus.name} · ${formatLongDate(focus.date)}`);
+  // The date sits in the "Focus race" line, so the name keeps one line on a phone (owner, 2026-11-06).
+  await expect(hero.getByRole('heading', { level: 2 })).toHaveText(focus.name);
+  await expect(hero.locator('[data-hero-eyebrow]')).toHaveText(`Focus race · ${formatLongDate(focus.date)}`);
+  await expect(hero.locator('[data-hero-eyebrow] time')).toHaveAttribute('datetime', focus.date);
   if (!focus.result_ref) {
     // With JS on, the countdown follows the visitor's UK date.
     const [value, unit] = countdownText(daysRemaining(focus, londonToday()));
@@ -243,6 +246,34 @@ test.describe('on a phone (SC-001, FR-073)', () => {
       if ((await page.locator(selector).count()) === 0) continue;
       expect(await bottom(selector), selector).toBeLessThanOrEqual(780);
     }
+  });
+
+  // Owner, 2026-11-06: Donate is always on a phone's first screen. The target is a small phone,
+  // 360 x 640, with 24 px to spare, and it holds on every font we test: Windows' Segoe UI locally,
+  // and CI's Linux font, the widest (Donate ended at 609 px there when this was set, against 582 on
+  // Windows). Real phones' fonts (Roboto, San Francisco) measured about the same as Windows'. If this
+  // fails, don't loosen it: the layout changed, so ask the owner.
+  test('Donate is on a 360 x 640 first screen, with 24 px to spare', async ({ page }, testInfo) => {
+    test.skip(!hasCard, 'the focus race has no published campaign');
+    await page.setViewportSize({ width: 360, height: 640 });
+    await open(page);
+    await page.evaluate(() => document.fonts.ready);
+    const donate = page.locator('.fundraising-card').getByRole('link', { name: 'Donate on JustGiving', exact: true });
+    const box = (await donate.boundingBox())!;
+    const measured = `Donate from ${box.y.toFixed(1)} to ${(box.y + box.height).toFixed(1)} px of 640`;
+    testInfo.annotations.push({ type: 'measured', description: measured });
+    expect(box.y + box.height, measured).toBeLessThanOrEqual(640 - 24);
+  });
+
+  test('at 360 px the race name keeps one line', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await open(page);
+    const lines = await page.locator('[data-hero] h2').evaluate((h2) => {
+      const range = document.createRange();
+      range.selectNodeContents(h2);
+      return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+    });
+    expect(lines).toBe(1);
   });
 
   for (const width of [360, 320]) {

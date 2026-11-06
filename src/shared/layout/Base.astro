@@ -61,9 +61,10 @@ const { theme, ...meta } = Astro.props;
     transform: none;
   }
 
+  /* Kept tight so a phone's first screen reaches the landing page's Donate (owner, 2026-11-06). */
   .site-header {
-    padding-block: var(--space-4);
-    margin-bottom: var(--space-5);
+    padding-block: var(--space-3);
+    margin-bottom: var(--space-4);
     border-bottom: 1px solid var(--color-border);
   }
 
@@ -71,7 +72,7 @@ const { theme, ...meta } = Astro.props;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: var(--space-2) var(--space-5);
+    gap: 0 var(--space-5);
   }
 
   .site-name {

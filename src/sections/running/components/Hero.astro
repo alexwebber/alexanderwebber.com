@@ -1,6 +1,7 @@
 ---
 // The focus-race hero that leads the landing page (T098; FR-020, FR-021, FR-025, US1.1, US1.2):
-// - "Brighton Marathon · 4 April 2027";
+// - "Focus race · 4 April 2027" above the race's name, so the name keeps one line on a phone and
+//   Donate stays on the first screen (owner, 2026-11-06; it was "Brighton Marathon · 4 April 2027");
 // - days remaining (Countdown), "Race day", "Result coming soon", or the result once recorded;
 // - "Target: sub-3:25" from the upcoming race's target_time, so a tightened target shows here
 //   with no other change (US1.2);
@@ -36,10 +37,8 @@ const { race, state, prediction, result } = focus;
 
 <section class="hero" aria-labelledby="hero-title" data-hero data-race-state={state}>
   <div class="hero-main">
-    <p class="hero-eyebrow">Focus race</p>
-    <h2 class="hero-title" id="hero-title">
-      {race.name} <span class="hero-date">· {formatLongDate(race.date)}</span>
-    </h2>
+    <p class="hero-eyebrow" data-hero-eyebrow>Focus race · <time class="hero-date" datetime={race.date}>{formatLongDate(race.date)}</time></p>
+    <h2 class="hero-title" id="hero-title">{race.name}</h2>
     {prediction && <GarminAttribution />}
     {
       state === 'completed' ? (
