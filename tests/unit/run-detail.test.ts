@@ -174,8 +174,9 @@ describe('run page (T121)', () => {
     expect(html).toContain('data-axis="time"');
     expect(html).toContain('against elapsed time');
     expect(html).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|\b\d{1,2}:\d{2} ?(?:am|pm)\b/i);
-    // No script beyond the shared freshness one (which the container leaves out): the switch is CSS.
-    expect((html.match(/<script\b/g) ?? []).length).toBeLessThanOrEqual(1);
+    // No script beyond the shared freshness one (which the container leaves out) and the menu's
+    // (data-nav-scroll): the switch is CSS.
+    expect((html.match(/<script\b(?![^>]*data-nav-scroll)/gi) ?? []).length).toBeLessThanOrEqual(1);
   });
 
   it('US3.3: the date only, and no map, route, place name or provider text anywhere', async () => {

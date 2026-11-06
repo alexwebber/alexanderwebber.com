@@ -249,7 +249,18 @@ describe('Nav', () => {
   });
 
   it('renders nothing with no items (no area has shipped)', async () => {
-    expect(await render(Nav, { label: 'Running', items: [] })).not.toContain('<nav');
+    const empty = await render(Nav, { label: 'Running', items: [] });
+    expect(empty).not.toContain('<nav');
+    expect(empty).not.toMatch(/<script\b/i);
+  });
+
+  // Owner, 2026-11-06: on a phone the menu is one line that scrolls sideways, with the current
+  // page's link scrolled into view by a small inline script that reads the list just before it.
+  it('follows the menu with its one inline script, which finds the list just before it', async () => {
+    const html = await render(Nav, { label: 'Running', items }, {}, '/running/training/');
+    expect(html).toMatch(/<\/nav>\s*<script data-nav-scroll>[\s\S]*?previousElementSibling\.querySelector\('ul'\)[\s\S]*?<\/script>/i);
+    expect(html.match(/<script\b/gi)).toHaveLength(1);
+    expect(html).not.toMatch(/<script\b[^>]*\bsrc=/i);
   });
 });
 
@@ -352,7 +363,8 @@ describe('SectionLayout', () => {
     setRunningStore(fakeStore());
     const without = await render(SectionLayout, { ...props, lastUpdated: false }, { default: '<p>body</p>' }, '/running/goals/');
     expect(without).not.toMatch(/data-last-updated|Last updated|data-stale-ms/);
-    expect(without).not.toContain('<script');
+    // The menu's own inline script (Nav: the current page's link scrolled into view) is the only one.
+    expect(without.match(/<script\b[^>]*>/gi)).toEqual(['<script data-nav-scroll>']);
     expect(without).toMatch(/<\/h1>\s*<\/header>\s*<p>body<\/p>/);
     const withDefault = await render(SectionLayout, { ...props, lastUpdated: true }, { default: '<p>body</p>' }, '/running/goals/');
     expect(withDefault).toContain('Last updated 17 Oct 2026, 20:17');

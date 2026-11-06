@@ -8,25 +8,23 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1 and 2 merged (#117, #119), and #120 and #121 merged with post-merge checks
-  green. **Phase 3** (T042–T051, finding the story) is raised for the owner as a PR from
-  `003-slice-3`; nothing visible changes until a chapter exists.
-- **Next session, first:** `/session-start`, then `/after-merge 122` if it merged (it has no boxes).
-  If it hasn't, ask whether the owner has looked at it.
-- **Then Donate always on the first screen** (owner, 2026-11-06, on #122), its own PR and session,
-  before Phase 4. Today the landing page's Donate button ends at 777 px of 780 on Windows, 804 on
-  CI's Linux, and below the first screen at 320 px. First ask where it falls on the owner's own
-  phone at `/running/` (a real screen, browser bar included). Then set a firm target (about 360 x
-  640, on every font we can test, with a margin) and show the owner two or three layouts as
-  screenshots: a tighter page top (the two source lines, "Last updated", the race name wrapping,
-  spacing) and Donate higher in the card (above the progress bar). The check asserts the target with
-  its margin, beside `landing.spec.ts`'s "total on the first screen" test.
+  journey story: Phases 1–3 merged (#117, #119, #122), post-merge checks green; nothing visible
+  until a chapter exists. **Donate on a small phone's first screen** (the owner's layout A, a
+  one-line scrolling menu; `DECISIONS.md` 2026-11-06) is raised as
+  [#123](https://github.com/alexwebber/alexanderwebber.com/pull/123) from `donate-first-screen`.
+- **Next session, first:** `/session-start`, then `/after-merge 123 --live=/running/=Donate on JustGiving`
+  if it merged (no boxes), then a short guided review of it live
+  (`/speckit-house-process-guided-review`): on the owner's Pixel, Donate without scrolling, the menu
+  swiping, "Fundraising" in view on its page; ask whether the fundraising page's wrapped heading
+  ("Brighton Marathon · 4 April 2027") should get the same treatment. If #123 hasn't merged, ask
+  whether the owner has looked at it.
 - **Then 003 Phase 4** (T053–T061, the chapter list at four or more chapters, "Back to chapters",
-  and the growth proof), branched from a `main` holding Phase 3: brief with
+  and the growth proof), branched from a `main` holding #123: brief with
   `/speckit-house-process-implement-brief` naming `preview-state` (T056's `four-chapters` state),
   `tests`, `page-tests`, `gate-drill` (T059 extends `story-launch.spec.ts`) and `pr-screenshots`
-  (list closed and open), and dispatch as for Phase 3. Subagent costs so far: Phase 1 352k, Phase 2
-  287k, Phase 3 291k tokens.
+  (list closed and open), and dispatch as for Phase 3. Tell it every page now carries the menu's
+  inline script (`<script data-nav-scroll>`), which "no script" checks leave out, and that the phone
+  menu is one scrolling line. Subagent costs so far: Phase 1 352k, Phase 2 287k, Phase 3 291k tokens.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -351,6 +349,17 @@ project-specific notes.
   for each (implement-brief's *When it returns*).
 - A test asserting something is absent from a preview that renders the real menu ("no 'Story'") is a
   launch-time trap. Make such checks follow the repo's data (here `journeyChapterIds()`).
+
+- To compare layouts before touching code, inject CSS and DOM moves into the built site with
+  Playwright and measure under several fonts. DejaVu Sans from jsdelivr reproduced CI's Linux exactly
+  (Donate at 804 px, as CI reported), and Roboto from Google Fonts stands in for Android.
+- An owner's phone screenshot can show something other than the complaint: Donate was whole, and the
+  card's foot was cut. Say what the screenshot shows and ask which target they mean.
+- Astro's `<script is:inline>` emits its content literally: a `{`...`}` expression around the code
+  reached the page as text. Write the JavaScript plainly inside the tag.
+- In a sideways-scrolling list, Chrome's focus treats a link with a sliver showing at the edge as in
+  view and doesn't scroll, so a keyboard user sees a faded fragment. `scroll-padding-inline` equal to
+  the gutter and the fade fixes it; only a Tab-through test found it.
 
 ## Open questions
 

@@ -136,6 +136,17 @@ describe('Donate (FR-065)', () => {
     const links = (await html(store({ raised_pence: 0, target_pence: 50000, supporters: 0 }))).match(/<a [\s\S]*?<\/a>/g)!;
     expect(links[1]).toBe('<a href="/running/fundraising/">See the fundraising page</a>');
   });
+
+  // Owner, 2026-11-06: on a 360 x 640 phone's first screen. The card's heading is for screen readers
+  // only, and Donate follows the total, before the bar and the supporters.
+  it('on the card, comes straight after the total, and the "Fundraising" heading is for screen readers only', async () => {
+    const card = await html(store({ raised_pence: 12500, target_pence: 50000, supporters: 3 }));
+    const order = ['data-fundraising-lead', 'class="fundraising-donate"', 'role="meter"', 'data-fundraising-secondary', 'data-fundraising-updated'].map((mark) => card.indexOf(mark));
+    expect(order.every((at) => at >= 0)).toBe(true);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(card.match(/class="fundraising-donate"/g)).toHaveLength(1);
+    expect(card).toMatch(/<h3 class="fundraising-card-title visually-hidden" id="[^"]+">Fundraising<\/h3>/);
+  });
 });
 
 describe('figures updated and the stale notice (FR-004, FR-005)', () => {
@@ -315,6 +326,13 @@ describe('the fundraising page (US2, FR-041 to FR-043)', () => {
     expect(html).toContain('Donate on JustGiving');
     expect(html).toContain('Figures updated 10 Nov 2026, 09:17');
     expect(html).not.toContain('Past campaigns');
+  });
+
+  it('keeps Donate after the bar and the supporters (only the landing card moves it up)', async () => {
+    const html = await pageHtml(ACTIVE);
+    const [lead, meter, secondary, donate] = ['data-fundraising-lead', 'role="meter"', 'data-fundraising-secondary', 'class="fundraising-donate"'].map((mark) => html.indexOf(mark));
+    expect(lead).toBeGreaterThanOrEqual(0);
+    expect([lead, meter, secondary, donate]).toEqual([lead, meter, secondary, donate].sort((a, b) => a - b));
   });
 
   it('links the charity, and names it once, above the figures', async () => {

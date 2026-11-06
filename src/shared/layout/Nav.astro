@@ -1,7 +1,15 @@
 ---
 // A labelled navigation list (T073). The link to the current page gets aria-current="page"; on a
 // page below an item (e.g. a run under Training) the caller names that item in `current`, which
-// gets aria-current="true". Links wrap onto further lines at 320px rather than scrolling sideways.
+// gets aria-current="true".
+//
+// On a phone the links stay on one line that swipes sideways (owner, 2026-11-06: a second menu line
+// pushed Donate below the first screen): the list runs to the screen's edges, fades out at the end
+// to show there's more, and its end padding is as wide as the fade, so the last link shows clearly
+// once scrolled to. Only the list scrolls, never the page. A small inline script scrolls the
+// current page's link into view when it starts off-screen (e.g. Fundraising); without JavaScript
+// the list starts at its beginning. Keyboard focus scrolls a link into view by itself. Wider
+// screens keep the wrapping row.
 export interface NavItem {
   label: string;
   /** Site path with a trailing slash. */
@@ -27,17 +35,29 @@ function ariaCurrent(href: string): 'page' | 'true' | undefined {
 
 {
   items.length > 0 && (
-    <nav aria-label={label}>
-      <ul>
-        {items.map((item) => (
-          <li>
-            <a href={item.href} aria-current={ariaCurrent(item.href)}>
-              {item.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <>
+      <nav aria-label={label}>
+        <ul>
+          {items.map((item) => (
+            <li>
+              <a href={item.href} aria-current={ariaCurrent(item.href)}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <script is:inline data-nav-scroll>
+        (() => {
+          const list = document.currentScript.previousElementSibling.querySelector('ul');
+          const link = list.querySelector('[aria-current]');
+          if (!link || list.scrollWidth <= list.clientWidth) return;
+          const end = list.getBoundingClientRect().right - parseFloat(getComputedStyle(list).paddingRight);
+          const over = link.getBoundingClientRect().right - end;
+          if (over > 0) list.scrollLeft += over;
+        })();
+      </script>
+    </>
   )
 }
 
@@ -49,6 +69,40 @@ function ariaCurrent(href: string): 'page' | 'true' | undefined {
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  /* Phones: one line that scrolls sideways (see the comment above). */
+  @media (max-width: 47.99rem) {
+    nav {
+      flex-basis: 100%;
+      min-width: 0;
+    }
+
+    ul {
+      --nav-fade: 2.5rem;
+      flex-wrap: nowrap;
+      /* Room for the focus ring, which the scrolling list would otherwise clip. Only the bottom is
+         pulled back in: above, the padding would lie over the site name and take its taps. */
+      --nav-ring: 0.375rem;
+      margin-block: 0 calc(-1 * var(--nav-ring));
+      margin-inline: calc(-1 * var(--gutter));
+      padding-block: var(--nav-ring);
+      padding-inline: var(--gutter) var(--nav-fade);
+      overflow-x: auto;
+      /* Focus scrolls a link clear of the gutter and the fade: a link with only a sliver showing at
+         the edge counts as in view otherwise, and keyboard focus would stay there. */
+      scroll-padding-inline: var(--gutter) var(--nav-fade);
+      scrollbar-width: none;
+      mask-image: linear-gradient(to right, #000 calc(100% - var(--nav-fade)), transparent);
+    }
+
+    ul::-webkit-scrollbar {
+      display: none;
+    }
+
+    li {
+      flex: none;
+    }
   }
 
   a {

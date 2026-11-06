@@ -118,7 +118,9 @@ for (const state of STATES) {
     test('shows the same text, and the page has no script (FR-071)', async ({ page, browser, baseURL }) => {
       await open(page, state);
       const withoutJs = await story(page).innerText();
-      expect(await page.locator('script').count()).toBe(0);
+      // The menu's inline script (scrolling the current page's link into view) is the only one.
+      expect(await page.locator('script:not([data-nav-scroll])').count()).toBe(0);
+      expect(await page.locator('script[src]').count()).toBe(0);
       const context = await browser.newContext({ baseURL: baseURL! });
       const withJs = await context.newPage();
       await withJs.goto(`/story-preview/${state}/`);

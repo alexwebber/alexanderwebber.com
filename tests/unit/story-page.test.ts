@@ -168,7 +168,8 @@ describe('the page (FR-002, FR-005, FR-007, FR-008, FR-071)', () => {
     const html = await render({ chapters: [asChapter(FIGURES)] });
     expect(main(html)).toMatch(/<\/h1><\/header><div class="story-page"><section class="story-chapter"/);
     expect(html).not.toMatch(/data-last-updated|Last updated|data-garmin-attribution/);
-    expect(html).not.toContain('<script');
+    // The menu's inline script (the current page's link scrolled into view) is the only one.
+    expect(html.match(/<script\b[^>]*>/gi)).toEqual(['<script data-nav-scroll>']);
     expect(html).toContain('<title>' + PAGE.title + ' · Running · Alexander Webber</title>');
     expect(html).toContain(`<meta name="description" content="${PAGE.description}">`);
   });

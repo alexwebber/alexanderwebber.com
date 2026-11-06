@@ -3,7 +3,7 @@
 // branch that never merges, then prints the Markdown for the PR body, linked by commit SHA (`gh`
 // can't attach images to a PR).
 //
-//   node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,first-screen] ... [--build]
+//   node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen] ... [--build]
 //     [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--width=360] [--publish]
 //
 // - Serves dist/ itself (no `astro preview`, which a coding agent's session backgrounds and which
@@ -16,7 +16,8 @@
 //   /running/=menu-320,width=320,first-screen`.
 // - Phone shots are full-page at 360 px wide (--width, or `,width=` for one path) with isMobile off
 //   (Playwright can't capture a full page with it on), at 2x. --first-screen (or `,first-screen`)
-//   shoots only the first screen (width x 780), for "what a visitor sees first" checks. Pages taller
+//   shoots only the first screen (width x 780, or `,height=` for one path, e.g. 640 for the small
+//   phone landing.spec.ts holds Donate to), for "what a visitor sees first" checks. Pages taller
 //   than WebP's limit are cropped, and say so.
 // - Files go to spikes/screens/out/ (gitignored). --publish commits them with git plumbing (the
 //   working tree is untouched) to `<branch>-screens`, pushes, and prints the PR body's table. The
@@ -55,10 +56,12 @@ const targets = args
     const [path, name] = spec.split('=') as [string, string | undefined];
     const clean = path.endsWith('/') || extname(path) ? path : `${path}/`;
     const own = options.find((o) => o.startsWith('width='));
+    const ownHeight = options.find((o) => o.startsWith('height='));
     return {
       path: clean,
       name: name ?? (clean.split('/').filter(Boolean).join('-') || 'home'),
       width: own ? Number(own.slice('width='.length)) : width,
+      height: ownHeight ? Number(ownHeight.slice('height='.length)) : PHONE_HEIGHT,
       firstScreen: options.includes('first-screen') || flag('first-screen'),
     };
   });
@@ -76,7 +79,7 @@ if (rewritten) {
   process.exit(2);
 }
 if (targets.length === 0) {
-  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,first-screen] ... [--build] [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
+  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen] ... [--build] [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
   process.exit(2);
 }
 
@@ -158,9 +161,9 @@ interface Shot {
   cropped: boolean;
 }
 
-const variantsFor = (w: number) => [
-  { suffix: 'phone', viewport: { width: w, height: PHONE_HEIGHT }, scale: 2, scheme: 'light' as const },
-  ...(flag('no-dark') ? [] : [{ suffix: 'phone-dark', viewport: { width: w, height: PHONE_HEIGHT }, scale: 2, scheme: 'dark' as const }]),
+const variantsFor = (w: number, h = PHONE_HEIGHT) => [
+  { suffix: 'phone', viewport: { width: w, height: h }, scale: 2, scheme: 'light' as const },
+  ...(flag('no-dark') ? [] : [{ suffix: 'phone-dark', viewport: { width: w, height: h }, scale: 2, scheme: 'dark' as const }]),
   ...(flag('no-desktop') ? [] : [{ suffix: 'desktop', viewport: DESKTOP, scale: 1, scheme: 'light' as const }]),
   ...(flag('desktop-dark') ? [{ suffix: 'desktop-dark', viewport: DESKTOP, scale: 1, scheme: 'dark' as const }] : []),
 ];
@@ -173,7 +176,7 @@ const browser = await chromium.launch();
 const shots: Shot[] = [];
 try {
   for (const target of targets) {
-    for (const v of variantsFor(target.width)) {
+    for (const v of variantsFor(target.width, target.height)) {
       const context = await browser.newContext({ viewport: v.viewport, deviceScaleFactor: v.scale, colorScheme: v.scheme, isMobile: false });
       const page = await context.newPage();
       const response = await page.goto(`${base}${target.path}`, { waitUntil: 'load' });
@@ -233,7 +236,10 @@ console.log(`Pushed ${shots.length} file(s) to ${side} at ${sha}.\n`);
 const url = (file: string) => `https://raw.githubusercontent.com/${REPO}/${sha}/${file}`;
 /** A target as its row and links name it: the path, and its width and first screen when they differ. */
 const label = (t: (typeof targets)[number]) => {
-  const notes = [...(t.width !== width ? [`${t.width} px`] : []), ...(t.firstScreen && !flag('first-screen') ? ['first screen'] : [])];
+  const notes = [
+    ...(t.width !== width || t.height !== PHONE_HEIGHT ? [t.height !== PHONE_HEIGHT ? `${t.width} x ${t.height}` : `${t.width} px`] : []),
+    ...(t.firstScreen && !flag('first-screen') ? ['first screen'] : []),
+  ];
   return `\`${t.path}\`${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`;
 };
 const pathOf = new Map(targets.map((t) => [t.name, t.path]));

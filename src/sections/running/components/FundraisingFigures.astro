@@ -2,7 +2,9 @@
 // A campaign's figures, shared by the landing card and the fundraising page (T050, T096; FR-023,
 // FR-030, FR-032, FR-033, FR-061, FR-063, FR-065; specs/002-fundraising/contracts/routes.md, the card
 // table): the total against the target, the bar, the supporters and charity, and the Donate link.
-// The page names the charity above these, with its link, so it passes showCharity={false}.
+// The page names the charity above these, with its link, so it passes showCharity={false}. The
+// landing card passes donateFirst, which puts Donate straight under the total, before the bar, so a
+// phone's first screen reaches it (owner, 2026-11-06); the page keeps it last.
 //
 // Its form follows the campaign's phase (data-model.md §7):
 // - before the race, and on race day until a result is recorded: "£1,250 raised of £2,000", the bar,
@@ -24,12 +26,15 @@ export interface Props {
   campaign: CampaignView;
   /** false: the charity is named just above, so the secondary line leaves it out. */
   showCharity?: boolean;
+  /** Donate straight after the total, before the bar (the landing card). */
+  donateFirst?: boolean;
 }
 
-const { campaign: view, showCharity = true } = Astro.props;
+const { campaign: view, showCharity = true, donateFirst = false } = Astro.props;
 const { campaign, figures, progress, phase, result, race } = view;
 const target = figures.target_pence;
 const before = phase === 'before_race';
+const donate = phase === 'finished' ? undefined : campaign.page_url;
 const note = before ? targetNote(progress) : target !== undefined && progress ? targetDetail(target, progress) : undefined;
 ---
 
@@ -53,6 +58,7 @@ const note = before ? targetNote(progress) : target !== undefined && progress ? 
     </p>
   )
 }
+{donateFirst && donate && <a class="fundraising-donate" href={donate}>Donate on JustGiving</a>}
 {
   target !== undefined && progress && (
     <ProgressBar label={`Fundraising target ${poundsText(target)}: progress`} fraction={progress.fraction} valueText={barValueText(figures.raised_pence, target, progress)} color="var(--running-series)" />
@@ -63,7 +69,7 @@ const note = before ? targetNote(progress) : target !== undefined && progress ? 
   <span data-supporters>{supportersText(figures.supporters)}</span>
   {before && showCharity && <>{' '}· <span data-fundraising-charity>For {campaign.charity.name}</span></>}
 </p>
-{phase === 'finished' ? <p class="fundraising-final" data-fundraising-final>{finalTotalText(view.lastReadAt)}</p> : <a class="fundraising-donate" href={campaign.page_url}>Donate on JustGiving</a>}
+{donate === undefined ? <p class="fundraising-final" data-fundraising-final>{finalTotalText(view.lastReadAt)}</p> : !donateFirst && <a class="fundraising-donate" href={donate}>Donate on JustGiving</a>}
 
 <style>
   .fundraising-lead {

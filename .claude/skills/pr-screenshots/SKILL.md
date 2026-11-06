@@ -26,6 +26,7 @@ triggers no workflow.
    (1280 x 800, full page). Options: `--first-screen` (only the first 360 x 780 screen, for "what a
    visitor sees first"), `--no-dark`, `--no-desktop`, `--desktop-dark`, `--width=320`, and
    `<path>=<name>` to name a shot. Per path, `,width=320` and `,first-screen` override those two,
+   and `,height=640` sets the phone's screen height (the small phone Donate must fit on),
    so one run can shoot the same page several ways under different names:
    `'/running/=landing,first-screen' '/running/=menu-320,width=320,first-screen' '/running/story/'`.
    Files land in `spikes/screens/out/` (gitignored).
