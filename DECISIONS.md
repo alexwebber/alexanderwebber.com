@@ -2010,3 +2010,10 @@ end. Add each new decision as a dated entry at the end, as it's made.
   - **The story page now has one script**, the menu's (spec 003's "no script" test was stricter than
     FR-071, which asks only that the content work with scripts off). Tests allow that one inline
     script and no script files.
+- **2026-11-06** — **#123 merged and live, reviewed fine** (owner, Pixel and desktop). No boxes.
+  `/after-merge`: the PR's 11 checks and `main`'s Gate green, deploy included. The script's live
+  fetch failed once ("fetch failed"); curl straight after got `/running/` 200 with "Donate on
+  JustGiving" and the menu script. The fundraising page's wrapped heading stays as it is (the owner
+  saw nothing to change). Garmin reading the same day: training status Productive, predictions 5k
+  19:31, 10k 40:31, half 1:30:00, marathon 3:16:47 (added to `manual-metrics.yaml`). Astro 7.4.7
+  skipped: dev-server, i18n and on-demand image-endpoint fixes, none touching a static build.
