@@ -77,10 +77,29 @@ await section(`main's Gate for ${sha.slice(0, 7)}`, async () => {
   if (!done.jobs.some((j) => /deploy/i.test(j.name))) flag(false, '  no deploy job in this run');
 });
 
+/**
+ * Fetches a live page, retrying: Node's fetch failed here twice straight after the Gate wait
+ * ("fetch failed") while curl and a rerun moments later got 200 (DECISIONS.md 2026-11-06). The last
+ * error keeps its cause's code, so a real fault still says why.
+ */
+async function fetchLive(url: string): Promise<Response> {
+  let last: unknown;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await fetch(url, { redirect: 'manual' });
+    } catch (error) {
+      last = error;
+      if (attempt < 3) await new Promise((done) => setTimeout(done, 10_000));
+    }
+  }
+  const cause = (last as { cause?: { code?: string; message?: string } }).cause;
+  throw new Error(`${(last as Error).message} after 3 tries (${cause?.code ?? cause?.message ?? 'no cause'})`);
+}
+
 await section('Live site', async () => {
   for (const spec of live) {
     const [path, text] = spec.split(/=(.*)/s, 2) as [string, string | undefined];
-    const response = await fetch(`${SITE}${path}`, { redirect: 'manual' });
+    const response = await fetchLive(`${SITE}${path}`);
     const body = text === undefined ? '' : await response.text();
     const found = text === undefined || body.includes(text);
     flag(response.status === 200 && found, `${path}: ${response.status}${text === undefined ? '' : found ? ', text found' : ', text NOT found'}`);

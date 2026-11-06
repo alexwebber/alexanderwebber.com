@@ -334,7 +334,7 @@ desktop, in the PR.
 
 ### Ship the slice
 
-- [ ] T061 [US4] (owner, guided by the agent) Run the PR routine's suites, compare `dist/` against `main` (expected byte-identical) and raise the PR by the PR routine, with screenshots of `four-chapters` with the list closed and open. The owner looks at them in the PR review
+- [x] T061 [US4] (owner, guided by the agent) Run the PR routine's suites, compare `dist/` against `main` (expected byte-identical) and raise the PR by the PR routine, with screenshots of `four-chapters` with the list closed and open. The owner looks at them in the PR review
 
 **Checkpoint**: the page holds any number of chapters, and adding one edits only its own folder.
 

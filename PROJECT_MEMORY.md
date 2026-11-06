@@ -7,24 +7,21 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 ## Next session
 
-- **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1–3 merged (#117, #119, #122), post-merge checks green; nothing visible
-  until a chapter exists. **Donate on a small phone's first screen** (the owner's layout A, a
-  one-line scrolling menu; `DECISIONS.md` 2026-11-06) is raised as
-  [#123](https://github.com/alexwebber/alexanderwebber.com/pull/123) from `donate-first-screen`.
-- **Next session, first:** `/session-start`, then `/after-merge 123 --live=/running/=Donate on JustGiving`
-  if it merged (no boxes), then a short guided review of it live
-  (`/speckit-house-process-guided-review`): on the owner's Pixel, Donate without scrolling, the menu
-  swiping, "Fundraising" in view on its page; ask whether the fundraising page's wrapped heading
-  ("Brighton Marathon · 4 April 2027") should get the same treatment. If #123 hasn't merged, ask
-  whether the owner has looked at it.
-- **Then 003 Phase 4** (T053–T061, the chapter list at four or more chapters, "Back to chapters",
-  and the growth proof), branched from a `main` holding #123: brief with
-  `/speckit-house-process-implement-brief` naming `preview-state` (T056's `four-chapters` state),
-  `tests`, `page-tests`, `gate-drill` (T059 extends `story-launch.spec.ts`) and `pr-screenshots`
-  (list closed and open), and dispatch as for Phase 3. Tell it every page now carries the menu's
-  inline script (`<script data-nav-scroll>`), which "no script" checks leave out, and that the phone
-  menu is one scrolling line. Subagent costs so far: Phase 1 352k, Phase 2 287k, Phase 3 291k tokens.
+- **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. #123 (Donate on
+  a small phone's first screen) and #124 (Garmin reading of 6 Nov) are live and reviewed fine. Spec
+  003, the journey story: Phases 1–3 merged; **Phase 4** (T053–T061, the chapter list) is raised as
+  [#125](https://github.com/alexwebber/alexanderwebber.com/pull/125) from `003-slice-4`. Nothing
+  visible until a chapter exists.
+- **Next session, first:** `/session-start`, then `/after-merge 125` if it merged (no boxes; the
+  owner's only look is the screenshots; nothing goes live). If it hasn't merged, ask whether the owner
+  has looked at the screenshots. Then an upstream harvest is due
+  (`/speckit-house-process-harvest-lessons`, offered after implement; many candidates below).
+- **Then 003 Phase 5** (T062–T070, photos in a chapter), branched from a `main` holding #125: brief
+  with `/speckit-house-process-implement-brief` naming `preview-state` (a `photos` state),
+  `section-page`, `tests`, `page-tests`, `gate-drill` and `pr-screenshots` (`photos` and `long`), plus
+  `speckit-house-process-tips-windows-cloud` (sharp's file cache: pass bytes). T062 must leave
+  `add-race-photo.ts` behaving exactly as before. Subagent costs so far: Phase 1 352k, Phase 2 287k,
+  Phase 3 291k, Phase 4 272k tokens.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
     draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
@@ -360,6 +357,17 @@ project-specific notes.
 - In a sideways-scrolling list, Chrome's focus treats a link with a sliver showing at the edge as in
   view and doesn't scroll, so a keyboard user sees a faded fragment. `scroll-padding-inline` equal to
   the gutter and the fade fixes it; only a Tab-through test found it.
+
+- In a fixture generator with one seed counter, adding a state shifts every later state's words and
+  hashes. Add it last, from its own seed, and check `git diff --stat` shows only the new state.
+- axe's `target-size` (WCAG 2.2) fails a short inline link right under a `<summary>`: its box is only
+  the text's height. `display: inline-block` makes the line height the target. Run axe with each
+  `<details>` open.
+- Node's `fetch` from a script failed twice ("fetch failed") right after a long `gh` wait, while curl
+  and Node itself moments later got 200. Retry a live-site check a few times and print the cause's
+  code before calling the site down.
+- When a background script and a subagent share one checkout, check the script's clean-up first:
+  `after-merge.ts` skips the checked-out branch, so it was safe to run while the subagent worked.
 
 ## Open questions
 

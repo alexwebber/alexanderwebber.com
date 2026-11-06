@@ -2017,3 +2017,25 @@ end. Add each new decision as a dated entry at the end, as it's made.
   saw nothing to change). Garmin reading the same day: training status Productive, predictions 5k
   19:31, 10k 40:31, half 1:30:00, marathon 3:16:47 (added to `manual-metrics.yaml`). Astro 7.4.7
   skipped: dev-server, i18n and on-demand image-endpoint fixes, none touching a static build.
+- **2026-11-06** — **#124 merged** (Garmin reading of 6 Nov). No boxes; the PR's 11 checks and
+  `main`'s Gate green, deploy included. `/after-merge`'s live fetch failed again ("fetch failed"),
+  while curl and Node's fetch run straight after (foreground and background) got 200, with 3:16:47 on
+  `/running/` and "6 Nov 2026" on `/running/health/`. So it's intermittent: `after-merge.ts` now
+  retries three times, 10 s apart, and names the cause's code if all three fail.
+- **2026-11-06** — **003 Phase 4** (T053–T060, the chapter list). Implement subagent about **272k
+  tokens**, 131 tool calls, 80 min (Phase 1 352k, Phase 2 287k, Phase 3 291k), with `preview-state`,
+  `section-page`, `tests`, `page-tests`, `gate-drill`, `pr-screenshots` and `pr-ready` loaded. A
+  closed `<details>` "Chapters" under the title with a `<ul>` of names, and "Back to chapters" after
+  each takeaway, both from four chapters (`CHAPTER_LIST_AT`), with no script of its own. The
+  `four-chapters` preview is written last from its own seed, so every other state's files stayed
+  byte-identical; `long` and `figures` (4 chapters) show the list too. The growth drill (SC-008) adds
+  an earlier made-up chapter to a copy of the real site and proves every other file byte-identical
+  and the first chapter's anchor unchanged. `dist/` byte-identical to `main`'s (250 files). The
+  subagent broke every new check on purpose in one batch (52 Playwright and 4 unit failures), then
+  restored them.
+  - **Skill gaps applied in the same PR**: `preview-state` (add a state last, from its own seed;
+    tests import `PREVIEW_STATES`), `section-page` (axe's `target-size` on short links under a
+    `<summary>`: `display: inline-block`, and run axe with each `<details>` open), `pr-screenshots`
+    (`screenshots.ts` gained `,open`, which opens every `<details>` before the shot).
+  - **For the owner**: only the list's look, shown in the PR's screenshots (behaviour was settled by
+    plan question 3 on #105).
