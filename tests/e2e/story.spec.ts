@@ -8,10 +8,9 @@ import { join, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { journeyChapterIds } from '../../src/sections/running/data/store/files.ts';
 import { parseProse, parseWhen } from '../../src/sections/running/domain/journey.ts';
+import { PREVIEW_STATES as STATES, type PreviewState as State } from '../fixtures/story-preview/store.ts';
 import { approvedText, inlineFigure as inline, readJourney, storyText, type JourneyFiles } from '../helpers/story-text.ts';
 
-const STATES = ['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day', 'four-chapters'] as const;
-type State = (typeof STATES)[number];
 /** The chapter list and back links show from four chapters on (FR-052): long, figures and four-chapters. */
 const LIST_AT = 4;
 const REPO = resolve(import.meta.dirname, '../..');

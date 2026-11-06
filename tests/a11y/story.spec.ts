@@ -6,9 +6,8 @@
 // chapter list closed and open, in light, dark and forced colours, and a keyboard path through the
 // "Chapters" summary to a chapter and back.
 import { expect, test, type Page } from '@playwright/test';
+import { PREVIEW_STATES as STATES } from '../fixtures/story-preview/store.ts';
 import { axe, fullSweep, outline, sweepOnlyInDark } from '../helpers/a11y.ts';
-
-const STATES = ['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day', 'four-chapters'];
 
 async function open(page: Page, state: string) {
   const response = await page.goto(`/story-preview/${state}/`);
