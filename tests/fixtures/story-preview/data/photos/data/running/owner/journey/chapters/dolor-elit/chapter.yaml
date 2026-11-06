@@ -1,0 +1,16 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: dolor-elit
+name: Dolor elit
+when: 2025-07-19
+prose: |
+  Labore do commodo laboris dolore sit aliqua aliquip dolore ipsum amet et aliqua. Ipsum ullamco ut adipiscing tempor dolor consectetur. Veniam do nisi enim veniam enim sed enim aliqua et eiusmod ipsum nisi.
+
+  Do sed laboris commodo consequat aliqua aliquip labore laboris veniam consectetur dolor consequat lorem laboris veniam. Ex exercitation sed tempor nisi magna dolore do ad aliquip. Magna sed quis nostrud consectetur dolore enim amet aliquip dolor tempor veniam do ullamco ipsum lorem. Amet exercitation amet sit dolore consequat adipiscing magna veniam do.
+takeaway: Ea nostrud sit eiusmod consectetur nostrud tempor ex elit lorem ut amet ipsum ex ipsum amet aliquip veniam.
+photos:
+  - file: tempor.jpg
+    description: "A made-up picture: a gradient from purple to cream with a pale band across it"
+    caption: Elit ad ipsum labore tempor.
+approved:
+  date: 2026-11-01
+  sha256: d90a5ccbff381c4a9f4c1370160353b1ec4e7ca202f6174f5103fbde67aa34b6

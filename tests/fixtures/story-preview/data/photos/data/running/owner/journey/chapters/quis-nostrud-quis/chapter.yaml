@@ -1,0 +1,12 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: quis-nostrud-quis
+name: Quis nostrud quis
+when: 2025-11
+prose: |
+  Exercitation sed sit dolore tempor commodo do incididunt. Incididunt exercitation aliqua aliquip veniam ea ex elit nostrud quis nisi do nostrud ea. Consequat sed consequat sed consequat ex consequat dolor. Ad exercitation commodo minim nisi ut ad ea ullamco enim aliqua tempor lorem elit.
+
+  Elit sed ut lorem consectetur incididunt quis ullamco ipsum ullamco aliquip ex. Nisi exercitation nisi ut dolore tempor.
+takeaway: Aliqua elit aliqua quis dolore elit labore do lorem elit sed consectetur adipiscing do labore enim adipiscing ipsum sed.
+approved:
+  date: 2026-11-01
+  sha256: 412694b0c955841681d4d6db68863962987a37dc94c8972b914741f18105d1b5

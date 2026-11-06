@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { afterEach, describe, expect, it } from 'vitest';
-import { scanImageFiles } from '../../scripts/scan-images.ts';
+import { scanImageFiles, scanImages } from '../../scripts/scan-images.ts';
 import { scanPrivacy, scanText } from '../../scripts/scan-privacy.ts';
 import { tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
@@ -197,6 +197,27 @@ describe('scan-privacy', () => {
       'owner photos must be .jpg, .webp or .avif',
       'contains EXIF metadata (strip it before committing)',
     ]);
+  });
+
+  // Spec 003 T068 (SC-007, FR-061): a chapter photo that skipped add-chapter-photo is stopped the same
+  // way, by the walk over data/ with no change to scan-images, naming the file and never a value.
+  it('finds GPS metadata and an oversized long edge in a journey chapter photo', async () => {
+    repo = tempRepo();
+    const folder = 'data/running/owner/journey/chapters/chapter-a';
+    repo.write(`${folder}/chapter.yaml`, 'id: chapter-a\n');
+    const pixel = { create: { width: 10, height: 10, channels: 3 as const, background: '#2050a0' } };
+    await sharp(pixel)
+      .withExif({ IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '0/1 30/1 0/1', GPSLongitudeRef: 'E', GPSLongitude: '0/1 30/1 0/1' } })
+      .jpeg()
+      .toFile(`${repo.root}/${folder}/gps.jpg`);
+    await sharp({ create: { ...pixel.create, width: 10, height: 2401 } }).webp().toFile(`${repo.root}/${folder}/tall.webp`);
+    await sharp(pixel).jpeg().toFile(`${repo.root}/${folder}/clean.jpg`);
+    const findings = await scanImages(repo.root);
+    expect(findings).toEqual([
+      { file: `${folder}/gps.jpg`, message: 'contains EXIF metadata (strip it before committing)' },
+      { file: `${folder}/tall.webp`, message: 'is 10x2401; the long edge must be at most 2400 px' },
+    ]);
+    expect(JSON.stringify(findings)).not.toMatch(/30\/1|GPSLatitude/);
   });
 });
 

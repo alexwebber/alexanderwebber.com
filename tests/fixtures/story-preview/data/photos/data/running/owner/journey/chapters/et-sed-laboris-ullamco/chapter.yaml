@@ -1,0 +1,24 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: et-sed-laboris-ullamco
+name: Et sed laboris ullamco
+when: 2025-04
+prose: |
+  This is made-up preview text, so the page can be checked before a real story exists. Nothing here is about a real person, place or figure. Sed laboris labore magna veniam tempor lorem laboris adipiscing magna sed enim dolor ipsum labore. Aliquip eiusmod ut ex consequat eiusmod sit veniam et. Dolore do nisi do nisi do nostrud magna sed ea labore consectetur incididunt laboris veniam.
+
+  Sit ullamco do veniam consectetur sed. Nostrud do sed ipsum dolore exercitation labore exercitation eiusmod laboris ad elit. Tempor ullamco quis labore tempor nostrud. Commodo do amet do veniam quis amet et incididunt elit ullamco laboris.
+
+  Enim ullamco sit veniam consequat veniam exercitation eiusmod minim labore. Adipiscing do aliqua ipsum nisi consectetur nisi consectetur labore minim commodo ut sed sit labore magna. Laboris ullamco consequat labore consectetur amet et lorem quis nisi.
+takeaway: Eiusmod elit veniam ea nisi exercitation nostrud ipsum commodo laboris dolor enim ex magna adipiscing elit aliqua.
+photos:
+  - file: sit.jpg
+    description: "A made-up picture: a gradient from orange to cream with a pale circle in the middle"
+    caption: Incididunt minim adipiscing laboris nisi.
+  - file: consectetur.jpg
+    description: "A made-up picture: a gradient from blue to cream with a pale band across it"
+    caption: Consequat ad minim adipiscing consectetur.
+  - file: elit.jpg
+    description: "A made-up picture: a gradient from green to cream with a pale circle in the middle"
+    caption: Ad sit ad ipsum lorem.
+approved:
+  date: 2026-11-01
+  sha256: 2175c088e08ad5919add4ba7d47caaa3adda85d761b1536e6a38dcf8b4f744d0

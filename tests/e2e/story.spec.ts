@@ -1,11 +1,13 @@
 // The journey story page in a real browser (spec 003 T037, T039; US1, US2, SC-001, SC-003, FR-002 to
 // FR-008, FR-010, FR-011, FR-014, FR-071, FR-072; quickstart.md §3), and the chapter list at four or
-// more chapters (T058; US4, FR-052, SC-010, research.md R7), over the test-only previews
-// (SHELL_PREVIEW=1, tests/fixtures/story-preview/): made-up chapters through the real StoryPage. Every
+// more chapters (T058; US4, FR-052, SC-010, research.md R7) and photos in a chapter (T069; US5), over
+// the test-only previews (SHELL_PREVIEW=1, tests/fixtures/story-preview/): made-up chapters and
+// generated photos through the real StoryPage. Every
 // expectation comes from the preview's own files, never a pinned list. The real page arrives in
 // Phase 3 and its words in Phase 7.
 import { join, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { metadataKinds } from '../../scripts/scan-images.ts';
 import { journeyChapterIds } from '../../src/sections/running/data/store/files.ts';
 import { parseProse, parseWhen } from '../../src/sections/running/domain/journey.ts';
 import { PREVIEW_STATES as STATES, type PreviewState as State } from '../fixtures/story-preview/store.ts';
@@ -56,7 +58,12 @@ for (const state of STATES) {
       // "Back to chapters" closes each chapter when the list shows (FR-052).
       if (listed) expect(parts.pop(), id).toBe('p.story-back');
       expect(parts.at(-1), id).toBe('div.story-takeaway');
-      expect(parts.slice(2, -1).every((p) => p === 'p' || p === 'p.story-figure-block'), id).toBe(true);
+      // The prose and its figures, then the chapter's photos, if any, right before the takeaway (FR-060).
+      const body = parts.slice(2, -1);
+      const photos = byId.get(id)!.photos ?? [];
+      const prose = body.slice(0, body.length - photos.length);
+      expect(prose.every((p) => p === 'p' || p === 'p.story-figure-block'), id).toBe(true);
+      expect(body.slice(prose.length).every((p) => /^figure\.story-photo( story-photo-portrait)?$/.test(p)), id).toBe(true);
       expect(parts[2], `${id} opens with prose`).toBe('p');
       await expect(story(page).locator(`section#${id} .story-takeaway`).getByRole('heading', { level: 3, name: 'What I learned', exact: true })).toBeVisible();
     }
@@ -333,5 +340,83 @@ for (const state of ['one-chapter', 'three-chapters'] as const) {
     await expect(story(page).locator('details')).toHaveCount(0);
     await expect(story(page).locator('#story-chapter-list, .story-back')).toHaveCount(0);
     await expect(story(page).getByText('Back to chapters', { exact: true })).toHaveCount(0);
+  });
+}
+
+// Photos in a chapter (T069; US5, FR-060, FR-061, FR-063, FR-064, SC-007): the `photos` state (three
+// photos in one chapter, one in another, none in a third) and `long` (photos in several chapters).
+// Every expectation comes from the fixture's chapter files.
+for (const state of ['photos', 'long'] as const) {
+  const data = fixture(state);
+  const withPhotos = data.chapters.filter((c) => (c.photos ?? []).length > 0);
+
+  test(`${state}: each photo shows its caption and carries its alt text, in its own chapter (FR-063)`, async ({ page }) => {
+    expect(withPhotos.length).toBeGreaterThan(1);
+    await open(page, state);
+    await expect(story(page).locator('figure.story-photo')).toHaveCount(withPhotos.flatMap((c) => c.photos!).length);
+    for (const chapter of data.chapters) {
+      const figures = story(page).locator(`section#${chapter.id} figure.story-photo`);
+      await expect(figures, chapter.id).toHaveCount((chapter.photos ?? []).length);
+      for (const [i, photo] of (chapter.photos ?? []).entries()) {
+        const figure = figures.nth(i);
+        await figure.scrollIntoViewIfNeeded();
+        await expect(figure.locator('figcaption')).toHaveText(photo.caption);
+        await expect(figure.locator('figcaption')).toBeVisible();
+        await expect(figure.getByRole('img', { name: photo.description, exact: true })).toBeVisible();
+      }
+    }
+  });
+
+  test(`${state}: photos load lazily with their size set, so nothing moves as they arrive (FR-064)`, async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { shifts: number }).shifts = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) (window as unknown as { shifts: number }).shifts += (entry as unknown as { value: number }).value;
+      }).observe({ type: 'layout-shift', buffered: true });
+    });
+    await open(page, state);
+    const images = story(page).locator('figure.story-photo img');
+    for (const img of await images.all()) {
+      await expect(img).toHaveAttribute('loading', 'lazy');
+      const [width, height] = [Number(await img.getAttribute('width')), Number(await img.getAttribute('height'))];
+      expect(width * height).toBeGreaterThan(0);
+      // Before it loads, its box already has the photo's shape.
+      const box = (await img.boundingBox())!;
+      expect(box.height).toBeCloseTo((box.width * height) / width, 0);
+    }
+    for (const img of await images.all()) {
+      await img.scrollIntoViewIfNeeded();
+      await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth > 0)).toBe(true);
+    }
+    expect(await page.evaluate(() => (window as unknown as { shifts: number }).shifts)).toBe(0);
+  });
+
+  test(`${state}: a photo that fails to load keeps its alt text and caption, and the chapter still reads`, async ({ page }) => {
+    await page.route(/\/_astro\/.+\.(avif|webp|jpe?g)$/, (route) => route.abort());
+    await open(page, state);
+    for (const chapter of withPhotos) {
+      const section = story(page).locator(`section#${chapter.id}`);
+      for (const [i, photo] of chapter.photos!.entries()) {
+        const figure = section.locator('figure.story-photo').nth(i);
+        await figure.scrollIntoViewIfNeeded();
+        const img = figure.locator('img');
+        await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).complete)).toBe(true);
+        expect(await img.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(0);
+        await expect(img).toHaveAttribute('alt', photo.description);
+        await expect(figure.locator('figcaption')).toHaveText(photo.caption);
+        await expect(figure.locator('figcaption')).toBeVisible();
+      }
+      await expect(section.getByRole('heading', { level: 3, name: 'What I learned', exact: true })).toBeVisible();
+      await expect(section.locator('> p:not(.story-when)').first()).toBeVisible();
+    }
+  });
+
+  test(`${state}: every photo file the page uses carries no metadata (FR-061, SC-007)`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop', 'reads the built files once, not per device');
+    const html = await (await open(page, state)).text();
+    const urls = new Set([...html.matchAll(/\/_astro\/[^\s"',]+\.(?:avif|webp|jpe?g)/g)].map((m) => m[0]));
+    // AVIF, WebP and JPEG at two widths for each photo.
+    expect(urls.size).toBe(withPhotos.flatMap((c) => c.photos!).length * 6);
+    for (const url of urls) expect(await metadataKinds(join(REPO, 'dist', url)), url).toEqual([]);
   });
 }

@@ -11,6 +11,7 @@
  * - The takeaway is a box with a border on every side and a heavier start edge, so it stands apart
  *   by shape and its "What I learned" label in light, dark and forced colours (owner decision 10,
  *   FR-004).
+ * - A chapter's photos sit after its prose at the text column's width, each with a visible caption.
  * - At four or more chapters, a closed "Chapters" list sits under the title and each chapter ends with
  *   "Back to chapters" (owner decision 3, FR-052). Both are plain links and a native <details>.
  */
@@ -87,6 +88,33 @@
   padding-inline-start: var(--space-3);
   border-inline-start: 2px solid var(--color-border);
   font-size: var(--step--1);
+}
+
+/* A chapter's photos (FR-060, FR-063, FR-064): after the prose, as wide as the text column (a portrait
+   one narrower, so it doesn't fill a desktop screen), each with its caption under it. Width and height
+   are set on the <img>, so nothing moves as a lazy photo arrives; until then, or if it never does, the
+   box shows the border colour, then the alt text, and the caption stays. */
+.theme-running .story-photo {
+  max-width: 66ch;
+  margin: var(--space-5) 0 0;
+}
+
+.theme-running .story-photo-portrait {
+  max-width: min(66ch, 24rem);
+}
+
+.theme-running .story-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  background: var(--color-border);
+}
+
+.theme-running .story-photo figcaption {
+  margin-top: var(--space-1);
+  font-size: var(--step--1);
+  color: var(--color-text-secondary);
 }
 
 .theme-running .story-takeaway {

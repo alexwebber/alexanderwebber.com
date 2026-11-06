@@ -7,8 +7,10 @@
 //
 // No "Last updated" (FR-071: the story isn't a data view) and no Garmin line under the heading:
 // attribution sits at each figure (FR-014). No Donate button, fundraising card, figure summary,
-// chart or progress bar (FR-002). No client JavaScript. Styles: styles/story.css.
+// chart or progress bar (FR-002). No client JavaScript. Styles: styles/story.css. A chapter's photos
+// come from the files beside its chapter.yaml (data/photos.ts); previews pass their own.
 import { showChapterList, type JourneyView } from '../data/journey.ts';
+import { chapterPhotos, type PhotoFiles } from '../data/photos.ts';
 import ChapterList from './ChapterList.astro';
 import SectionLayout from './SectionLayout.astro';
 import StoryChapter from './StoryChapter.astro';
@@ -22,9 +24,13 @@ export interface Props {
   image: string;
   /** The <title>; defaults to "<approved title> · Running · Alexander Webber". Previews override it. */
   title?: string;
+  /** The chapters' photo files and the folder holding the chapter folders among their paths: the
+   *  repo's own by default; previews pass their trees'. */
+  photoFiles?: PhotoFiles;
+  photoFolder?: string;
 }
 
-const { journey, image, title } = Astro.props;
+const { journey, image, title, photoFiles, photoFolder } = Astro.props;
 const { page, chapters, closing, note } = journey;
 const list = showChapterList(journey);
 ---
@@ -32,7 +38,7 @@ const list = showChapterList(journey);
 <SectionLayout heading={page.title} title={title} description={page.description} image={image} imageAlt={page.share_text} garmin={false} lastUpdated={false} current="/running/story/">
   <div class="story-page">
     {list && <ChapterList chapters={chapters} />}
-    {chapters.map((chapter) => <StoryChapter chapter={chapter} backLink={list} />)}
+    {chapters.map((chapter) => <StoryChapter chapter={chapter} backLink={list} photos={chapterPhotos(chapter, photoFiles, photoFolder)} />)}
     {closing && <StoryClosing heading={closing.heading} paragraphs={closing.paragraphs} />}
     <StoryNote text={note} />
   </div>

@@ -15,6 +15,10 @@ prose: |
 
   Tempor sed minim dolor consequat lorem ut eiusmod enim incididunt exercitation aliqua aliquip incididunt tempor commodo. Commodo exercitation dolor et eiusmod magna lorem quis incididunt enim. Enim sed magna nisi consectetur dolore minim aliqua minim ullamco ea amet consectetur amet sit eiusmod. Adipiscing exercitation dolore elit dolore et nostrud ut labore consequat. Laboris sed ea ad laboris labore tempor sed quis adipiscing sit nostrud et ex tempor veniam. Labore exercitation incididunt consequat veniam ea labore sit dolore ut. Ipsum sed tempor incididunt consequat ex ipsum commodo exercitation ad laboris ullamco exercitation veniam sit lorem. Veniam exercitation ullamco elit eiusmod aliquip amet laboris aliqua laboris.
 takeaway: Enim nostrud ea ad consectetur dolore ipsum aliqua sit labore elit lorem laboris labore elit lorem enim amet elit veniam enim sed.
+photos:
+  - file: amet.jpg
+    description: "A made-up picture: a gradient from orange to cream with a pale band across it"
+    caption: Exercitation amet exercitation labore magna.
 approved:
   date: 2026-11-01
-  sha256: 4c6a56ef39330d812fbe109f048031eac267f663496d6788bf856414d0dff1b9
+  sha256: bbe19b96885a640051266a2f8eb9a2b7f8e2fc3d958a46ceacc7924da03087fb
