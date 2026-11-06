@@ -194,7 +194,10 @@ project-specific notes.
 
 Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.com/alexwebber/software-factory/pull/21)):
 
-- None yet.
+- `gh pr view <branch>` falls back to a merged PR when a branch name is reused (the upgrade script's
+  `chore-speckit-<version>` on a bundle-only reinstall), and a PR's checks list is empty for a few
+  seconds after a push: a "checks green" routine filters to `state == OPEN` and treats zero checks as
+  not ready (fixed in `pr-ready.ts`, 2026-11-06).
 
 ## Open questions
 
