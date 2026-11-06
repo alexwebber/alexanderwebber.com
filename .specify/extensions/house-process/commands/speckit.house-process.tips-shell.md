@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for shell commands and processes: stopping servers safely, heredocs and backslashes, reading test output, Git Bash path rewriting, sed on Windows, User-Agents and re-reading settings. Read before starting or stopping a long-running process, writing files from a shell, or scripting gh."
+description: "Agent tips for shell commands and processes: stopping servers safely, heredocs and backslashes, reading test output, Git Bash path rewriting, sed and node -e on Windows, generator reruns under autocrlf, User-Agents and re-reading settings. Read before starting or stopping a long-running process, writing files from a shell, or scripting gh."
 ---
 
 # Agent tips: Shell and processes
@@ -32,7 +32,11 @@ candidates* in the moment, and the lesson harvest adds it here.
   rewrites their line endings, so target only the files that match.
 - **Git Bash rewrites a leading `/`:** `gh api /repos/...` becomes
   `C:/Program Files/Git/repos/...`. Write `gh api repos/...`, and pass native tools Windows-style
-  paths (`cygpath -m`).
+  paths (`cygpath -m`). The same happens to an argument like `--path=/some/page/`: prefix the
+  command with `MSYS_NO_PATHCONV=1`.
+- **Git Bash doesn't pass an IANA `TZ` through to Node** on Windows (`TZ=Pacific/Kiritimati node
+  ...` runs in local time). To run tests in another time zone, set `$env:TZ` in PowerShell
+  (alexanderwebber.com).
 - **Re-read a setting after setting it.** `gh api -X PUT
   .../actions/permissions/fork-pr-contributor-approval -f approval_policy=...` answered 204 and
   changed nothing; the same body sent as JSON with `--input -` worked.
@@ -48,7 +52,10 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **`sed -i` with `$(` or `|` in its pattern can silently not match** in Git Bash, while the file
   shows as modified with an empty diff (line endings). Use the Edit tool or a script file.
 - **On a `core.autocrlf` checkout, normalise line endings before a scripted edit,** and expect a
-  generator's LF output to show as modified until `git add`.
+  generator's LF output to show as modified until `git add`. After rerunning a generator, check
+  `git diff --ignore-cr-at-eol --stat` first: it lists only the files whose content changed.
+- **`node -e` scripts with nested quotes and backticks fail under Git Bash.** Write the script to a
+  file in the scratchpad and run that.
 - **PowerShell 5.1's `Invoke-WebRequest` shows a UTF-8 `£` as `Â£`,** so a text pattern misses it
   and looks like a site bug. Check bytes, or use `curl`.
 - **Retry a live-site check before calling the site down.** Node's `fetch` failed twice ("fetch

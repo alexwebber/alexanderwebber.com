@@ -8,15 +8,12 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1–6 merged (graduated, nothing visible yet). From the session that closed
-  Phase 6: this handoff's PR here, and the lesson harvest as house-process 0.16.2,
-  [software-factory#21](https://github.com/alexwebber/software-factory/pull/21) (0.16.1 is merged
-  but not installed; one upgrade covers both).
-- **Next session, first:** `/session-start`; `/after-merge` the handoff PR if it merged (no visible
-  change, so `/` and `/running/` only). If software-factory#21 merged, install 0.16.2 with
-  `/speckit-house-process-upgrade-speckit` (a process PR, before Phase 7 so its tips load). Read the
-  first nightly Quality run after #130 (03:41 UTC on 7 Nov or later; 003 T071: the `story` page type
-  shows as skipped, every other page type within budget) and record it in `DECISIONS.md`.
+  journey story: Phases 1–6 merged (graduated, nothing visible yet). House-process 0.16.2 is in the
+  PR raised on 2026-11-06 (`chore-speckit-1.3.2`).
+- **Next session, first:** `/session-start`; `/after-merge` the house-process 0.16.2 PR if it merged
+  (no visible change, so `/` and `/running/` only). Read the first nightly Quality run after #130
+  (03:41 UTC on 7 Nov or later; 003 T071: the `story` page type shows as skipped, every other page
+  type within budget) and record it in `DECISIONS.md`.
 - **Then 003 Phase 7, the content PR: a session with the owner** (T078–T088 in
   `specs/003-journey-story/tasks.md`; its header has the *How to view it*). In order: draft the "not
   medical advice" note and the page wording (title ≤ 70, description ≤ 160, share text ≤ 90 with no
@@ -197,7 +194,10 @@ project-specific notes.
 
 Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.com/alexwebber/software-factory/pull/21)):
 
-- None yet.
+- `gh pr view <branch>` falls back to a merged PR when a branch name is reused (the upgrade script's
+  `chore-speckit-<version>` on a bundle-only reinstall), and a PR's checks list is empty for a few
+  seconds after a push: a "checks green" routine filters to `state == OPEN` and treats zero checks as
+  not ready (fixed in `pr-ready.ts`, 2026-11-06).
 
 ## Open questions
 

@@ -17,12 +17,12 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-11-06T19:29:29.937501+00:00"
+      "installed_at": "2026-11-06T20:56:14.823999+00:00"
     },
     "house-process": {
-      "version": "0.16.0",
+      "version": "0.16.2",
       "source": "local",
-      "manifest_hash": "sha256:8a507bbf0edc4c44c0313b33e6691751549029cb0de1cc36b6af0feeb51db6db",
+      "manifest_hash": "sha256:ce11019e792ba807957448712f6209e937e0348469c6efea0692e2ac560b9983",
       "enabled": true,
       "priority": 10,
       "registered_commands": {
@@ -55,7 +55,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-11-06T19:29:32.140246+00:00"
+      "installed_at": "2026-11-06T20:56:18.079911+00:00"
     }
   }
 }

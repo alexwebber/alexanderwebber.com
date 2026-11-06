@@ -46,15 +46,19 @@ if (git('status', '--porcelain').trim() !== '') flag(false, 'Uncommitted changes
 
 interface PrView {
   number: number;
+  state: string;
   body: string;
   statusCheckRollup: { name?: string; context?: string; conclusion?: string; status?: string; state?: string }[];
 }
 let pr: PrView | undefined;
 try {
-  pr = ghJson<PrView>(['pr', 'view', branch, '--json', 'number,body,statusCheckRollup']);
+  pr = ghJson<PrView>(['pr', 'view', branch, '--json', 'number,state,body,statusCheckRollup']);
 } catch {
   pr = undefined;
 }
+// `gh pr view <branch>` falls back to a merged or closed PR from an earlier use of the same branch
+// name (the upgrade script's chore-speckit-<version>), whose checks say nothing about this branch.
+if (pr && pr.state !== 'OPEN') pr = undefined;
 
 await section('Private terms', () => {
   if (!existsSync(TERMS_FILE)) {
@@ -171,6 +175,10 @@ await section('PR checks', () => {
   }
   const pending = pr.statusCheckRollup.filter((c) => (c.status ?? '').toUpperCase() !== 'COMPLETED' && c.state === undefined);
   const bad = pr.statusCheckRollup.filter((c) => !pending.includes(c) && !['SUCCESS', 'SKIPPED', 'NEUTRAL'].includes((c.conclusion ?? c.state ?? '').toUpperCase()));
+  if (pr.statusCheckRollup.length === 0) {
+    flag(false, `#${pr.number}: no checks yet (just pushed?): run again in a minute.`);
+    return;
+  }
   flag(bad.length === 0 && pending.length === 0, `#${pr.number}: ${pr.statusCheckRollup.length} checks, ${pending.length} pending, ${bad.length} not green`);
   for (const c of [...pending, ...bad]) console.log(`    - ${c.name ?? c.context}: ${c.conclusion || c.status || c.state}`);
 });
