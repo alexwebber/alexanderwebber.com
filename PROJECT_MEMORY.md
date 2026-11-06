@@ -352,6 +352,17 @@ project-specific notes.
 - A test asserting something is absent from a preview that renders the real menu ("no 'Story'") is a
   launch-time trap. Make such checks follow the repo's data (here `journeyChapterIds()`).
 
+- To compare layouts before touching code, inject CSS and DOM moves into the built site with
+  Playwright and measure under several fonts. DejaVu Sans from jsdelivr reproduced CI's Linux exactly
+  (Donate at 804 px, as CI reported), and Roboto from Google Fonts stands in for Android.
+- An owner's phone screenshot can show something other than the complaint: Donate was whole, and the
+  card's foot was cut. Say what the screenshot shows and ask which target they mean.
+- Astro's `<script is:inline>` emits its content literally: a `{`...`}` expression around the code
+  reached the page as text. Write the JavaScript plainly inside the tag.
+- In a sideways-scrolling list, Chrome's focus treats a link with a sliver showing at the edge as in
+  view and doesn't scroll, so a keyboard user sees a faded fragment. `scroll-padding-inline` equal to
+  the gutter and the fade fixes it; only a Tab-through test found it.
+
 ## Open questions
 
 - None open. See `BACKLOG.md` for deferred/future work items.

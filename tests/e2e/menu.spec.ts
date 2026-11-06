@@ -72,16 +72,20 @@ test.describe('on a phone', () => {
     expect(await outside(last)).toBeLessThan(1);
   });
 
-  test('a link reached by keyboard scrolls into view', async ({ page }) => {
+  // Without the list's scroll-padding, a link with a sliver showing at the edge counted as in view,
+  // and focus left it there, faded.
+  test('a link reached by keyboard scrolls fully into view, clear of the fade', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 640 });
     await open(page, '/running/');
     const last = menu(page).getByRole('link').last();
     expect(await outside(last)).toBeGreaterThan(0);
-    await last.focus();
+    // Real Tab presses: skip link, site name, then the menu.
+    const href = await last.getAttribute('href');
+    for (let i = 0; i < 20 && (await page.evaluate(() => document.activeElement?.getAttribute('href'))) !== href; i++) {
+      await page.keyboard.press('Tab');
+    }
     await expect(last).toBeFocused();
-    await expect.poll(() => list(page).evaluate((ul) => ul.scrollLeft)).toBeGreaterThan(0);
-    // Focus scrolls the link into the list's box; the end padding (the fade's width) may still overlap it.
-    expect(await last.evaluate((a) => a.getBoundingClientRect().right <= a.closest('ul')!.getBoundingClientRect().right + 0.5)).toBe(true);
+    await expect.poll(() => outside(last)).toBeLessThan(1);
   });
 
   test.describe('with JavaScript off', () => {

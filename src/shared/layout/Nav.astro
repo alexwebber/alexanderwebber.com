@@ -89,6 +89,9 @@ function ariaCurrent(href: string): 'page' | 'true' | undefined {
       padding-block: var(--nav-ring);
       padding-inline: var(--gutter) var(--nav-fade);
       overflow-x: auto;
+      /* Focus scrolls a link clear of the gutter and the fade: a link with only a sliver showing at
+         the edge counts as in view otherwise, and keyboard focus would stay there. */
+      scroll-padding-inline: var(--gutter) var(--nav-fade);
       scrollbar-width: none;
       mask-image: linear-gradient(to right, #000 calc(100% - var(--nav-fade)), transparent);
     }

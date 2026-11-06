@@ -8,9 +8,10 @@
 // - the gate passes: validate-data reports no error, and check-links passes;
 // - the chapter renders exactly as written (tests/helpers/story-text.ts);
 // - "Story" is last in the menu on every Running page, and current on the story page;
-// - on /running/ at 360 x 780 with the fundraising card, Donate is fully on the first screen and the
-//   menu has no third line. If either fails, the build stops for the owner's decision (research.md
-//   R8): the assertion stays, and nothing in the layout changes to pass it;
+// - on /running/ at 360 x 780 with the fundraising card, "Story" adds no menu line and doesn't move
+//   Donate. If it does, the build stops for the owner's decision (research.md R8): the assertion
+//   stays, and nothing in the layout changes to pass it. (Since 2026-11-06 the phone menu is one
+//   line that scrolls, and landing.spec.ts holds Donate to a 360 x 640 first screen on any font.);
 // - no Running page scrolls sideways at 320 px;
 // - the panel shows the label, and "Story" isn't repeated in the section links below it;
 // - the sitemap lists the page, and its share image exists;
@@ -166,8 +167,8 @@ test('US3.2, US3.5: "Story" is last in the menu on every Running page, and curre
 });
 
 // Research R8 / FR-043: adding "Story" must not push Donate down. Donate's absolute position depends
-// on the system font (`system-ui`): on Windows it ends at 777 px of 780, on CI's Linux at 804 px, with
-// or without "Story". So this asserts the cause, on any font (owner, 2026-11-06, #122): the same page
+// on the system font (`system-ui`), so this asserts the cause, on any font (owner, 2026-11-06, #122);
+// landing.spec.ts holds the absolute target (360 x 640, 24 px to spare) on the real page: the same page
 // with "Story" shown and then hidden has the same menu lines and Donate at the same height. The
 // absolute position is printed for the PR, not asserted. If the menu wraps to a third line, the owner
 // decides (the PR stops); don't change the layout or the threshold to pass it.

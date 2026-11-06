@@ -1986,3 +1986,27 @@ end. Add each new decision as a dated entry at the end, as it's made.
     `,width=` and `,first-screen` (a drill's copy, shot several ways in one table); `gate-drill`
     (measuring a phone's first screen from the desktop project, `DRILL_KEEP_DIST`, rebuilds last);
     `section-page` (export a conditional area so tests can force it with a `vi.mock` getter).
+- **2026-11-06** — **#122 merged** (003 Phase 3). No boxes (the owner's three answers were settled
+  in the PR before the merge). `/after-merge`: the PR's 11 checks and `main`'s Gate green, deploy
+  included; `/` and `/running/` answer 200. Nothing visible changed (the story needs a chapter).
+- **2026-11-06** — **Donate always on a phone's first screen** (owner, after #122). The owner's Pixel
+  (Chrome, about 411 x 770) showed Donate whole and the card's foot (logo, "Figures updated") cut
+  off; at 360 x 640 Donate was below the screen (775–804 px by font). The owner's picks, from
+  screenshots of three layouts:
+  - **The target is the Donate button**, not the whole card, on a **360 x 640** first screen with
+    **24 px to spare**, on every font we can test. `landing.spec.ts` asserts it. Measured: Windows'
+    Segoe UI 582, Roboto 580, CI's Linux font (DejaVu Sans, 804 before, as CI reported) 609. At
+    320 px Donate ends 606–680, which the target doesn't cover.
+  - **The menu stays on one line on phones and scrolls sideways** (the owner found the two-line menu
+    annoying; shorter words, icons and a Menu button were the other options). It fades out at its
+    end, with end padding as wide as the fade; a small inline script scrolls the current page's link
+    into view (so "Fundraising" and, at launch, "Story" show when current); `scroll-padding-inline`
+    makes keyboard focus bring a link fully clear of the fade, which a test found it didn't without.
+    Without JavaScript the list starts at its beginning. Wider screens keep the row.
+  - **Layout A** over B (the bar kept above Donate, only 13 px to spare on CI's font): a tighter site
+    header, page heading and "Last updated"; the race date in the "Focus race" line so the name keeps
+    one line; the card's "Fundraising" heading for screen readers only; Donate straight after the
+    total. The fundraising page keeps its order (`donateFirst` is the card's alone).
+  - **The story page now has one script**, the menu's (spec 003's "no script" test was stricter than
+    FR-071, which asks only that the content work with scripts off). Tests allow that one inline
+    script and no script files.
