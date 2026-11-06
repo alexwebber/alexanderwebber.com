@@ -3,7 +3,7 @@
 // branch that never merges, then prints the Markdown for the PR body, linked by commit SHA (`gh`
 // can't attach images to a PR).
 //
-//   node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen] ... [--build]
+//   node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen][,open] ... [--build]
 //     [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--width=360] [--publish]
 //
 // - Serves dist/ itself (no `astro preview`, which a coding agent's session backgrounds and which
@@ -17,8 +17,9 @@
 // - Phone shots are full-page at 360 px wide (--width, or `,width=` for one path) with isMobile off
 //   (Playwright can't capture a full page with it on), at 2x. --first-screen (or `,first-screen`)
 //   shoots only the first screen (width x 780, or `,height=` for one path, e.g. 640 for the small
-//   phone landing.spec.ts holds Donate to), for "what a visitor sees first" checks. Pages taller
-//   than WebP's limit are cropped, and say so.
+//   phone landing.spec.ts holds Donate to), for "what a visitor sees first" checks. `,open` opens
+//   every <details> on the page first (e.g. the story's chapter list shown open). Pages taller than
+//   WebP's limit are cropped, and say so.
 // - Files go to spikes/screens/out/ (gitignored). --publish commits them with git plumbing (the
 //   working tree is untouched) to `<branch>-screens`, pushes, and prints the PR body's table. The
 //   side branch stays after the merge, so the merged PR's images keep working. It triggers no
@@ -63,6 +64,7 @@ const targets = args
       width: own ? Number(own.slice('width='.length)) : width,
       height: ownHeight ? Number(ownHeight.slice('height='.length)) : PHONE_HEIGHT,
       firstScreen: options.includes('first-screen') || flag('first-screen'),
+      open: options.includes('open'),
     };
   });
 if (distArg && flag('build')) {
@@ -79,7 +81,7 @@ if (rewritten) {
   process.exit(2);
 }
 if (targets.length === 0) {
-  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen] ... [--build] [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
+  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen][,open] ... [--build] [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
   process.exit(2);
 }
 
@@ -182,6 +184,7 @@ try {
       const response = await page.goto(`${base}${target.path}`, { waitUntil: 'load' });
       if (response?.status() !== 200) throw new Error(`${target.path} answered ${response?.status()}`);
       await page.evaluate(() => document.fonts.ready);
+      if (target.open) await page.evaluate(() => document.querySelectorAll('details').forEach((details) => (details.open = true)));
       const png = await page.screenshot({ fullPage: !target.firstScreen });
       await context.close();
       const image = sharp(png);
@@ -234,11 +237,12 @@ console.log(`Pushed ${shots.length} file(s) to ${side} at ${sha}.\n`);
 // --- The PR body's Markdown ----------------------------------------------------------------------
 
 const url = (file: string) => `https://raw.githubusercontent.com/${REPO}/${sha}/${file}`;
-/** A target as its row and links name it: the path, and its width and first screen when they differ. */
+/** A target as its row and links name it: the path, and its width, first screen and open details when they differ. */
 const label = (t: (typeof targets)[number]) => {
   const notes = [
     ...(t.width !== width || t.height !== PHONE_HEIGHT ? [t.height !== PHONE_HEIGHT ? `${t.width} x ${t.height}` : `${t.width} px`] : []),
     ...(t.firstScreen && !flag('first-screen') ? ['first screen'] : []),
+    ...(t.open ? ['details open'] : []),
   ];
   return `\`${t.path}\`${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`;
 };

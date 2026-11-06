@@ -1,0 +1,20 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: exercitation-incididunt-exercitation
+name: Exercitation incididunt exercitation
+when: 2024-09-21
+prose: |
+  Eiusmod ea dolore ipsum veniam sit dolor et nisi. Ea labore et labore consequat dolor quis eiusmod sit aliqua aliquip eiusmod et dolore ut. Aliqua ea ex laboris nisi ipsum ullamco consectetur ex. Consectetur labore tempor adipiscing consectetur aliqua ut lorem consectetur commodo ipsum ex exercitation sed consectetur.
+
+  Ullamco ea eiusmod enim dolore magna lorem ut commodo consectetur ex ea ex. Ut labore exercitation commodo tempor dolore sit. Lorem ea adipiscing tempor {{distance}} minim labore consectetur nostrud consequat.
+takeaway: Elit incididunt ipsum ad tempor commodo minim ullamco ea ullamco ut ex enim nostrud ea eiusmod consectetur nisi do veniam do dolor.
+figures:
+  - id: distance
+    category: run_distance
+    label: Distance
+    as_of: 2024-09-21
+    text: 21.1 km
+    source: owner
+    garmin: Example W1
+approved:
+  date: 2026-11-01
+  sha256: aca293db1c62f2b2c97e625b60f2f4840f867460458a374c5dcc9a0b5d1feb94

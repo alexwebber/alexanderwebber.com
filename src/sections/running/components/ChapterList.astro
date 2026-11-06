@@ -1,0 +1,30 @@
+---
+// The journey story's chapter list (spec 003 T054; FR-052, SC-010, research.md R7; owner decision 3):
+// at four or more chapters only (showChapterList), between the <h1> and the first chapter. A closed
+// "Chapters" disclosure, one line on a phone, so the first chapter still starts on the first screen
+// (SC-001); opened, a list of the chapter names, oldest first, each linking to its chapter's anchor.
+// Two taps to any chapter, with no script: a native <details>. A <ul>, not an <ol>, because chapters
+// aren't numbered (FR-003). Each chapter's "Back to chapters" link targets the list's ID
+// (StoryChapter.astro). Styles: styles/story.css.
+import type { ChapterView } from '../data/journey.ts';
+
+export interface Props {
+  /** Oldest first, as the page shows them. */
+  chapters: Pick<ChapterView, 'id' | 'name'>[];
+}
+
+const { chapters } = Astro.props;
+---
+
+<details class="story-chapters">
+  <summary>Chapters</summary>
+  <ul id="story-chapter-list">
+    {
+      chapters.map((chapter) => (
+        <li>
+          <a href={`#${chapter.id}`}>{chapter.name}</a>
+        </li>
+      ))
+    }
+  </ul>
+</details>

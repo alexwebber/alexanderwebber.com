@@ -6,11 +6,13 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parse } from 'yaml';
-import { main as approveMain } from '../../scripts/approve-story.ts';
+import { approveJourney, main as approveMain } from '../../scripts/approve-story.ts';
 import { validateData } from '../../scripts/validate-data.ts';
 import { journeyChapterIds, journeySha256, loadRunningData } from '../../src/sections/running/data/store/files.ts';
 import { JsonFileStore } from '../../src/sections/running/data/store/index.ts';
+import { loadJourney } from '../../src/sections/running/data/journey.ts';
 import { DataValidationError, formatIssue } from '../../src/shared/storage/errors.ts';
+import { PREVIEW_STATES } from '../fixtures/story-preview/store.ts';
 import {
   approve,
   chapter,
@@ -501,10 +503,57 @@ it('parses the YAML the helpers write as the loader does (strings stay strings)'
   expect(value.when).toBe('2026-03');
 });
 
+// The story keeps growing (T059; FR-038, FR-051, SC-008): one chapter's correction touches that
+// chapter alone. The growth drill on a copy of the real site is tests/e2e/story-launch.spec.ts.
+describe('journey validation: one chapter changes alone', () => {
+  const B = chapterFile('chapter-b');
+  const sha = (file: string) => (parse(readFileSync(join(repo.root, file), 'utf8')) as { approved: { sha256: string } }).approved.sha256;
+
+  it("correcting a chapter's name keeps its id and anchor, needs only its own approval, and leaves every other hash", async () => {
+    setUp();
+    writeStory(repo);
+    writeApproved(repo, B, 'chapter', chapter('chapter-b', { name: lorem(50, 3), when: '2026-01' }));
+    writeApproved(repo, CLOSING, 'closing', closing());
+    expect(errors()).toEqual([]);
+    const others = [B, NOTE, PAGE, CLOSING];
+    const before = new Map(others.map((file) => [file, readFileSync(join(repo.root, file), 'utf8')]));
+
+    // The corrected name, written over the approved file: only that chapter is refused.
+    const approvedA = parse(readFileSync(join(repo.root, A), 'utf8')) as Value;
+    const corrected = `${String(approvedA.name)} ${lorem(51, 1).toLowerCase()}`;
+    repo.write(A, yaml({ ...approvedA, name: corrected }));
+    expect(errors()).toEqual([changed()]);
+
+    // Its own approval clears it, and touches no other file.
+    approveJourney({ root: repo.root, target: 'chapter-a', date: '2026-11-02' });
+    expect(errors()).toEqual([]);
+    expect(sha(A)).not.toBe((approvedA.approved as { sha256: string }).sha256);
+    for (const file of others) expect(readFileSync(join(repo.root, file), 'utf8'), file).toBe(before.get(file));
+    expect(sha(B)).toBe((approve('chapter', chapter('chapter-b', { name: lorem(50, 3), when: '2026-01' })).approved as { sha256: string }).sha256);
+
+    // The id, and so the anchor (#chapter-a) and the folder, stay as they were (FR-051).
+    expect(journeyChapterIds(repo.root)).toEqual(['chapter-a', 'chapter-b']);
+    const view = (await loadJourney(new JsonFileStore(repo.root)))!;
+    expect(view.chapters.map((c) => [c.id, c.name])).toEqual([
+      ['chapter-b', lorem(50, 3)],
+      ['chapter-a', corrected],
+    ]);
+  });
+
+  it('adding a chapter needs no other approval, and changes no other file', () => {
+    setUp();
+    writeStory(repo);
+    const before = new Map([A, NOTE, PAGE].map((file) => [file, readFileSync(join(repo.root, file), 'utf8')]));
+    writeApproved(repo, B, 'chapter', chapter('chapter-b', { when: '2025-11' }));
+    expect(errors()).toEqual([]);
+    for (const [file, text] of before) expect(readFileSync(join(repo.root, file), 'utf8'), file).toBe(text);
+  });
+});
+
 // The story previews (T033) pass the same validation as real data, so their approval hashes hold on
 // Windows (autocrlf) and Linux checkouts alike (preview-state skill).
 describe('the story previews', () => {
-  it.each(['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day'])('%s passes validation, like the real data', (state) => {
+  it.each(PREVIEW_STATES)('%s passes validation, like the real data', (state) => {
     const root = join(REPO_ROOT, `tests/fixtures/story-preview/data/${state}`);
     const issues = validateData(root, { today: TODAY, schemaRoot: REPO_ROOT });
     expect(issues.filter((i) => i.severity === 'error').map(formatIssue)).toEqual([]);

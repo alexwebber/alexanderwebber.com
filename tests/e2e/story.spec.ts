@@ -1,5 +1,6 @@
 // The journey story page in a real browser (spec 003 T037, T039; US1, US2, SC-001, SC-003, FR-002 to
-// FR-008, FR-010, FR-011, FR-014, FR-071, FR-072; quickstart.md §3), over the test-only previews
+// FR-008, FR-010, FR-011, FR-014, FR-071, FR-072; quickstart.md §3), and the chapter list at four or
+// more chapters (T058; US4, FR-052, SC-010, research.md R7), over the test-only previews
 // (SHELL_PREVIEW=1, tests/fixtures/story-preview/): made-up chapters through the real StoryPage. Every
 // expectation comes from the preview's own files, never a pinned list. The real page arrives in
 // Phase 3 and its words in Phase 7.
@@ -7,10 +8,11 @@ import { join, resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { journeyChapterIds } from '../../src/sections/running/data/store/files.ts';
 import { parseProse, parseWhen } from '../../src/sections/running/domain/journey.ts';
+import { PREVIEW_STATES as STATES, type PreviewState as State } from '../fixtures/story-preview/store.ts';
 import { approvedText, inlineFigure as inline, readJourney, storyText, type JourneyFiles } from '../helpers/story-text.ts';
 
-const STATES = ['one-chapter', 'three-chapters', 'long', 'figures', 'no-closing', 'same-day'] as const;
-type State = (typeof STATES)[number];
+/** The chapter list and back links show from four chapters on (FR-052): long, figures and four-chapters. */
+const LIST_AT = 4;
 const REPO = resolve(import.meta.dirname, '../..');
 const FIXTURES = resolve(import.meta.dirname, '../fixtures/story-preview/data');
 
@@ -27,9 +29,11 @@ async function open(page: Page, state: State) {
 const story = (page: Page) => page.locator('.story-page');
 const chapters = (page: Page) => story(page).locator('section.story-chapter');
 const chapterIds = (page: Page) => chapters(page).evaluateAll((els) => els.map((el) => el.id));
+const chapterList = (page: Page) => story(page).locator('details.story-chapters');
 
 for (const state of STATES) {
   const data = fixture(state);
+  const listed = data.chapters.length >= LIST_AT;
 
   test(`${state}: chapters are oldest first, each with its parts in order (US1.1, FR-002)`, async ({ page }) => {
     await open(page, state);
@@ -49,6 +53,8 @@ for (const state of STATES) {
         .evaluate((el) => [...el.children].map((child) => `${child.tagName.toLowerCase()}${child.className ? `.${child.className}` : ''}`));
       expect(parts[0], id).toBe('h2');
       expect(parts[1], id).toBe('p.story-when');
+      // "Back to chapters" closes each chapter when the list shows (FR-052).
+      if (listed) expect(parts.pop(), id).toBe('p.story-back');
       expect(parts.at(-1), id).toBe('div.story-takeaway');
       expect(parts.slice(2, -1).every((p) => p === 'p' || p === 'p.story-figure-block'), id).toBe(true);
       expect(parts[2], `${id} opens with prose`).toBe('p');
@@ -62,7 +68,7 @@ for (const state of STATES) {
     expect(shown).toEqual(expected(data, await chapterIds(page)));
     // And as a browser lays it out: no two inline parts run together.
     for (const chapter of shown.chapters) {
-      const rendered = await story(page).locator(`section#${chapter.id} > p:not(.story-when)`).allInnerTexts();
+      const rendered = await story(page).locator(`section#${chapter.id} > p:not(.story-when, .story-back)`).allInnerTexts();
       expect(rendered.map((text) => text.replace(/\s+/g, ' ').trim())).toEqual(chapter.paragraphs);
     }
   });
@@ -132,12 +138,14 @@ for (const state of STATES) {
 
 // SC-001: the first screen opens on the story: the first chapter's name and its opening lines, with no
 // figure, chart or bar before the first prose.
-for (const state of ['one-chapter', 'long'] as const) {
+for (const state of ['one-chapter', 'long', 'four-chapters'] as const) {
   test(`${state}: the first screen shows the first chapter's name and opening lines, and no figure (SC-001)`, async ({ page }) => {
     await open(page, state);
     const viewport = page.viewportSize()!;
     const first = chapters(page).first();
     const name = await first.getByRole('heading', { level: 2 }).boundingBox();
+    // The list, where there is one, is closed (FR-052).
+    if (state !== 'one-chapter') await expect(chapterList(page)).not.toHaveAttribute('open');
     const prose = await first.locator('> p:not(.story-when)').first().boundingBox();
     expect(name!.y + name!.height).toBeLessThanOrEqual(viewport.height);
     // At least its first two lines.
@@ -196,7 +204,8 @@ test('figures: a chapter with no figures reads complete, with no empty space for
   const parts = await story(page)
     .locator(`section#${plain.id}`)
     .evaluate((el) => [...el.children].map((child) => child.tagName.toLowerCase() + (child.className ? `.${child.className}` : '')));
-  expect(parts).toEqual(['h2', 'p.story-when', ...parseProse(plain.prose).paragraphs.map(() => 'p'), 'div.story-takeaway']);
+  // figures has four chapters, so each ends with "Back to chapters" (FR-052).
+  expect(parts).toEqual(['h2', 'p.story-when', ...parseProse(plain.prose).paragraphs.map(() => 'p'), 'div.story-takeaway', 'p.story-back']);
 });
 
 test('no-closing: the note follows the latest chapter directly (FR-007)', async ({ page }) => {
@@ -229,3 +238,100 @@ test('each chapter is a region named by its heading, with its ID as its anchor (
     await expect(page.getByRole('region', { name: chapter.name, exact: true })).toHaveAttribute('id', chapter.id);
   }
 });
+
+// The chapter list (T058; US4, FR-052, SC-010, research.md R7; owner decision 3): from four chapters
+// on, a closed "Chapters" line under the title, two taps to any chapter with scripts off, and "Back to
+// chapters" after each chapter. Positions depend on the system font (CI's Linux font is taller), so the
+// first-screen checks measure on the page itself rather than against pixel counts.
+for (const state of ['four-chapters', 'long'] as const) {
+  const data = fixture(state);
+
+  test(`${state}: the list is closed by default, one line under the title, and lists every chapter in page order`, async ({ page }) => {
+    await open(page, state);
+    const list = chapterList(page);
+    await expect(list).toHaveCount(1);
+    await expect(list).not.toHaveAttribute('open');
+    await expect(list.locator('summary')).toHaveText('Chapters');
+    await expect(list.getByRole('list')).toBeHidden();
+    // Straight after the title: the list is the story's first part, before the first chapter.
+    expect(await story(page).evaluate((el) => el.firstElementChild?.className)).toBe('story-chapters');
+    // Unnumbered: a <ul> of names, in the order the chapters show.
+    await list.locator('summary').click();
+    const names = await list.locator('ul#story-chapter-list > li > a').evaluateAll((els) => els.map((a) => [a.getAttribute('href'), a.textContent]));
+    const ids = await chapterIds(page);
+    expect(names).toEqual(ids.map((id) => [`#${id}`, data.chapters.find((c) => c.id === id)!.name]));
+    await expect(list.locator('ol')).toHaveCount(0);
+  });
+
+  test(`${state}: closed, the list takes one line, so only opening it moves the first chapter down (FR-052, SC-001)`, async ({ page }) => {
+    await open(page, state);
+    const list = chapterList(page);
+    const summary = list.locator('summary');
+    const heading = chapters(page).first().getByRole('heading', { level: 2 });
+    const closed = (await list.boundingBox())!;
+    const line = await summary.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+    // The closed list is its summary (one line, with its padding) and its two rules, whatever the font.
+    expect(closed.height).toBeLessThanOrEqual((await summary.boundingBox())!.height + 2.5);
+    expect((await summary.boundingBox())!.height).toBeLessThan(2 * line + 16);
+    const closedAt = (await heading.boundingBox())!.y;
+    expect(closedAt + (await heading.boundingBox())!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    // Open, the names push the chapter down by the list's own height: a list this long would cost
+    // the first screen if it started open.
+    await summary.click();
+    const opened = (await list.boundingBox())!;
+    expect(opened.height).toBeGreaterThanOrEqual(closed.height + data.chapters.length * line);
+    expect((await heading.boundingBox())!.y - closedAt).toBeCloseTo(opened.height - closed.height, 0);
+  });
+
+  for (const width of [320, 360]) {
+    test(`${state}: nothing scrolls sideways at ${width} px with the list open`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await open(page, state);
+      await chapterList(page).locator('summary').click();
+      await expect(chapterList(page)).toHaveAttribute('open');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+    });
+  }
+
+  test.describe(`${state}, with JavaScript off`, () => {
+    test.use({ javaScriptEnabled: false });
+
+    test('any chapter is two taps from the top: open the list, tap its name (SC-010)', async ({ page }) => {
+      await open(page, state);
+      const ids = await chapterIds(page);
+      // The first, a middle one and the last.
+      for (const id of [...new Set([ids[0]!, ids[Math.floor(ids.length / 2)]!, ids.at(-1)!])]) {
+        await open(page, state);
+        const name = data.chapters.find((c) => c.id === id)!.name;
+        await chapterList(page).locator('summary').click();
+        await chapterList(page).getByRole('link', { name, exact: true }).click();
+        await expect(page).toHaveURL(new RegExp(`#${id}$`));
+        await expect(story(page).locator(`section#${id}`).getByRole('heading', { level: 2, name, exact: true })).toBeInViewport();
+      }
+    });
+
+    test('"Back to chapters" after each chapter lands on the list or its summary', async ({ page }) => {
+      await open(page, state);
+      const ids = await chapterIds(page);
+      await expect(story(page).locator('.story-back')).toHaveCount(ids.length);
+      for (const id of ids) await expect(story(page).locator(`section#${id} > p.story-back`).getByRole('link', { name: 'Back to chapters', exact: true })).toHaveAttribute('href', '#story-chapter-list');
+      // From the last chapter, reached directly, so the list starts closed.
+      await page.goto(`/story-preview/${state}/#${ids.at(-1)}`);
+      await expect(chapterList(page)).not.toHaveAttribute('open');
+      await story(page).locator(`section#${ids.at(-1)} .story-back a`).click();
+      await expect(page).toHaveURL(/#story-chapter-list$/);
+      // Chrome opens the <details> for its target; elsewhere the reader lands on the summary (R7).
+      const expanded = await chapterList(page).evaluate((el) => (el as HTMLDetailsElement).open);
+      await expect(expanded ? chapterList(page).getByRole('list') : chapterList(page).locator('summary')).toBeInViewport();
+    });
+  });
+}
+
+for (const state of ['one-chapter', 'three-chapters'] as const) {
+  test(`${state}: fewer than four chapters, so no list and no "Back to chapters" (FR-052)`, async ({ page }) => {
+    await open(page, state);
+    await expect(story(page).locator('details')).toHaveCount(0);
+    await expect(story(page).locator('#story-chapter-list, .story-back')).toHaveCount(0);
+    await expect(story(page).getByText('Back to chapters', { exact: true })).toHaveCount(0);
+  });
+}

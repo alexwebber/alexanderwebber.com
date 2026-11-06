@@ -26,6 +26,12 @@ screenshots run against it (`page-tests`, `pr-screenshots`).
      `tests/helpers/journey.ts` for text). Running it twice changes nothing (`git status` clean).
      `lorem()` capitalises its first word, so lower-case the words that carry on a sentence (after
      a placeholder or a link), as `story-preview`'s `lower()` does.
+   - **A state added later** goes after the existing ones, from a seed of its own (`seed = 4001`
+     before it, as `story-preview`'s `four-chapters`), because one shared seed counter shifts every
+     later word: adding a state in the middle rewrites every other state's files and hashes.
+     Regenerate and check `git diff --stat` shows only the new state (line endings aside).
+   - **Tests that list the states** import `PREVIEW_STATES` from `store.ts` rather than a copy, so a
+     new state is validated and tested without editing each list.
    - **Reuse the test helpers** for approved files: `approve(kind, value, photos, date)` and
      `yaml(value)` from `tests/helpers/journey.ts` write exactly what `approve-story` would.
    - **Made up, and says so:** lorem-style words or "Example hospice", "Seaside Marathon"; never a

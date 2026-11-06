@@ -1,0 +1,14 @@
+# Made-up preview text from tests/fixtures/story-preview/generate.ts. Not real.
+id: amet-aliquip
+name: Amet aliquip
+when: 2024-04
+prose: |
+  This is made-up preview text, so the page can be checked before a real story exists. Nothing here is about a real person, place or figure. Amet et dolore exercitation nisi laboris aliqua ut aliqua laboris amet. Exercitation commodo ea amet consectetur eiusmod minim sed laboris lorem consequat labore et amet consectetur dolor ipsum. Incididunt et ex magna dolore do sed sit ad elit eiusmod.
+
+  Consequat commodo tempor ex tempor sed tempor dolore aliquip labore consectetur lorem do labore. Ad et ullamco do veniam elit commodo tempor. Elit commodo exercitation veniam consequat nostrud ipsum adipiscing ea nisi tempor dolor enim adipiscing. Nisi et adipiscing ipsum nisi quis veniam ipsum.
+
+  Et commodo minim ex consectetur veniam. Dolor et ad do dolore minim incididunt exercitation ullamco et incididunt quis. Quis labore ipsum veniam tempor amet.
+takeaway: Ad aliquip ad elit dolore consequat lorem ea amet enim aliqua aliquip labore tempor aliqua aliquip nisi et ex laboris aliqua.
+approved:
+  date: 2026-11-01
+  sha256: fd030c392d4b4ea6d93997175d4b70dea59a8f9892930926fa0fdd447c8668c1

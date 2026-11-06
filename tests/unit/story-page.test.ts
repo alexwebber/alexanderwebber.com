@@ -7,7 +7,7 @@
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import StoryPage from '../../src/sections/running/components/StoryPage.astro';
-import { loadJourney, type JourneyView } from '../../src/sections/running/data/journey.ts';
+import { CHAPTER_LIST_AT, loadJourney, showChapterList, type JourneyView } from '../../src/sections/running/data/journey.ts';
 import { setRunningStore } from '../../src/sections/running/data/load.ts';
 import type { Journey, JourneyChapter, JourneyClosing, JourneyNote, JourneyPage, RunningStore } from '../../src/sections/running/data/store/index.ts';
 import { DataValidationError } from '../../src/shared/storage/errors.ts';
@@ -182,6 +182,64 @@ describe('the page (FR-002, FR-005, FR-007, FR-008, FR-071)', () => {
   it('has no Donate, fundraising card, chart or progress bar anywhere (FR-002)', async () => {
     const html = main(await render({ chapters: [asChapter(chapter()), asChapter(FIGURES)], closing: CLOSING }));
     expect(html).not.toMatch(/Donate|fundraising-card|<svg|chart|role="meter"|<progress/i);
+  });
+});
+
+describe('the chapter list and "Back to chapters" (FR-052, SC-010, research.md R7)', () => {
+  /** `count` made-up chapters, a month apart, given newest first so the page must sort them. */
+  const many = (count: number) =>
+    Array.from({ length: count }, (_, i) => asChapter(chapter(`chapter-${String.fromCharCode(97 + i)}`, { name: lorem(60 + i, 2 + (i % 3)), when: `2025-${String(12 - i).padStart(2, '0')}` })));
+  const list = (html: string) => /<details class="story-chapters">[\s\S]*?<\/details>/.exec(html)?.[0];
+
+  it('shows from four chapters on, a named constant', () => {
+    expect(CHAPTER_LIST_AT).toBe(4);
+    expect(showChapterList({ chapters: new Array(3) })).toBe(false);
+    expect(showChapterList({ chapters: new Array(4) })).toBe(true);
+  });
+
+  it('shows no list and no back links at three chapters', async () => {
+    const html = main(await render({ chapters: many(3) }));
+    expect(html).not.toMatch(/<details|<ul|story-chapter-list|Back to chapters|>Chapters</);
+  });
+
+  it('at four, puts a closed "Chapters" list between the h1 and the first chapter, names in chapter order, unnumbered', async () => {
+    const chapters = many(4);
+    const html = main(await render({ chapters }));
+    const details = list(html)!;
+    expect(details).toBeDefined();
+    // Closed by default: no `open` attribute.
+    expect(details).toMatch(/^<details class="story-chapters"><summary>Chapters<\/summary><ul id="story-chapter-list">/);
+    expect(html).toMatch(/<\/h1><\/header><div class="story-page"><details class="story-chapters">/);
+    expect(html).toMatch(/<\/details><section class="story-chapter"/);
+    expect(details).not.toMatch(/<ol|\d/);
+    const links = [...details.matchAll(/<li><a href="#([^"]+)">([^<]+)<\/a><\/li>/g)].map((m) => [m[1], m[2]]);
+    const shown = [...html.matchAll(/<section class="story-chapter" id="([^"]+)"/g)].map((m) => m[1]);
+    expect(shown).toEqual(['chapter-d', 'chapter-c', 'chapter-b', 'chapter-a']);
+    expect(links).toEqual(shown.map((id) => [id, chapters.find((c) => c.id === id)!.name]));
+    expect(count(html, /<details/)).toBe(1);
+  });
+
+  it('every list link and back link has its target on the page', async () => {
+    const html = main(await render({ chapters: many(12), closing: CLOSING }));
+    const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+    const targets = [...html.matchAll(/<a href="#([^"]+)"/g)].map((m) => m[1]!);
+    expect(targets).toHaveLength(12 + 12);
+    for (const target of targets) expect(ids.has(target), target).toBe(true);
+  });
+
+  it('ends each chapter with "Back to chapters" after its takeaway, and nothing else gains one', async () => {
+    const html = main(await render({ chapters: many(4), closing: CLOSING }));
+    expect(count(html, /<p class="story-back"><a href="#story-chapter-list">Back to chapters<\/a><\/p><\/section>/)).toBe(4);
+    for (const id of ['chapter-a', 'chapter-b', 'chapter-c', 'chapter-d']) expect(chapterHtml(html, id)).toMatch(/<\/div><p class="story-back">/);
+    expect(count(html, /Back to chapters/)).toBe(4);
+    expect(/<section class="story-closing"[\s\S]*?<\/section>/.exec(html)![0]).not.toContain('story-back');
+  });
+
+  it('leaves the text the story-text helper reads unchanged', async () => {
+    const chapters = many(4);
+    const text = storyText(await render({ chapters }));
+    expect(text.chapters.map((c) => c.takeaway)).toEqual(text.chapters.map((c) => chapters.find((x) => x.id === c.id)!.takeaway));
+    expect(text.chapters.every((c) => c.paragraphs.every((p) => !p.includes('Back to chapters')))).toBe(true);
   });
 });
 

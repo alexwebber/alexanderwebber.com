@@ -58,6 +58,10 @@ Read `speckit-house-process-tips-astro` and `-tips-ui-accessibility` first, and
 - **320 px**: `overflow-wrap: anywhere` on free text; no `white-space: nowrap` beside a heading;
   hidden labels (`visibility: hidden`) still take width. Text blocks at `max-width: 66ch`.
 - **Forced colours**: a box drawn only by its background disappears; give it a border.
+- **Target size** (WCAG 2.2, axe's `target-size`): a list of short links right under another
+  control (a `<summary>`, a button) fails, because an inline link is only as tall as its text. Make
+  each `display: inline-block`, so the line height (24 px at 16 px, 1.5) is the target, and run axe
+  with every `<details>` open too.
 - Visualisations over walls of text (constitution); charts: the `dataviz` skill.
 
 ## Done when

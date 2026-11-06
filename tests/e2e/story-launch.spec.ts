@@ -15,6 +15,10 @@
 // - no Running page scrolls sideways at 320 px;
 // - the panel shows the label, and "Story" isn't repeated in the section links below it;
 // - the sitemap lists the page, and its share image exists;
+// - growth (T059, quickstart.md §6, SC-008, US4.1-US4.3, US4.5): a second made-up chapter dated
+//   earlier, approved on its own, appears before the first; every other journey file is byte-identical
+//   (the copy isn't a git repository, so its bytes are compared with a record taken before), and the
+//   first chapter's anchor still leads to it;
 // - a chapter link to a page that doesn't exist, re-approved, passes validation and the build, and
 //   check-links stops it naming the chapter (FR-015);
 // - with every chapter removed, validate-data refuses the story link, and a plain build (which runs
@@ -24,7 +28,7 @@
 // DRILL_KEEP_DIST=<dir> copies the launch build's dist/ there, for the PR's screenshots
 // (`node scripts/process/screenshots.ts --dist=<dir> ...`, pr-screenshots skill).
 import { execFile } from 'node:child_process';
-import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync, writeFileSync, type Dirent } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { devices, expect, test, type Browser, type Page } from '@playwright/test';
@@ -33,7 +37,7 @@ import { approveJourney } from '../../scripts/approve-story.ts';
 import { checkLinks } from '../../scripts/check-links.ts';
 import { validateData } from '../../scripts/validate-data.ts';
 import { formatIssue } from '../../src/shared/storage/errors.ts';
-import { chapter, chapterFile, JOURNEY, lorem, page as pageWording, writeStory } from '../helpers/journey.ts';
+import { chapter, chapterFile, JOURNEY, lorem, page as pageWording, writeStory, yaml } from '../helpers/journey.ts';
 import { buildSite, builtHtmlFiles, copySite, GATE_STEPS, REPO, runGate, scratchRepo, serveDist, type DistServer, type GateRun } from '../helpers/scratch-site.ts';
 import { approvedText, readJourney, storyText } from '../helpers/story-text.ts';
 
@@ -234,6 +238,54 @@ test('FR-075: the sitemap lists the page, and its share image exists', async ({ 
   const bytes = await png.body();
   // PNG signature, then the IHDR chunk's width and height.
   expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([1200, 630]);
+});
+
+/** Every file under the copy's journey folder, by its path relative to it, with its bytes. */
+const journeyFiles = () =>
+  new Map(
+    (readdirSync(join(root, JOURNEY), { recursive: true, withFileTypes: true }) as Dirent[])
+      .filter((entry) => entry.isFile())
+      .map((entry) => {
+        const path = join(entry.parentPath, entry.name);
+        return [path.slice(join(root, JOURNEY).length + 1).replaceAll('\\', '/'), readFileSync(path)] as const;
+      }),
+  );
+
+// SC-008, US4.1-US4.3, US4.5 (quickstart.md §6): adding a chapter touches only its own folder.
+test('SC-008: a new chapter dated earlier, approved on its own, appears first; every other file and the first anchor stay', async ({ page }, testInfo) => {
+  testInfo.setTimeout(240_000);
+  await server?.close();
+  server = undefined;
+  const before = journeyFiles();
+  const hashA = (parse(readFileSync(join(root, chapterFile(ID)), 'utf8')) as { approved: { sha256: string } }).approved.sha256;
+
+  // Made up, dated before the first chapter, written as the owner's file is, then approved alone.
+  const EARLIER = 'chapter-0';
+  const added = chapter(EARLIER, { name: lorem(70, 3), when: '2025-09', prose: `${lorem(71, 9)}.\n\n${lorem(72, 7)}.\n`, takeaway: `${lorem(73, 8)}.` });
+  delete added.figures;
+  scratchRepo(root).write(chapterFile(EARLIER), yaml(added));
+  approveJourney({ root, target: EARLIER });
+
+  const run = await runGate(root);
+  expect(run.failed, run.messages.join('\n')).toBeUndefined();
+  expect(run.ran).toEqual([...GATE_STEPS]);
+
+  // Only the new chapter's file is new, and every other file is byte for byte what it was.
+  const after = journeyFiles();
+  expect([...after.keys()].filter((file) => !before.has(file))).toEqual([`chapters/${EARLIER}/chapter.yaml`]);
+  for (const [file, bytes] of before) expect(after.get(file)?.equals(bytes), file).toBe(true);
+  expect((parse(readFileSync(join(root, chapterFile(ID)), 'utf8')) as { approved: { sha256: string } }).approved.sha256).toBe(hashA);
+
+  // On the page: the new chapter first, both exactly as approved, and #chapter-a still leads to its chapter.
+  server = await serveDist(dist);
+  const response = await open(page, STORY);
+  expect(storyText(await response.text())).toEqual(approvedText(readJourney(root), [EARLIER, ID]));
+  await page.goto(`${server.base}${STORY}#${ID}`);
+  const first = page.locator(`section#${ID}`);
+  await expect(first.getByRole('heading', { level: 2 })).toHaveText(String(chapter(ID).name));
+  await expect(first.getByRole('heading', { level: 2 })).toBeInViewport();
+  await server.close();
+  server = undefined;
 });
 
 test('FR-015: a re-approved chapter linking to a page that doesn\'t exist passes validation and the build, and check-links names the chapter', async ({}, testInfo) => {

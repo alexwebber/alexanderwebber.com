@@ -9,7 +9,8 @@
 // States: one-chapter (no closing section), three-chapters (a very short chapter, a long unbroken
 // word, a closing section), long (12 chapters of about 600 words), figures (inline and set-apart, a
 // Garmin device, plain Garmin, derived, the owner's own figure with no source, and a chapter with
-// none), no-closing, and same-day (two chapters on one day, ordered by `order`).
+// none), no-closing, same-day (two chapters on one day, ordered by `order`) and four-chapters (the
+// fewest that show the chapter list; long and figures, with 12 and 4, show it too).
 //
 //   node tests/fixtures/story-preview/generate.ts
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -146,7 +147,7 @@ function write(state: string, path: string, kind: JourneyKind, value: Value): vo
   writeFileSync(file, HEADER + yaml(approve(kind, value, new Map(), APPROVED)));
 }
 
-for (const [state, spec] of Object.entries(STATES)) {
+function writeState(state: string, spec: StateSpec): void {
   const ids = new Set<string>();
   const chapters = spec.chapters.map((chapter) => {
     const name = words(2 + (seed % 3));
@@ -177,3 +178,19 @@ for (const [state, spec] of Object.entries(STATES)) {
   write(state, 'note.yaml', 'note', { text: paragraph(2) });
   write(state, 'page.yaml', 'page', { title: words(3), description: sentence(16), share_text: words(7), link_label: words(3) });
 }
+
+for (const [state, spec] of Object.entries(STATES)) writeState(state, spec);
+
+// four-chapters (Phase 4, FR-052): the fewest chapters that show the chapter list and "Back to
+// chapters". Written after the others from a seed of its own, so adding it left every earlier state's
+// files byte-identical.
+seed = 4001;
+writeState('four-chapters', {
+  closing: true,
+  chapters: [
+    { when: '2024-04', paragraphs: [opening(), paragraph(4), paragraph(3)] },
+    { when: '2024-09-21', paragraphs: [paragraph(4), `${paragraph(2)} ${words(4)} {{distance}} ${lower(5)}.`], figures: [figure('distance', 'run_distance', 'Distance', '2024-09-21', '21.1 km', 'Example W1')] },
+    { when: '2025-01/2025-05', paragraphs: [paragraph(5), paragraph(3)] },
+    { when: '2025-10', paragraphs: [paragraph(3), `${paragraph(2)} ${words(3)} [${lower(2)}](/running/) ${lower(4)}.`] },
+  ],
+});

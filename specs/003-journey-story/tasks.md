@@ -320,21 +320,21 @@ desktop, in the PR.
 
 ### Implementation for User Story 4
 
-- [ ] T053 [US4] In `src/sections/running/data/journey.ts`, add `showChapterList`, true at four or more chapters (a named constant, 4, FR-052)
-- [ ] T054 [US4] Create `src/sections/running/components/ChapterList.astro`: `<details class="story-chapters">`, closed by default, with `<summary>Chapters</summary>` and a `<ul id="story-chapter-list">` of links to `#<id>` by chapter name, no numbers (a `<ul>`, not an `<ol>`, FR-003); render it in `src/sections/running/components/StoryPage.astro` between the `<h1>` and the first chapter, only when `showChapterList` (owner decision 3, research.md R7). Styles in `src/sections/running/styles/story.css`
-- [ ] T055 [US4] In `src/sections/running/components/StoryChapter.astro`, add `<p class="story-back"><a href="#story-chapter-list">Back to chapters</a></p>` after the takeaway, only when the list shows (FR-052)
-- [ ] T056 [US4] Add the `four-chapters` state to `tests/fixtures/story-preview/generate.ts` and regenerate; `long` gains the list by itself
+- [X] T053 [US4] In `src/sections/running/data/journey.ts`, add `showChapterList`, true at four or more chapters (a named constant, 4, FR-052)
+- [X] T054 [US4] Create `src/sections/running/components/ChapterList.astro`: `<details class="story-chapters">`, closed by default, with `<summary>Chapters</summary>` and a `<ul id="story-chapter-list">` of links to `#<id>` by chapter name, no numbers (a `<ul>`, not an `<ol>`, FR-003); render it in `src/sections/running/components/StoryPage.astro` between the `<h1>` and the first chapter, only when `showChapterList` (owner decision 3, research.md R7). Styles in `src/sections/running/styles/story.css`
+- [X] T055 [US4] In `src/sections/running/components/StoryChapter.astro`, add `<p class="story-back"><a href="#story-chapter-list">Back to chapters</a></p>` after the takeaway, only when the list shows (FR-052)
+- [X] T056 [US4] Add the `four-chapters` state to `tests/fixtures/story-preview/generate.ts` and regenerate; `long` gains the list by itself
 
 ### Tests for User Story 4 (straight after the code)
 
-- [ ] T057 [P] [US4] Extend `tests/unit/story-page.test.ts`: no list or back links at three chapters, both at four; the list is a closed `<details>` with a `<ul>` in chapter order; each link's target exists
-- [ ] T058 [US4] Extend `tests/e2e/story.spec.ts` for `four-chapters` and `long` at 360 x 780 and on desktop: the list closed by default, and the first chapter's name and opening lines still on the first screen (FR-052, SC-001); with JavaScript off, open the list and reach any chapter in 2 taps (SC-010); "Back to chapters" lands on the list or its summary; `three-chapters` and `one-chapter` have neither
-- [ ] T059 [US4] Prove growth (quickstart.md §6, SC-008, US4.1–US4.3, US4.5) in `tests/e2e/story-launch.spec.ts`: in the launch copy, record every journey file's bytes and hash, add a second made-up chapter dated earlier than the first and approve it, build: it appears before the first; every other file is byte-identical (the copy isn't a git repo, so compare the recorded bytes rather than `git diff --stat`); the first chapter's `#<id>` still works. Timeout of at least 240 s per build. In `tests/unit/journey-validate.test.ts`: correcting one chapter's name leaves its `id` and anchor, needs only its own re-approval, and leaves every other chapter's hash unchanged (FR-038, FR-051)
-- [ ] T060 [P] [US4] Extend `tests/a11y/story.spec.ts` to `four-chapters` and `long` with the list closed and open, in light, dark and forced colours, and a keyboard path through the summary to a chapter and back
+- [X] T057 [P] [US4] Extend `tests/unit/story-page.test.ts`: no list or back links at three chapters, both at four; the list is a closed `<details>` with a `<ul>` in chapter order; each link's target exists
+- [X] T058 [US4] Extend `tests/e2e/story.spec.ts` for `four-chapters` and `long` at 360 x 780 and on desktop: the list closed by default, and the first chapter's name and opening lines still on the first screen (FR-052, SC-001); with JavaScript off, open the list and reach any chapter in 2 taps (SC-010); "Back to chapters" lands on the list or its summary; `three-chapters` and `one-chapter` have neither
+- [X] T059 [US4] Prove growth (quickstart.md §6, SC-008, US4.1–US4.3, US4.5) in `tests/e2e/story-launch.spec.ts`: in the launch copy, record every journey file's bytes and hash, add a second made-up chapter dated earlier than the first and approve it, build: it appears before the first; every other file is byte-identical (the copy isn't a git repo, so compare the recorded bytes rather than `git diff --stat`); the first chapter's `#<id>` still works. Timeout of at least 240 s per build. In `tests/unit/journey-validate.test.ts`: correcting one chapter's name leaves its `id` and anchor, needs only its own re-approval, and leaves every other chapter's hash unchanged (FR-038, FR-051)
+- [X] T060 [P] [US4] Extend `tests/a11y/story.spec.ts` to `four-chapters` and `long` with the list closed and open, in light, dark and forced colours, and a keyboard path through the summary to a chapter and back
 
 ### Ship the slice
 
-- [ ] T061 [US4] (owner, guided by the agent) Run the PR routine's suites, compare `dist/` against `main` (expected byte-identical) and raise the PR by the PR routine, with screenshots of `four-chapters` with the list closed and open. The owner looks at them in the PR review
+- [x] T061 [US4] (owner, guided by the agent) Run the PR routine's suites, compare `dist/` against `main` (expected byte-identical) and raise the PR by the PR routine, with screenshots of `four-chapters` with the list closed and open. The owner looks at them in the PR review
 
 **Checkpoint**: the page holds any number of chapters, and adding one edits only its own folder.
 
