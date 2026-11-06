@@ -215,7 +215,7 @@ async function expectDonateWorks(page: Page, path: string) {
 
 test('SC-003 fundraising: the gate passes, and the figures, updated time and notice are in the built HTML', () => {
   // The gate's results are the first test's; this checks the two pages' HTML.
-  expect(gate.dataErrors).toEqual([]);
+  expect(gate.failed, gate.messages.join('\n')).toBeUndefined();
   for (const path of FUNDRAISING_PAGES) {
     const html = readFileSync(join(root, 'dist', path, 'index.html'), 'utf8');
     for (const text of Object.values(FIGURES)) expect(html, path).toContain(text);
