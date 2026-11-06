@@ -25,6 +25,7 @@ const HOLDS: Record<string, string> = {
 /** Merged PRs whose unticked boxes the owner answered elsewhere (DECISIONS.md): shown as settled, not a "!". */
 const SETTLED: Record<number, string> = {
   101: 'photos box answered in a comment, 2026-11-01',
+  125: 'list look kept as is, owner at session start, 2026-11-06',
 };
 const STALE_HOURS = 6;
 const TRIGGER_LOOKAHEAD_DAYS = 14;
