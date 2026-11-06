@@ -46,15 +46,19 @@ if (git('status', '--porcelain').trim() !== '') flag(false, 'Uncommitted changes
 
 interface PrView {
   number: number;
+  state: string;
   body: string;
   statusCheckRollup: { name?: string; context?: string; conclusion?: string; status?: string; state?: string }[];
 }
 let pr: PrView | undefined;
 try {
-  pr = ghJson<PrView>(['pr', 'view', branch, '--json', 'number,body,statusCheckRollup']);
+  pr = ghJson<PrView>(['pr', 'view', branch, '--json', 'number,state,body,statusCheckRollup']);
 } catch {
   pr = undefined;
 }
+// `gh pr view <branch>` falls back to a merged or closed PR from an earlier use of the same branch
+// name (the upgrade script's chore-speckit-<version>), whose checks say nothing about this branch.
+if (pr && pr.state !== 'OPEN') pr = undefined;
 
 await section('Private terms', () => {
   if (!existsSync(TERMS_FILE)) {
