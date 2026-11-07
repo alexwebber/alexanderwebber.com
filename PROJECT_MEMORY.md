@@ -193,6 +193,12 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - Before pushing a layout sized from measured widths (a frame, a grid track), measure it under DejaVu
   Sans too (injected from jsdelivr, as tips-testing says): twice in one day a layout fitted Windows'
   Segoe UI and failed CI's Linux font by a few pixels (#135's menu, #137's grid, 2026-11-07).
+- In Windows PowerShell 5.1, a `gh pr edit --body @'...'@` whose text holds double quotes fails
+  ("accepts at most 1 arg(s), received 5"): 5.1 splits a native argument at embedded quotes. Write the
+  body to a scratchpad file and pass `--body-file` (career#1, 2026-11-07).
+- `gh repo create --clone` clones into the current folder even when a clone path is also attempted
+  after it, so it left an empty nested clone inside the site repo: create without `--clone`, then
+  `gh repo clone <repo> <path>` (2026-11-07).
 
 ## Open questions
 
