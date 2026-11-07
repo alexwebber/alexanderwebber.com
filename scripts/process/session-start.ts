@@ -27,6 +27,7 @@ const SETTLED: Record<number, string> = {
   101: 'photos box answered in a comment, 2026-11-01',
   125: 'list look kept as is, owner at session start, 2026-11-06',
   133: 'phone fine, desktop title fixed in a small PR, owner at the guided review, 2026-11-07',
+  134: 'answered at the live check: still left-heavy on a wide screen, so the frame narrows (owner, 2026-11-07)',
 };
 const STALE_HOURS = 6;
 const TRIGGER_LOOKAHEAD_DAYS = 14;

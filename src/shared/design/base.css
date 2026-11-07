@@ -93,6 +93,11 @@ table {
   padding-inline: var(--gutter);
 }
 
+/* Base's frame="narrow": the header, main and footer columns all narrow together. */
+.frame-narrow .wrap {
+  max-width: var(--content-narrow);
+}
+
 /* Focusable elements (skip links) show when focused. Hidden inputs never do: a toggle's radio
    takes focus when its label is clicked, and the label carries the focus ring. */
 .visually-hidden:not(:focus):not(:active),

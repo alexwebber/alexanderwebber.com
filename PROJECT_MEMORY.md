@@ -8,16 +8,17 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 ## Next session
 
 - **Status (2026-11-07):** Running (001), Fundraising (002) and the journey story (003) are live; 003's
-  live checks (T087) passed and its guided review (T088) is done. The one fix from that review, the
-  story's title wrapping over its text column on a desktop, is the PR from branch
-  `003-story-desktop-column` (no text change). The reader test (T089) was skipped by the owner.
+  live checks (T087) passed and its guided review (T088) is done. The fix from that review, the
+  story's title over its text column on a desktop, merged as #134; at the live check the owner chose
+  a narrower, centred frame for the story too: the PR from branch `003-story-narrow-frame` (no text
+  change). The reader test (T089) was skipped by the owner.
   House-process 0.16.2 is installed.
 - **Next session, first:** `/session-start`. Read the first nightly Quality run after #130 (scheduled
   03:41 UTC, but these runs start around 11:30 UTC; the 7 Nov run is the first; since #133 merged the
   `story` page type is measured too, so every page type should be within budget) and record it in
   `DECISIONS.md`.
-- **If the desktop-column PR merged:** `/after-merge <pr> "--live=/running/story/=My running story"`,
-  then ask its box (does the one-column desktop story look right?) if unticked.
+- **If the narrow-frame PR merged:** `/after-merge <pr> "--live=/running/story/=My running story"`,
+  then ask its box (does the centred story look right on a wide screen?) if unticked.
 - **Then, the next spec** (owner, 2026-11-01): the private family-admin section (details in the
   agent's local memory). Start with a question round, and raise first that it clashes with the
   constitution (see *Spec order after 003* below).
