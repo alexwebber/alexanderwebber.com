@@ -2336,3 +2336,7 @@ end. Add each new decision as a dated entry at the end, as it's made.
     AI, the owner confirmed).
   - **The CV page is unlisted at first** (recommended option): live at a link the owner shares, not
     indexed and not linked from the site, until one switch makes it fully public.
+- **2026-11-07** — **#139 merged** (the CV next; family-admin in its own repo): `after-merge` found
+  10 checks green, no boxes, and `main`'s Gate and deploy green (42371101843), with `/` and
+  `/running/` answering 200. The private career repo (`alexwebber/career`) was opened with the SSOT
+  skeleton, the work-source briefs and the first interview round (its PR #1).
