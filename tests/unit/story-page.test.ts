@@ -239,7 +239,7 @@ describe('the page (FR-002, FR-005, FR-007, FR-008, FR-071)', () => {
 
   it('leads with the h1 and the first chapter: no "Last updated", no Garmin line, no script', async () => {
     const html = await render({ chapters: [asChapter(FIGURES)] });
-    expect(main(html)).toMatch(/<\/h1><\/header><div class="story-page"><section class="story-chapter"/);
+    expect(main(html)).toMatch(/<\/h1><\/header><div class="story-layout"><div class="story-page"><section class="story-chapter"/);
     expect(html).not.toMatch(/data-last-updated|Last updated|data-garmin-attribution/);
     // The menu's inline script (the current page's link scrolled into view) is the only one.
     expect(html.match(/<script\b[^>]*>/gi)).toEqual(['<script data-nav-scroll>']);
@@ -272,7 +272,7 @@ describe('the chapter list and "Back to chapters" (FR-052, SC-010, research.md R
 
   it('shows no list and no back links at three chapters', async () => {
     const html = main(await render({ chapters: many(3) }));
-    expect(html).not.toMatch(/<details|<ul|story-chapter-list|Back to chapters|>Chapters</);
+    expect(html).not.toMatch(/<details|<ul|<nav|story-chapter-list|story-sidebar|Back to chapters|>Chapters</);
   });
 
   it('at four, puts a closed "Chapters" list between the h1 and the first chapter, names in chapter order, unnumbered', async () => {
@@ -282,7 +282,8 @@ describe('the chapter list and "Back to chapters" (FR-052, SC-010, research.md R
     expect(details).toBeDefined();
     // Closed by default: no `open` attribute.
     expect(details).toMatch(/^<details class="story-chapters"><summary>Chapters<\/summary><ul id="story-chapter-list">/);
-    expect(html).toMatch(/<\/h1><\/header><div class="story-page"><details class="story-chapters">/);
+    // The sidebar (shown from 64rem) comes first in the source, then the story with its closed list.
+    expect(html).toMatch(/<\/h1><\/header><div class="story-layout"><nav class="story-sidebar"[^>]*>[\s\S]*?<\/nav><div class="story-page"><details class="story-chapters">/);
     expect(html).toMatch(/<\/details><section class="story-chapter"/);
     expect(details).not.toMatch(/<ol|\d/);
     const links = [...details.matchAll(/<li><a href="#([^"]+)">([^<]+)<\/a><\/li>/g)].map((m) => [m[1], m[2]]);
@@ -290,6 +291,10 @@ describe('the chapter list and "Back to chapters" (FR-052, SC-010, research.md R
     expect(shown).toEqual(['chapter-d', 'chapter-c', 'chapter-b', 'chapter-a']);
     expect(links).toEqual(shown.map((id) => [id, chapters.find((c) => c.id === id)!.name]));
     expect(count(html, /<details/)).toBe(1);
+    // The sidebar lists the same chapters, in the same order, under its "Chapters" label.
+    const sidebar = /<nav class="story-sidebar"[\s\S]*?<\/nav>/.exec(html)![0];
+    expect(sidebar).toMatch(/^<nav class="story-sidebar" aria-labelledby="story-sidebar-label"><p class="story-sidebar-label" id="story-sidebar-label">Chapters<\/p><ul>/);
+    expect([...sidebar.matchAll(/<li><a href="#([^"]+)">([^<]+)<\/a><\/li>/g)].map((m) => [m[1], m[2]])).toEqual(links);
   });
 
   // Graduation review (T073): validate-data refuses a chapter id that another element's id would
@@ -302,11 +307,11 @@ describe('the chapter list and "Back to chapters" (FR-052, SC-010, research.md R
     expect(ids.toSorted()).toEqual([...Object.keys(STORY_PAGE_IDS), ...chapters.flatMap((c) => chapterElementIds(c.id))].toSorted());
   });
 
-  it('every list link and back link has its target on the page', async () => {
+  it('every list link, sidebar link and back link has its target on the page', async () => {
     const html = main(await render({ chapters: many(12), closing: CLOSING }));
     const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
     const targets = [...html.matchAll(/<a href="#([^"]+)"/g)].map((m) => m[1]!);
-    expect(targets).toHaveLength(12 + 12);
+    expect(targets).toHaveLength(12 + 12 + 12);
     for (const target of targets) expect(ids.has(target), target).toBe(true);
   });
 
