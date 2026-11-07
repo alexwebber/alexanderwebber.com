@@ -2340,6 +2340,9 @@ end. Add each new decision as a dated entry at the end, as it's made.
   10 checks green, no boxes, and `main`'s Gate and deploy green (42371101843), with `/` and
   `/running/` answering 200. The private career repo (`alexwebber/career`) was opened with the SSOT
   skeleton, the work-source briefs and the first interview round (its PR #1).
+- **2026-11-07** — **#140 merged** (the CV framing's "AP" was a typo for AI): `after-merge` found 10
+  checks green, no boxes, and `main`'s Gate and deploy green (42372054822), with `/` and `/running/`
+  answering 200.
 - **2026-11-10** — **The Martlets story is live (#141 merged; 002 T113–T115, 003 T092).** The family
   sent their passage, and the owner approved the full text the same day, after confirming two things:
   the family's names may appear publicly (on the site and in this public repo), and the dropped line
