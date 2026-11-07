@@ -28,6 +28,8 @@ const SETTLED: Record<number, string> = {
   125: 'list look kept as is, owner at session start, 2026-11-06',
   133: 'phone fine, desktop title fixed in a small PR, owner at the guided review, 2026-11-07',
   134: 'answered at the live check: still left-heavy on a wide screen, so the frame narrows (owner, 2026-11-07)',
+  135: 'answered at the live check: the menu wrapped on Linux, fixed in #136 (2026-11-07)',
+  136: 'answered at the live check: larger desktop text instead (owner, 2026-11-07)',
 };
 const STALE_HOURS = 6;
 const TRIGGER_LOOKAHEAD_DAYS = 14;

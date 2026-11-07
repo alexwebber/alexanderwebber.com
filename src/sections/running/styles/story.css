@@ -17,6 +17,21 @@
  * - At four or more chapters, a closed "Chapters" list sits under the title and each chapter ends with
  *   "Back to chapters" (owner decision 3, FR-052). Both are plain links and a native <details>.
  */
+/* On a wide screen the story reads at 18 px, not 16 (owner, 2026-11-07): the 66ch column grows with
+   it, from about 570 to 640 px, with the same words per line, so it doesn't look like a narrow strip
+   in the middle of a desktop screen. Everything in <main> follows: the header's 66ch (so the title
+   still wraps over the column), and the smaller and label sizes, which become relative to the text
+   here (--step--1, --step-0 in em), so a takeaway's "What I learned" isn't smaller than its words.
+   Headings set in rem (the title, chapter names) keep their size. The menu and site name don't
+   change, so they match the other Running pages. */
+@media (min-width: 75rem) {
+  .theme-running.frame-narrow main {
+    --step--1: 0.875em;
+    --step-0: 1em;
+    font-size: 1.125rem;
+  }
+}
+
 /* The page has no "Last updated" line under its <h1>, so the first chapter's <h2> needs its own
    distance from it, or it reads as the title's subtitle. */
 .theme-running .story-page {

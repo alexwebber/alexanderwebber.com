@@ -2286,3 +2286,12 @@ end. Add each new decision as a dated entry at the end, as it's made.
   keep one line. The column still centres; the gap right of the text inside the frame grows by about
   64 px. `pr-ready` missed it because it treated a merged PR as "no PR yet"; it now reads the checks
   of a PR merged at the current commit.
+- **2026-11-07** — **#136 live; the story reads at 18 px on a wide screen (owner)**. `after-merge`: 11
+  checks green, Gate and deploy green, the live frame 832 px. At 1680 px the text column was 570 px in
+  the middle of the screen, which the owner worried looked like "a narrow column in the middle".
+  The column's width comes from FR-072 (66ch, lines of at most about 75 characters), so the option
+  offered was larger text on wide screens. **Owner: larger desktop text.** From 75rem (1200 px) the
+  story's `<main>` is 18 px (`story.css`): the column grows to about 640 px with the same words per
+  line, the header's 66ch follows, and the smaller and label sizes become relative to the text there,
+  so "What I learned" isn't smaller than its words. Rem headings and the menu keep their sizes, so the
+  menu matches the other Running pages. Phones are unchanged. #136's box answered by this.

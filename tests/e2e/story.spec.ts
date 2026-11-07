@@ -130,6 +130,18 @@ for (const state of STATES) {
     expect(title.x + title.width).toBeLessThanOrEqual(column.x + column.width + 0.5);
   });
 
+  // Owner, 2026-11-07: on a wide screen (from 75rem) the story reads at 18 px, so the 66ch column
+  // isn't a narrow strip; a phone keeps 16 px. The labels follow the text: "What I learned" is never
+  // smaller than the words under it, and the note stays smaller than the prose.
+  test(`${state}: the text is 18 px from 1200 px wide and 16 px below, with its labels in step`, async ({ page }) => {
+    await open(page, state);
+    const size = (locator: ReturnType<Page['locator']>) => locator.first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const prose = await size(story(page).locator('section.story-chapter > p:not(.story-when)'));
+    expect(prose).toBe(page.viewportSize()!.width >= 1200 ? 18 : 16);
+    expect(await size(story(page).locator('.story-takeaway > h3'))).toBeGreaterThanOrEqual(await size(story(page).locator('.story-takeaway > p')));
+    expect(await size(story(page).locator('.story-note'))).toBeLessThan(prose);
+  });
+
   // Owner, 2026-11-07 (after the live check): on a wide screen that column still sat in the left part
   // of the 70rem frame. The story's whole frame narrows and centres: the site name, the title and the
   // text share one left edge, the frame has equal space either side, and the site name and menu stay
