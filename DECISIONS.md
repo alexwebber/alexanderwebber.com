@@ -2234,3 +2234,10 @@ end. Add each new decision as a dated entry at the end, as it's made.
   Lighthouse (mobile, deploy build) `/running/story/` 100/100, LCP 0.91 s, 9.0 KB gzip, no script,
   and `/running/` 100/100, LCP 1.11 s, 13.1 KB. A new axe check on the real page (light, dark, the list
   closed and open, forced colours) found no violations, and stays in the suite.
+- **2026-11-07** — **003 Phase 7 handoff**: no subagent; the main conversation ran the phase with the
+  owner (question rounds need them). PR #133 raised with T078–T086 done; T087 and T088 wait for the
+  merge. Skills: `gate-drill` gains the junction note for a copy outside the repo; `pr-screenshots`
+  and `scripts/process/screenshots.ts` label real pages as real (the table always said "made-up
+  data"). One skill candidate added (the owner-approved content PR), with the Martlets story as its
+  `next`. Missed: `page-tests` already says the suites need a `SHELL_PREVIEW=1` build; not loading it
+  cost one 10-minute run against a deploy build.

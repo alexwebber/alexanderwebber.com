@@ -28,3 +28,7 @@
 - task: First-screen measurement and layout mock-ups (CSS and DOM injected into the built site, measured under Segoe UI, Roboto and DejaVu Sans, a side-by-side image for the owner)
   times: 2
   home: project
+- task: Owner-approved content PR (wording drafted outside the repo, files written from the approved text by script, a scratch-copy comparison against it, approve-story, VOICE.md, a privacy search)
+  times: 1
+  home: project
+  next: the Martlets story PR (002 T113-T115, 003 T092)

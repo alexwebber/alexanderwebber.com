@@ -37,7 +37,11 @@ runs as its real command line on the copy (`node scripts/check-links.ts --dist=<
 - **A one-off proof for a PR** (gate-check's "drill, for real", a quickstart step "run for real" that
   no spec keeps): a script at `spikes/<name>/out/drill.ts` (gitignored, outside `tsconfig`), run with
   `node spikes/<name>/out/drill.ts`, its output pasted into the PR. Put the copy beside it
-  (`spikes/<name>/out/site`) so `node_modules` resolves.
+  (`spikes/<name>/out/site`) so `node_modules` resolves. A copy that must stay outside the repo (the
+  session's scratchpad, as for a content PR's comparison) needs a junction to the repo's packages:
+  `cmd /c mklink /J <copy>\node_modules <repo>\node_modules`. Remove it on its own first
+  (`cmd /c rmdir <copy>\node_modules`), then the copy, so a recursive delete can't reach the repo's
+  packages.
 
 ## Steps
 

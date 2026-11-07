@@ -261,8 +261,11 @@ const img = (shot: Shot) => `<img src="${url(shot.file)}" width="240" alt="${pat
 const phones = (name: string) => shots.filter((s) => s.name === name && s.variant.startsWith('phone'));
 const desktops = (name: string) => shots.filter((s) => s.name === name && s.variant.startsWith('desktop'));
 const columns = variants.filter((v) => v.suffix.startsWith('phone')).map((v) => (v.suffix === 'phone' ? 'Phone' : 'Phone, dark'));
+// Preview paths (e.g. /story-preview/long/) show made-up data; any other path is a real page.
+const previews = targets.filter((t) => /-preview\//.test(t.path)).length;
+const dataNote = previews === targets.length ? 'made-up data' : previews === 0 ? 'the real pages' : 'previews use made-up data';
 const lines = [
-  '## Screenshots (made-up data)',
+  `## Screenshots (${dataNote})`,
   '',
   `| Page | ${columns.join(' | ')} |`,
   `|---|${columns.map(() => '---').join('|')}|`,
