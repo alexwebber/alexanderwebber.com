@@ -199,6 +199,9 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - `gh repo create --clone` clones into the current folder even when a clone path is also attempted
   after it, so it left an empty nested clone inside the site repo: create without `--clone`, then
   `gh repo clone <repo> <path>` (2026-11-07).
+- **Owner preference:** for data from an employer's systems, the agent gives what it needs back (the
+  output's headings and confidentiality rules) and an example prompt; the owner adapts the prompt and
+  decides what runs with company access (career briefs, 2026-11-07).
 
 ## Open questions
 
