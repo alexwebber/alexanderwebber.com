@@ -31,9 +31,12 @@ export interface Props {
   current?: string;
   /** Show "Last updated" (default). False only for a page that shows no stored data's freshness. */
   lastUpdated?: boolean;
+  /** Hold the heading to the text's 66ch, for a page of prose (the journey story), so on a desktop the
+   *  title wraps over the text column instead of spanning the page (owner, 2026-11-07). */
+  narrow?: boolean;
 }
 
-const { heading, description, image, imageAlt, garmin = false, current, lastUpdated = true } = Astro.props;
+const { heading, description, image, imageAlt, garmin = false, current, lastUpdated = true, narrow = false } = Astro.props;
 const title = Astro.props.title ?? `${heading} · Running · Alexander Webber`;
 const nav = runningAreas
   .filter((area) => area.inNav !== false)
@@ -44,7 +47,7 @@ const attribution = garmin === true ? {} : garmin || undefined;
 
 <Base title={title} description={description} image={image} imageAlt={imageAlt} theme="theme-running">
   <Nav slot="nav" label="Running" items={nav} current={current} />
-  <header class="page-header">
+  <header class:list={['page-header', { 'page-header-narrow': narrow }]}>
     <h1>{heading}</h1>
     {attribution && <GarminAttribution {...attribution} />}
   </header>
@@ -66,5 +69,10 @@ const attribution = garmin === true ? {} : garmin || undefined;
 
   .page-header h1 {
     margin-bottom: 0;
+  }
+
+  /* 66ch in the body's font, the same measure as the story's paragraphs (story.css). */
+  .page-header-narrow {
+    max-width: 66ch;
   }
 </style>

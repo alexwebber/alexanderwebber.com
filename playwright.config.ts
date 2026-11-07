@@ -5,6 +5,8 @@ const port = 4321;
 export default defineConfig({
   testDir: 'tests',
   testMatch: ['e2e/**/*.spec.ts', 'a11y/**/*.spec.ts'],
+  // Stops a run against a stale or deploy build of dist/ (tests/global-setup.ts).
+  globalSetup: './tests/global-setup.ts',
   use: { baseURL: `http://localhost:${port}` },
   projects: [
     {

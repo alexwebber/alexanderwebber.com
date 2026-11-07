@@ -7,25 +7,22 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 ## Next session
 
-- **Status (2026-11-07):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1–6 merged; **Phase 7, the content PR, is
-  [#133](https://github.com/alexwebber/alexanderwebber.com/pull/133)** (the approved story, "Story"
-  second in the menu, `VOICE.md`). House-process 0.16.2 is installed (#132 merged).
-- **Next session, first:** `/session-start`. Read the first nightly Quality run after #130 (03:41 UTC
-  on 7 Nov or later; 003 T071: the `story` page type skipped while #133 is open, every other page type
-  within budget) and record it in `DECISIONS.md`.
-- **If #133 merged:** `/after-merge 133 "--live=/running/=How I got here: my running story"
-  --live=/running/story/`, then **T087**, the live checks (quickstart.md §8 step 8): `/running/story/`
-  answers 200 with nine chapters, the closing section and the note; "Story" second in the menu on
-  every Running page and current on its page; the landing panel with the approved label and no Story
-  tile below it; `/og/running-story.png` loads with no digit; the sitemap lists the page; Donate fully
-  on a 360 x 780 first screen; no sideways scroll at 320 px. Then **T088**, a guided review of the
-  live story with the owner (`speckit-house-process-guided-review`), on a phone and a desktop, light
-  and dark: it's also the owner's phone check, which the local preview couldn't give. Ask #133's two
-  boxes if unticked. Any text change is approved afresh in a small PR. Fold in T089 (offer the
-  reader test once).
+- **Status (2026-11-07):** Running (001), Fundraising (002) and the journey story (003) are live; 003's
+  live checks (T087) passed and its guided review (T088) is done. The one fix from that review, the
+  story's title wrapping over its text column on a desktop, is the PR from branch
+  `003-story-desktop-column` (no text change). The reader test (T089) was skipped by the owner.
+  House-process 0.16.2 is installed.
+- **Next session, first:** `/session-start`. Read the first nightly Quality run after #130 (scheduled
+  03:41 UTC, but these runs start around 11:30 UTC; the 7 Nov run is the first; since #133 merged the
+  `story` page type is measured too, so every page type should be within budget) and record it in
+  `DECISIONS.md`.
+- **If the desktop-column PR merged:** `/after-merge <pr> "--live=/running/story/=My running story"`,
+  then ask its box (does the one-column desktop story look right?) if unticked.
+- **Then, the next spec** (owner, 2026-11-01): the private family-admin section (details in the
+  agent's local memory). Start with a question round, and raise first that it clashes with the
+  constitution (see *Spec order after 003* below).
 - **Waiting on others** (ask at each session start until it happens):
-  - **The Martlets story reviewers** (002 T113–T115; not replied as of 2026-11-06): when they reply,
+  - **The Martlets story reviewers** (002 T113–T115; not replied as of 2026-11-07): when they reply,
     take their passage into the draft (`C:\temp\story-draft.md`), the owner approves the final text,
     then extend `VOICE.md` (lessons so far: personal or family passages are written by the people
     they belong to, and the agent's draft covers framing and facts; the owner keeps their own fitness
@@ -37,15 +34,13 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   - Offer a fresh Garmin training-status and predictions reading.
   - 002 T118 (to about 1 Dec 2026): note donation times the owner mentions, to compare with the
     bot's commit times.
-  - 002 T119: check the site's figures match JustGiving's; the tally is **1 of 10**.
+  - 002 T119: check the site's figures match JustGiving's; the tally is **2 of 10**.
 - **The journey story (003):**
   - **Private files:** answers and every approval `C:\temp\journey-answers.md` (its privacy rules at
     the end of each round), the read-through `C:\temp\journey-story-review.md`, the wording drafts
     `C:\temp\journey-wording-draft.md`. Words the owner cut stay out of the repo for good.
   - **Standing follow-ups after launch** (event-triggered; T090, a new chapter after Brighton, is in
-    `process/triggers.yaml`): **T089**, at the first review after launch, offer the reader test once
-    (≥ 5 non-runners on phones; ≥ 4 call it a story and name one thing that worked), or record the
-    owner's choice to skip it; **T091**, whenever the owner wants photos in a chapter, check each
+    `process/triggers.yaml`): **T091**, whenever the owner wants photos in a chapter, check each
     against FR-062 with them, `npm run add-chapter-photo`, and a fresh approval; **T092**, when the
     Martlets reviewers reply, that story extends `VOICE.md` (keep this until both stories have
     contributed).

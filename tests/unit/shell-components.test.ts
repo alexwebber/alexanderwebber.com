@@ -371,6 +371,15 @@ describe('SectionLayout', () => {
     expect(withDefault).toBe(await render(SectionLayout, props, { default: '<p>body</p>' }, '/running/goals/'));
   });
 
+  it('holds the header to the text measure with narrow, and leaves it alone by default (owner, 2026-11-07)', async () => {
+    setRunningStore(fakeStore());
+    const narrow = await render(SectionLayout, { ...props, narrow: true }, { default: '<p>body</p>' }, '/running/goals/');
+    expect(narrow).toMatch(/<header class="page-header page-header-narrow"[^>]*>\s*<h1/);
+    const plain = await render(SectionLayout, props, { default: '<p>body</p>' }, '/running/goals/');
+    expect(plain).toMatch(/<header class="page-header"[^>]*>\s*<h1/);
+    expect(await render(SectionLayout, { ...props, narrow: false }, { default: '<p>body</p>' }, '/running/goals/')).toBe(plain);
+  });
+
   it("uses the owner's stale threshold", async () => {
     setRunningStore(fakeStore({ stale_after_hours: 6 }));
     const html = await render(SectionLayout, props, {}, '/running/goals/');

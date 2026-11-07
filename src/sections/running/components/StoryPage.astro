@@ -35,7 +35,7 @@ const { page, chapters, closing, note } = journey;
 const list = showChapterList(journey);
 ---
 
-<SectionLayout heading={page.title} title={title} description={page.description} image={image} imageAlt={page.share_text} garmin={false} lastUpdated={false} current="/running/story/">
+<SectionLayout heading={page.title} title={title} description={page.description} image={image} imageAlt={page.share_text} garmin={false} lastUpdated={false} narrow current="/running/story/">
   <div class="story-page">
     {list && <ChapterList chapters={chapters} />}
     {chapters.map((chapter) => <StoryChapter chapter={chapter} backLink={list} photos={chapterPhotos(chapter, photoFiles, photoFolder)} />)}

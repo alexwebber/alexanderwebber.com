@@ -85,6 +85,9 @@ Load the `gate-drill` skill: `runGate` runs the gate's steps on the copy, and `s
 - One spec: build with `SHELL_PREVIEW=1` (`$env:SHELL_PREVIEW='1'; npm run build` in PowerShell),
   then `npx playwright test tests/e2e/<file>.spec.ts --reporter=line`, both projects. Run
   `npx astro preview stop` first if a preview server is running, and nothing else alongside.
+  Playwright's global setup (`tests/global-setup.ts`) stops the run if `dist/` is missing, a deploy
+  build, or older than anything under `src/` or `data/`: rebuild as it says. `PW_SKIP_DIST_CHECK=1`
+  skips it only for a run that uses its own scratch build.
 - CI runs them only when paths in `tests.yml`'s `playwright` filter change, so a test over bot data
   can go red on the next UI PR without its own change at fault. The nightly Quality run is
   Lighthouse only (`BACKLOG.md` has the scheduled Playwright run).
