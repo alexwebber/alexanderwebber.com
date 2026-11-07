@@ -84,6 +84,10 @@
   /* Side gutter: 16px at 320px wide, growing with the viewport */
   --gutter: clamp(1rem, 0.6rem + 2vw, 2rem);
   --content-max: 70rem;
+  /* A page of prose (Base's frame="narrow"): wide enough for the site name and the Running menu on
+     one line (664 px at 16 px, 2026-11-07), centred, so the text column doesn't sit in the left part
+     of a wide frame. */
+  --content-narrow: 48rem;
   --measure: 65ch;
 
   /* Shape and focus */

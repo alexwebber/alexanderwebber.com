@@ -2266,3 +2266,15 @@ end. Add each new decision as a dated entry at the end, as it's made.
   or one older than any file under `src/` or `data/` or `astro.config.mjs`, naming the newer file and
   the rebuild command. CI and `pr-ready` build just before the tests, so they pass it.
   `PW_SKIP_DIST_CHECK=1` skips it for a run that uses only its own scratch build.
+- **2026-11-07** — **#134 merged and live; the story's desktop frame narrows (owner)**. `after-merge`:
+  11 checks green, `main`'s Gate and deploy green, `/running/story/` 200 with the narrow header. On
+  the live page on a wide screen, the owner found the whole column "slightly left aligned": the
+  70rem frame is centred, but the 66ch column filled only its left 60%. Measured on the live page:
+  the site name and menu need 664 px on one line, the column is 569 px, so the frame can't simply
+  shrink to the column. Two options rendered on the live page at 1680 px and shown to the owner:
+  A, the story's whole frame (header, main, footer) narrows to 48rem and centres, so the site name,
+  title and text share one left edge; B, the menu stays put and the column centres below it.
+  **Owner: A**, knowing the menu then sits further right on Story than on other Running pages on wide
+  screens. Built as `Base`'s `frame="narrow"` (`--content-narrow: 48rem`), set by `SectionLayout`'s
+  `narrow`. A test holds the site name and menu to one line on the story page, so a new menu item
+  that would wrap it asks for a decision. #134's box answered by this.
