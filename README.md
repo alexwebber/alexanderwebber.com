@@ -21,6 +21,7 @@ agents doing the work under a written constitution (see [How it was built](#how-
 | Page | What it shows |
 |---|---|
 | [Running](https://alexanderwebber.com/running/) | The Brighton countdown and target, the fundraising total, featured goals (newly achieved ones first), this week's training, the training build and the latest run |
+| [Story](https://alexanderwebber.com/running/story/) | Alex's running journey in chapters, oldest first: each with its dates, what he learned and any figures with their sources, then a section for anyone just starting |
 | [Goals](https://alexanderwebber.com/running/goals/) | Race-time, weight, body-fat and VO2 max goals with progress, the effort that achieved each, and Garmin's predictions |
 | [Training](https://alexanderwebber.com/running/training/) | Weekly, monthly and yearly totals, and every run by year |
 | Run pages | One per run: pace, heart rate, elevation, cadence and power charts, Garmin heart-rate zones, splits, best efforts and running dynamics |
@@ -28,7 +29,7 @@ agents doing the work under a written constitution (see [How it was built](#how-
 | [Health](https://alexanderwebber.com/running/health/) | Weight, body fat, VO2 max, race predictions, training status, fitness, fatigue and form, resting heart rate and HRV |
 | [Fundraising](https://alexanderwebber.com/running/fundraising/) | The total raised for Martlets against the target, the supporters, the total by day and a link to donate on JustGiving, refreshed every two hours |
 
-**Next** (see [BACKLOG.md](BACKLOG.md)): the running journey story, then the CV & Blog section.
+**Next** (see [BACKLOG.md](BACKLOG.md)): the CV & Blog section.
 
 ## Architecture
 

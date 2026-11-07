@@ -15,3 +15,9 @@ garmin_devices:
 # Seven goals plus the three achieved on 2 and 4 Nov 2026, through their "New" windows (to 18 Nov).
 # Then those three are unfeatured and the limit goes back to 7 (owner, 2026-11-03).
 featured_goal_limit: 10
+
+# The landing page's link to the journey story (spec 003). The label must equal
+# journey/page.yaml's approved link_label (owner, 2026-11-06).
+story_link:
+  href: /running/story/
+  label: "How I got here: my running story"

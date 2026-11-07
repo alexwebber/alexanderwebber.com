@@ -7,7 +7,7 @@
 // (runGate) and a browser opens its dist/ (serveDist). Then:
 // - the gate passes: validate-data reports no error, and check-links passes;
 // - the chapter renders exactly as written (tests/helpers/story-text.ts);
-// - "Story" is last in the menu on every Running page, and current on the story page;
+// - "Story" is second in the menu (after Overview) on every Running page, and current on the story page;
 // - on /running/ at 360 x 780 with the fundraising card, "Story" adds no menu line and doesn't move
 //   Donate. If it does, the build stops for the owner's decision (research.md R8): the assertion
 //   stays, and nothing in the layout changes to pass it. (Since 2026-11-06 the phone menu is one
@@ -153,7 +153,7 @@ test('US2.2: the chapter renders exactly as written, with the approved page word
   await expect(page.locator(`section#${ID}`).getByRole('link', { name: LINK_TEXT, exact: true })).toHaveAttribute('href', '/running/fundraising/');
 });
 
-test('US3.2, US3.5: "Story" is last in the menu on every Running page, and current on the story page', async ({ page }) => {
+test('US3.2, US3.5: "Story" is second in the menu, after Overview, on every Running page, and current on the story page', async ({ page }) => {
   const pages = runningPages();
   expect(pages.length).toBeGreaterThan(5);
   expect(pages).toContain(STORY);
@@ -162,7 +162,7 @@ test('US3.2, US3.5: "Story" is last in the menu on every Running page, and curre
     const nav = html.match(/<nav aria-label="Running"[^>]*>[\s\S]*?<\/nav>/)?.[0];
     expect(nav, path).toBeDefined();
     const links = [...nav!.matchAll(/<a href="([^"]+)"[^>]*>\s*([^<]*?)\s*<\/a>/g)].map((m) => [m[1], m[2]]);
-    expect(links.at(-1), path).toEqual([STORY, 'Story']);
+    expect(links[1], path).toEqual([STORY, 'Story']);
   }
   await open(page, STORY);
   await expect(menu(page).getByRole('link', { name: 'Story', exact: true })).toHaveAttribute('aria-current', 'page');

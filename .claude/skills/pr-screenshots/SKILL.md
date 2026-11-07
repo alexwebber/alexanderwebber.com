@@ -40,7 +40,9 @@ triggers no workflow.
    `spikes/screens/out/pr-body.md`): a table of phone shots, light and dark, and desktop links.
    Publishing again adds to the same side branch with a new SHA; use the newest table.
 5. **In the PR body**, under *How to view it*: what each shot shows, what the owner should look at
-   (the phase's *How to view it* names it), and that previews use made-up data.
+   (the phase's *How to view it* names it), and that previews use made-up data. The table's heading
+   says which it is from the paths (`-preview/` paths are made-up data, others the real pages). A
+   local build's real pages show the data as of the last pull, so say so if they show a stale notice.
 
 ## Rules
 

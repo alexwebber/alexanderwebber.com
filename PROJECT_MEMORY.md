@@ -7,33 +7,29 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 ## Next session
 
-- **Status (2026-11-06):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
-  journey story: Phases 1–6 merged (graduated, nothing visible yet). House-process 0.16.2 is in the
-  PR raised on 2026-11-06 (`chore-speckit-1.3.2`).
-- **Next session, first:** `/session-start`; `/after-merge` the house-process 0.16.2 PR if it merged
-  (no visible change, so `/` and `/running/` only). Read the first nightly Quality run after #130
-  (03:41 UTC on 7 Nov or later; 003 T071: the `story` page type shows as skipped, every other page
-  type within budget) and record it in `DECISIONS.md`.
-- **Then 003 Phase 7, the content PR: a session with the owner** (T078–T088 in
-  `specs/003-journey-story/tasks.md`; its header has the *How to view it*). In order: draft the "not
-  medical advice" note and the page wording (title ≤ 70, description ≤ 160, share text ≤ 90 with no
-  digits, link label) outside the repo, from the approved text, in the owner's voice, for the
-  owner's edits and explicit yes (T078); write the journey files from the approved text only, with
-  figures traced statement by statement and a scale question for each weight (T079); the SC-005
-  comparison on a scratch copy in the scratchpad, **against the approved text itself, not the private
-  hashes** (they can't be reproduced; T080); the owner looks at the rendered chapters on that copy's
-  local preview, phone width and desktop (T081); `approve-story --journey` in the repo only after
-  their yes, with `--date=2026-11-04` for unchanged chapters and the closing section, and set
-  `story_link` (T082); create `VOICE.md` (T083); the full gate, tests, drills, Lighthouse and axe on
-  the real data (T084); the privacy search and a PR body by shape only (T085, T086). After the merge,
-  the live checks (T087), and the session after that starts with a guided review (T088). Load
-  `tips-owner-content` and `owner-data-file` first.
+- **Status (2026-11-07):** Running (001) and Fundraising (002) are live and graduated. Spec 003, the
+  journey story: Phases 1–6 merged; **Phase 7, the content PR, is
+  [#133](https://github.com/alexwebber/alexanderwebber.com/pull/133)** (the approved story, "Story"
+  second in the menu, `VOICE.md`). House-process 0.16.2 is installed (#132 merged).
+- **Next session, first:** `/session-start`. Read the first nightly Quality run after #130 (03:41 UTC
+  on 7 Nov or later; 003 T071: the `story` page type skipped while #133 is open, every other page type
+  within budget) and record it in `DECISIONS.md`.
+- **If #133 merged:** `/after-merge 133 "--live=/running/=How I got here: my running story"
+  --live=/running/story/`, then **T087**, the live checks (quickstart.md §8 step 8): `/running/story/`
+  answers 200 with nine chapters, the closing section and the note; "Story" second in the menu on
+  every Running page and current on its page; the landing panel with the approved label and no Story
+  tile below it; `/og/running-story.png` loads with no digit; the sitemap lists the page; Donate fully
+  on a 360 x 780 first screen; no sideways scroll at 320 px. Then **T088**, a guided review of the
+  live story with the owner (`speckit-house-process-guided-review`), on a phone and a desktop, light
+  and dark: it's also the owner's phone check, which the local preview couldn't give. Ask #133's two
+  boxes if unticked. Any text change is approved afresh in a small PR. Fold in T089 (offer the
+  reader test once).
 - **Waiting on others** (ask at each session start until it happens):
-  - **The Martlets story reviewers** (002 T113–T115): when they reply, take their passage into the
-    draft (`C:\temp\story-draft.md`), the owner approves the final text, then create or extend
-    `VOICE.md` (lessons so far: personal or family passages are written by the people they belong
-    to, and the agent's draft covers framing and facts; the owner keeps their own fitness journey
-    out of it). Re-check Martlets' figures (almost £12 million a year, NHS grant around 22%,
+  - **The Martlets story reviewers** (002 T113–T115; not replied as of 2026-11-06): when they reply,
+    take their passage into the draft (`C:\temp\story-draft.md`), the owner approves the final text,
+    then extend `VOICE.md` (lessons so far: personal or family passages are written by the people
+    they belong to, and the agent's draft covers framing and facts; the owner keeps their own fitness
+    journey out of it). Re-check Martlets' figures (almost £12 million a year, NHS grant around 22%,
     https://www.martlets.org.uk/give-in-your-will/) before committing. Commit the approved story and
     `VOICE.md` in a PR; the owner pastes the story into JustGiving and may retitle the page after
     it. Nothing from the draft goes in the repo, PRs or commit messages before approval.
@@ -43,19 +39,9 @@ read on demand (search it for the topic at hand); this file keeps what's next an
     bot's commit times.
   - 002 T119: check the site's figures match JustGiving's; the tally is **1 of 10**.
 - **The journey story (003):**
-  - **Private files:** the clean read-through `C:\temp\journey-story-review.md`, working notes
-    `C:\temp\journey-draft.md`, answers `C:\temp\journey-answers.md`. **Nothing from them goes in
-    the repo, a PR, a commit message or this file** before the content PR (FR-036). The privacy
-    rules the owner set are at the end of each round's notes in `journey-answers.md`; read them
-    before touching the text.
-  - **Approved** (owner, 2026-11-04): every chapter and the closing section, exactly as
-    `journey-story-review.md` reads. At the content PR, compare the committed text with that file
-    (its private hashes can't be reproduced, see `DECISIONS.md`), and show the owner the rendered
-    chapters (plan question 6). It's the first story approved, so the build creates `VOICE.md` from
-    the owner's edits, which the approval notes in `journey-answers.md` list.
-  - **Still to approve at the content PR** (plan open questions 5 and 6): the "not medical advice"
-    note, which holds back launch, and the page's title, description, share text and landing-link
-    label (FR-039). Draft them from the approved text, in the owner's voice.
+  - **Private files:** answers and every approval `C:\temp\journey-answers.md` (its privacy rules at
+    the end of each round), the read-through `C:\temp\journey-story-review.md`, the wording drafts
+    `C:\temp\journey-wording-draft.md`. Words the owner cut stay out of the repo for good.
   - **Standing follow-ups after launch** (event-triggered; T090, a new chapter after Brighton, is in
     `process/triggers.yaml`): **T089**, at the first review after launch, offer the reader test once
     (≥ 5 non-runners on phones; ≥ 4 call it a story and name one thing that worked), or record the
@@ -198,6 +184,13 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
   `chore-speckit-<version>` on a bundle-only reinstall), and a PR's checks list is empty for a few
   seconds after a push: a "checks green" routine filters to `state == OPEN` and treats zero checks as
   not ready (fixed in `pr-ready.ts`, 2026-11-06).
+- A site copy outside the repo (a scratchpad, to keep it out of git) can't build: Astro resolves
+  `astro/tsconfigs/strict` by walking up to `node_modules`. Add a junction to the repo's
+  `node_modules` (`mklink /J`), and remove it on its own (`cmd /c rmdir`) before deleting the copy,
+  so a recursive delete can't reach the repo's packages (003 T080, 2026-11-06).
+- A test that plants files into a copy of the real data must set aside and restore what was there,
+  not delete the folder afterwards: it passed while the folder was empty, and broke the next test
+  once the content PR filled it with real files (`scratch-site.test.ts`, 2026-11-06).
 
 ## Open questions
 

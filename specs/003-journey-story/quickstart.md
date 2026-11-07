@@ -95,7 +95,7 @@ npx playwright test tests/e2e/story-launch.spec.ts
 A scratch-site deploy build of the real data plus one made-up approved chapter, note and page wording, and
 a `story_link` with a made-up label:
 
-- "Story" is last in the menu on every Running page, and current on the story page (US3.5).
+- "Story" is second in the menu, after Overview, on every Running page, and current on the story page (US3.5).
 - On the landing page at 360 x 780 with the fundraising card, Donate is fully on the first screen, and the
   menu has no third line. **If either fails, stop and raise it with the owner** (research.md R8).
 - No Running page scrolls sideways at 320 px.

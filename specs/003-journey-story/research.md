@@ -233,7 +233,8 @@ the list. Both only render at four or more chapters (FR-052).
   "has an approved chapter" agree on every build that can deploy.
 - **The page needs its own wording before it can go live.** With a chapter but no `page.yaml` (title,
   description, share text, link label) or no `note.yaml`, the update stops. See R12.
-- **Menu (FR-041):** "Story" is last, after "Fundraising", as the owner confirmed on #101. The shared
+- **Menu (FR-041):** "Story" is second, after "Overview" (owner, 2026-11-06; last, after "Fundraising",
+  from #101 until then). The shared
   `Nav` marks it current as for any area.
 - **The landing link (FR-040):** spec 001's `StoryLink` and `story_link` setting, unchanged in place.
   Validation adds three rules:

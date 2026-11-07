@@ -1,0 +1,25 @@
+id: a-complete-change
+name: "A complete change"
+when: "2025-10"
+prose: |-
+  In October 2025 I really committed. There's a saying often attributed to Confucius: "We have two lives, and the second begins when we realise we only have one." My addictive personality, the one that either fully commits or doesn't commit at all, was finally working for me.
+
+  I almost stopped drinking: these days I have the very occasional 4% beer, and that's it. When I do, I make sure there's no alcohol left in my system by bedtime, so it never interrupts my sleep.
+
+  I sorted my diet too. Tommy Rivs makes a smoothie of berries and protein powder as his first meal straight after any exercise, to give his body what it needs and stop him eating anything unhealthy. I've done the same ever since. I keep a drawer in my freezer full of frozen fruit: mostly berries, all the different sorts, plus something for variety, like pineapple, peaches, nectarines, mango or papaya. I add protein powder, creatine and sometimes a nut butter, like peanut or almond, with water as the liquid. It's what I look forward to after every run.
+
+  I also started 16:8 fasting, with just black coffee in the morning, and I run fasted. As my running went up, the weight fell off. I was burning over {{calories-oct-2025}} a day, so losing weight became relatively easy.
+
+  At the end of October I added strength training, with weights in my home gym. While I was losing weight, I wanted to train my whole body, to give it a reason to hold on to muscle and build more, so that what I lost was fat, not muscle.
+takeaway: "Make the healthy choice the one you look forward to."
+figures:
+  - id: calories-oct-2025
+    category: calories
+    label: "Calories burned a day"
+    as_of: "2025-10"
+    text: "3,000 calories"
+    source: owner
+    garmin: "Garmin"
+approved:
+  date: 2026-11-04
+  sha256: 548f160ed94212ec1df7cd376c3d3ed417aad711495243e48fa764127e4dbc61

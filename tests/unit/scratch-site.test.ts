@@ -2,7 +2,7 @@
 // of the real code and data without building it: runGate's order and stopping, scratchRepo's writes,
 // and snapshotDist. The build path (build, check-links, scan-privacy over dist/) is exercised by the
 // drills that use it in tests/e2e/.
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -35,6 +35,11 @@ describe('runGate', () => {
   });
 
   it('stops at validate-data on a planted unapproved chapter, naming the file and the approval', async () => {
+    // The copy holds the real story from spec 003's content PR on: keep it aside and put it back after,
+    // so the steps after this one still see the real data.
+    const journey = join(root, 'data/running/owner/journey');
+    const kept = join(root, '..', 'journey-kept');
+    if (existsSync(journey)) renameSync(journey, kept);
     const repo = scratchRepo(root);
     writeStory(repo);
     repo.write(chapterFile('chapter-a'), yaml(chapter()));
@@ -45,7 +50,8 @@ describe('runGate', () => {
       expect(run.messages.join('\n')).toContain(chapterFile('chapter-a'));
       expect(run.messages.join('\n')).toContain('approval');
     } finally {
-      rmSync(join(root, 'data/running/owner/journey'), { recursive: true, force: true });
+      rmSync(journey, { recursive: true, force: true });
+      if (existsSync(kept)) renameSync(kept, journey);
     }
   });
 

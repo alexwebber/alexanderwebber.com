@@ -1,0 +1,22 @@
+id: hooked
+name: "Hooked"
+when: "2026-01"
+prose: |-
+  For a long time I held off running outside, in public, because I didn't think I was fit enough and didn't want to look silly. Pathetic as that sounds now! By January 2026 I had a reasonable base fitness, and I thought it would be quieter outside, so I just went for it. And I got hooked.
+
+  Outside I can properly switch off and just run, almost in a trance. It's more fulfilling, even in the cold, and now I rarely use that very expensive treadmill.
+
+  Later that month I was feeling good on a long run and thought, screw it, I'm going to turn this into my first half marathon for 15 years or so. It came out at {{half-marathon-distance}}.
+takeaway: "Don't wait until you feel ready to be seen. Just go for it."
+figures:
+  - id: half-marathon-distance
+    category: run_distance
+    label: "Distance"
+    as_of: "2026-01-26"
+    text: "22 km"
+    source: stored
+    ref: { run: 2026-01-26-cl36 }
+    garmin: "Venu X1"
+approved:
+  date: 2026-11-04
+  sha256: f2349147c8686b93c4f01572b309af72716b9e5e661d98c78226a010f78b4cc2

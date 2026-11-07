@@ -18,7 +18,7 @@ any build path. Two small inline forms in the prose, `{{figure-id}}` and `[text]
 every figure and link checkable, so Garmin attribution sits right beside each figure (inside the prose
 too), the two-figure limit holds, and links can only lead to pages of this site.
 
-Nothing shows until a first chapter exists: the page, its menu item ("Story", last) and its share image
+Nothing shows until a first chapter exists: the page, its menu item ("Story", second) and its share image
 are added by one condition in the route registry, as fundraising's are. The landing link is spec 001's
 existing `story_link` panel, in its existing place.
 
@@ -184,7 +184,7 @@ schemas/owner/
 ├── journey-closing.schema.json, journey-chapter.schema.json # new
 └── fixtures/...                                             # valid and invalid, made up
 src/sections/running/
-├── integration.ts                 # the conditional story area, last
+├── integration.ts                 # the conditional story area, second
 ├── validate.ts                    # journey and story_link rules
 ├── data/
 │   ├── journey.ts                 # new: loadJourney(store)

@@ -541,8 +541,9 @@ something open.
 - **Other people in photos** (owner, 2026-11-01, amending the earlier strict default): in a race
   photo, strangers in the crowd are fine if nobody is recognisable. Outside races, still no other
   people at all. Race pages keep their own photo rules.
-- **Menu position (owner to confirm)**: "Story" comes last in the Running menu, after "Fundraising".
-  At 360 px that line has room, so the menu gains no third line, which is what protects Donate.
+- **Menu position**: "Story" comes second in the Running menu, after "Overview" (owner, 2026-11-06;
+  it was last, after "Fundraising", from #101). A phone shows the menu as one line that scrolls
+  sideways, so second keeps it on screen, and it adds no menu line, which is what protects Donate.
 - **Landing link position (owner to confirm)**: the link stays where spec 001 put it, in its own panel
   below this week's running and the latest run, above the section links. That keeps Donate safe, but
   on a phone it's several screens down, so the menu item is the quicker way in. Moving it up would

@@ -14,7 +14,7 @@ page's own, not story text (FR-039).
 
 ## Route registry
 
-`integration.ts` gains a `story` area, added last to `runningAreas` only when `journeyChapterIds()`
+`integration.ts` gains a `story` area, added second (after the landing) to `runningAreas` only when `journeyChapterIds()`
 finds a chapter:
 
 - label "Story", href `/running/story/`, description used only if `SectionLinks` lists it;
@@ -99,7 +99,7 @@ owner #101). No client JavaScript.
 
 - `StoryLink.astro` is unchanged: the panel with `story_link.label`, in its place below this week and the
   latest run (spec 001, owner #101).
-- The menu gains "Story" last. On a 360 x 780 phone with the fundraising card showing, Donate stays fully
+- The menu gains "Story" second, after Overview (owner, 2026-11-06). On a 360 x 780 phone with the fundraising card showing, Donate stays fully
   on the first screen, and no Running page scrolls sideways at 320 px (FR-043, SC-006).
 - Nothing else on the landing page changes (FR-040).
 

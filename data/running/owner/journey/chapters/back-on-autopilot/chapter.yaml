@@ -1,0 +1,17 @@
+id: back-on-autopilot
+name: "Back on autopilot"
+when: "2023-12/2024-12"
+prose: |-
+  Then I fell back into my old ways. Illness was part of it, but mainly it was just not caring again. I had gone back to autopilot, and by January 2025 I was back up to {{weight-jan-2025}}. It was very depressing.
+takeaway: "You have to be strong enough to realise that only you can make the lifestyle change."
+figures:
+  - id: weight-jan-2025
+    category: weight
+    label: "Weight"
+    as_of: "2025-01"
+    text: "127.7 kg"
+    source: owner
+    garmin: "Index S2"
+approved:
+  date: 2026-11-06
+  sha256: 4800c1bd4c1d9ca21cc6446d9a0170526ce1d611c9ba53deddc11e61d4b3d622

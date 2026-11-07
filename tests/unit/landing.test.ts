@@ -29,7 +29,7 @@ vi.mock('../../src/sections/running/integration.ts', async (importOriginal) => {
     get runningAreas() {
       const others = actual.runningAreas.filter((area) => area !== actual.storyArea);
       if (registry.story === undefined) return actual.runningAreas;
-      return registry.story ? [...others, actual.storyArea] : others;
+      return registry.story ? [others[0]!, actual.storyArea, ...others.slice(1)] : others;
     },
   };
 });
@@ -309,7 +309,7 @@ describe('landing page (US1)', () => {
     expect(area.routes.map((route) => route.pattern)).toEqual(['/running/fundraising', '/og/running-fundraising.png']);
   });
 
-  it('adds the Story area, last and with no description, exactly when a chapter exists (spec 003 FR-001, FR-039, FR-041)', () => {
+  it('adds the Story area, second (after Overview) and with no description, exactly when a chapter exists (spec 003 FR-001, FR-039, FR-041)', () => {
     const area = runningAreas.find((a) => a.key === 'story');
     expect(area !== undefined).toBe(journeyChapterIds().length > 0);
     expect(storyArea).toEqual({
@@ -321,7 +321,7 @@ describe('landing page (US1)', () => {
         { pattern: '/og/running-story.png', entrypoint: './src/sections/running/og/story.png.ts' },
       ],
     });
-    if (area) expect(runningAreas.at(-1)).toBe(area);
+    if (area) expect(runningAreas[1]).toBe(area);
   });
 
   it('puts Garmin attribution under the page heading, the hero heading, the chart and every Garmin card (FR-077)', async () => {
@@ -373,10 +373,10 @@ describe('section links with the story area (spec 003 US3)', () => {
     registry.story = true;
   });
 
-  it('lists "Story" last, by its label alone, when there is no story link panel', async () => {
-    expect(runningAreas.at(-1)).toBe(storyArea);
+  it('lists "Story" first, by its label alone, when there is no story link panel', async () => {
+    expect(runningAreas[1]).toBe(storyArea);
     const links = sectionLinks(await page());
-    expect(hrefs(links)).toEqual([...others(), '/running/story/']);
+    expect(hrefs(links)).toEqual(['/running/story/', ...others()]);
     const story = links.match(/<a href="\/running\/story\/">[\s\S]*?<\/a>/)![0];
     expect(story).toBe('<a href="/running/story/"><span class="section-link-label">Story</span></a>');
   });
@@ -388,12 +388,12 @@ describe('section links with the story area (spec 003 US3)', () => {
     expect(html).toContain(`<p class="story-link" data-story-link><a href="/running/story/">${LINK.label}</a></p>`);
   });
 
-  it('puts "Story" last in the menu either way', async () => {
+  it('puts "Story" second in the menu, after Overview, either way', async () => {
     for (const section of [SECTION, { ...SECTION, story_link: LINK } as SectionSettings]) {
       use({ section });
       const menu = (await page()).match(/<nav aria-label="Running">[\s\S]*?<\/nav>/)![0];
       expect(hrefs(menu)).toEqual(runningAreas.map((area) => area.href));
-      expect(hrefs(menu).at(-1)).toBe('/running/story/');
+      expect(hrefs(menu).slice(0, 2)).toEqual(['/running/', '/running/story/']);
     }
   });
 
