@@ -43,8 +43,10 @@
 @media (min-width: 64rem) {
   .theme-running .story-layout {
     display: grid;
-    grid-template-columns: minmax(0, 66ch) 15rem;
-    column-gap: var(--space-8);
+    /* 66ch + 3rem + 15rem fits the 70rem frame at 18 px in the widest font we measure (DejaVu Sans,
+       Linux and CI): a 4rem gap squeezed the column by 4 px there, below the title's 66ch. */
+    grid-template-columns: minmax(0, 66ch) minmax(0, 15rem);
+    column-gap: var(--space-7);
     align-items: start;
   }
 

@@ -193,6 +193,9 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - Open a PR as a **draft** and mark it ready only once every check is green: the owner merged #135
   while its `playwright` check was still running, and it was red (Linux font). `pr-ready` also called a
   PR merged at the current commit "no PR yet"; it now reads its checks (2026-11-07).
+- Before pushing a layout sized from measured widths (a frame, a grid track), measure it under DejaVu
+  Sans too (injected from jsdelivr, as tips-testing says): twice in one day a layout fitted Windows'
+  Segoe UI and failed CI's Linux font by a few pixels (#135's menu, #137's grid, 2026-11-07).
 
 ## Open questions
 
