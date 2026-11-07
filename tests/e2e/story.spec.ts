@@ -139,9 +139,9 @@ for (const state of STATES) {
     const viewport = page.viewportSize()!.width;
     const frame = (await page.locator('.site-header .wrap').boundingBox())!;
     expect(frame.x).toBeCloseTo(viewport - (frame.x + frame.width), 0);
-    // 48rem (--content-narrow), not the 70rem every other page has: at 1280 px a 70rem frame is
+    // 52rem (--content-narrow), not the 70rem every other page has: at 1280 px a 70rem frame is
     // centred too, so this is the check that tells them apart.
-    expect(frame.width).toBeLessThanOrEqual(48 * 16 + 0.5);
+    expect(frame.width).toBeLessThanOrEqual(52 * 16 + 0.5);
     const siteName = (await page.locator('.site-name').boundingBox())!;
     const title = (await page.getByRole('heading', { level: 1 }).boundingBox())!;
     const column = (await story(page).locator('.story-takeaway').first().boundingBox())!;
@@ -152,6 +152,7 @@ for (const state of STATES) {
     const last = (await menu.getByRole('link').last().boundingBox())!;
     expect(last.y).toBeCloseTo(first.y, 0);
     // From 48rem the menu sits beside the site name; on a phone it's a line of its own (Nav.astro).
+    // Font-dependent: this failed on CI's Linux font (DejaVu Sans) when the frame was 48rem.
     if (viewport >= 768) expect(first.y).toBeLessThan(siteName.y + siteName.height);
   });
 
