@@ -6,7 +6,8 @@
  * a page's inlined CSS (research.md R16, R19). Colours come from the tokens, so dark mode follows.
  *
  * - Text stops at 66ch (FR-072: lines of at most about 75 characters), and long words wrap, so
- *   nothing scrolls sideways at 320 px.
+ *   nothing scrolls sideways at 320 px. The title wraps at the same 66ch (SectionLayout's `narrow`),
+ *   so on a desktop the page is one column under the menu (owner, 2026-11-07).
  * - A figure's source in the prose is the prose's size in the secondary colour (owner decision 1).
  * - The takeaway is a box with a border on every side and a heavier start edge, so it stands apart
  *   by shape and its "What I learned" label in light, dark and forced colours (owner decision 10,

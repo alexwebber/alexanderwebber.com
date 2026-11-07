@@ -117,6 +117,19 @@ for (const state of STATES) {
     for (const { ratio } of widths) expect(ratio).toBeLessThanOrEqual(75);
   });
 
+  // Owner, 2026-11-07: on a desktop the title spanned the page while the text stopped at 66ch. The
+  // title now wraps over the text column: the header has the same left edge and width as a takeaway
+  // box, which always fills that column (on a phone, both are the screen's width).
+  test(`${state}: the title sits over the text column, one left edge and one width`, async ({ page }) => {
+    await open(page, state);
+    const header = (await page.locator('header.page-header').boundingBox())!;
+    const column = (await story(page).locator('.story-takeaway').first().boundingBox())!;
+    expect(header.x).toBeCloseTo(column.x, 0);
+    expect(header.width).toBeCloseTo(column.width, 0);
+    const title = (await page.getByRole('heading', { level: 1 }).boundingBox())!;
+    expect(title.x + title.width).toBeLessThanOrEqual(column.x + column.width + 0.5);
+  });
+
   for (const width of [320, 360]) {
     test(`${state}: nothing scrolls sideways at ${width} px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });

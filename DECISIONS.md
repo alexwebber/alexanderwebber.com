@@ -2241,3 +2241,28 @@ end. Add each new decision as a dated entry at the end, as it's made.
   data"). One skill candidate added (the owner-approved content PR), with the Martlets story as its
   `next`. Missed: `page-tests` already says the suites need a `SHELL_PREVIEW=1` build; not loading it
   cost one 10-minute run against a deploy build.
+- **2026-11-07** — **#133 merged; the journey story is live (003 T087)**. `after-merge`: the PR's 11
+  checks green, `main`'s Gate for the merge commit green with its deploy, `/running/` (with the panel
+  label) and `/running/story/` answering 200. The live checks, scripted against
+  https://alexanderwebber.com: nine chapters, the closing section and the note; "Story" second on all
+  211 Running pages and current on its own; the panel with the approved label and no Story link below
+  it; `/og/running-story.png` loads, with no digit (looked at); the sitemap lists the page; on a
+  360 x 780 phone Donate sits at 538–582 px; no Running page scrolls sideways at 320 px. #133's one
+  unticked box (the phone check) is answered by the guided review below; `SETTLED` in
+  `session-start.ts`.
+- **2026-11-07** — **Guided review of the live story (003 T088, T089; 002 T119)**, owner on a phone
+  and a desktop, dark mode included. Phone: fine as it is. Desktop: the title and menu spanned the page
+  while the text stopped at 66ch, which looked askew. Options were one column (the title wraps at the
+  text's 66ch, one left edge under the menu), a centred column (even space, but the left edge leaves
+  the menu's), a chapters sidebar (uses the space; a bigger design change), or leaving it. **Owner:
+  one column.** Built as `SectionLayout`'s `narrow` prop (header held to 66ch in the body's font), used
+  only by the story page; phones are unchanged, as 66ch is wider than a phone. T089, the reader test:
+  offered once, **the owner skipped it**, as with earlier usability checks. T119: the site's
+  fundraising figures match JustGiving, **tally 2 of 10**. Martlets reviewers: not replied yet.
+- **2026-11-07** — **Playwright stops on a stale or deploy `dist/`** (`tests/global-setup.ts`). Two
+  sessions running, page tests ran against a `dist/` that didn't hold the change (the `page-tests`
+  skill already said to build with `SHELL_PREVIEW=1`, but wasn't loaded). Instead of noting the lesson
+  a third time, the global setup now refuses a missing build, a deploy build (no `/shell-preview/`),
+  or one older than any file under `src/` or `data/` or `astro.config.mjs`, naming the newer file and
+  the rebuild command. CI and `pr-ready` build just before the tests, so they pass it.
+  `PW_SKIP_DIST_CHECK=1` skips it for a run that uses only its own scratch build.
