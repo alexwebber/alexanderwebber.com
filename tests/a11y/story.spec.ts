@@ -136,3 +136,35 @@ for (const state of STATES) {
     expect([...reached].toSorted(), 'every link and control in the story').toEqual(controls.toSorted());
   });
 }
+
+// The real page, once the real data has a chapter (spec 003 T084): axe in light and dark, the chapter
+// list closed and then open, and in forced colours. Skipped while the real data has no story.
+test.describe('the real story page', () => {
+  async function openReal(page: Page) {
+    const response = await page.goto('/running/story/');
+    test.skip(response?.status() === 404, 'the real data has no chapter yet');
+    expect(response?.status()).toBe(200);
+  }
+
+  for (const colorScheme of ['light', 'dark'] as const) {
+    test(`passes axe in ${colorScheme} mode, the chapter list closed and open`, async ({ page }) => {
+      sweepOnlyInDark(colorScheme);
+      await page.emulateMedia({ colorScheme });
+      await openReal(page);
+      expect(await axe(page)).toEqual([]);
+      const list = page.locator('.story-page details.story-chapters');
+      if ((await list.count()) > 0) {
+        await list.locator('summary').click();
+        await expect(list).toHaveAttribute('open');
+        expect(await axe(page)).toEqual([]);
+      }
+    });
+  }
+
+  test('passes axe in forced colours', async ({ page }) => {
+    test.skip(!fullSweep(), 'forced colours are swept in the phone project');
+    await page.emulateMedia({ forcedColors: 'active' });
+    await openReal(page);
+    expect(await axe(page)).toEqual([]);
+  });
+});

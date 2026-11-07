@@ -2222,3 +2222,15 @@ end. Add each new decision as a dated entry at the end, as it's made.
     is one sideways-scrolling line, so the last items start off-screen. This replaces the #101 choice.
     The Overview gets no Story tile: the story panel above already leads there (data-model.md §9,
     unchanged).
+- **2026-11-07** — **A health detail in an approved chapter may be published** (owner). `pr-ready`'s
+  private-term search matched an illness named in chapter 3's approved text. The term had gone on the
+  private list on 5 Nov, before the approval, under a heading that no privacy rule in the private
+  notes backs. An illness isn't a public-by-intent category (constitution Principle VI), so the owner
+  was asked explicitly: "Yes, publish it as approved". The term is off the private list. Lesson: a
+  term listed to guard unapproved text should say so, so the content PR knows to retire it.
+- **2026-11-07** — **003 T084, the full checks on the real story**: the gate's six steps clean; Vitest
+  1,083 passed; astro check and pytest passed; Playwright on a `SHELL_PREVIEW=1` build, desktop 433
+  passed and phone 459 passed, none failed, the `story-none` and `story-launch` drills included;
+  Lighthouse (mobile, deploy build) `/running/story/` 100/100, LCP 0.91 s, 9.0 KB gzip, no script,
+  and `/running/` 100/100, LCP 1.11 s, 13.1 KB. A new axe check on the real page (light, dark, the list
+  closed and open, forced colours) found no violations, and stays in the suite.
