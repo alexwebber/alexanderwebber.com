@@ -6,9 +6,10 @@
  * a page's inlined CSS (research.md R16, R19). Colours come from the tokens, so dark mode follows.
  *
  * - Text stops at 66ch (FR-072: lines of at most about 75 characters), and long words wrap, so
- *   nothing scrolls sideways at 320 px. The title wraps at the same 66ch, and the whole frame
- *   narrows and centres (SectionLayout's `narrow`), so on a desktop the menu, title and text share
- *   one left edge in a balanced column (owner, 2026-11-07).
+ *   nothing scrolls sideways at 320 px. The title wraps at the same 66ch (SectionLayout's `narrow`).
+ * - On a wide screen (owner, 2026-11-07): from 64rem the chapter list sits beside the text, open and
+ *   in view as the page scrolls (ChapterSidebar.astro), in place of the closed list and the "Back to
+ *   chapters" links; from 75rem the story reads at 18 px.
  * - A figure's source in the prose is the prose's size in the secondary colour (owner decision 1).
  * - The takeaway is a box with a border on every side and a heavier start edge, so it stands apart
  *   by shape and its "What I learned" label in light, dark and forced colours (owner decision 10,
@@ -17,6 +18,82 @@
  * - At four or more chapters, a closed "Chapters" list sits under the title and each chapter ends with
  *   "Back to chapters" (owner decision 3, FR-052). Both are plain links and a native <details>.
  */
+/* From 75rem the story reads at 18 px, not 16: the 66ch column grows with it, from about 570 to 640
+   px, with the same words per line. The title's header follows, so the title still wraps over the
+   column, and so does the sidebar. The smaller and label sizes become relative to the text here
+   (--step--1, --step-0 in em), so a takeaway's "What I learned" isn't smaller than its words. Headings
+   set in rem (the title, chapter names) and the menu keep their sizes. */
+@media (min-width: 75rem) {
+  .theme-running .page-header-narrow,
+  .theme-running .story-layout {
+    --step--1: 0.875em;
+    --step-0: 1em;
+    font-size: 1.125rem;
+  }
+}
+
+/* The chapter list beside the text (ChapterSidebar.astro): hidden until 64rem. From there the story and
+   the sidebar are two columns, the text at 66ch and the list in 15rem beside it, and the list stays in
+   view as the page scrolls; a list taller than the screen scrolls on its own. The closed list and the
+   "Back to chapters" links give way to it. */
+.theme-running .story-sidebar {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .theme-running .story-layout {
+    display: grid;
+    /* 66ch + 3rem + 15rem fits the 70rem frame at 18 px in the widest font we measure (DejaVu Sans,
+       Linux and CI): a 4rem gap squeezed the column by 4 px there, below the title's 66ch. */
+    grid-template-columns: minmax(0, 66ch) minmax(0, 15rem);
+    column-gap: var(--space-7);
+    align-items: start;
+  }
+
+  .theme-running .story-layout > .story-page {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .theme-running .story-sidebar {
+    display: block;
+    grid-row: 1;
+    grid-column: 2;
+    position: sticky;
+    top: var(--space-5);
+    max-height: calc(100vh - 2 * var(--space-5));
+    overflow-y: auto;
+    margin-top: var(--space-6);
+    font-size: var(--step--1);
+  }
+
+  .theme-running .story-chapters,
+  .theme-running .story-back {
+    display: none;
+  }
+}
+
+.theme-running .story-sidebar-label {
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.theme-running .story-sidebar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.theme-running .story-sidebar li + li {
+  margin-top: var(--space-2);
+}
+
+/* A whole line's height, so each name is a 24 px target at least (WCAG 2.2's target size). */
+.theme-running .story-sidebar a {
+  display: inline-block;
+}
+
 /* The page has no "Last updated" line under its <h1>, so the first chapter's <h2> needs its own
    distance from it, or it reads as the title's subtitle. */
 .theme-running .story-page {

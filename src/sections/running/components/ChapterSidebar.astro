@@ -1,0 +1,29 @@
+---
+// The journey story's chapter list beside the text on a wide screen (owner, 2026-11-07): from 64rem
+// wide, the closed "Chapters" disclosure (ChapterList.astro) and each chapter's "Back to chapters" give
+// way to this list, always open, in the space beside the 66ch column, and staying in view as the page
+// scrolls (position: sticky). Shown with the same rule as the disclosure, from four chapters
+// (showChapterList). A named <nav> ("Chapters"), not a heading, so the page's heading outline stays
+// h1, then h2 per chapter. No script. Styles: styles/story.css.
+import type { ChapterView } from '../data/journey.ts';
+
+export interface Props {
+  /** Oldest first, as the page shows them. */
+  chapters: Pick<ChapterView, 'id' | 'name'>[];
+}
+
+const { chapters } = Astro.props;
+---
+
+<nav class="story-sidebar" aria-labelledby="story-sidebar-label">
+  <p class="story-sidebar-label" id="story-sidebar-label">Chapters</p>
+  <ul>
+    {
+      chapters.map((chapter) => (
+        <li>
+          <a href={`#${chapter.id}`}>{chapter.name}</a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

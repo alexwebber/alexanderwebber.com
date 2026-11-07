@@ -9,6 +9,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { PREVIEW_STATES as STATES } from '../fixtures/story-preview/store.ts';
 import { axe, fullSweep, outline, sweepOnlyInDark } from '../helpers/a11y.ts';
 
+/** From 64rem the chapter list sits beside the text, and the closed list and back links are hidden. */
+const narrowOnly = (page: Page) => test.skip(page.viewportSize()!.width >= 1024, 'from 64rem the chapter list sits beside the text');
+
 async function open(page: Page, state: string) {
   const response = await page.goto(`/story-preview/${state}/`);
   expect(response?.status(), state).toBe(200);
@@ -53,6 +56,7 @@ for (const state of ['four-chapters', 'long']) {
   for (const colorScheme of ['light', 'dark'] as const) {
     test(`${state}: passes axe in ${colorScheme} mode with the chapter list open`, async ({ page }) => {
       sweepOnlyInDark(colorScheme);
+      narrowOnly(page);
       await page.emulateMedia({ colorScheme });
       await open(page, state);
       await page.locator('.story-page details.story-chapters > summary').click();
@@ -63,6 +67,7 @@ for (const state of ['four-chapters', 'long']) {
 
   test(`${state}: passes axe in forced colours with the list closed and open, its rules kept`, async ({ page }) => {
     test.skip(!fullSweep(), 'forced colours are swept in the phone project');
+    narrowOnly(page);
     await page.emulateMedia({ forcedColors: 'active' });
     await open(page, state);
     const list = page.locator('.story-page details.story-chapters');
@@ -73,6 +78,7 @@ for (const state of ['four-chapters', 'long']) {
   });
 
   test(`${state}: the keyboard opens the list, reaches a chapter, and comes back to the list`, async ({ page }) => {
+    narrowOnly(page);
     await open(page, state);
     const list = page.locator('.story-page details.story-chapters');
     const focused = () => page.evaluate(() => {
@@ -108,15 +114,43 @@ for (const state of ['four-chapters', 'long']) {
   });
 }
 
+// On a wide screen (owner, 2026-11-07): the sidebar comes first in the source, so Tab reaches its
+// chapters before the story's own links, and Enter on one brings that chapter into view.
+for (const state of ['four-chapters', 'long']) {
+  test(`${state}: on a wide screen Tab reaches the chapter sidebar first, and Enter goes to a chapter`, async ({ page }) => {
+    test.skip(page.viewportSize()!.width < 1024, 'the sidebar shows from 64rem');
+    await open(page, state);
+    const nav = page.getByRole('navigation', { name: 'Chapters', exact: true });
+    const first = nav.getByRole('link').first();
+    for (let i = 0; i < 40 && !(await first.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press('Tab');
+    await expect(first).toBeFocused();
+    // Nothing in the story was focused on the way.
+    await page.keyboard.press('Tab');
+    const second = nav.getByRole('link').nth(1);
+    await expect(second).toBeFocused();
+    await expect(second).toBeInViewport({ ratio: 1 });
+    const target = (await second.getAttribute('href'))!;
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(new RegExp(`${target}$`));
+    await expect(page.locator(`.story-page section${target}`).getByRole('heading', { level: 2 })).toBeInViewport();
+    await expect(nav).toBeInViewport();
+  });
+}
+
 // Graduation (T072): in every state, Tab alone reaches every link and control in the story, each in
 // view when focused (the chapter list opened first, so its links are reachable too).
 for (const state of STATES) {
   test(`${state}: Tab reaches every link and control in the story, each in view when focused`, async ({ page }) => {
     await open(page, state);
-    const story = page.locator('.story-page');
+    // The story and, on a wide screen, the chapter sidebar beside it.
+    const story = page.locator('.story-layout');
     // Opened without focusing it, so the first Tab starts at the top of the page.
     await story.locator('details.story-chapters').evaluateAll((els) => els.forEach((el) => ((el as HTMLDetailsElement).open = true)));
-    const controls = await story.locator('a, summary').evaluateAll((els) => els.map((el, i) => (el.setAttribute('data-tab-check', String(i)), String(i))));
+    // Only what shows at this width: the closed list and back links are hidden on a wide screen, the
+    // sidebar on a narrow one.
+    const controls = await story.locator('a, summary').evaluateAll((els) =>
+      els.filter((el) => el.checkVisibility()).map((el, i) => (el.setAttribute('data-tab-check', String(i)), String(i))),
+    );
     // A state with no link in its text and fewer than four chapters (no-closing) has none to reach.
     const reached = new Set<string>();
     // Each control once, plus the page's links before and after the story, with room to spare.
@@ -153,7 +187,8 @@ test.describe('the real story page', () => {
       await openReal(page);
       expect(await axe(page)).toEqual([]);
       const list = page.locator('.story-page details.story-chapters');
-      if ((await list.count()) > 0) {
+      // Hidden from 64rem, where the chapters sit beside the text (and the axe run above covers them).
+      if (await list.isVisible()) {
         await list.locator('summary').click();
         await expect(list).toHaveAttribute('open');
         expect(await axe(page)).toEqual([]);

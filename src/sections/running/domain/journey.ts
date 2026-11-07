@@ -263,13 +263,14 @@ export function sortChapters<T extends Sortable>(chapters: readonly T[]): T[] {
 
 /**
  * The ids the story page gives elements other than chapters' (the layout's <main>, ChapterList,
- * StoryClosing), with what each is. A chapter's id is its anchor and permanent (FR-051), so
+ * ChapterSidebar, StoryClosing), with what each is. A chapter's id is its anchor and permanent (FR-051), so
  * validation refuses one that repeats any of these or another chapter's (chapterElementIds).
  * tests/unit/story-page.test.ts fails when the page gains an id missing here.
  */
 export const STORY_PAGE_IDS: Readonly<Record<string, string>> = {
   main: 'the main content',
   'story-chapter-list': 'the chapter list',
+  'story-sidebar-label': "the chapter list's label beside the text",
   'story-closing-title': "the closing section's heading",
 };
 

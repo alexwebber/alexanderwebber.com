@@ -32,6 +32,11 @@ const story = (page: Page) => page.locator('.story-page');
 const chapters = (page: Page) => story(page).locator('section.story-chapter');
 const chapterIds = (page: Page) => chapters(page).evaluateAll((els) => els.map((el) => el.id));
 const chapterList = (page: Page) => story(page).locator('details.story-chapters');
+const sidebar = (page: Page) => page.locator('nav.story-sidebar');
+/** From 64rem the chapter list sits beside the text, and the closed list and back links are hidden. */
+const WIDE = 1024;
+const wide = (page: Page) => page.viewportSize()!.width >= WIDE;
+const narrowOnly = (page: Page) => test.skip(wide(page), 'from 64rem the chapter list sits beside the text (the sidebar tests)');
 
 for (const state of STATES) {
   const data = fixture(state);
@@ -104,7 +109,8 @@ for (const state of STATES) {
     const widths = await story(page)
       .locator('p')
       .evaluateAll((els) =>
-        els.map((el) => {
+        // Those that show: on a wide screen "Back to chapters" is hidden (the sidebar replaces it).
+        els.filter((el) => el.checkVisibility()).map((el) => {
           const zero = document.createElement('span');
           zero.textContent = '0';
           el.append(zero);
@@ -130,30 +136,27 @@ for (const state of STATES) {
     expect(title.x + title.width).toBeLessThanOrEqual(column.x + column.width + 0.5);
   });
 
-  // Owner, 2026-11-07 (after the live check): on a wide screen that column still sat in the left part
-  // of the 70rem frame. The story's whole frame narrows and centres: the site name, the title and the
-  // text share one left edge, the frame has equal space either side, and the site name and menu stay
-  // on one line (a new menu item that breaks this needs the owner's call on the frame's width).
-  test(`${state}: the frame is centred, with the site name, title and text on one left edge and the menu on one line`, async ({ page }) => {
+  // Owner, 2026-11-07: on a wide screen (from 75rem) the story reads at 18 px, so the 66ch column
+  // isn't a narrow strip; a phone keeps 16 px. The labels follow the text: "What I learned" is never
+  // smaller than the words under it, and the note stays smaller than the prose.
+  test(`${state}: the text is 18 px from 1200 px wide and 16 px below, with its labels in step`, async ({ page }) => {
     await open(page, state);
-    const viewport = page.viewportSize()!.width;
-    const frame = (await page.locator('.site-header .wrap').boundingBox())!;
-    expect(frame.x).toBeCloseTo(viewport - (frame.x + frame.width), 0);
-    // 52rem (--content-narrow), not the 70rem every other page has: at 1280 px a 70rem frame is
-    // centred too, so this is the check that tells them apart.
-    expect(frame.width).toBeLessThanOrEqual(52 * 16 + 0.5);
+    const size = (locator: ReturnType<Page['locator']>) => locator.first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const prose = await size(story(page).locator('section.story-chapter > p:not(.story-when)'));
+    expect(prose).toBe(page.viewportSize()!.width >= 1200 ? 18 : 16);
+    expect(await size(story(page).locator('.story-takeaway > h3'))).toBeGreaterThanOrEqual(await size(story(page).locator('.story-takeaway > p')));
+    expect(await size(story(page).locator('.story-note'))).toBeLessThan(prose);
+  });
+
+  // Owner, 2026-11-07: the story uses the Running pages' usual frame, so the site name and title
+  // share the frame's left edge with every other page, and the text starts there too.
+  test(`${state}: the site name, title and text share one left edge`, async ({ page }) => {
+    await open(page, state);
     const siteName = (await page.locator('.site-name').boundingBox())!;
     const title = (await page.getByRole('heading', { level: 1 }).boundingBox())!;
     const column = (await story(page).locator('.story-takeaway').first().boundingBox())!;
     expect(title.x).toBeCloseTo(siteName.x, 0);
     expect(column.x).toBeCloseTo(siteName.x, 0);
-    const menu = page.getByRole('navigation', { name: 'Running', exact: true });
-    const first = (await menu.getByRole('link').first().boundingBox())!;
-    const last = (await menu.getByRole('link').last().boundingBox())!;
-    expect(last.y).toBeCloseTo(first.y, 0);
-    // From 48rem the menu sits beside the site name; on a phone it's a line of its own (Nav.astro).
-    // Font-dependent: this failed on CI's Linux font (DejaVu Sans) when the frame was 48rem.
-    if (viewport >= 768) expect(first.y).toBeLessThan(siteName.y + siteName.height);
   });
 
   for (const width of [320, 360]) {
@@ -293,6 +296,7 @@ for (const state of ['four-chapters', 'long'] as const) {
   const data = fixture(state);
 
   test(`${state}: the list is closed by default, one line under the title, and lists every chapter in page order`, async ({ page }) => {
+    narrowOnly(page);
     await open(page, state);
     const list = chapterList(page);
     await expect(list).toHaveCount(1);
@@ -310,6 +314,7 @@ for (const state of ['four-chapters', 'long'] as const) {
   });
 
   test(`${state}: closed, the list takes one line, so only opening it moves the first chapter down (FR-052, SC-001)`, async ({ page }) => {
+    narrowOnly(page);
     await open(page, state);
     const list = chapterList(page);
     const summary = list.locator('summary');
@@ -343,6 +348,7 @@ for (const state of ['four-chapters', 'long'] as const) {
     test.use({ javaScriptEnabled: false });
 
     test('any chapter is two taps from the top: open the list, tap its name (SC-010)', async ({ page }) => {
+      narrowOnly(page);
       await open(page, state);
       const ids = await chapterIds(page);
       // The first, a middle one and the last.
@@ -357,6 +363,7 @@ for (const state of ['four-chapters', 'long'] as const) {
     });
 
     test('"Back to chapters" after each chapter lands on the list or its summary', async ({ page }) => {
+      narrowOnly(page);
       await open(page, state);
       const ids = await chapterIds(page);
       await expect(story(page).locator('.story-back')).toHaveCount(ids.length);
@@ -373,12 +380,63 @@ for (const state of ['four-chapters', 'long'] as const) {
   });
 }
 
+// The chapter list beside the text on a wide screen (owner, 2026-11-07; ChapterSidebar.astro): from
+// 64rem, every chapter in page order, open, one click to any chapter, and in view all the way down;
+// the closed list and "Back to chapters" are hidden there. Below 64rem the sidebar is hidden.
+for (const state of ['four-chapters', 'long'] as const) {
+  const data = fixture(state);
+
+  test(`${state}: on a wide screen the chapters sit beside the text, in page order, and stay in view`, async ({ page }) => {
+    test.skip(!wide(page), 'the sidebar shows from 64rem');
+    await open(page, state);
+    const nav = page.getByRole('navigation', { name: 'Chapters', exact: true });
+    await expect(nav).toBeVisible();
+    const names = await nav.locator('li > a').evaluateAll((els) => els.map((a) => [a.getAttribute('href'), a.textContent]));
+    const ids = await chapterIds(page);
+    expect(names).toEqual(ids.map((id) => [`#${id}`, data.chapters.find((c) => c.id === id)!.name]));
+    // Beside the text: to its right, starting level with the story.
+    const box = (await nav.boundingBox())!;
+    const column = (await story(page).locator('.story-takeaway').first().boundingBox())!;
+    expect(box.x).toBeGreaterThan(column.x + column.width);
+    expect(Math.abs(box.y - (await story(page).boundingBox())!.y)).toBeLessThan(1);
+    expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+    // The closed list and the back links give way to it.
+    await expect(chapterList(page)).toBeHidden();
+    await expect(story(page).locator('.story-back').first()).toBeHidden();
+    // Still in view at the last chapter.
+    await story(page).locator(`section#${ids.at(-1)}`).scrollIntoViewIfNeeded();
+    await expect(nav).toBeInViewport();
+  });
+
+  test(`${state}: on a wide screen any chapter is one click away, with scripts off`, async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ baseURL: baseURL!, viewport: { width: 1280, height: 800 }, javaScriptEnabled: false });
+    const page = await context.newPage();
+    await open(page, state);
+    const ids = await chapterIds(page);
+    for (const id of [...new Set([ids[0]!, ids[Math.floor(ids.length / 2)]!, ids.at(-1)!])]) {
+      const name = data.chapters.find((c) => c.id === id)!.name;
+      await sidebar(page).getByRole('link', { name, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp(`#${id}$`));
+      await expect(story(page).locator(`section#${id}`).getByRole('heading', { level: 2, name, exact: true })).toBeInViewport();
+    }
+    await context.close();
+  });
+
+  test(`${state}: below 64rem the sidebar is hidden and the closed list shows`, async ({ page }) => {
+    await page.setViewportSize({ width: WIDE - 1, height: 800 });
+    await open(page, state);
+    await expect(sidebar(page)).toBeHidden();
+    await expect(chapterList(page)).toBeVisible();
+  });
+}
+
 for (const state of ['one-chapter', 'three-chapters'] as const) {
   test(`${state}: fewer than four chapters, so no list and no "Back to chapters" (FR-052)`, async ({ page }) => {
     await open(page, state);
     await expect(story(page).locator('details')).toHaveCount(0);
     await expect(story(page).locator('#story-chapter-list, .story-back')).toHaveCount(0);
     await expect(story(page).getByText('Back to chapters', { exact: true })).toHaveCount(0);
+  await expect(sidebar(page)).toHaveCount(0);
   });
 }
 

@@ -34,7 +34,10 @@ under the story link panel that already leads there (research.md R8).
    closed chapter list (FR-005).
 2. **Chapter list** (`ChapterList.astro`, four or more chapters only): `<details class="story-chapters">`
    with `<summary>Chapters</summary>` and a `<ul id="story-chapter-list">` of links to `#<id>`, by
-   chapter name. Closed by default. No numbers.
+   chapter name. Closed by default. No numbers. From 64rem it's hidden, with each chapter's "Back to
+   chapters", and the same links sit beside the text instead (`ChapterSidebar.astro`,
+   `<nav aria-labelledby>` named "Chapters", first in the source, sticky; owner, 2026-11-07). From
+   75rem the story's text is 18 px.
 3. **Chapters**, oldest first (`StoryChapter.astro`), each:
 
    ```html

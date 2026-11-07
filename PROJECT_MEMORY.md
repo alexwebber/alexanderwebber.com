@@ -11,15 +11,17 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   live checks (T087) passed and its guided review (T088) is done. The fix from that review, the
   story's title over its text column on a desktop, merged as #134; at the live check the owner chose
   a narrower, centred frame for the story (#135, merged). #135's frame was too narrow for Linux fonts
-  (the menu wrapped in CI): 52rem instead of 48rem is the PR from branch `003-story-frame-linux`.
+  (the menu wrapped in CI): 52rem instead (#136, merged). Then the owner chose 18 px text on wide
+  screens, then, seeing it still narrow, the chapter list beside the text on wide screens (the narrow
+  frame removed): both in the PR from branch `003-story-desktop-text` (#137).
   The reader test (T089) was skipped by the owner.
   House-process 0.16.2 is installed.
 - **Next session, first:** `/session-start`. Read the first nightly Quality run after #130 (scheduled
   03:41 UTC, but these runs start around 11:30 UTC; the 7 Nov run is the first; since #133 merged the
   `story` page type is measured too, so every page type should be within budget) and record it in
   `DECISIONS.md`.
-- **If the frame-linux PR merged:** `/after-merge <pr> "--live=/running/story/=My running story"`,
-  then ask its box (does the centred story look right on a wide screen?) if unticked.
+- **If the desktop-text PR merged:** `/after-merge <pr> "--live=/running/story/=My running story"`,
+  then ask its box (does the story with its chapters beside it look right?) if unticked.
 - **Then, the next spec** (owner, 2026-11-01): the private family-admin section (details in the
   agent's local memory). Start with a question round, and raise first that it clashes with the
   constitution (see *Spec order after 003* below).
@@ -188,6 +190,12 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - A test that plants files into a copy of the real data must set aside and restore what was there,
   not delete the folder afterwards: it passed while the folder was empty, and broke the next test
   once the content PR filled it with real files (`scratch-site.test.ts`, 2026-11-06).
+- Open a PR as a **draft** and mark it ready only once every check is green: the owner merged #135
+  while its `playwright` check was still running, and it was red (Linux font). `pr-ready` also called a
+  PR merged at the current commit "no PR yet"; it now reads its checks (2026-11-07).
+- Before pushing a layout sized from measured widths (a frame, a grid track), measure it under DejaVu
+  Sans too (injected from jsdelivr, as tips-testing says): twice in one day a layout fitted Windows'
+  Segoe UI and failed CI's Linux font by a few pixels (#135's menu, #137's grid, 2026-11-07).
 
 ## Open questions
 

@@ -31,9 +31,8 @@ export interface Props {
   current?: string;
   /** Show "Last updated" (default). False only for a page that shows no stored data's freshness. */
   lastUpdated?: boolean;
-  /** A page of prose (the journey story): the whole frame narrows and centres (Base's frame="narrow"),
-   *  and the heading wraps at the text's 66ch, so on a desktop the menu, title and text share one left
-   *  edge in a balanced column (owner, 2026-11-07). */
+  /** Hold the heading to the text's 66ch, for a page of prose (the journey story), so on a desktop the
+   *  title wraps over the text column instead of spanning the page (owner, 2026-11-07). */
   narrow?: boolean;
 }
 
@@ -46,7 +45,7 @@ const freshness = lastUpdated ? await buildFreshness() : undefined;
 const attribution = garmin === true ? {} : garmin || undefined;
 ---
 
-<Base title={title} description={description} image={image} imageAlt={imageAlt} theme="theme-running" frame={narrow ? 'narrow' : 'wide'}>
+<Base title={title} description={description} image={image} imageAlt={imageAlt} theme="theme-running">
   <Nav slot="nav" label="Running" items={nav} current={current} />
   <header class:list={['page-header', { 'page-header-narrow': narrow }]}>
     <h1>{heading}</h1>

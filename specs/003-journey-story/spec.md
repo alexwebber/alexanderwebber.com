@@ -388,7 +388,9 @@ photo. Confirm a story with no photos looks complete.
 - **FR-052**: With four or more chapters, the page MUST offer a list of the chapter names that links
   to each chapter, and a way back to that list from the end of each chapter. Both MUST work with
   scripts off. The list MUST NOT push the start of the first chapter below the first screen on a
-  phone. With fewer chapters, no list is shown.
+  phone. With fewer chapters, no list is shown. On a wide screen (from 64rem; owner, 2026-11-07) the
+  list sits open beside the text and stays in view as the page scrolls, so the way back is the list
+  itself and the per-chapter links are hidden there.
 - **FR-053**: A chapter's design MUST leave a place for a video to join it later, with no rework.
   Adding a video to one chapter later MUST NOT need a change to any other chapter, or a fresh approval
   of that chapter's text (the video gets its own approval). Nothing about video is shown now, and no

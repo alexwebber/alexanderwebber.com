@@ -2286,3 +2286,25 @@ end. Add each new decision as a dated entry at the end, as it's made.
   keep one line. The column still centres; the gap right of the text inside the frame grows by about
   64 px. `pr-ready` missed it because it treated a merged PR as "no PR yet"; it now reads the checks
   of a PR merged at the current commit.
+- **2026-11-07** — **#136 live; the story reads at 18 px on a wide screen (owner)**. `after-merge`: 11
+  checks green, Gate and deploy green, the live frame 832 px. At 1680 px the text column was 570 px in
+  the middle of the screen, which the owner worried looked like "a narrow column in the middle".
+  The column's width comes from FR-072 (66ch, lines of at most about 75 characters), so the option
+  offered was larger text on wide screens. **Owner: larger desktop text.** From 75rem (1200 px) the
+  story's `<main>` is 18 px (`story.css`): the column grows to about 640 px with the same words per
+  line, the header's 66ch follows, and the smaller and label sizes become relative to the text there,
+  so "What I learned" isn't smaller than its words. Rem headings and the menu keep their sizes, so the
+  menu matches the other Running pages. Phones are unchanged. #136's box answered by this.
+- **2026-11-07** — **The story's chapters sit beside the text on a wide screen (owner), replacing the
+  narrow frame**. At 18 px (#137's first version) the owner still saw the same narrow column on a 14"
+  laptop (about 1650 px wide) and asked for something that works at every size. Two options rendered on
+  the live page at 1366, 1680 and 1920 px: A, text that grows with the screen (16 to 20 px, lines to
+  72ch; the column 40–52% of the screen); B, the chapter list open beside the text, sticky, with 18 px
+  text and the Running pages' usual 70rem frame. **Owner: B**, after seeing it on a local preview
+  ("that looks good!"). From 64rem `ChapterSidebar.astro` (a `<nav>` named "Chapters", first in the
+  source so Tab reaches it before the story) shows in a 15rem column beside the 66ch text, and the
+  closed list and "Back to chapters" are hidden; below 64rem nothing changes. #135's narrow frame
+  (`Base`'s `frame`, `--content-narrow`) is removed, so the menu no longer moves between Story and the
+  other Running pages; the shared files are back as they were before #135. Like the closed list, the
+  sidebar shows from four chapters: with fewer, a wide screen shows the column alone. FR-052 and
+  `contracts/routes.md` note the wide-screen form.
