@@ -2314,3 +2314,24 @@ end. Add each new decision as a dated entry at the end, as it's made.
   on #135's merge) measured every page type on the live site, the story included: all 100/100 for
   performance and accessibility, no script on any page, LCP 0.82–1.39 s; the story 0.92 s, 9.1 KB. The
   race page type is skipped until it's built. 003 T071's watch is done.
+- **2026-11-07** — **The CV comes next; the family-admin tool moves to its own repo** (owner answers,
+  two question rounds at session start):
+  - **Order:** the CV, then the family-admin tool, then the blog. The owner moved the CV first
+    (their priorities). The blog becomes its own spec (recommended option).
+  - **The family-admin tool goes in another repo, not this site**, so this constitution needs no
+    amendment for it: Principles V and VI stay. Both parents sign in with their own logins, and its
+    first slice is scheduling. Details in the agent's local memory.
+  - **A CV document first, the site page next** (recommended option): a Word and PDF CV, approved
+    line by line, then the CV page as its own spec, built from the approved text.
+  - **One single source of truth for the career** (the owner's idea): an exhaustive record that
+    feeds the CV document, the site's CV page and a LinkedIn profile. It lives in a **private repo**,
+    `alexwebber/career` (recommended option), so unapproved text and work sources never reach this
+    public repo (Principles VI and VIII). Only approved text comes here.
+  - **Sources:** work commit history, reviews and promotion documents, design docs, tickets and
+    talks, and the HR record and education, through briefs the owner runs with agents at work. The
+    owner expects them to be "quite bitty", so a **role-by-role interview** (recommended option)
+    builds the full story, as for the journey story.
+  - **Framing for the first CV:** "Engineering Leadership with specifics around agentic AP processes
+    and agentic software factory type stuff" (the owner's words; "AP" to be confirmed).
+  - **The CV page is unlisted at first** (recommended option): live at a link the owner shares, not
+    indexed and not linked from the site, until one switch makes it fully public.

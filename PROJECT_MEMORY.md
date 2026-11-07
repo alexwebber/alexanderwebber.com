@@ -12,10 +12,12 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
   page type. House-process 0.16.2 is installed. Open: 003's standing follow-ups (T090–T092, below).
-- **Next session:** `/session-start`, then **the next spec** (owner, 2026-11-01): the private
-  family-admin section (details in the agent's local memory). Start with a question round
-  (`speckit-house-process-question-round`), and raise first that it clashes with the constitution
-  (see *Spec order after 003* below): a constitution amendment, or a separate private app.
+- **Next session:** `/session-start`, then **the CV** (owner, 2026-11-07; the top priority, see
+  *Spec order* below). Carry on the role-by-role career interview, writing each answer into the
+  private career repo's `ssot.md` (`C:\Projects\career`, `alexwebber/career`, private). Fold in
+  whatever has arrived in `C:\temp\career-sources\` from the work briefs. Once every role is
+  covered, draft the CV document (Word and PDF) from the SSOT for the owner's approval.
+  Nothing from the career repo comes into this repo before the owner approves that exact text.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115; not replied as of 2026-11-07): when they reply,
     take their passage into the draft (`C:\temp\story-draft.md`), the owner approves the final text,
@@ -39,11 +41,14 @@ read on demand (search it for the topic at hand); this file keeps what's next an
     against FR-062 with them, `npm run add-chapter-photo`, and a fresh approval; **T092**, when the
     Martlets reviewers reply, that story extends `VOICE.md` (keep this until both stories have
     contributed).
-- **Spec order after 003** (owner, 2026-11-01): **a private family-admin section** (details in the
-  agent's local memory), then CV & Blog, which is parked. Before specifying it, raise that it
-  clashes with the constitution: the site has no logins (Principle V) and is public, repo included
-  (Principle VI), while that data is private and belongs to other people too. It needs a
-  constitution amendment, or a separate private app.
+- **Spec order** (owner, 2026-11-07, replacing 2026-11-01's): **1. the CV:** a CV document first,
+  drafted from a private single source of truth (`alexwebber/career`) that also feeds the site's CV
+  page and a LinkedIn profile; then the CV page as spec 004, unlisted at first. **2. the private
+  family-admin tool**, in its own repo, not this site (details in the agent's local memory).
+  **3. the blog**, its own spec.
+- **The career SSOT (private):** facts are marked `[draft]`, `[confirmed]` or `[approved]`, each with
+  its source; work sources come through the repo's `briefs/`, run by the owner at work, outputs in
+  `C:\temp\career-sources\` (raw files never committed anywhere). Its PRs follow the house rule.
 - **Standing notes:**
   - **Secrets from the owner** come through a local file outside the repo (`C:\temp\keys.txt`,
     `NAME: value` lines) that the agent passes to `gh secret set --body` and the user environment,
