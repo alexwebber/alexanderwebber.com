@@ -2331,7 +2331,12 @@ end. Add each new decision as a dated entry at the end, as it's made.
     talks, and the HR record and education, through briefs the owner runs with agents at work. The
     owner expects them to be "quite bitty", so a **role-by-role interview** (recommended option)
     builds the full story, as for the journey story.
-  - **Framing for the first CV:** "Engineering Leadership with specifics around agentic AP processes
-    and agentic software factory type stuff" (the owner's words; "AP" to be confirmed).
+  - **Framing for the first CV:** "Engineering Leadership with specifics around agentic AI processes
+    and agentic software factory type stuff" (the owner's words; "AP" in the answer was a typo for
+    AI, the owner confirmed).
   - **The CV page is unlisted at first** (recommended option): live at a link the owner shares, not
     indexed and not linked from the site, until one switch makes it fully public.
+- **2026-11-07** — **#139 merged** (the CV next; family-admin in its own repo): `after-merge` found
+  10 checks green, no boxes, and `main`'s Gate and deploy green (42371101843), with `/` and
+  `/running/` answering 200. The private career repo (`alexwebber/career`) was opened with the SSOT
+  skeleton, the work-source briefs and the first interview round (its PR #1).
