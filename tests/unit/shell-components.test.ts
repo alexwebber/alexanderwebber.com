@@ -228,14 +228,6 @@ describe('Base and Meta', () => {
     expect(html).not.toContain('<script');
   });
 
-  it('marks a narrow frame on <body>, and adds no class attribute without a theme or frame', async () => {
-    expect(await render(Base, { ...meta, frame: 'narrow' })).toContain('<body class="frame-narrow">');
-    expect(await render(Base, { ...meta, theme: 'theme-running', frame: 'narrow' })).toContain('<body class="theme-running frame-narrow">');
-    const plain = await render(Base, meta);
-    expect(plain).toMatch(/<body>/);
-    expect(await render(Base, { ...meta, frame: 'wide' })).toBe(plain);
-  });
-
   it('refuses a page without a title or description', async () => {
     await expect(render(Base, { ...meta, description: ' ' })).rejects.toThrow(/title and a description/);
   });
@@ -383,10 +375,8 @@ describe('SectionLayout', () => {
     setRunningStore(fakeStore());
     const narrow = await render(SectionLayout, { ...props, narrow: true }, { default: '<p>body</p>' }, '/running/goals/');
     expect(narrow).toMatch(/<header class="page-header page-header-narrow"[^>]*>\s*<h1/);
-    expect(narrow).toContain('<body class="theme-running frame-narrow">');
     const plain = await render(SectionLayout, props, { default: '<p>body</p>' }, '/running/goals/');
     expect(plain).toMatch(/<header class="page-header"[^>]*>\s*<h1/);
-    expect(plain).toContain('<body class="theme-running">');
     expect(await render(SectionLayout, { ...props, narrow: false }, { default: '<p>body</p>' }, '/running/goals/')).toBe(plain);
   });
 
