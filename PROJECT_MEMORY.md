@@ -7,24 +7,15 @@ read on demand (search it for the topic at hand); this file keeps what's next an
 
 ## Next session
 
-- **Status (2026-11-07):** Running (001), Fundraising (002) and the journey story (003) are live; 003's
-  live checks (T087) passed and its guided review (T088) is done. The fix from that review, the
-  story's title over its text column on a desktop, merged as #134; at the live check the owner chose
-  a narrower, centred frame for the story (#135, merged). #135's frame was too narrow for Linux fonts
-  (the menu wrapped in CI): 52rem instead (#136, merged). Then the owner chose 18 px text on wide
-  screens, then, seeing it still narrow, the chapter list beside the text on wide screens (the narrow
-  frame removed): both in the PR from branch `003-story-desktop-text` (#137).
-  The reader test (T089) was skipped by the owner.
-  House-process 0.16.2 is installed.
-- **Next session, first:** `/session-start`. Read the first nightly Quality run after #130 (scheduled
-  03:41 UTC, but these runs start around 11:30 UTC; the 7 Nov run is the first; since #133 merged the
-  `story` page type is measured too, so every page type should be within budget) and record it in
-  `DECISIONS.md`.
-- **If the desktop-text PR merged:** `/after-merge <pr> "--live=/running/story/=My running story"`,
-  then ask its box (does the story with its chapters beside it look right?) if unticked.
-- **Then, the next spec** (owner, 2026-11-01): the private family-admin section (details in the
-  agent's local memory). Start with a question round, and raise first that it clashes with the
-  constitution (see *Spec order after 003* below).
+- **Status (2026-11-07):** Running (001), Fundraising (002) and the journey story (003) are live, and
+  003's launch is done: live checks (T087), guided review (T088), reader test skipped (T089). The
+  review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
+  text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
+  page type. House-process 0.16.2 is installed. Open: 003's standing follow-ups (T090–T092, below).
+- **Next session:** `/session-start`, then **the next spec** (owner, 2026-11-01): the private
+  family-admin section (details in the agent's local memory). Start with a question round
+  (`speckit-house-process-question-round`), and raise first that it clashes with the constitution
+  (see *Spec order after 003* below): a constitution amendment, or a separate private app.
 - **Waiting on others** (ask at each session start until it happens):
   - **The Martlets story reviewers** (002 T113–T115; not replied as of 2026-11-07): when they reply,
     take their passage into the draft (`C:\temp\story-draft.md`), the owner approves the final text,

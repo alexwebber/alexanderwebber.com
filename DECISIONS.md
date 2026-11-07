@@ -2308,3 +2308,9 @@ end. Add each new decision as a dated entry at the end, as it's made.
   other Running pages; the shared files are back as they were before #135. Like the closed list, the
   sidebar shows from four chapters: with fewer, a wide screen shows the column alone. FR-052 and
   `contracts/routes.md` note the wide-screen form.
+- **2026-11-07** — **#137 merged and live; the first nightly Quality run with the story passed**.
+  `after-merge`: 11 checks green, its box ticked (the owner: the sidebar "looks good"), `main`'s Gate
+  and deploy green, the live story page with its sidebar. Quality's scheduled run (started 10:39 UTC,
+  on #135's merge) measured every page type on the live site, the story included: all 100/100 for
+  performance and accessibility, no script on any page, LCP 0.82–1.39 s; the story 0.92 s, 9.1 KB. The
+  race page type is skipped until it's built. 003 T071's watch is done.
