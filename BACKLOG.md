@@ -63,7 +63,8 @@ the decisions log in `DECISIONS.md` and remove it from here.
   setting a date (the scale from that day), and check figures against the scale of their `as_of`.
   Deferred: one scale so far, and the PR changing it is stopped by its own gate, not the live site.
 - **Training-run photos (Running)** — still deferred. Spec 003 adds photos in story chapters only.
-- **CV & Blog section** — phase 2, after Running.
+- **Blog section** — its own spec, after the CV page and the family-admin tool (owner, 2026-11-07).
+  The CV is next (see `PROJECT_MEMORY.md`).
 - **Report Spec Kit 1.1.0 Windows issue upstream?** — PowerShell scripts prefer `python3` even
   when it's the Microsoft Store stub, and need PyYAML installed. Worked around locally
   (disabled app execution aliases, `pip install --user pyyaml`).
