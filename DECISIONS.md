@@ -2278,3 +2278,11 @@ end. Add each new decision as a dated entry at the end, as it's made.
   screens. Built as `Base`'s `frame="narrow"` (`--content-narrow: 48rem`), set by `SectionLayout`'s
   `narrow`. A test holds the site name and menu to one line on the story page, so a new menu item
   that would wrap it asks for a decision. #134's box answered by this.
+- **2026-11-07** — **The story's frame is 52rem, not 48rem**. #135 merged with its `playwright` check
+  red, and its Gate and deploy green, so 48rem went live. The new check failed only on CI, on desktop:
+  the menu wrapped below the site name. Measured with the fonts injected into the live page, the site
+  name, menu and gutters need 45.6rem in Segoe UI (Windows), 45.2rem in Roboto (Android) and 51.1rem in
+  DejaVu Sans (CI's Linux, and Linux desktops). `--content-narrow` is now 52rem, and all three fonts
+  keep one line. The column still centres; the gap right of the text inside the frame grows by about
+  64 px. `pr-ready` missed it because it treated a merged PR as "no PR yet"; it now reads the checks
+  of a PR merged at the current commit.
