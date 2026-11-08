@@ -202,6 +202,9 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - **Owner preference:** for data from an employer's systems, the agent gives what it needs back (the
   output's headings and confidentiality rules) and an example prompt; the owner adapts the prompt and
   decides what runs with company access (career briefs, 2026-11-07).
+- **Owner preference, interviews:** research the public facts (company history, products, terms)
+  before asking and bring them for confirmation; ask only what only the owner knows. For a career
+  story, rough eras beat exact dates (career interview, 2026-11-08).
 
 ## Open questions
 
