@@ -183,6 +183,10 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
   another worked in the same checkout. The side session works in a `git worktree` from `origin/main`
   with a `node_modules` junction, so neither switches the other's branch; it edits only the parts of
   `PROJECT_MEMORY.md` the other branch doesn't touch (2026-11-10).
+- A chart's `nowrap` axis labels count towards its minimum width, so the bot's weekly data changed
+  which dates showed and widened the landing page by half a pixel at 320 px under Linux's font: red
+  `playwright` on an unrelated text PR (#141). `contain: inline-size` on the label cells keeps
+  labels out of the minimum width. Data-driven text needs the same care as fixed text (2026-11-10).
 - A test that plants files into a copy of the real data must set aside and restore what was there,
   not delete the folder afterwards: it passed while the folder was empty, and broke the next test
   once the content PR filled it with real files (`scratch-site.test.ts`, 2026-11-06).
