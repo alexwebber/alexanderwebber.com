@@ -1,0 +1,18 @@
+# The Brighton 2027 campaign's story (schemas/owner/campaign-story.schema.json): the owner's approved
+# text, word for word. The passage about Eileen is her family's, in their words. Any change to the
+# text needs a fresh approval (npm run approve-story brighton-2027), and the JustGiving page must
+# carry the same text (FR-054).
+campaign: brighton-2027
+text: |
+  On 4 April 2027 I'm running the Brighton Marathon, my first, to raise money for Martlets, the hospice in Hove, in memory of Eileen Melville.
+
+  Eileen was the much-loved mother of my brother-in-law Ross and his brother Calum. She lived with stage 4 oesophageal cancer for three years, keeping her humour and joy until the very end, and spent her final weeks at Martlets, surrounded by love and visitors every day.
+
+  The care she received there was outstanding. Every person she met was kind and deeply human, and at the hardest time of her life it was a calm, peaceful place for her and everyone who loved her.
+
+  That's the care Martlets gives every day to people with life-limiting illnesses across Brighton and Hove. Martlets survives on charitable donations: it costs almost £12 million a year to run the hospice, and its NHS grant covers only around 22% of that. Donations from people like you are its most important source of income.
+
+  Every donation, whatever its size, helps Martlets keep caring for people the way they cared for Eileen. Thank you so much for your support.
+approved:
+  date: 2026-11-10
+  text_sha256: e913f6aa226abc788cd4f477ee36a4fc6f6195cb837fb291ad94c369c7ffc83e

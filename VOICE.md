@@ -9,6 +9,24 @@ private facts, no quotes from drafts, no names.
 
 - **The journey story** (spec 003, approved 4 and 6 Nov 2026): nine chapters, a closing section, the
   "not medical advice" note and the page's wording.
+- **The Martlets fundraising story** (spec 002, approved 10 Nov 2026): the "Why I'm running for
+  Martlets" text on the fundraising page and JustGiving, written with the family it remembers.
+
+## Writing about someone else's story
+
+- **A personal passage is written by the people it belongs to.** When a story is about someone else's
+  family, the agent drafts only the frame (the race, the charity, the facts and figures, the thanks) and
+  leaves a marked placeholder with the points to cover. The family writes the passage in their own
+  words, and it isn't polished afterwards beyond a missing full stop.
+- **Their edits to the frame are kept too.** The family reworded the line after their passage so it
+  followed on from it, and the frame took their version. Their text leads; the frame fits around it.
+- **It's about the cause, not about him.** Alex kept his own fitness journey out of the fundraising
+  story: one line on the race and that it's his first, then the person and the charity.
+- **Facts about the charity come from the charity**, quoted from its own pages and re-checked the day
+  before publishing, with no figure the source doesn't state.
+- **Ask about names and links that drop out.** Before approval, check with Alex whether the text may
+  name family members publicly, and whether a link the draft made (why this race) was dropped on
+  purpose. Once both were confirmed, the family's version stood.
 
 ## Tone
 

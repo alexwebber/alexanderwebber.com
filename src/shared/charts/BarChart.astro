@@ -133,10 +133,15 @@ const height = (value: number) => percent(PLOT - y(Math.max(0, value)));
     transform: none;
   }
 
+  /* contain: a label's width mustn't count towards the chart's minimum width, or the week's dates
+     can widen the column that holds the chart: today's labels did, by half a pixel at 320px under
+     Linux's DejaVu Sans. Labels are thinned, so each still has room to spill into its empty
+     neighbours, as it already did. */
   .bar-labels li {
     padding-top: var(--space-1);
     white-space: nowrap;
     overflow: visible;
+    contain: inline-size;
   }
 
   /* The same for the last column's label: a minor one is only visibility-hidden, so it still widens the page. */

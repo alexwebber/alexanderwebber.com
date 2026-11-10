@@ -18,15 +18,12 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   whatever has arrived in `C:\temp\career-sources\` from the work briefs. Once every role is
   covered, draft the CV document (Word and PDF) from the SSOT for the owner's approval.
   Nothing from the career repo comes into this repo before the owner approves that exact text.
-- **Waiting on others** (ask at each session start until it happens):
-  - **The Martlets story reviewers** (002 T113–T115; not replied as of 2026-11-07): when they reply,
-    take their passage into the draft (`C:\temp\story-draft.md`), the owner approves the final text,
-    then extend `VOICE.md` (lessons so far: personal or family passages are written by the people
-    they belong to, and the agent's draft covers framing and facts; the owner keeps their own fitness
-    journey out of it). Re-check Martlets' figures (almost £12 million a year, NHS grant around 22%,
-    https://www.martlets.org.uk/give-in-your-will/) before committing. Commit the approved story and
-    `VOICE.md` in a PR; the owner pastes the story into JustGiving and may retitle the page after
-    it. Nothing from the draft goes in the repo, PRs or commit messages before approval.
+- **The Martlets story** (002 T114): the family's text came in and the owner approved it on
+  2026-11-10; it's in its own PR (branch `content-martlets-story`) with `VOICE.md`. Once that PR
+  merges and deploys (`/after-merge`), confirm https://alexanderwebber.com/running/fundraising/ shows
+  exactly the approved text, then guide the owner through pasting it into JustGiving and, if they
+  wish, retitling the page "Running Brighton for Martlets, in memory of Eileen" (FR-054). Then tick
+  T114 and remove this note.
 - **At reviews** (fold in, never as chores):
   - Offer a fresh Garmin training-status and predictions reading.
   - 002 T118 (to about 1 Dec 2026): note donation times the owner mentions, to compare with the
@@ -38,9 +35,8 @@ read on demand (search it for the topic at hand); this file keeps what's next an
     `C:\temp\journey-wording-draft.md`. Words the owner cut stay out of the repo for good.
   - **Standing follow-ups after launch** (event-triggered; T090, a new chapter after Brighton, is in
     `process/triggers.yaml`): **T091**, whenever the owner wants photos in a chapter, check each
-    against FR-062 with them, `npm run add-chapter-photo`, and a fresh approval; **T092**, when the
-    Martlets reviewers reply, that story extends `VOICE.md` (keep this until both stories have
-    contributed).
+    against FR-062 with them, `npm run add-chapter-photo`, and a fresh approval. (T092 is done: the
+    Martlets story extended `VOICE.md`, 2026-11-10.)
 - **Spec order** (owner, 2026-11-07, replacing 2026-11-01's): **1. the CV:** a CV document first,
   drafted from a private single source of truth (`alexwebber/career`) that also feeds the site's CV
   page and a LinkedIn profile; then the CV page as spec 004, unlisted at first. **2. the private
@@ -183,6 +179,14 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
   `astro/tsconfigs/strict` by walking up to `node_modules`. Add a junction to the repo's
   `node_modules` (`mklink /J`), and remove it on its own (`cmd /c rmdir`) before deleting the copy,
   so a recursive delete can't reach the repo's packages (003 T080, 2026-11-06).
+- **Two sessions at once:** the owner ran a side task (the Martlets story) in one session while
+  another worked in the same checkout. The side session works in a `git worktree` from `origin/main`
+  with a `node_modules` junction, so neither switches the other's branch; it edits only the parts of
+  `PROJECT_MEMORY.md` the other branch doesn't touch (2026-11-10).
+- A chart's `nowrap` axis labels count towards its minimum width, so the bot's weekly data changed
+  which dates showed and widened the landing page by half a pixel at 320 px under Linux's font: red
+  `playwright` on an unrelated text PR (#141). `contain: inline-size` on the label cells keeps
+  labels out of the minimum width. Data-driven text needs the same care as fixed text (2026-11-10).
 - A test that plants files into a copy of the real data must set aside and restore what was there,
   not delete the folder afterwards: it passed while the folder was empty, and broke the next test
   once the content PR filled it with real files (`scratch-site.test.ts`, 2026-11-06).
