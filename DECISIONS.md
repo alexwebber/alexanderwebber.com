@@ -2340,3 +2340,18 @@ end. Add each new decision as a dated entry at the end, as it's made.
   10 checks green, no boxes, and `main`'s Gate and deploy green (42371101843), with `/` and
   `/running/` answering 200. The private career repo (`alexwebber/career`) was opened with the SSOT
   skeleton, the work-source briefs and the first interview round (its PR #1).
+- **2026-11-10** — **The Martlets story is live (#141 merged; 002 T113–T115, 003 T092).** The family
+  sent their passage, and the owner approved the full text the same day, after confirming two things:
+  the family's names may appear publicly (on the site and in this public repo), and the dropped line
+  about Brighton being her home was the family's choice. Martlets' figures were re-read on its site
+  that day. `after-merge` found 11 checks green, the box ticked, and `main`'s Gate and deploy green
+  (42817459398). The live page's story matched the approved text paragraph for paragraph. The owner
+  then pasted it into JustGiving and retitled the page. The PR also fixed a 1 px sideways scroll at
+  320 px on `/running/` (bar-chart labels widening the chart under Linux's font; `contain:
+  inline-size`).
+  - **An anonymised story example may be kept for the eval suite** (owner, ticked in #141;
+    recommended option): the points the draft asked for, the draft and the approved text, names
+    removed, become the first example pair for the drafting eval suite (Principle II(b)) when the
+    CV & Blog work specifies it. Until then the draft stays in `C:\temp\story-draft.md`.
+  - **The JustGiving photo is the owner's call with the family**: a photo of the owner is the usual
+    choice; the family may prefer one of the person the page remembers. It doesn't touch the site.
