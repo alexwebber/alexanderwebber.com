@@ -83,3 +83,11 @@ the decisions log in `DECISIONS.md` and remove it from here.
   layout check can break on bot-published data and stay unseen until the next such PR (PR #85's
   320 px overflow). Add a small overflow check at 320 px to the nightly Quality run, against the
   live pages. Deferred to keep the fundraising slice focused.
+- **Lighter checks for text-only changes** (owner, 2026-11-10). The approved Martlets story, one
+  YAML file of text, ran the full PR routine: both Playwright projects over every page and two
+  deploy builds for the dist/ comparison, about ten minutes. Look at which checks a change to
+  owner text can actually break (its schema, the approval hash, the privacy scan, the one page that
+  shows it) and scope `pr-ready --suites` and the PR's CI jobs by path to match, perhaps one
+  Playwright spec for the page instead of all of them. Weigh it against what the full run has
+  caught (Linux-font layout breaks from content, #135/#137) before cutting anything. Deferred: the
+  owner wanted the story shipped in its own session.
