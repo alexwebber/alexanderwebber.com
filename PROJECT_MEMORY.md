@@ -18,12 +18,9 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   whatever has arrived in `C:\temp\career-sources\` from the work briefs. Once every role is
   covered, draft the CV document (Word and PDF) from the SSOT for the owner's approval.
   Nothing from the career repo comes into this repo before the owner approves that exact text.
-- **The Martlets story** (002 T114): the family's text came in and the owner approved it on
-  2026-11-10; it's in its own PR (branch `content-martlets-story`) with `VOICE.md`. Once that PR
-  merges and deploys (`/after-merge`), confirm https://alexanderwebber.com/running/fundraising/ shows
-  exactly the approved text, then guide the owner through pasting it into JustGiving and, if they
-  wish, retitling the page "Running Brighton for Martlets, in memory of Eileen" (FR-054). Then tick
-  T114 and remove this note.
+- **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
+  work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
+  the draft is in `C:\temp\story-draft.md`).
 - **At reviews** (fold in, never as chores):
   - Offer a fresh Garmin training-status and predictions reading.
   - 002 T118 (to about 1 Dec 2026): note donation times the owner mentions, to compare with the
