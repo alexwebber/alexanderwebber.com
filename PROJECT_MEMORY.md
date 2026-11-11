@@ -12,12 +12,18 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
   page type. House-process 0.16.2 is installed. Open: 003's standing follow-ups (T090–T092, below).
-- **Next session:** `/session-start`, then **the CV** (owner, 2026-11-07; the top priority, see
-  *Spec order* below). Carry on the role-by-role career interview, writing each answer into the
-  private career repo's `ssot.md` (`C:\Projects\career`, `alexwebber/career`, private). Fold in
-  whatever has arrived in `C:\temp\career-sources\` from the work briefs. Once every role is
-  covered, draft the CV document (Word and PDF) from the SSOT for the owner's approval.
-  Nothing from the career repo comes into this repo before the owner approves that exact text.
+- **Career record (2026-11-11):** career#4 and #5 merged. The work sources are all in: the commit
+  history, the agentic-platform summary and five years of reviews (`C:\temp\career-sources\`).
+  Brief 02 won't be run, and nothing more is needed from work systems. The 2025/26 mid-year review
+  PDF is cut off; ask the owner for a fuller export only if it might add something.
+- **Next session:** `/session-start`, then **the CV** (the top priority, see *Spec order* below).
+  Pull `C:\Projects\career` first. Finish the interview in `ssot.md` (its *Open questions*): the
+  Platform Team's creation, the Azure migration, the event-driven move (the reviews already cover
+  much of it), and what can be said about incidents. Research public facts first and ask only what
+  only the owner knows (`speckit-house-process-tips-owner-content`). Then draft the CV document (Word
+  and PDF, the `docx` skill) from the SSOT, starting from its *Rules for anything outside this repo*,
+  for the owner's approval. Nothing from the career repo comes into this repo before the owner
+  approves that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
   the draft is in `C:\temp\story-draft.md`).
@@ -193,6 +199,24 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - Before pushing a layout sized from measured widths (a frame, a grid track), measure it under DejaVu
   Sans too (injected from jsdelivr, as tips-testing says): twice in one day a layout fitted Windows'
   Segoe UI and failed CI's Linux font by a few pixels (#135's menu, #137's grid, 2026-11-07).
+- In Windows PowerShell 5.1, a `gh pr edit --body @'...'@` whose text holds double quotes fails
+  ("accepts at most 1 arg(s), received 5"): 5.1 splits a native argument at embedded quotes. Write the
+  body to a scratchpad file and pass `--body-file` (career#1, 2026-11-07).
+- `gh repo create --clone` clones into the current folder even when a clone path is also attempted
+  after it, so it left an empty nested clone inside the site repo: create without `--clone`, then
+  `gh repo clone <repo> <path>` (2026-11-07).
+- **Owner preference:** for data from an employer's systems, the agent gives what it needs back (the
+  output's headings and confidentiality rules) and an example prompt; the owner adapts the prompt and
+  decides what runs with company access (career briefs, 2026-11-07).
+- **Owner preference, interviews:** research the public facts (company history, products, terms)
+  before asking and bring them for confirmation; ask only what only the owner knows. For a career
+  story, rough eras beat exact dates (career interview, 2026-11-08).
+- On Windows without poppler, the Read tool can't render a PDF page (no `pdftoppm`), and
+  `pdftotext` drops a form's selected options (the scores). `pip install --target <scratchpad>
+  pymupdf` and a small script that renders the pages to PNG worked (career reviews, 2026-11-11).
+- **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
+  "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
+  other agent to fill gaps (career brief 04, 2026-11-11).
 
 ## Open questions
 

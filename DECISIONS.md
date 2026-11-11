@@ -2340,6 +2340,9 @@ end. Add each new decision as a dated entry at the end, as it's made.
   10 checks green, no boxes, and `main`'s Gate and deploy green (42371101843), with `/` and
   `/running/` answering 200. The private career repo (`alexwebber/career`) was opened with the SSOT
   skeleton, the work-source briefs and the first interview round (its PR #1).
+- **2026-11-07** — **#140 merged** (the CV framing's "AP" was a typo for AI): `after-merge` found 10
+  checks green, no boxes, and `main`'s Gate and deploy green (42372054822), with `/` and `/running/`
+  answering 200.
 - **2026-11-10** — **The Martlets story is live (#141 merged; 002 T113–T115, 003 T092).** The family
   sent their passage, and the owner approved the full text the same day, after confirming two things:
   the family's names may appear publicly (on the site and in this public repo), and the dropped line
@@ -2355,3 +2358,12 @@ end. Add each new decision as a dated entry at the end, as it's made.
     CV & Blog work specifies it. Until then the draft stays in `C:\temp\story-draft.md`.
   - **The JustGiving photo is the owner's call with the family**: a photo of the owner is the usual
     choice; the family may prefer one of the person the page remembers. It doesn't touch the site.
+- **2026-11-11** — **The career record's work sources are complete** (private repo, career#4 and
+  #5 merged). The owner's choices: brief 04 became a general summary of two named repos, at the
+  owner's suggestion, because specific headings invite the other agent to fill gaps; brief 02 isn't
+  run (it would add nothing); the CV mention was removed from the prompt; and nothing is pulled from
+  the main project of 2026, which is a company project. Interview rounds 4 and 5 settled how the
+  platform work is described (built alone; a trust ladder with its first stage delegated;
+  retrospectives feeding a lessons register; results shown qualitatively plus the owner's own
+  observation). The owner's reviews came in as files and stay outside every repo. No subagents ran;
+  the session's cost was the main conversation only.
