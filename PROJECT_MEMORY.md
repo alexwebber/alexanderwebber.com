@@ -214,6 +214,8 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - On Windows without poppler, the Read tool can't render a PDF page (no `pdftoppm`), and
   `pdftotext` drops a form's selected options (the scores). `pip install --target <scratchpad>
   pymupdf` and a small script that renders the pages to PNG worked (career reviews, 2026-11-11).
+- `jq` isn't installed in this machine's Git Bash, so a checks-wait loop built on it failed silently
+  every poll: use `gh pr checks --json ... --jq` instead, and make a wait loop fail loudly (#143, 2026-11-11).
 - **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
   "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
   other agent to fill gaps (career brief 04, 2026-11-11).
