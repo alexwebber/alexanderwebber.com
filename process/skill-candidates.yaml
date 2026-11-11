@@ -32,3 +32,9 @@
   times: 1
   home: project
   next: the Martlets story PR (002 T113-T115, 003 T092)
+- task: Brief for another agent with access the project lacks (what I need back, confidentiality rules, a general example prompt that reports only what's there, pasted into the chat)
+  times: 2
+  home: playbook
+- task: Folding a source into a private record (copy to sources/, internal names and colleagues kept out, quotes checked word for word, verbs checked, private terms added)
+  times: 3
+  home: project
