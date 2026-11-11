@@ -205,6 +205,9 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - **Owner preference, interviews:** research the public facts (company history, products, terms)
   before asking and bring them for confirmation; ask only what only the owner knows. For a career
   story, rough eras beat exact dates (career interview, 2026-11-08).
+- **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
+  "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
+  other agent to fill gaps (career brief 04, 2026-11-11).
 
 ## Open questions
 
