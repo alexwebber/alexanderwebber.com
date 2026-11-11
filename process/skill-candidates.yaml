@@ -38,3 +38,7 @@
 - task: Folding a source into a private record (copy to sources/, internal names and colleagues kept out, quotes checked word for word, verbs checked, private terms added)
   times: 3
   home: project
+- task: Owner document drafted from a private SSOT (Word built by a docx-js script, PDF through Word COM, pages rendered with PyMuPDF and looked at, open choices highlighted, each fact's verb checked against the SSOT)
+  times: 1
+  home: playbook
+  next: the LinkedIn profile, after the CV is approved

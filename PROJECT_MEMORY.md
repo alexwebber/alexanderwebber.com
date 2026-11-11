@@ -12,18 +12,19 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
   page type. House-process 0.16.2 is installed. Open: 003's standing follow-ups (T090–T092, below).
-- **Career record (2026-11-11):** career#4 and #5 merged. The work sources are all in: the commit
-  history, the agentic-platform summary and five years of reviews (`C:\temp\career-sources\`).
-  Brief 02 won't be run, and nothing more is needed from work systems. The 2025/26 mid-year review
-  PDF is cut off; ask the owner for a fuller export only if it might add something.
-- **Next session:** `/session-start`, then **the CV** (the top priority, see *Spec order* below).
-  Pull `C:\Projects\career` first. Finish the interview in `ssot.md` (its *Open questions*): the
-  Platform Team's creation, the Azure migration, the event-driven move (the reviews already cover
-  much of it), and what can be said about incidents. Research public facts first and ask only what
-  only the owner knows (`speckit-house-process-tips-owner-content`). Then draft the CV document (Word
-  and PDF, the `docx` skill) from the SSOT, starting from its *Rules for anything outside this repo*,
-  for the owner's approval. Nothing from the career repo comes into this repo before the owner
-  approves that exact text.
+- **Career record (2026-11-11):** the interview is complete (round 6 in career#6: check it merged).
+  Work sources are in `C:\temp\career-sources\`; nothing more is needed from work systems.
+- **The CV draft (2026-11-11)** is at `C:\temp\cv\Alexander-Webber-CV-draft.docx` and `.pdf`, two
+  pages, with open choices highlighted in yellow. It's rebuilt from `C:\temp\cv\build.js` (`node
+  build.js <out.docx>` in a folder with `docx@9` installed), `topdf.ps1` (Word COM) and `render.py`
+  (PyMuPDF, `pip install --target <scratchpad> pymupdf`) to look at the pages. It's awaiting the
+  owner's read-through. Each edit goes into the SSOT (marked `[approved]`) and the CV-relevant
+  style lessons into `VOICE.md`.
+- **Next session:** `/session-start`, then, unless the owner reviewed the CV in the last session,
+  ask for the read-through and apply it. Then the **Spec Kit 1.4.0 upgrade** (core release, found
+  2026-11-11; `speckit-house-process-upgrade-speckit`) as its own short session. After the CV is
+  approved: the LinkedIn profile from the same SSOT, then the CV page as spec 004 (see *Spec order*).
+  Nothing from the career repo comes into this repo before the owner approves that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
   the draft is in `C:\temp\story-draft.md`).
@@ -216,6 +217,9 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
   pymupdf` and a small script that renders the pages to PNG worked (career reviews, 2026-11-11).
 - `jq` isn't installed in this machine's Git Bash, so a checks-wait loop built on it failed silently
   every poll: use `gh pr checks --json ... --jq` instead, and make a wait loop fail loudly (#143, 2026-11-11).
+- The `docx` skill's checks assume LibreOffice and poppler, which this Windows machine lacks. Word is
+  installed: `Documents.Open(...).ExportAsFixedFormat(out, 17)` over COM made the PDF, and PyMuPDF
+  (installed with `--target` into the scratchpad) rendered its pages to PNG (the CV draft, 2026-11-11).
 - **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
   "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
   other agent to fill gaps (career brief 04, 2026-11-11).
