@@ -2367,3 +2367,13 @@ end. Add each new decision as a dated entry at the end, as it's made.
   retrospectives feeding a lessons register; results shown qualitatively plus the owner's own
   observation). The owner's reviews came in as files and stay outside every repo. No subagents ran;
   the session's cost was the main conversation only.
+- **2026-11-11** — **#143 merged** (the CV session's notes and handoff): `after-merge` found 10
+  checks green, no boxes, and `main`'s Gate and deploy green (43054716412), with `/` and `/running/`
+  answering 200.
+- **2026-11-11** — **The CV's career interview is complete** (round 6, career#6), and the first CV
+  draft is written for the owner's read-through (outside every repo). Settled with the owner: the CV
+  names no internal systems (they're described generically); software-factory will go public once
+  the owner has evolved it with another project, after an agent privacy pass, so until then the CV
+  describes it without a link; incidents get one generic line. Spec Kit 1.4.0 (core) is next as its
+  own short session; Astro 7.4.8 to 7.4.10 and maplibre-gl 6.17.0 were skipped as routine (no
+  security fixes). No subagents ran beyond one failed page fetch.
