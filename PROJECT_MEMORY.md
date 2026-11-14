@@ -22,11 +22,12 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   from the private repo `alexwebber/hq` (`C:\Projects\hq`, set up 2026-11-14), not this site. This
   repo is one stream among several (HQ's *maintenance* and, later, the CV page and blog). A session
   on any other stream opens in `C:\Projects\hq`.
-- **Next session (here):** `/session-start`, then the **Spec Kit 1.4.0 upgrade**
-  (`speckit-house-process-upgrade-speckit`) on the default model, as the first test of working in
-  parallel with an HQ session. In the same PR, check astro 7.4.12 and maplibre-gl 6.18.0 for
-  security fixes and adopt them if they have any. Nothing from the career repo comes into this repo
-  before the owner approves that exact text.
+- **Next session (here):** nothing is waiting in this repo. Spec Kit 1.4.0 is in (#146, run in a
+  second session alongside the HQ set-up: the first parallel run worked). astro 7.4.12 and
+  maplibre-gl 6.18.0 are routine bumps (no security alert names them): skipped. The next dated work
+  is the goals follow-up on 2026-11-19 (`process/triggers.yaml`). Until then, sessions open in
+  `C:Projectshq`. Nothing from the career repo comes into this repo before the owner approves
+  that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
   the draft is in `C:\temp\story-draft.md`).
