@@ -226,6 +226,11 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
   works. Several workstreams run in parallel sessions, coordinated from one private control-tower repo
   (a register of streams, briefs, nudges), and the agent drives them, pushing him to act. A candidate for
   the house process once it has been tried.
+- **Owner preference, cloud sessions** (2026-11-14): the owner works locally mainly because the lesson
+  harvest and retros (which write to software-factory, another repo) don't work from a cloud session.
+  He'd rather use cloud sessions: his laptop isn't powerful, and they cost nothing extra. Find a way to
+  keep improving software-factory from each session's lessons without a local session (part of the
+  HQ set-up).
 - **Owner preference, costs** (2026-11-14): watch the cost of AI usage (a strategy for the plan and the
   model mix, near the plan's limits) and of every service, with a daily spend view and spending limits
   and alerts wherever a provider offers them. A candidate for the house process's checks.
