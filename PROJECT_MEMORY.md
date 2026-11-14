@@ -189,6 +189,11 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
   another worked in the same checkout. The side session works in a `git worktree` from `origin/main`
   with a `node_modules` junction, so neither switches the other's branch; it edits only the parts of
   `PROJECT_MEMORY.md` the other branch doesn't touch (2026-11-10).
+- `upgrade-speckit.ps1` wants to run from `main` and switch that checkout to its own branch, which
+  would move a parallel session's branch. Run it with `-ProjectDir` on a worktree made with
+  `git worktree add -b chore-speckit-<version> <path> origin/main`: it works, but warns that a
+  hand-made branch "is usually left empty". The script (and the skill) could accept a fresh worktree
+  without the warning (Spec Kit 1.4.0, 2026-11-14).
 - A chart's `nowrap` axis labels count towards its minimum width, so the bot's weekly data changed
   which dates showed and widened the landing page by half a pixel at 320 px under Linux's font: red
   `playwright` on an unrelated text PR (#141). `contain: inline-size` on the label cells keeps

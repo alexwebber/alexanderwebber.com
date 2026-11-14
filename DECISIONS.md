@@ -2386,3 +2386,13 @@ end. Add each new decision as a dated entry at the end, as it's made.
   Costs get attention too: a strategy for AI usage, and a daily spend view with limits and alerts for
   the services in use, tracked from the new repo. Details stay private (the career SSOT, the agent's
   local memory).
+- **2026-11-14** — **Spec Kit 1.4.0 installed** (`upgrade-speckit.ps1`, from 1.3.2, skipping nothing:
+  1.3.3's fixes come with it). Neither release breaks anything the house preset or extension
+  overrides: 1.3.3 is preset-removal and workflow fixes, 1.4.0 hardens file and URL handling, adds
+  workflow pipe filters and maps reasoning effort for Claude Code workflow steps (we use no Spec Kit
+  workflows). The diff here is version stamps and install times only: every skill, script and
+  template is unchanged apart from line endings. `extensions.yml` unchanged (reordered only, backup
+  restored); git extension 1.0.4, house-process 0.16.2 and house-constitution 0.1.2 stay; the
+  constitution template still resolves to the house preset. Run in its own worktree
+  (`C:\Projects\alexanderwebber.com-speckit`) so the parallel HQ session's checkout kept its branch:
+  the first test of two sessions at once.
