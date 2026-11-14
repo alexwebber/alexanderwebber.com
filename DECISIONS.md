@@ -2377,3 +2377,12 @@ end. Add each new decision as a dated entry at the end, as it's made.
   describes it without a link; incidents get one generic line. Spec Kit 1.4.0 (core) is next as its
   own short session; Astro 7.4.8 to 7.4.10 and maplibre-gl 6.17.0 were skipped as routine (no
   security fixes). No subagents ran beyond one failed page fetch.
+- **2026-11-14** — **The CV becomes three outputs, and the work goes parallel.** The owner read the
+  first draft's open points: the CV will be a single-page, visual hard copy with a plain twin for job
+  sites, an interactive CV on this site (spec 004) that the hard copy links to, and a LinkedIn
+  profile, all from the private SSOT, content first and then the redesign. He also asked to run
+  several workstreams in parallel, coordinated from a new private repo rather than this one; the next
+  session sets it up, with this repo's Spec Kit 1.4.0 upgrade in a second session as the first test.
+  Costs get attention too: a strategy for AI usage, and a daily spend view with limits and alerts for
+  the services in use, tracked from the new repo. Details stay private (the career SSOT, the agent's
+  local memory).

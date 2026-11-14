@@ -12,6 +12,10 @@
     windows end 16 and 18 Nov) and set featured_goal_limit back to 7.
 - due: 2026-11-23
   task: >-
+    Career: ask the owner for the material he planned to bring after the week of 16 Nov (see the
+    private career SSOT, *Contact and job search*), and re-check its *Rules* with him.
+- due: 2026-11-23
+  task: >-
     001 T149 (SC-002 follow-up, 30 days after go-live): from `gh run list --workflow refresh.yml`,
     how often a synced run appears within 3 h (target >= 95%). Details in 001's tasks.md.
 - due: 2026-12-01

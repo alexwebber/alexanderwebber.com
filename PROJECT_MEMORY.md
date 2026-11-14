@@ -12,19 +12,21 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
   page type. House-process 0.16.2 is installed. Open: 003's standing follow-ups (T090–T092, below).
-- **Career record (2026-11-11):** the interview is complete (round 6 in career#6: check it merged).
-  Work sources are in `C:\temp\career-sources\`; nothing more is needed from work systems.
-- **The CV draft (2026-11-11)** is at `C:\temp\cv\Alexander-Webber-CV-draft.docx` and `.pdf`, two
-  pages, with open choices highlighted in yellow. It's rebuilt from `C:\temp\cv\build.js` (`node
-  build.js <out.docx>` in a folder with `docx@9` installed), `topdf.ps1` (Word COM) and `render.py`
-  (PyMuPDF, `pip install --target <scratchpad> pymupdf`) to look at the pages. It's awaiting the
-  owner's read-through. Each edit goes into the SSOT (marked `[approved]`) and the CV-relevant
-  style lessons into `VOICE.md`.
-- **Next session:** `/session-start`, then, unless the owner reviewed the CV in the last session,
-  ask for the read-through and apply it. Then the **Spec Kit 1.4.0 upgrade** (core release, found
-  2026-11-11; `speckit-house-process-upgrade-speckit`) as its own short session. After the CV is
-  approved: the LinkedIn profile from the same SSOT, then the CV page as spec 004 (see *Spec order*).
-  Nothing from the career repo comes into this repo before the owner approves that exact text.
+- **Career and CV (2026-11-14):** career#6 and #7 hold the interview and the owner's notes on the
+  first draft (`C:\temp\cv\`, a content draft only). The CV becomes three outputs from the SSOT: a
+  single-page visual hard copy with a plain twin for job sites, the site's interactive CV (spec 004)
+  and LinkedIn. Content first, then the redesign. A trigger (2026-11-23) reminds the agent to ask for
+  the material the owner will bring after next week. The draft is rebuilt with `C:\temp\cv\build.js`
+  (`docx@9`), `topdf.ps1` (Word COM) and `render.py` (PyMuPDF).
+- **Parallel workstreams (owner, 2026-11-14):** the owner wants several workstreams to run side by side
+  while he works, coordinated from a new private repo (`alexwebber/hq`), not this site. This repo
+  becomes one stream among several. The plan and the streams are in the agent's local memory and
+  `C:\temp\hq-seed.md` (private).
+- **Next session:** `/session-start`, then **set up HQ** from `C:\temp\hq-seed.md` (a question round
+  first; its most urgent stream goes to the top). Alongside it, in a **second session**, the **Spec
+  Kit 1.4.0 upgrade** here (`speckit-house-process-upgrade-speckit`), as the first test of working in
+  parallel. Nothing from the career repo comes into this repo before the owner approves that exact
+  text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
   the draft is in `C:\temp\story-draft.md`).
@@ -220,6 +222,13 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - The `docx` skill's checks assume LibreOffice and poppler, which this Windows machine lacks. Word is
   installed: `Documents.Open(...).ExportAsFixedFormat(out, 17)` over COM made the PDF, and PyMuPDF
   (installed with `--target` into the scratchpad) rendered its pages to PNG (the CV draft, 2026-11-11).
+- **Owner preference, parallel work** (2026-11-14): the owner doesn't want to down tools while the agent
+  works. Several workstreams run in parallel sessions, coordinated from one private control-tower repo
+  (a register of streams, briefs, nudges), and the agent drives them, pushing him to act. A candidate for
+  the house process once it has been tried.
+- **Owner preference, costs** (2026-11-14): watch the cost of AI usage (a strategy for the plan and the
+  model mix, near the plan's limits) and of every service, with a daily spend view and spending limits
+  and alerts wherever a provider offers them. A candidate for the house process's checks.
 - **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
   "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
   other agent to fill gaps (career brief 04, 2026-11-11).
