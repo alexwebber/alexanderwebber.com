@@ -18,15 +18,15 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   and LinkedIn. Content first, then the redesign. A trigger (2026-11-23) reminds the agent to ask for
   the material the owner will bring after next week. The draft is rebuilt with `C:\temp\cv\build.js`
   (`docx@9`), `topdf.ps1` (Word COM) and `render.py` (PyMuPDF).
-- **Parallel workstreams (owner, 2026-11-14):** the owner wants several workstreams to run side by side
-  while he works, coordinated from a new private repo (`alexwebber/hq`), not this site. This repo
-  becomes one stream among several. The plan and the streams are in the agent's local memory and
-  `C:\temp\hq-seed.md` (private).
-- **Next session:** `/session-start`, then **set up HQ** from `C:\temp\hq-seed.md` (a question round
-  first; its most urgent stream goes to the top). Alongside it, in a **second session**, the **Spec
-  Kit 1.4.0 upgrade** here (`speckit-house-process-upgrade-speckit`), as the first test of working in
-  parallel. Nothing from the career repo comes into this repo before the owner approves that exact
-  text.
+- **Parallel workstreams (owner, 2026-11-14):** several workstreams run side by side, coordinated
+  from the private repo `alexwebber/hq` (`C:\Projects\hq`, set up 2026-11-14), not this site. This
+  repo is one stream among several (HQ's *maintenance* and, later, the CV page and blog). A session
+  on any other stream opens in `C:\Projects\hq`.
+- **Next session (here):** `/session-start`, then the **Spec Kit 1.4.0 upgrade**
+  (`speckit-house-process-upgrade-speckit`) on the default model, as the first test of working in
+  parallel with an HQ session. In the same PR, check astro 7.4.12 and maplibre-gl 6.18.0 for
+  security fixes and adopt them if they have any. Nothing from the career repo comes into this repo
+  before the owner approves that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
   the draft is in `C:\temp\story-draft.md`).
@@ -239,6 +239,11 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - **Owner preference, costs** (2026-11-14): watch the cost of AI usage (a strategy for the plan and the
   model mix, near the plan's limits) and of every service, with a daily spend view and spending limits
   and alerts wherever a provider offers them. A candidate for the house process's checks.
+- A question's options mustn't carry prices or other market facts from memory: the owner saw at once
+  that the examples didn't match their price bands. Research first, or leave the examples out
+  (HQ's first question rounds, 2026-11-14).
+- A new repo has no git identity on this machine (only this repo's local config has one): copy
+  `user.name` and `user.email` across before the first commit (2026-11-14).
 - **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
   "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
   other agent to fill gaps (career brief 04, 2026-11-11).
