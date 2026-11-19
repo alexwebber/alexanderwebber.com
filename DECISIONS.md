@@ -2436,3 +2436,13 @@ end. Add each new decision as a dated entry at the end, as it's made.
   constraints into tasks; a new `markdown_sections.py` backs presets' bounded section replacement.
   `extensions.yml` unchanged (reordered only, backup restored); house-process 0.16.2 and
   house-constitution 0.1.2 stay, and the constitution template still resolves to the house preset.
+- **2026-11-19** — **The site's `main` is checked, not locked** (owner). A PR requirement on `main`
+  would block Refresh, which commits data with its `GITHUB_TOKEN`, and GitHub refuses GitHub Actions
+  as a ruleset bypass actor on a personal-account repo ("Actor GitHub Actions integration must be
+  part of the ruleset source or owner organization", tested on a throwaway branch's ruleset; nothing
+  was created). A deploy key or the owner's own GitHub App would work, at the cost of a secret and
+  loop guards in Refresh. The owner chose a check: `/session-start` now flags any commit on main's
+  first-parent line that is neither GitHub's merge of a PR nor a Refresh data commit touching only
+  `data/running/published/` (the two bootstrap commits of 2026-09 are allowed). The ruleset still
+  blocks deletion and force-pushes. Revisit with the site-upkeep task if background agents get
+  site access.

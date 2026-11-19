@@ -3,14 +3,14 @@
 //
 //   node scripts/process/session-start.ts
 //
-// Sections: git, main's workflows, open issues, security alerts, PRs (open, and recently merged with
+// Sections: git, main's commits (each a merged PR or a Refresh data commit), main's workflows, open issues, security alerts, PRs (open, and recently merged with
 // unticked boxes), live freshness, versions, dated triggers, skill candidates. A section that can't
 // run (e.g. no `gh api` in a cloud session) says UNAVAILABLE and the rest carry on. Lines needing
 // action start with "!".
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { today as londonToday } from '../../src/shared/format/dates.ts';
-import { checkboxes, dueTriggers, ghJson, hoursAgo, parseCandidates, parseTriggers, REPO, run, section, SITE } from './lib.ts';
+import { checkboxes, directCommits, dueTriggers, ghJson, hoursAgo, parseCandidates, parseMainLog, parseTriggers, REPO, run, section, SITE } from './lib.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const git = (...args: string[]) => run('git', args, ROOT).trim();
@@ -31,6 +31,8 @@ const SETTLED: Record<number, string> = {
   135: 'answered at the live check: the menu wrapped on Linux, fixed in #136 (2026-11-07)',
   136: 'answered at the live check: larger desktop text instead (owner, 2026-11-07)',
 };
+/** main's commits from before PRs began (2026-09), allowed by the main check. */
+const BOOTSTRAP_COMMITS = new Set(['cefdf9547b22d08c01530116f671e02701c5a171', 'ae630dcdb8f2d794c626343daba90364c48d8721']);
 const STALE_HOURS = 6;
 const TRIGGER_LOOKAHEAD_DAYS = 14;
 const RECENT_MERGE_DAYS = 7;
@@ -74,6 +76,19 @@ await section('Git', () => {
     const ahead = Number(git('rev-list', '--count', `origin/main..${branch}`));
     console.log(`  On ${branch}${dirty ? ' (uncommitted changes)' : ''}: ${ahead} ahead of origin/main, ${behind} behind.`);
   }
+});
+
+await section("main's commits", () => {
+  const log = git('log', '--first-parent', '--name-only', '--format=%x1e%H%x1f%P%x1f%ae%x1f%ce%x1f%cs%x1f%s', 'origin/main');
+  const commits = parseMainLog(log);
+  const direct = directCommits(commits, BOOTSTRAP_COMMITS);
+  if (direct.length === 0) {
+    console.log(`  origin/main: ${commits.length} commits, each a merged PR or a Refresh data commit.`);
+    return;
+  }
+  console.log(`! MAIN CHECK: ${direct.length} commit(s) on main came neither through a PR nor from Refresh:`);
+  for (const c of direct) console.log(`!   ${c.sha.slice(0, 7)} ${c.date} ${c.subject}`);
+  console.log('!   Tell the owner first, and put any wanted change through a PR (nothing is rewritten on main).');
 });
 
 await section("main's workflows", () => {
