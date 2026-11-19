@@ -27,3 +27,8 @@ race_predictions:
     10k: "40:31"
     half: "1:30:00"
     marathon: "3:16:47"
+  - as_of: 2026-11-19
+    5k: "19:24"
+    10k: "40:20"
+    half: "1:29:12"
+    marathon: "3:14:00"

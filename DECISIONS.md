@@ -2410,3 +2410,8 @@ end. Add each new decision as a dated entry at the end, as it's made.
   has one). Next, in its own session: research a better reference (tape measurements, photos, the
   lab/DEXA file the site already supports), then recalibrate the whole history to it, as the owner
   suggested, and remove the exclusion.
+- **2026-11-19** — **Brighton target tightened to sub-3:10** (owner), from sub-3:15, after
+  Garmin's prediction reached 3:14:00 and its projection for the end of December about 3:11. As
+  before, both places changed together: the goal (now `brighton-sub-3-10`; no other file used the
+  old ID) and `upcoming-races.yaml` `target_time: "3:10:00"`. Garmin's predictions read on
+  2026-11-19: 5k 19:24, 10k 40:20, half 1:29:12, marathon 3:14:00 (`manual-metrics.yaml`).
