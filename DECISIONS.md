@@ -2428,3 +2428,11 @@ end. Add each new decision as a dated entry at the end, as it's made.
   trace; Garmin's gain and loss figures are unchanged. A run publishes `elev_drift_m` (left out
   under 1 m) and its elevation chart says so in a note. `PROCESSOR_VERSION` 6 republishes every run
   at the next Refresh. Treadmill runs and runs without both totals stay as recorded.
+- **2026-11-19** — **Spec Kit 1.4.3** (core), from 1.4.0, with `upgrade-speckit.ps1` in its own
+  worktree. 1.4.2 and 1.4.3 bring what this Windows set-up uses: the PowerShell helpers write their
+  `-Json` output as ASCII and the git extension (1.0.4 → 1.0.8) reads its inputs as UTF-8 under
+  Windows PowerShell 5.1 and handles non-ASCII branch names. Generated skills now carry a version
+  stamp; `speckit-tasks` cites `data-model.md` fields (`Entity.field`) instead of copying their
+  constraints into tasks; a new `markdown_sections.py` backs presets' bounded section replacement.
+  `extensions.yml` unchanged (reordered only, backup restored); house-process 0.16.2 and
+  house-constitution 0.1.2 stay, and the constitution template still resolves to the house preset.
