@@ -26,9 +26,7 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   the watch's gain and loss (`DECISIONS.md`); `PROCESSOR_VERSION` 6 republishes every run at the
   first Refresh after the merge. After it: check a few run pages' elevation charts and notes live.
 - **Next session (here):** work in this repo comes from HQ's *maintenance* stream, in this
-  order: Spec Kit 1.4.3 and the PR
-  requirement on `main` (the same session as the elevation fix), then body fat's recalibration, then
-  the recurring site-upkeep task. astro 7.4.13 and maplibre-gl 6.19.0 are routine bumps with no
+  order: body fat's recalibration (research and a question round), then the recurring site-upkeep task. astro 7.4.13 and maplibre-gl 6.19.0 are routine bumps with no
   security alert: skipped. Sessions open in `C:\Projects\hq`. Nothing from the career repo comes
   into this repo before the owner approves that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
