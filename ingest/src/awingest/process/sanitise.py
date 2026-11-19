@@ -21,6 +21,8 @@ new provider field can't reach a published file by accident. The published schem
   owner's ``run-overrides`` ``is_race`` if set; else a ``race.yaml`` linked by ``run_id`` makes
   the run a race (unless it says ``designate: not_race``); else the intervals.icu ``race`` flag,
   which Garmin sync doesn't set (FR-050).
+- **Elevation**: the pipeline levels the altitude trace first (``elevation.py``) and passes the
+  drift it took out, published as ``elev_drift_m`` when the run has an elevation series.
 - **HR zones** are the watch's own (Garmin's five, with names and bpm ranges), from the adapter.
 - A value outside the published range (e.g. a heart rate over 260) is treated as not recorded and
   left out (FR-048), rather than failing the whole publish.
@@ -196,6 +198,7 @@ def sanitise_run(
     override: RunOverride | None = None,
     race: RaceLink | None = None,
     goal_distances: Iterable[float] = (),
+    elev_drift_m: float | None = None,
 ) -> dict[str, Any]:
     override = override or RunOverride()
     duration = activity.moving_s or activity.elapsed_s
@@ -247,6 +250,8 @@ def sanitise_run(
     ):
         if value is not None and math.isfinite(value) and value >= 0:
             run[key] = _num(value, 1)
+    if elev_drift_m is not None and math.isfinite(elev_drift_m) and "elev" in run["series"]:
+        run["elev_drift_m"] = _num(elev_drift_m, 1)
     avg_hr = _in_range(activity.avg_hr, 0, MAX_BPM)
     max_hr = _in_range(activity.max_hr, 0, MAX_BPM)
     if avg_hr is not None and max_hr is not None:

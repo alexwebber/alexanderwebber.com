@@ -22,7 +22,7 @@ SCHEMAS = SchemaSet(PACKAGE_REPO / "schemas")
 # Everything a published run may hold (run.schema.json); the sanitiser must add nothing else.
 ALLOWED = {
     "schema_version", "id", "date", "type", "treadmill", "is_race", "title", "note", "device",
-    "distance_m", "moving_s", "elapsed_s", "elevation_gain_m", "elevation_loss_m",
+    "distance_m", "moving_s", "elapsed_s", "elevation_gain_m", "elevation_loss_m", "elev_drift_m",
     "avg_pace_s_per_km", "best_pace_s_per_km", "hr", "cadence_avg", "stride_m_avg",
     "power_w_avg", "dynamics", "training_effect", "splits", "hr_zones", "series",
     "best_efforts", "flags", "track_ref",

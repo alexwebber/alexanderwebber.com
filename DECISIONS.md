@@ -2415,3 +2415,16 @@ end. Add each new decision as a dated entry at the end, as it's made.
   before, both places changed together: the goal (now `brighton-sub-3-10`; no other file used the
   old ID) and `upcoming-races.yaml` `target_time: "3:10:00"`. Garmin's predictions read on
   2026-11-19: 5k 19:24, 10k 40:20, half 1:29:12, marathon 3:14:00 (`manual-metrics.yaml`).
+- **2026-11-19** — **Elevation levelled to the watch's own totals** (owner). Every run's elevation
+  chart sloped downhill: the watch's barometric altimeter drifts during a run (the 18 Nov loop's
+  trace ended 10.6 m below its start). The owner first picked "level out loops" (a run that starts
+  and ends in the same place). The archive showed most of his runs end 150–700 m from where they
+  started (60 outdoor runs, Aug to Nov), so a same-place test would catch about a quarter of them,
+  while the watch's gain and loss totals leave the drift out (on true loops gain minus loss was
+  within about 1 m of zero, the trace 8–11 m out). His pick on that evidence: **every outdoor run
+  is levelled to end at its start plus (gain − loss)**, the difference spread evenly over the
+  elapsed time between the first and last altitude readings (`ingest/.../process/elevation.py`).
+  The series, the splits' elevation changes and a race's course profile all come from the levelled
+  trace; Garmin's gain and loss figures are unchanged. A run publishes `elev_drift_m` (left out
+  under 1 m) and its elevation chart says so in a note. `PROCESSOR_VERSION` 6 republishes every run
+  at the next Refresh. Treadmill runs and runs without both totals stay as recorded.

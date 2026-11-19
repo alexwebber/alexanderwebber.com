@@ -37,6 +37,10 @@
     "elapsed_s": { "$ref": "../defs.schema.json#/$defs/seconds" },
     "elevation_gain_m": { "type": "number", "minimum": 0 },
     "elevation_loss_m": { "type": "number", "minimum": 0 },
+    "elev_drift_m": {
+      "description": "Metres of altimeter drift taken out of the elevation series and splits: the recorded trace's end minus where the watch's gain and loss put it. Omitted when the trace wasn't levelled.",
+      "type": "number"
+    },
     "avg_pace_s_per_km": { "$ref": "../defs.schema.json#/$defs/paceSecondsPerKm" },
     "best_pace_s_per_km": { "$ref": "../defs.schema.json#/$defs/paceSecondsPerKm" },
     "hr": {

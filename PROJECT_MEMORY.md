@@ -22,12 +22,15 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   from the private repo `alexwebber/hq` (`C:\Projects\hq`, set up 2026-11-14), not this site. This
   repo is one stream among several (HQ's *maintenance* and, later, the CV page and blog). A session
   on any other stream opens in `C:\Projects\hq`.
-- **Next session (here):** nothing is waiting in this repo. Spec Kit 1.4.0 is in (#146, run in a
-  second session alongside the HQ set-up: the first parallel run worked). astro 7.4.12 and
-  maplibre-gl 6.18.0 are routine bumps (no security alert names them): skipped. The next dated work
-  is the goals follow-up on 2026-11-19 (`process/triggers.yaml`). Until then, sessions open in
-  `C:Projectshq`. Nothing from the career repo comes into this repo before the owner approves
-  that exact text.
+- **Elevation levelled (2026-11-19, this PR):** every outdoor run's altitude trace is levelled to
+  the watch's gain and loss (`DECISIONS.md`); `PROCESSOR_VERSION` 6 republishes every run at the
+  first Refresh after the merge. After it: check a few run pages' elevation charts and notes live.
+- **Next session (here):** work in this repo comes from HQ's *maintenance* stream, in this
+  order: Spec Kit 1.4.3 and the PR
+  requirement on `main` (the same session as the elevation fix), then body fat's recalibration, then
+  the recurring site-upkeep task. astro 7.4.13 and maplibre-gl 6.19.0 are routine bumps with no
+  security alert: skipped. Sessions open in `C:\Projects\hq`. Nothing from the career repo comes
+  into this repo before the owner approves that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
   the draft is in `C:\temp\story-draft.md`).
@@ -248,6 +251,14 @@ Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.co
 - **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
   "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
   other agent to fill gaps (career brief 04, 2026-11-11).
+- Test an owner's pick against the real data before building it: "level out loops" assumed runs end
+  where they start, and a two-minute scan of the archive showed most end 150–700 m away, while the
+  watch's own totals already held the answer. He changed his pick on that evidence (elevation,
+  2026-11-19).
+- Without a Node version manager on Windows, `npx -y -p node@22 node node_modules/vitest/vitest.mjs run`
+  runs the tests under `.nvmrc`'s major (Node 24 fails every suite at load). On this laptop a full
+  parallel run still trips the 5 s test timeout in the slow render tests: rerun the failed files
+  with `--no-file-parallelism --testTimeout=60000` before calling a failure real (2026-11-19).
 
 ## Open questions
 
