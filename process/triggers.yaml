@@ -6,10 +6,6 @@
 #   - due: YYYY-MM-DD   # first day it's due
 #     task: what to do, and where the details are
 
-- due: 2026-11-19
-  task: >-
-    Goals follow-up, in a PR: unfeature half-sub-1-40, vo2max-52-5 and 10k-sub-43 (their "New"
-    windows end 16 and 18 Nov) and set featured_goal_limit back to 7.
 - due: 2026-11-23
   task: >-
     Career: ask the owner for the material he planned to bring after the week of 16 Nov (see the

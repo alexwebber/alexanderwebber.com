@@ -90,12 +90,12 @@
 # Achieved goals. Each stays featured through its 14-day "New" window, then leaves the landing
 # page (the next goal at its distance or metric replaces it) and stays on the Goals page.
 
-# Achieved with 1:37:44 on 2 Nov 2026.
+# Achieved with 1:37:44 on 2 Nov 2026. Its "New" window ended on 16 Nov.
 - id: half-sub-1-40
   type: race_time
   title: Half marathon under 1:40
   priority: 8
-  featured: true
+  featured: false
   target:
     distance: half
     time: "1:40:00"
@@ -112,24 +112,25 @@
     time: "20:00"
 
 # "Superior" for the owner's age. Garmin reports whole numbers, so 53 is the first value that
-# counts. Achieved with 53 on 2 Nov 2026.
+# counts. Achieved with 53 on 2 Nov 2026. Its "New" window
+# ended on 16 Nov.
 - id: vo2max-52-5
   type: metric
   title: VO2 max 52.5
   priority: 10
-  featured: true
+  featured: false
   created: 2025-10-01
   target:
     metric: vo2max
     value: 52.5
     direction: at_least
 
-# Achieved on 4 Nov 2026.
+# Achieved on 4 Nov 2026. Its "New" window ended on 18 Nov.
 - id: 10k-sub-43
   type: race_time
   title: 10k under 43 minutes
   priority: 11
-  featured: true
+  featured: false
   target:
     distance: 10k
     time: "43:00"

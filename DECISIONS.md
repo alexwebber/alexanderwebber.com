@@ -2396,3 +2396,8 @@ end. Add each new decision as a dated entry at the end, as it's made.
   constitution template still resolves to the house preset. Run in its own worktree
   (`C:\Projects\alexanderwebber.com-speckit`) so the parallel HQ session's checkout kept its branch:
   the first test of two sessions at once.
+- **2026-11-19** — **Goals follow-up done** (the trigger of 2026-11-03): `half-sub-1-40`,
+  `vo2max-52-5` and `10k-sub-43` are unfeatured now that their "New" windows have ended (16 and
+  18 Nov), and `featured_goal_limit` is back to 7. The landing page shows the seven active goals;
+  the three achieved ones stay on the Goals page. Spec Kit 1.4.2 (core) is out and comes next, in
+  its own PR; astro 7.4.13 and maplibre-gl 6.19.0 are routine bumps with no security alert: skipped.
