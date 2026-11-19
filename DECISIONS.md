@@ -2401,3 +2401,12 @@ end. Add each new decision as a dated entry at the end, as it's made.
   18 Nov), and `featured_goal_limit` is back to 7. The landing page shows the seven active goals;
   the three achieved ones stay on the Goals page. Spec Kit 1.4.2 (core) is out and comes next, in
   its own PR; astro 7.4.13 and maplibre-gl 6.19.0 are routine bumps with no security alert: skipped.
+- **2026-11-19** — **Body fat paused while the scale is recalibrated** (owner). On 6 Nov Garmin's
+  body composition was set to 18% from a photo estimate, and the Index S2 has read about 17% since,
+  down from 25.6% the day before, so the site showed the 17.5% goal "achieved" on 12 Nov. The owner
+  trusts neither level. Readings from 6 Nov are set aside with a new open-ended exclusion
+  (`onwards: true` in `health-exclusions.yaml`, FR-067 amended), the goal is back to "working
+  towards" and its card says why (a goal's description now shows on compact cards too; no other goal
+  has one). Next, in its own session: research a better reference (tape measurements, photos, the
+  lab/DEXA file the site already supports), then recalibrate the whole history to it, as the owner
+  suggested, and remove the exclusion.

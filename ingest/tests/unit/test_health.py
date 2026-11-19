@@ -49,6 +49,18 @@ def test_excluded_readings_are_removed_before_averaging():
     assert series_points(daily, until=until)["weight_avg7"] == [(D0, 100.0), (until, 100.0)]
 
 
+def test_an_onwards_exclusion_drops_every_later_reading_of_that_metric_only():
+    readings = [
+        reading("body_fat_pct", 0, 25.6),
+        reading("body_fat_pct", 1, 18.2),
+        reading("body_fat_pct", 9, 17.1),
+        reading("weight_kg", 1, 100.0),
+    ]
+    daily = daily_values(readings, onwards={"body_fat_pct": D0 + timedelta(days=1)})
+    assert daily["body_fat_pct"] == {D0: 25.6}
+    assert daily["weight_kg"] == {D0 + timedelta(days=1): 100.0}
+
+
 def test_individual_weights_are_never_output_and_other_metrics_are_as_recorded():
     readings = [
         reading("weight_kg", 0, 101.0),

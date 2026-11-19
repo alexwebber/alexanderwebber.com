@@ -357,7 +357,9 @@ def process_health(ctx: _Context) -> None:
             ):
                 counts.unchanged += 1
                 continue
-            daily = health.daily_values(readings(start, end), ctx.owner.exclusions)
+            daily = health.daily_values(
+                readings(start, end), ctx.owner.exclusions, ctx.owner.onwards
+            )
             points = [
                 p
                 for p in health.series_points(daily, until=until).get(series, [])

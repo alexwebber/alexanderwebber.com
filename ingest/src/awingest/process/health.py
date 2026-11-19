@@ -38,13 +38,18 @@ Point = tuple[date, float]
 
 
 def daily_values(
-    readings: Iterable[NormalisedHealthReading], excluded: Iterable[tuple[str, date]] = ()
+    readings: Iterable[NormalisedHealthReading],
+    excluded: Iterable[tuple[str, date]] = (),
+    onwards: Mapping[str, date] | None = None,
 ) -> dict[str, dict[date, float]]:
-    """Source metric -> {date: value}, with excluded readings removed."""
+    """Source metric -> {date: value}, with excluded readings removed: single days, and every day
+    from a metric's ``onwards`` date on."""
     skip = set(excluded)
+    from_day = onwards or {}
     out: dict[str, dict[date, float]] = defaultdict(dict)
     for r in readings:
-        if (r.metric, r.date) not in skip:
+        first = from_day.get(r.metric)
+        if (r.metric, r.date) not in skip and (first is None or r.date < first):
             out[r.metric][r.date] = r.value
     return out
 

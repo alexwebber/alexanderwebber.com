@@ -4,7 +4,7 @@ from datetime import date
 
 import pytest
 
-from awingest.process.overrides import OwnerDataInvalid, RunOverride, load_owner
+from awingest.process.overrides import OwnerDataInvalid, OwnerInputs, RunOverride, load_owner
 from awingest.schemas import SchemaSet
 
 RUN = "2026-10-11-k3f7"
@@ -29,7 +29,32 @@ def test_no_owner_files_means_no_overrides(owner, schemas):
     inputs = load_owner(owner, schemas)
     assert inputs.override(RUN) == RunOverride()
     assert inputs.races == {} and inputs.exclusions == frozenset()
+    assert inputs.onwards == {}
     assert inputs.goal_distances == ()
+
+
+def test_an_onwards_exclusion_changes_only_the_files_it_reaches(owner, schemas):
+    write(
+        owner / "health-exclusions.yaml",
+        "- { metric: body_fat_pct, date: 2026-11-06, onwards: true }\n"
+        "- { metric: body_fat_pct, date: 2026-11-20, onwards: true }\n",
+    )
+    inputs = load_owner(owner, schemas)
+    assert inputs.onwards == {"body_fat_pct": date(2026, 11, 6)}
+    assert inputs.exclusions == {
+        ("body_fat_pct", date(2026, 11, 6)),
+        ("body_fat_pct", date(2026, 11, 20)),
+    }
+    before = OwnerInputs()
+    y2025 = (date(2025, 1, 1), date(2025, 12, 31))
+    y2026 = (date(2026, 1, 1), date(2026, 12, 31))
+    assert inputs.exclusion_hash("body_fat_pct", *y2025) == before.exclusion_hash(
+        "body_fat_pct", *y2025
+    )
+    assert inputs.exclusion_hash("body_fat_pct", *y2026) != before.exclusion_hash(
+        "body_fat_pct", *y2026
+    )
+    assert inputs.exclusion_hash("weight_kg", *y2026) == before.exclusion_hash("weight_kg", *y2026)
 
 
 def test_everything_the_processor_reads(owner, schemas):

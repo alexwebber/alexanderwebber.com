@@ -64,6 +64,7 @@
 - id: body-fat-17-5
   type: body_composition
   title: Body fat 17.5%
+  description: Paused while the scale is recalibrated. Readings from 6 Nov 2026 are set aside.
   priority: 6
   featured: true
   created: 2025-10-01
