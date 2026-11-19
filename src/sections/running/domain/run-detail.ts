@@ -139,7 +139,19 @@ export interface SeriesChart {
   average?: number;
   /** The key message in words. */
   summary: string;
+  /** Said under the chart (the elevation chart's levelling). */
+  note?: string;
   values: readonly (number | null)[];
+}
+
+/**
+ * Under the elevation chart when the ingest levelled the watch's altimeter drift out of the
+ * trace (`elev_drift_m`; owner, 2026-11-19), so the line ends where Garmin's totals put it.
+ */
+export function elevationNote(run: Pick<Run, 'elev_drift_m'>): string | undefined {
+  const drift = run.elev_drift_m;
+  if (drift === undefined || Math.round(Math.abs(drift)) < 1) return undefined;
+  return `The watch's altimeter drifted ${formatMetres(Math.abs(drift))} ${drift < 0 ? 'lower' : 'higher'} over this run, so the line is levelled evenly across it to end where Garmin's climb and descent totals put it.`;
 }
 
 const SERIES: { key: SeriesKey; title: string; column: string; format: (v: number) => string }[] = [
@@ -170,6 +182,7 @@ export function seriesCharts(run: Run): SeriesChart[] {
     let summary: string;
     let domain: [number, number] | undefined;
     let average: number | undefined = mean;
+    let note: string | undefined;
     if (s.key === 'pace') {
       domain = [quantile(sorted, 0.02), quantile(sorted, 0.98)];
       average = run.avg_pace_s_per_km;
@@ -178,6 +191,7 @@ export function seriesCharts(run: Run): SeriesChart[] {
       average = undefined;
       const gained = run.elevation_gain_m !== undefined ? `, ${formatMetres(run.elevation_gain_m)} gained` : '';
       summary = `Between ${formatMetres(min)} and ${formatMetres(max)}${gained}.`;
+      note = elevationNote(run);
     } else if (s.key === 'hr' && run.hr) {
       average = run.hr.avg;
       summary = `Average ${Math.round(run.hr.avg)} bpm, max ${Math.round(run.hr.max)} bpm.`;
@@ -188,7 +202,7 @@ export function seriesCharts(run: Run): SeriesChart[] {
       average = avg ?? mean;
       summary = `Average ${s.format(average)}; mostly between ${s.format(domain[0])} and ${s.format(domain[1])}.`;
     }
-    return [{ ...s, invert: s.key === 'pace', values, summary, ...(domain ? { domain } : {}), ...(average !== undefined ? { average } : {}) }];
+    return [{ ...s, invert: s.key === 'pace', values, summary, ...(domain ? { domain } : {}), ...(average !== undefined ? { average } : {}), ...(note ? { note } : {}) }];
   });
 }
 

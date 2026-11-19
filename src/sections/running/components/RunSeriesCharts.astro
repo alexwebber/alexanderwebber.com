@@ -53,6 +53,7 @@ const axes: { axis: Axis; label: string; xs: number[]; formatX: (v: number) => s
                   title={c.title}
                   heading={chartHeading}
                   summary={c.summary}
+                  {...(c.note ? { note: c.note } : {})}
                   table={{
                     columns: [a.column, c.column],
                     rows: tableRows(a.xs, c.values, a.axis, axisEnd(run, a.axis)).map((r) => [a.at(r.at), c.format(r.value)]),

@@ -27,9 +27,11 @@ export interface Props {
   /** Render the title as a heading at this level, for pages that outline charts. */
   heading?: 2 | 3 | 4;
   id?: string;
+  /** A note under the chart, e.g. how its data was adjusted. */
+  note?: string;
 }
 
-const { title, summary, table, heading } = Astro.props;
+const { title, summary, table, heading, note } = Astro.props;
 const id = chartId('figure', Astro.props.id);
 const Heading = heading ? (`h${heading}` as const) : 'p';
 ---
@@ -41,6 +43,7 @@ const Heading = heading ? (`h${heading}` as const) : 'p';
     {summary && <p class="chart-figure-summary">{summary}</p>}
   </figcaption>
   <slot />
+  {note && <p class="chart-figure-note">{note}</p>}
   {
     table && (
       <details class="chart-figure-data">

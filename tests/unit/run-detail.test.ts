@@ -4,7 +4,7 @@
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Run } from '../../src/sections/running/data/store/index.ts';
-import { effortRows, seriesCharts, splitRows, tableRows, timeTicks, zoneRows, formatAxisTime } from '../../src/sections/running/domain/run-detail.ts';
+import { effortRows, elevationNote, seriesCharts, splitRows, tableRows, timeTicks, zoneRows, formatAxisTime } from '../../src/sections/running/domain/run-detail.ts';
 import RunPage from '../../src/sections/running/pages/runs/[id].astro';
 import { stripTags } from '../helpers/html.ts';
 import { run as runFixture } from '../helpers/temp-repo.ts';
@@ -110,6 +110,17 @@ describe('run detail domain', () => {
     expect(seriesCharts(fullRun({ series: { ...fullRun().series, power: fullRun().series.x_dist_m.map(() => null) } })).map((c) => c.key)).not.toContain('power');
   });
 
+  it('says under the elevation chart when the altimeter drift was levelled out (owner, 2026-11-19)', () => {
+    const elev = (run: Run) => seriesCharts(run).find((c) => c.key === 'elev')!;
+    expect(elev(fullRun()).note).toBeUndefined();
+    expect(elev(fullRun({ elev_drift_m: -10.6 })).note).toBe(
+      "The watch's altimeter drifted 11 m lower over this run, so the line is levelled evenly across it to end where Garmin's climb and descent totals put it.",
+    );
+    expect(elevationNote({ elev_drift_m: 8 })).toContain('drifted 8 m higher');
+    expect(elevationNote({ elev_drift_m: 0.4 })).toBeUndefined();
+    expect(seriesCharts(fullRun({ elev_drift_m: -10.6 })).filter((c) => c.note).map((c) => c.key)).toEqual(['elev']);
+  });
+
   it('tabulates a series per kilometre or per 5 minutes, ending at the run itself', () => {
     const rows = tableRows([0, 0.5, 1, 1.5, 2, 2.4], [300, 310, 290, null, 280, 270], 'distance', 2.5);
     expect(rows).toEqual([
@@ -158,11 +169,18 @@ describe('run page (T121)', () => {
     for (const chart of ['Pace', 'Heart rate', 'Elevation', 'Cadence', 'Power']) {
       expect(html).toContain(`>${chart}</h3>`);
     }
+    expect(html).not.toContain('chart-figure-note');
     expect(t).toContain('Zone 3 Aerobic 123–140 bpm 23:13');
     expect(t).toContain('Zone 4 Threshold 140–158 bpm 25:32');
     expect(panel(html, 'data-splits')).toContain('<th scope="row">10.07</th>');
     expect(text(panel(html, 'data-run-efforts'))).toMatch(/1k 4:40 4:40 \/km 5k 24:40 4:56 \/km/);
     expect(panel(html, 'data-run-efforts')).not.toContain('3k'); // implausible
+  });
+
+  it('notes the levelled altimeter drift under the elevation chart, on both axes', async () => {
+    const html = await render(fullRun({ elev_drift_m: -9.2 }));
+    expect(html.match(/<p class="chart-figure-note"[^>]*>[^<]*/g)?.length).toBe(2);
+    expect(text(html)).toContain("The watch's altimeter drifted 9 m lower over this run");
   });
 
   it('plots against distance by default with a CSS-only switch to elapsed time, never clock time (FR-013)', async () => {
