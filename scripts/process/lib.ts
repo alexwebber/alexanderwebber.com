@@ -272,3 +272,49 @@ export function summarisePaths(paths: string[], limit: number): string[] {
 export function hoursAgo(iso: string, now: Date = new Date()): string {
   return `${((now.getTime() - Date.parse(iso)) / 3_600_000).toFixed(1)} h ago`;
 }
+
+// --- main's commits -------------------------------------------------------------------------------
+// The site's main can't require pull requests: GitHub won't let GitHub Actions bypass a ruleset on a
+// personal-account repo, and Refresh commits data with its GITHUB_TOKEN (owner, 2026-11-19). So
+// session-start checks every commit on main's first-parent line instead: a merged PR, a Refresh data
+// commit touching only the published data, or one of the bootstrap commits before PRs began.
+
+export interface MainCommit {
+  sha: string;
+  parents: string[];
+  authorEmail: string;
+  committerEmail: string;
+  date: string;
+  subject: string;
+  files: string[];
+}
+
+/** The commits from `git log --first-parent --name-only --format=%x1e%H%x1f%P%x1f%ae%x1f%ce%x1f%cs%x1f%s`. */
+export function parseMainLog(text: string): MainCommit[] {
+  return text
+    .split('\x1e')
+    .filter((block) => block.trim())
+    .map((block) => {
+      const [head = '', ...rest] = block.split('\n');
+      const [sha = '', parents = '', authorEmail = '', committerEmail = '', date = '', subject = ''] = head.split('\x1f');
+      return { sha, parents: parents ? parents.split(' ') : [], authorEmail, committerEmail, date, subject, files: rest.map((f) => f.trim()).filter(Boolean) };
+    });
+}
+
+export const REFRESH_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com';
+export const PUBLISHED_DATA = 'data/running/published/';
+
+/** The commits on main that came neither through a PR nor from Refresh (nor the allowed bootstrap). */
+export function directCommits(commits: MainCommit[], allowed: ReadonlySet<string>): MainCommit[] {
+  return commits.filter((c) => {
+    if (c.parents.length === 0 || allowed.has(c.sha)) return false;
+    if (c.parents.length === 2 && c.committerEmail === 'noreply@github.com' && /^Merge pull request #\d+ /.test(c.subject)) return false;
+    const refresh =
+      c.parents.length === 1 &&
+      c.authorEmail === REFRESH_EMAIL &&
+      c.subject === 'data: publish running data' &&
+      c.files.length > 0 &&
+      c.files.every((f) => f.startsWith(PUBLISHED_DATA));
+    return !refresh;
+  });
+}

@@ -6,6 +6,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   addDays,
+  directCommits,
+  parseMainLog,
+  REFRESH_EMAIL,
   addedLines,
   checkboxes,
   diffTrees,
@@ -222,5 +225,35 @@ describe('dist comparison', () => {
   it('lists up to the limit, then counts by extension', () => {
     expect(summarisePaths(['a.html', 'b.html', 'c.css'], 3)).toEqual(['a.html', 'b.html', 'c.css']);
     expect(summarisePaths(['a.html', 'b.html', 'c.css'], 1)).toEqual(['a.html', '... and 2 more (all: 2 .html, 1 .css)']);
+  });
+});
+
+describe("main's commits (owner, 2026-11-19)", () => {
+  const log = (rows: { sha: string; parents: string; author: string; committer?: string; subject: string; files?: string[] }[]) =>
+    rows.map((r) => `\x1e${r.sha}\x1f${r.parents}\x1f${r.author}\x1f${r.committer ?? r.author}\x1f2026-11-19\x1f${r.subject}\n\n${(r.files ?? []).join('\n')}\n`).join('');
+
+  it('passes merged PRs, Refresh data commits, the root and the allowed bootstrap', () => {
+    const commits = parseMainLog(
+      log([
+        { sha: 'm1', parents: 'a1 b1', author: 'owner@example.com', committer: 'noreply@github.com', subject: 'Merge pull request #152 from alexwebber/fix/x' },
+        { sha: 'r1', parents: 'm1', author: REFRESH_EMAIL, subject: 'data: publish running data', files: ['data/running/published/runs/2026/a.json', 'data/running/published/manifest.json'] },
+        { sha: 'boot', parents: 'root', author: 'owner@example.com', subject: 'Bootstrap' },
+        { sha: 'root', parents: '', author: 'owner@example.com', subject: 'First' },
+      ]),
+    );
+    expect(commits[1]!.files).toHaveLength(2);
+    expect(directCommits(commits, new Set(['boot']))).toEqual([]);
+  });
+
+  it('flags a direct push, a merge not made by GitHub, and a "Refresh" commit outside the published data', () => {
+    const commits = parseMainLog(
+      log([
+        { sha: 'd1', parents: 'm1', author: 'owner@example.com', subject: 'fix: straight to main', files: ['src/a.ts'] },
+        { sha: 'm1', parents: 'a1 b1', author: 'owner@example.com', subject: "Merge branch 'x'" },
+        { sha: 'r2', parents: 'r1', author: REFRESH_EMAIL, subject: 'data: publish running data', files: ['data/running/published/a.json', 'src/b.ts'] },
+        { sha: 'r1', parents: 'x', author: 'someone@example.com', subject: 'data: publish running data', files: ['data/running/published/a.json'] },
+      ]),
+    );
+    expect(directCommits(commits, new Set()).map((c) => c.sha)).toEqual(['d1', 'm1', 'r2', 'r1']);
   });
 });

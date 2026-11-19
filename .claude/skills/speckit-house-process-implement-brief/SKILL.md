@@ -5,6 +5,9 @@ compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
   source: house-process:commands/speckit.house-process.implement-brief.md
+  version: 0.16.2
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Brief a Spec Kit subagent
