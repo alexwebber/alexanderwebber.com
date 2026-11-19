@@ -151,6 +151,7 @@ race_predictions:
 ```yaml
 # health-exclusions.yaml
 - { metric: weight_kg, date: 2026-09-14, reason: "partner stepped on the scale" }
+- { metric: body_fat_pct, date: 2026-11-06, onwards: true, reason: "scale being recalibrated" }  # this day and every later one
 ```
 
 ```yaml

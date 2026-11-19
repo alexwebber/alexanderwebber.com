@@ -474,7 +474,7 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
   time (within 7 days), including the difference.
 - **FR-066**: Lab results for measures the section does not already display (e.g. bone density, lean
   mass by region) MUST NOT be published unless the owner explicitly approves that category.
-- **FR-067**: The owner MUST be able to exclude an individual scale or metric reading as erroneous.
+- **FR-067**: The owner MUST be able to exclude an individual scale or metric reading as erroneous. They MUST also be able to set aside every reading of a metric from a date on, while its source is recalibrated (amended 2026-11-19).
 - **FR-068**: Charts MUST allow choosing a time range (at least: 3 months, 1 year, all time).
 - **FR-069**: Garmin training status and Garmin race predictions, which the provider does not
   supply, MUST be owner-entered via the site's files as dated entries, updated whenever the owner

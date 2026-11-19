@@ -1,0 +1,10 @@
+# Readings to drop as erroneous (FR-067; schemas/owner/health-exclusions.schema.json).
+
+# The scale's body fat paused (owner, 2026-11-19): on 6 Nov 2026 Garmin's body composition was set
+# to 18% from a photo estimate, and the Index S2 has read about 17% since, down from 25.6% the day
+# before. Neither level is trusted. Readings from 6 Nov stay out until a better reference is chosen
+# and the history recalibrated; then this entry goes.
+- metric: body_fat_pct
+  date: 2026-11-06
+  onwards: true
+  reason: Scale recalibrated by hand on 6 Nov 2026; paused until a better reference is chosen.

@@ -13,6 +13,7 @@ exactly when an owner change affects that run's published file.
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
@@ -73,6 +74,8 @@ class OwnerInputs:
     runs: dict[str, RunOverride] = field(default_factory=dict)
     races: dict[str, RaceLink] = field(default_factory=dict)
     exclusions: frozenset[tuple[str, date]] = frozenset()
+    # Metric -> the first day of an open-ended exclusion (``onwards: true``).
+    onwards: Mapping[str, date] = field(default_factory=dict)
     goal_distances: tuple[float, ...] = ()
 
     def override(self, run_id: str) -> RunOverride:
@@ -92,7 +95,10 @@ class OwnerInputs:
         days = sorted(
             d.isoformat() for m, d in self.exclusions if m == metric and start <= d <= end
         )
-        return _sha256(days)
+        first = self.onwards.get(metric)
+        if first is None or first > end:
+            return _sha256(days)  # unchanged for files no open-ended exclusion reaches
+        return _sha256({"days": days, "onwards": max(first, start).isoformat()})
 
 
 def _sha256(value: Any) -> str:
@@ -150,6 +156,11 @@ def load_owner(
         (item["metric"], date.fromisoformat(item["date"]))
         for item in files["health-exclusions.yaml"] or []
     )
+    onwards: dict[str, date] = {}
+    for item in files["health-exclusions.yaml"] or []:
+        if item.get("onwards"):
+            day = date.fromisoformat(item["date"])
+            onwards[item["metric"]] = min(day, onwards.get(item["metric"], day))
 
     distances = set()
     for goal in files["goals.yaml"] or []:
@@ -183,5 +194,6 @@ def load_owner(
         runs=runs,
         races=races,
         exclusions=exclusions,
+        onwards=onwards,
         goal_distances=tuple(sorted(distances)),
     )
