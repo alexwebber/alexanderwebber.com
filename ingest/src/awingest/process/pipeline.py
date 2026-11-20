@@ -66,7 +66,9 @@ from awingest.state import FETCH_STATUS, StateDoc, parse_utc, utc_iso
 # 3: best efforts use timer time, leaving watch pauses out (owner, 2026-10-23).
 # 4: HR zones are Garmin's own five, from the original FIT file (T159, owner, 2026-10-24).
 # 6: the altitude trace is levelled to the watch's gain and loss (``elevation.py``, 2026-11-19).
-PROCESSOR_VERSION = 6
+# 7: the drift is fitted from the places a run passes more than once, with the gain-and-loss
+#    levelling as the fallback (``elevation.py``, owner, 2026-11-20).
+PROCESSOR_VERSION = 7
 MARKER = "fetch.json"
 PUBLISHED = Path("data/running/published")
 OWNER = Path("data/running/owner")
@@ -259,7 +261,7 @@ def process_activity(ctx: _Context, prefix: str, provider_id: str, objects: dict
         counts.hidden += 1
         return
     race = ctx.owner.races.get(run_id)
-    activity, drift = elevation.level(activity)
+    activity, levelling = elevation.level(activity)
     try:
         doc = sanitise_run(
             activity,
@@ -268,7 +270,7 @@ def process_activity(ctx: _Context, prefix: str, provider_id: str, objects: dict
             override=override,
             race=race,
             goal_distances=ctx.owner.goal_distances,
-            elev_drift_m=drift,
+            levelling=levelling,
         )
     except Unpublishable:
         counts.skipped += 1

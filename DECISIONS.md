@@ -2446,3 +2446,22 @@ end. Add each new decision as a dated entry at the end, as it's made.
   `data/running/published/` (the two bootstrap commits of 2026-09 are allowed). The ruleset still
   blocks deletion and force-pushes. Revisit with the site-upkeep task if background agents get
   site access.
+- **2026-11-20** — **Elevation corrected from repeat passes** (owner), replacing the 2026-11-19
+  levelling as the default. The levelled charts still sloped downhill mid-run: on laps of a park,
+  readings at the same spot 30–60 min apart were 4–15 m lower the second time, and Garmin
+  Connect's own chart shows the same trace, so the drift is in the recording. Across the archive the
+  watch drifted about 2 m an hour from January to May 2026, then 17–22 m an hour from July to
+  November, starting between the runs of 31 May and 2 June on the same Venu X1. Levelling start to
+  finish can't see drift that comes back before the finish (11 Nov: none seen, 11 m in the middle).
+  Now, wherever a run passes the same spot again (within 12 m, at least 3 min later), the reading
+  difference is taken as the drift between those moments. The drift is fitted as a piecewise-linear
+  curve in time (a knot every 2 min, lightly smoothed, held level outside the repeat passes) and
+  subtracted (`ingest/.../process/elevation.py`, no new dependency). On the November runs,
+  same-spot readings 30–60 min apart now agree to 0.2–0.4 m, also on passes held out of the fit.
+  154 of the 158 outdoor runs have enough repeat passes; the rest keep the gain-and-loss levelling
+  as the fallback. A run publishes `elev_drift_m` (now the largest drift, signed) and
+  `elev_drift_method` (`repeat-passes` or `totals`), and the chart's note says which.
+  `PROCESSOR_VERSION` 7. Alternatives: a downloaded terrain model (most accurate everywhere, but
+  a large data file and a new dependency), or waiting to see if cleaning the watch fixes new runs
+  (the runs since June would still need correcting). The owner asked for this to be re-evaluated
+  once it has been live for a while.
