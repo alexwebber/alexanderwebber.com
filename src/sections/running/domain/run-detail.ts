@@ -145,13 +145,19 @@ export interface SeriesChart {
 }
 
 /**
- * Under the elevation chart when the ingest levelled the watch's altimeter drift out of the
- * trace (`elev_drift_m`; owner, 2026-11-19), so the line ends where Garmin's totals put it.
+ * Under the elevation chart when the ingest took the watch's altimeter drift out of the trace
+ * (`elev_drift_m`, `elev_drift_method`): fitted from the places the run passes more than once
+ * (owner, 2026-11-20), or levelled to Garmin's climb and descent totals (owner, 2026-11-19).
  */
-export function elevationNote(run: Pick<Run, 'elev_drift_m'>): string | undefined {
+export function elevationNote(run: Pick<Run, 'elev_drift_m' | 'elev_drift_method'>): string | undefined {
   const drift = run.elev_drift_m;
   if (drift === undefined || Math.round(Math.abs(drift)) < 1) return undefined;
-  return `The watch's altimeter drifted ${formatMetres(Math.abs(drift))} ${drift < 0 ? 'lower' : 'higher'} over this run, so the line is levelled evenly across it to end where Garmin's climb and descent totals put it.`;
+  const size = formatMetres(Math.abs(drift));
+  const direction = drift < 0 ? 'lower' : 'higher';
+  if (run.elev_drift_method === 'repeat-passes') {
+    return `The watch's altimeter drifted up to ${size} ${direction} during this run, so the line is corrected using the places the run passes more than once.`;
+  }
+  return `The watch's altimeter drifted ${size} ${direction} over this run, so the line is levelled evenly across it to end where Garmin's climb and descent totals put it.`;
 }
 
 const SERIES: { key: SeriesKey; title: string; column: string; format: (v: number) => string }[] = [
