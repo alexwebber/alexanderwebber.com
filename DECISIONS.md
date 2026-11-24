@@ -2471,6 +2471,8 @@ end. Add each new decision as a dated entry at the end, as it's made.
   two fixes (`common.ps1`, the git extension's Python scripts, git extension 1.0.8 to 1.0.9) plus
   version stamps and install times. Templates, `extensions.yml` and the constitution are unchanged;
   house-process 0.16.2 and house-constitution stay.
+- **2026-11-24** — **#155 merged** (Spec Kit 1.4.4): `after-merge` found 10 checks green, no boxes,
+  and `main`'s Gate and deploy green (45488448469), with `/` and `/running/` answering 200.
 - **2026-11-24** — **Spec 004, the interactive CV** (three question rounds; every pick the
   recommended option unless noted). The CV now exists as a plain text CV and a single-page visual
   CV (a landscape swimlane timeline), both in the private career repo; this spec makes the third,
