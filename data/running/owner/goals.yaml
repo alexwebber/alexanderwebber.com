@@ -68,7 +68,7 @@
 - id: body-fat-17-5
   type: body_composition
   title: Body fat 17.5%
-  description: Paused until a lab scan checks the scale's level. The chart is the scale's own trend.
+  description: Paused until a lab scan checks the scale's level; these figures are the scale's own.
   status_override: active
   priority: 6
   featured: true
