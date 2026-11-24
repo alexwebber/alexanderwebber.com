@@ -2465,3 +2465,9 @@ end. Add each new decision as a dated entry at the end, as it's made.
   a large data file and a new dependency), or waiting to see if cleaning the watch fixes new runs
   (the runs since June would still need correcting). The owner asked for this to be re-evaluated
   once it has been live for a while.
+- **2026-11-24** — **Spec Kit 1.4.4 installed** (`upgrade-speckit.ps1`, from 1.4.3), before spec 004
+  starts on it. The release fixes what we'd hit on Windows: non-ASCII preset paths in the PowerShell
+  template resolver (#5502) and UTF-8 git output in the Python helpers (#5506). The diff here is those
+  two fixes (`common.ps1`, the git extension's Python scripts, git extension 1.0.8 to 1.0.9) plus
+  version stamps and install times. Templates, `extensions.yml` and the constitution are unchanged;
+  house-process 0.16.2 and house-constitution stay.
