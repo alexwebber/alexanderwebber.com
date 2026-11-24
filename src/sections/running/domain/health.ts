@@ -16,6 +16,8 @@
 //   nearest Garmin reading within 7 days either side as {lab, device, diff}, diff = lab - device.
 // - HRV (US5.7): the chart starts at the first reading, with a note naming the watch change behind
 //   it when the published runs show one around that date. Nothing is hard-coded.
+// - Known steps (FR-062a): the ingest publishes body fat joined across a reset of the scale's
+//   reference (health-steps.yaml); the chart says so, and whether a lab scan has checked the level.
 // - Fitness/fatigue/form (FR-060): intervals.icu's model (fitness = CTL, fatigue = ATL, form =
 //   fitness - fatigue, derived here, never stored). Both build up from zero where intervals.icu's
 //   history starts, so the chart starts 42 days (the CTL time constant) after the first point
@@ -23,7 +25,8 @@
 // - Manual Garmin figures (FR-069): training status and race predictions from manual-metrics.ts,
 //   each dated by its `as_of`; race predictions sit beside their race-time goals.
 import { addDays, daysBetween, formatDate } from '../../../shared/format/dates.ts';
-import type { LabMeasurement, Run } from '../data/store/index.ts';
+import { formatNumber } from '../../../shared/format/units.ts';
+import type { HealthStep, LabMeasurement, Run } from '../data/store/index.ts';
 import { trailingMean, type DatedValue } from './composition.ts';
 import { capitalise, distanceLabel, formatMetric, shortTargetText } from './goal-text.ts';
 import type { GoalEvaluation, RaceTimeEvaluation, ValueEvaluation, ValueMetric } from './goals.ts';
@@ -212,6 +215,27 @@ export function hrvStart(hrv: readonly DatedValue[], runs: readonly Pick<Run, 'd
 export function hrvNote(start: HrvStart): string {
   const when = `HRV readings start on ${formatDate(start.date)}`;
   return start.before && start.after ? `${when}, when the ${start.after} replaced the ${start.before}.` : `${when}.`;
+}
+
+/**
+ * The note under the body fat chart when the scale's readings are joined across a reset of its
+ * reference (FR-062a): "The scale's body composition reference was reset by hand on 6 Nov 2026, so
+ * its readings from that day on are raised by 8.5 percentage points to join the earlier ones. The
+ * level is the scale's own: no lab scan has checked it yet." Nothing without a step.
+ */
+export function bodyFatStepNote(steps: readonly Pick<HealthStep, 'metric' | 'date' | 'shift'>[], lab: readonly LabMeasurement[]): string | undefined {
+  const own = steps.filter((s) => s.metric === 'body_fat_pct').sort((a, b) => a.date.localeCompare(b.date));
+  if (own.length === 0) return undefined;
+  const size = (v: number) => formatNumber(Math.abs(v), 1, 2);
+  const dates = own.map((s) => formatDate(s.date));
+  const when = dates.length === 1 ? `on ${dates[0]}` : `on ${dates.slice(0, -1).join(', ')} and ${dates.at(-1)}`;
+  const how =
+    own.length === 1
+      ? `its readings from that day on are ${own[0]!.shift > 0 ? 'raised' : 'lowered'} by ${size(own[0]!.shift)} percentage points`
+      : `its readings from each of those days on are shifted (${own.map((s) => `${s.shift > 0 ? '+' : '−'}${size(s.shift)}`).join(', ')} percentage points)`;
+  const checked = lab.some((l) => l.values.body_fat_pct !== undefined);
+  const level = checked ? '' : " The level is the scale's own: no lab scan has checked it yet.";
+  return `The scale's body composition reference was reset by hand ${when}, so ${how} to join the earlier ones.${level}`;
 }
 
 // --- Fitness, fatigue and form (T156) -----------------------------------------------------

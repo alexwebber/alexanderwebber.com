@@ -269,6 +269,17 @@ export function validateRunning(root: string, options: ValidateOptions = {}): Da
     exclusionKeys.add(key);
   });
 
+  const steps = data.steps?.value ?? [];
+  const stepKeys = new Set<string>();
+  steps.forEach((step, i) => {
+    const key = `${step.metric} ${step.date}`;
+    if (stepKeys.has(key)) {
+      const { entry } = where('owner/health-steps', steps, [i]);
+      error(data.steps!.file, entry, '', 'is listed twice');
+    }
+    stepKeys.add(key);
+  });
+
   for (const { file, value: lab } of data.lab) {
     const expected = `${lab.date}-${lab.type}.yaml`;
     if (!file.endsWith(`/${expected}`)) error(file, '', '', `should be named ${expected}`);

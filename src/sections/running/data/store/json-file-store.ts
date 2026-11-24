@@ -66,6 +66,7 @@ export class JsonFileStore implements RunningStore {
         races: data.races.map((r) => r.value),
         overrides: data.overrides?.value ?? [],
         exclusions: data.exclusions?.value ?? [],
+        steps: data.steps?.value ?? [],
         lab: data.lab.map((l) => l.value),
         manualMetrics: {
           training_status: data.manualMetrics?.value.training_status ?? [],

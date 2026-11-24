@@ -62,10 +62,14 @@
     value: 93
     direction: at_most
 
+# Paused until a DEXA scan checks the scale's level (owner, 2026-11-24): the readings are joined
+# across the scale's reset of 6 Nov 2026 (health-steps.yaml), and status_override keeps the goal
+# from being called achieved on them.
 - id: body-fat-17-5
   type: body_composition
   title: Body fat 17.5%
-  description: Paused while the scale is recalibrated. Readings from 6 Nov 2026 are set aside.
+  description: Paused until a lab scan checks the scale's level; these figures are the scale's own.
+  status_override: active
   priority: 6
   featured: true
   created: 2025-10-01

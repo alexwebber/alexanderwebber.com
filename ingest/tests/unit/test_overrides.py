@@ -29,7 +29,7 @@ def test_no_owner_files_means_no_overrides(owner, schemas):
     inputs = load_owner(owner, schemas)
     assert inputs.override(RUN) == RunOverride()
     assert inputs.races == {} and inputs.exclusions == frozenset()
-    assert inputs.onwards == {}
+    assert inputs.onwards == {} and inputs.steps == {}
     assert inputs.goal_distances == ()
 
 
@@ -55,6 +55,40 @@ def test_an_onwards_exclusion_changes_only_the_files_it_reaches(owner, schemas):
         "body_fat_pct", *y2026
     )
     assert inputs.exclusion_hash("weight_kg", *y2026) == before.exclusion_hash("weight_kg", *y2026)
+
+
+def test_a_step_changes_only_the_files_it_reaches(owner, schemas):
+    write(
+        owner / "health-steps.yaml",
+        "- { metric: body_fat_pct, date: 2026-11-06, shift: 8.5, reason: reset }\n"
+        "- { metric: body_fat_pct, date: 2026-03-01, shift: -1, reason: earlier reset }\n",
+    )
+    inputs = load_owner(owner, schemas)
+    assert inputs.steps == {
+        "body_fat_pct": ((date(2026, 3, 1), -1.0), (date(2026, 11, 6), 8.5)),
+    }
+    before = OwnerInputs()
+    y2025 = (date(2025, 1, 1), date(2025, 12, 31))
+    y2026 = (date(2026, 1, 1), date(2026, 12, 31))
+    y2027 = (date(2027, 1, 1), date(2027, 12, 31))
+    assert inputs.exclusion_hash("body_fat_pct", *y2025) == before.exclusion_hash(
+        "body_fat_pct", *y2025
+    )
+    assert inputs.exclusion_hash("body_fat_pct", *y2026) != before.exclusion_hash(
+        "body_fat_pct", *y2026
+    )
+    # A later year's readings are shifted too, so its file depends on the steps as well.
+    assert inputs.exclusion_hash("body_fat_pct", *y2027) != before.exclusion_hash(
+        "body_fat_pct", *y2027
+    )
+    assert inputs.exclusion_hash("weight_kg", *y2026) == before.exclusion_hash("weight_kg", *y2026)
+
+
+def test_a_step_needs_a_non_zero_shift_and_a_reason(owner, schemas):
+    write(owner / "health-steps.yaml", "- { metric: body_fat_pct, date: 2026-11-06, shift: 0 }\n")
+    with pytest.raises(OwnerDataInvalid) as caught:
+        load_owner(owner, schemas)
+    assert len(caught.value.problems) == 2
 
 
 def test_everything_the_processor_reads(owner, schemas):
@@ -131,9 +165,14 @@ def test_duplicates_that_would_make_processing_ambiguous_are_errors(owner, schem
             owner / f"races/{slug}/race.yaml",
             f"slug: {slug}\nrun_id: {RUN}\ndate: 2026-10-11\ndistance: 5k\n",
         )
+    write(
+        owner / "health-steps.yaml",
+        "- { metric: body_fat_pct, date: 2026-11-06, shift: 8.5, reason: a }\n"
+        "- { metric: body_fat_pct, date: 2026-11-06, shift: 8.4, reason: b }\n",
+    )
     with pytest.raises(OwnerDataInvalid) as caught:
         load_owner(owner, schemas)
-    assert len(caught.value.problems) == 2
+    assert len(caught.value.problems) == 3
 
 
 def test_the_run_hash_changes_only_with_what_affects_the_run(owner, schemas):

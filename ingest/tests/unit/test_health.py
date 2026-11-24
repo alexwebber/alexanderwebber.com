@@ -1,4 +1,4 @@
-"""Published health series (T060, T081; FR-061, FR-062, FR-067)."""
+"""Published health series (T060, T081; FR-061, FR-062, FR-062a, FR-067)."""
 
 from datetime import date, timedelta
 
@@ -59,6 +59,24 @@ def test_an_onwards_exclusion_drops_every_later_reading_of_that_metric_only():
     daily = daily_values(readings, onwards={"body_fat_pct": D0 + timedelta(days=1)})
     assert daily["body_fat_pct"] == {D0: 25.6}
     assert daily["weight_kg"] == {D0 + timedelta(days=1): 100.0}
+
+
+def test_a_step_joins_every_later_reading_after_exclusions_and_steps_add_up():
+    readings = [
+        reading("body_fat_pct", 0, 25.8),
+        reading("body_fat_pct", 1, 13.5),  # settling, excluded
+        reading("body_fat_pct", 2, 17.7),
+        reading("body_fat_pct", 5, 18.1),
+        reading("weight_kg", 2, 100.139),
+    ]
+    steps = {"body_fat_pct": [(D0 + timedelta(days=1), 8.5), (D0 + timedelta(days=5), -1.2)]}
+    daily = daily_values(readings, excluded=[("body_fat_pct", D0 + timedelta(days=1))], steps=steps)
+    assert daily["body_fat_pct"] == {
+        D0: 25.8,
+        D0 + timedelta(days=2): 26.2,  # exactly: 17.7 + 8.5
+        D0 + timedelta(days=5): 25.4,  # 18.1 + 8.5 - 1.2
+    }
+    assert daily["weight_kg"] == {D0 + timedelta(days=2): 100.139}
 
 
 def test_individual_weights_are_never_output_and_other_metrics_are_as_recorded():

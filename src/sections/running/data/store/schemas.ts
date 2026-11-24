@@ -14,6 +14,7 @@ export const RUNNING_SCHEMAS = [
   'owner/race',
   'owner/run-overrides',
   'owner/health-exclusions',
+  'owner/health-steps',
   'owner/lab',
   'owner/manual-metrics',
   'owner/campaigns',

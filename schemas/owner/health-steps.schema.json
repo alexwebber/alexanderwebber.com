@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/owner/health-steps.schema.json",
+  "title": "HealthSteps",
+  "description": "data/running/owner/health-steps.yaml: known steps in a source's readings (FR-062a), such as a scale whose reference was reset by hand. Every reading of the metric from date on has shift added, so it joins the readings before the step; steps add up. Applied after exclusions and before any average is computed. List files carry no schema_version; they are always the current version.",
+  "type": "array",
+  "items": {
+    "title": "HealthStep",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["metric", "date", "shift", "reason"],
+    "properties": {
+      "metric": { "$ref": "../defs.schema.json#/$defs/goalMetric" },
+      "date": { "$ref": "../defs.schema.json#/$defs/date" },
+      "shift": {
+        "description": "Added to every reading of the metric from date on, in the metric's unit: the earlier readings' level minus the later readings' level, measured once the source has settled.",
+        "type": "number",
+        "not": { "const": 0 }
+      },
+      "reason": { "$ref": "../defs.schema.json#/$defs/text" }
+    }
+  }
+}

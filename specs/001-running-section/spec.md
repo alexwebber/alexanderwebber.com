@@ -465,6 +465,10 @@ point is visibly distinct and labelled, and no sleep, stress or Body Battery dat
 - **FR-061**: Weight MUST be shown only as a 7-day moving average (trend chart and current value),
   never as individual daily readings.
 - **FR-062**: Body fat % MUST be shown as recorded values, with a trend line.
+- **FR-062a**: Where a source's readings step because its reference was reset (a scale's body
+  composition set by hand), the owner MUST be able to record the step (date and size) so that
+  every later reading is shifted to join the earlier ones, and the chart MUST say so and whether a
+  lab scan has checked the level (added 2026-11-24).
 - **FR-063**: Where a goal exists for a displayed metric, its chart MUST mark the target.
 - **FR-064**: The owner MUST be able to add lab reference measurements via the site's files — date,
   type (e.g. DEXA scan, lab VO2 max test), provider, and measured values for metrics the section

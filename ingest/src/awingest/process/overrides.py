@@ -1,5 +1,5 @@
-"""The owner files the processor needs (T061): run overrides, health exclusions, the run-linked
-race entries and the goal distances.
+"""The owner files the processor needs (T061): run overrides, health exclusions and steps, the
+run-linked race entries and the goal distances.
 
 Each file is read with YAML 1.2 rules (``awingest.yaml12``, as the site reads it) and validated
 against its schema; any problem raises ``OwnerDataInvalid`` naming the file, entry and field,
@@ -29,6 +29,7 @@ from awingest.schemas import SchemaSet
 OWNER_FILES = {
     "run-overrides.yaml": "owner/run-overrides",
     "health-exclusions.yaml": "owner/health-exclusions",
+    "health-steps.yaml": "owner/health-steps",
     "goals.yaml": "owner/goals",
 }
 
@@ -76,6 +77,8 @@ class OwnerInputs:
     exclusions: frozenset[tuple[str, date]] = frozenset()
     # Metric -> the first day of an open-ended exclusion (``onwards: true``).
     onwards: Mapping[str, date] = field(default_factory=dict)
+    # Metric -> its known steps (``health-steps.yaml``) as (first day, shift), oldest first.
+    steps: Mapping[str, tuple[tuple[date, float], ...]] = field(default_factory=dict)
     goal_distances: tuple[float, ...] = ()
 
     def override(self, run_id: str) -> RunOverride:
@@ -96,9 +99,15 @@ class OwnerInputs:
             d.isoformat() for m, d in self.exclusions if m == metric and start <= d <= end
         )
         first = self.onwards.get(metric)
-        if first is None or first > end:
-            return _sha256(days)  # unchanged for files no open-ended exclusion reaches
-        return _sha256({"days": days, "onwards": max(first, start).isoformat()})
+        steps = [[d.isoformat(), shift] for d, shift in self.steps.get(metric, ()) if d <= end]
+        if (first is None or first > end) and not steps:
+            return _sha256(days)  # unchanged for files no open-ended exclusion or step reaches
+        doc: dict[str, Any] = {"days": days}
+        if first is not None and first <= end:
+            doc["onwards"] = max(first, start).isoformat()
+        if steps:
+            doc["steps"] = steps
+        return _sha256(doc)
 
 
 def _sha256(value: Any) -> str:
@@ -162,6 +171,17 @@ def load_owner(
             day = date.fromisoformat(item["date"])
             onwards[item["metric"]] = min(day, onwards.get(item["metric"], day))
 
+    steps: dict[str, list[tuple[date, float]]] = {}
+    for item in files["health-steps.yaml"] or []:
+        day = date.fromisoformat(item["date"])
+        metric_steps = steps.setdefault(item["metric"], [])
+        if any(d == day for d, _ in metric_steps):
+            problems.append(
+                f"{rel_root}/health-steps.yaml {item['metric']} {item['date']}: is listed twice"
+            )
+            continue
+        metric_steps.append((day, float(item["shift"])))
+
     distances = set()
     for goal in files["goals.yaml"] or []:
         if goal.get("type") == "race_time":
@@ -195,5 +215,6 @@ def load_owner(
         races=races,
         exclusions=exclusions,
         onwards=onwards,
+        steps={m: tuple(sorted(v)) for m, v in steps.items()},
         goal_distances=tuple(sorted(distances)),
     )

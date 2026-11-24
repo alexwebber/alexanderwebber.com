@@ -30,7 +30,10 @@
 - due: 2027-01-04
   task: >-
     001 T142: ask the owner whether a DEXA or lab VO2 max test is booked (expected in 2027; they
-    said so on 2026-11-05). When a result comes, offer the plainer wording first: "Lab test (Clinic,
+    said so on 2026-11-05). The DEXA waits until his weight is about 93 kg (owner, 2026-11-24): if
+    it isn't there yet, move this trigger on. The first DEXA anchors body fat's level (an offset per
+    scan, sliding between scans; DECISIONS.md 2026-11-24), which is built when the result comes,
+    and the body fat goal's pause ends then. When a result comes, offer the plainer wording first: "Lab test (Clinic,
     15 Mar 2026): 51.0. Your Garmin said 54 that day, 3.0 higher than the lab." The built wording is
     the alternative. If not booked, move this trigger on.
 - due: 2027-04-05

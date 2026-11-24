@@ -16,6 +16,7 @@ import type {
   CampaignStory,
   Goal,
   HealthExclusion,
+  HealthStep,
   HealthSeries,
   JourneyChapter,
   JourneyClosing,
@@ -58,6 +59,7 @@ export interface RunningData {
   races: Loaded<Race>[];
   overrides: Loaded<RunOverride[]> | undefined;
   exclusions: Loaded<HealthExclusion[]> | undefined;
+  steps: Loaded<HealthStep[]> | undefined;
   lab: Loaded<LabMeasurement>[];
   manualMetrics: Loaded<ManualMetrics> | undefined;
   campaigns: Loaded<Campaign[]> | undefined;
@@ -84,6 +86,7 @@ const LIST_NOUNS: Partial<Record<RunningSchema, string>> = {
   'owner/upcoming-races': 'upcoming race',
   'owner/run-overrides': 'override',
   'owner/health-exclusions': 'exclusion',
+  'owner/health-steps': 'step',
   'owner/campaigns': 'campaign',
 };
 
@@ -216,7 +219,7 @@ export function locate(schema: RunningSchema, value: unknown, path: Path): { ent
     const item = at(value, head);
     const id = at(item, 'id');
     let label = typeof id === 'string' ? `"${id}"` : String(head + 1);
-    if (schema === 'owner/health-exclusions') label = `${head + 1} (${at(item, 'metric')} ${at(item, 'date')})`;
+    if (schema === 'owner/health-exclusions' || schema === 'owner/health-steps') label = `${head + 1} (${at(item, 'metric')} ${at(item, 'date')})`;
     return { entry: `${listNoun} ${label}`, field: fieldPath(rest) };
   }
   if (schema === 'owner/manual-metrics' && typeof head === 'string' && typeof rest[0] === 'number') {
@@ -270,6 +273,7 @@ function schemaForFile(file: string): RunningSchema | undefined {
     [/^owner\/upcoming-races\.yaml$/, 'owner/upcoming-races'],
     [/^owner\/run-overrides\.yaml$/, 'owner/run-overrides'],
     [/^owner\/health-exclusions\.yaml$/, 'owner/health-exclusions'],
+    [/^owner\/health-steps\.yaml$/, 'owner/health-steps'],
     [/^owner\/manual-metrics\.yaml$/, 'owner/manual-metrics'],
     [/^owner\/campaigns\.yaml$/, 'owner/campaigns'],
     [/^owner\/stories\/[^/]+\.yaml$/, 'owner/campaign-story'],
@@ -320,6 +324,7 @@ export function loadRunningData(root: string, schemaRoot: string = root): LoadRe
     races: [],
     overrides: undefined,
     exclusions: undefined,
+    steps: undefined,
     lab: [],
     manualMetrics: undefined,
     campaigns: undefined,
@@ -433,6 +438,7 @@ function store(data: RunningData, schema: RunningSchema, loaded: Loaded<unknown>
     case 'owner/race': data.races.push(loaded as Loaded<Race>); break;
     case 'owner/run-overrides': data.overrides = loaded as Loaded<RunOverride[]>; break;
     case 'owner/health-exclusions': data.exclusions = loaded as Loaded<HealthExclusion[]>; break;
+    case 'owner/health-steps': data.steps = loaded as Loaded<HealthStep[]>; break;
     case 'owner/lab': data.lab.push(loaded as Loaded<LabMeasurement>); break;
     case 'owner/manual-metrics': data.manualMetrics = loaded as Loaded<ManualMetrics>; break;
     case 'owner/campaigns': data.campaigns = loaded as Loaded<Campaign[]>; break;

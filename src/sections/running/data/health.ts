@@ -7,7 +7,7 @@
 // are published, so nothing here needs to drop them again.
 import { today as londonToday } from '../../../shared/format/dates.ts';
 import type { DatedValue } from '../domain/composition.ts';
-import { dailyMetric, fitnessSeries, fitnessStart, goalFor, hrvStart, predictionRows, type DailyMetric, type FitnessPoint, type HrvStart, type PredictionRow } from '../domain/health.ts';
+import { bodyFatStepNote, dailyMetric, fitnessSeries, fitnessStart, goalFor, hrvStart, predictionRows, type DailyMetric, type FitnessPoint, type HrvStart, type PredictionRow } from '../domain/health.ts';
 import type { GoalEvaluation, ValueEvaluation } from '../domain/goals.ts';
 import { trainingStatusHistory, type CurrentTrainingStatus } from '../domain/manual-metrics.ts';
 import { loadGoals } from './goals.ts';
@@ -20,6 +20,8 @@ export interface HealthData {
   /** Published 7-day average only (FR-061). */
   weight: DatedValue[];
   bodyFat: DailyMetric;
+  /** Under the body fat chart when its readings are joined across a reset of the scale (FR-062a). */
+  bodyFatNote?: string;
   vo2max: DatedValue[];
   restingHr: DailyMetric;
   hrv: DailyMetric;
@@ -63,6 +65,7 @@ const load = perStoreAndDay(async (today, store): Promise<HealthData> => {
     today,
     weight,
     bodyFat: dailyMetric(bodyFat),
+    ...opt('bodyFatNote', bodyFatStepNote(owner.steps, owner.lab)),
     vo2max,
     restingHr: dailyMetric(restingHr),
     hrv: dailyMetric(hrv),

@@ -199,7 +199,7 @@ data/running/
 │   ├── health/<metric>/<yyyy>.json
 │   ├── state/{refresh.json,manifest.json}
 ├── owner/                     # HAND-EDITED YAML (agent-assisted), PR-reviewed
-│   ├── section.yaml  goals.yaml  upcoming-races.yaml  run-overrides.yaml  health-exclusions.yaml
+│   ├── section.yaml  goals.yaml  upcoming-races.yaml  run-overrides.yaml  health-exclusions.yaml  health-steps.yaml
 │   ├── manual-metrics.yaml    #   dated Garmin training status + race predictions (as_of)
 │   ├── races/<slug>/race.yaml + photos/*.jpg|webp
 │   └── lab/<yyyy-mm-dd>-<type>.yaml
