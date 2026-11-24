@@ -108,7 +108,8 @@ recorded in R2 `state/run-ids.json`. **Provider activity IDs (intervals.icu IDs,
 | `device` | string? | The Garmin watch that recorded the run (e.g. `Venu X1`), for the Garmin attribution (FR-077); a plain model name only, omitted when unknown or not Garmin. Owner-approved 2026-10-18 |
 | `distance_m`, `moving_s`, `elapsed_s` | number | |
 | `elevation_gain_m`, `elevation_loss_m` | number? | |
-| `elev_drift_m` | number? | Altimeter drift taken out of `series.elev` and the splits' `elev_delta_m`: the trace is levelled to end at its start plus (gain − loss), spread evenly over the run's time. Omitted when under 1 m or not levelled (owner, 2026-11-19) |
+| `elev_drift_m` | number? | The largest altimeter drift taken out of `series.elev` and the splits' `elev_delta_m`, signed. Fitted from the places the run passes more than once, or, with too few of those, the trace is levelled to end at its start plus (gain − loss), spread evenly over the run's time. Omitted when under 1 m or not corrected (owner, 2026-11-19, 2026-11-20) |
+| `elev_drift_method` | enum? | `repeat-passes` or `totals`: which of the two found the drift. Present with `elev_drift_m` (owner, 2026-11-20) |
 | `avg_pace_s_per_km`, `best_pace_s_per_km` | number | Average over moving time; best = the fastest kilometre (the 1 km best effort) if plausible, else the average |
 | `hr` | `{avg,max}`? | Omitted when not recorded (FR-048) |
 | `cadence_avg`, `stride_m_avg`, `power_w_avg` | number? | Omitted when absent |

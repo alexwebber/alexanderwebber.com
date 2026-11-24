@@ -38,8 +38,12 @@
     "elevation_gain_m": { "type": "number", "minimum": 0 },
     "elevation_loss_m": { "type": "number", "minimum": 0 },
     "elev_drift_m": {
-      "description": "Metres of altimeter drift taken out of the elevation series and splits: the recorded trace's end minus where the watch's gain and loss put it. Omitted when the trace wasn't levelled.",
+      "description": "The largest altimeter drift taken out of the elevation series and splits, in metres, signed (negative: the watch read too low). Omitted when the trace wasn't corrected.",
       "type": "number"
+    },
+    "elev_drift_method": {
+      "description": "How the drift was found: repeat-passes (from the places the run passes more than once) or totals (levelled to the watch's gain and loss). Present with elev_drift_m.",
+      "enum": ["repeat-passes", "totals"]
     },
     "avg_pace_s_per_km": { "$ref": "../defs.schema.json#/$defs/paceSecondsPerKm" },
     "best_pace_s_per_km": { "$ref": "../defs.schema.json#/$defs/paceSecondsPerKm" },

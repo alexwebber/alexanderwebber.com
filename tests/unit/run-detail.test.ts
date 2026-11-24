@@ -117,6 +117,11 @@ describe('run detail domain', () => {
       "The watch's altimeter drifted 11 m lower over this run, so the line is levelled evenly across it to end where Garmin's climb and descent totals put it.",
     );
     expect(elevationNote({ elev_drift_m: 8 })).toContain('drifted 8 m higher');
+    expect(elevationNote({ elev_drift_m: 8, elev_drift_method: 'totals' })).toContain('drifted 8 m higher over this run');
+    // Fitted from repeat passes (owner, 2026-11-20): the largest drift, said as "up to".
+    expect(elevationNote({ elev_drift_m: -18.2, elev_drift_method: 'repeat-passes' })).toBe(
+      "The watch's altimeter drifted up to 18 m lower during this run, so the line is corrected using the places the run passes more than once.",
+    );
     expect(elevationNote({ elev_drift_m: 0.4 })).toBeUndefined();
     expect(seriesCharts(fullRun({ elev_drift_m: -10.6 })).filter((c) => c.note).map((c) => c.key)).toEqual(['elev']);
   });
@@ -178,9 +183,9 @@ describe('run page (T121)', () => {
   });
 
   it('notes the levelled altimeter drift under the elevation chart, on both axes', async () => {
-    const html = await render(fullRun({ elev_drift_m: -9.2 }));
+    const html = await render(fullRun({ elev_drift_m: -9.2, elev_drift_method: 'repeat-passes' }));
     expect(html.match(/<p class="chart-figure-note"[^>]*>[^<]*/g)?.length).toBe(2);
-    expect(text(html)).toContain("The watch's altimeter drifted 9 m lower over this run");
+    expect(text(html)).toContain("The watch's altimeter drifted up to 9 m lower during this run");
   });
 
   it('plots against distance by default with a CSS-only switch to elapsed time, never clock time (FR-013)', async () => {

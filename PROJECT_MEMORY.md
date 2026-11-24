@@ -22,9 +22,12 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   from the private repo `alexwebber/hq` (`C:\Projects\hq`, set up 2026-11-14), not this site. This
   repo is one stream among several (HQ's *maintenance* and, later, the CV page and blog). A session
   on any other stream opens in `C:\Projects\hq`.
-- **Elevation levelled (2026-11-19, this PR):** every outdoor run's altitude trace is levelled to
-  the watch's gain and loss (`DECISIONS.md`); `PROCESSOR_VERSION` 6 republishes every run at the
-  first Refresh after the merge. After it: check a few run pages' elevation charts and notes live.
+- **Elevation corrected from repeat passes (2026-11-20, this PR):** the altimeter's drift is fitted
+  from the places a run passes more than once, with the 2026-11-19 gain-and-loss levelling as the
+  fallback (`DECISIONS.md`). `PROCESSOR_VERSION` 7 republishes every run only when Refresh fetches
+  something new or at its 00:17 UTC daily run: after the merge, dispatch Refresh with
+  `reimport_from=<today>` and `missing_only=true`, then check a few run pages' charts and notes
+  live. To be re-evaluated once it has been live for a while (owner).
 - **Next session (here):** work in this repo comes from HQ's *maintenance* stream, in this
   order: body fat's recalibration (research and a question round), then the recurring site-upkeep task. astro 7.4.13 and maplibre-gl 6.19.0 are routine bumps with no
   security alert: skipped. Sessions open in `C:\Projects\hq`. Nothing from the career repo comes
