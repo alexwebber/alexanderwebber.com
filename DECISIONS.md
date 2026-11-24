@@ -2471,3 +2471,28 @@ end. Add each new decision as a dated entry at the end, as it's made.
   two fixes (`common.ps1`, the git extension's Python scripts, git extension 1.0.8 to 1.0.9) plus
   version stamps and install times. Templates, `extensions.yml` and the constitution are unchanged;
   house-process 0.16.2 and house-constitution stay.
+- **2026-11-24** — **Spec 004, the interactive CV** (three question rounds; every pick the
+  recommended option unless noted). The CV now exists as a plain text CV and a single-page visual
+  CV (a landscape swimlane timeline), both in the private career repo; this spec makes the third,
+  interactive form at `/cv`.
+  - **The whole CV on one page, the timeline at its heart:** pitch, the interactive timeline, the
+    other approved blocks, contact and downloads, so a reader arriving from a paper CV's link lands
+    on something complete.
+  - **Tapping a change opens a short card with its "why"** (one to three sentences on the problem it
+    solved and what it changed), drafted and approved in the career repo before go-live; value
+    changes link to their full story.
+  - **The timeline draws itself on first view** (about 3 s, skippable, none with reduced motion);
+    drills animate after that.
+  - **On a phone held upright, time runs down the page**; landscape swimlanes from tablet width up.
+  - **Email and LinkedIn, no phone number**, on the page.
+  - **Both PDFs as downloads**, without the phone number (owner, not one of the options offered: "I
+    think we can offer both as their initial version, but we'll want to polish both, possibly
+    incrementally (i.e. more than once)"). So each new approved version replaces the old at the
+    same link (FR-020).
+  - **Built now, real text later:** the page is built and tested with made-up text; the real text
+    comes in only after the owner's sharing rules are re-checked with them (FR-023).
+  - **The visual CV's look carries over** to the page.
+  - **Weekly view and download counts from server-side data**, no script on the page, if
+    Cloudflare's free plan gives them per page (checked in the plan; dropped if not).
+  - **The 2026-11-23 career trigger is removed**: what it asked for is now tracked outside this
+    repo, with the owner.

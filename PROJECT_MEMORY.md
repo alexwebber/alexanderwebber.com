@@ -12,12 +12,13 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
   page type. House-process 0.16.2 is installed. Open: 003's standing follow-ups (T090–T092, below).
-- **Career and CV (2026-11-14):** career#6 and #7 hold the interview and the owner's notes on the
-  first draft (`C:\temp\cv\`, a content draft only). The CV becomes three outputs from the SSOT: a
-  single-page visual hard copy with a plain twin for job sites, the site's interactive CV (spec 004)
-  and LinkedIn. Content first, then the redesign. A trigger (2026-11-23) reminds the agent to ask for
-  the material the owner will bring after next week. The draft is rebuilt with `C:\temp\cv\build.js`
-  (`docx@9`), `topdf.ps1` (Word COM) and `render.py` (PyMuPDF).
+- **Spec 004, the interactive CV (2026-11-24):** the spec is written (`specs/004-interactive-cv/`,
+  from three question rounds; `DECISIONS.md`). **Next: `/speckit-plan`**, in a session opened from
+  HQ's *career* stream. The plan checks whether Cloudflare's free plan gives per-page counts (US6),
+  sets the phone/landscape width and the card text budget, and offers mock-ups of the phone form if
+  the owner wants them. Real CV text comes in only after the owner's sharing rules are re-checked
+  (FR-023); until then, made-up text in a test-only preview. The CV's paper forms are done in the
+  private career repo; nothing comes here before the owner approves that exact text.
 - **Parallel workstreams (owner, 2026-11-14):** several workstreams run side by side, coordinated
   from the private repo `alexwebber/hq` (`C:\Projects\hq`, set up 2026-11-14), not this site. This
   repo is one stream among several (HQ's *maintenance* and, later, the CV page and blog). A session
