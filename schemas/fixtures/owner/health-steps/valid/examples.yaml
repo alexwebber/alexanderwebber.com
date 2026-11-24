@@ -1,0 +1,2 @@
+- { metric: body_fat_pct, date: 2026-11-06, shift: 8.5, reason: "scale reference reset by hand" }
+- { metric: body_fat_pct, date: 2027-03-01, shift: -0.4, reason: "reference set to a DEXA result" }

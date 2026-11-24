@@ -7,17 +7,20 @@ Approved-metric readings become one series per metric:
   from the first weigh-in to the last day with any wellness data, so a week without weighing
   ends the series; individual weigh-ins are never output (FR-061).
 - ``body_fat_pct``, ``hrv`` (rMSSD), ``vo2max``, ``resting_hr``, ``fitness_ctl`` and
-  ``fatigue_atl``: as recorded, one per day. intervals.icu supplies no HRV baseline, so no
+  ``fatigue_atl``: as recorded, one per day, except where a known step is joined (below). intervals.icu supplies no HRV baseline, so no
   baseline fields are written. Form (fitness - fatigue) is derived by the site, never stored.
 
 Owner exclusions (``health-exclusions.yaml``) are removed before anything is computed, so an
-excluded weigh-in doesn't reach any average (FR-067). Training status and race predictions are
+excluded weigh-in doesn't reach any average (FR-067). Then known steps (``health-steps.yaml``,
+FR-062a) are joined: every reading from a step's date on has its shift added, so a source whose
+reference was reset carries on from its earlier readings. Training status and race predictions are
 owner data, not series.
 """
 
 from collections import defaultdict
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import date, timedelta
+from decimal import Decimal
 
 from awingest.providers.base import NormalisedHealthReading
 
@@ -41,17 +44,27 @@ def daily_values(
     readings: Iterable[NormalisedHealthReading],
     excluded: Iterable[tuple[str, date]] = (),
     onwards: Mapping[str, date] | None = None,
+    steps: Mapping[str, Sequence[tuple[date, float]]] | None = None,
 ) -> dict[str, dict[date, float]]:
-    """Source metric -> {date: value}, with excluded readings removed: single days, and every day
-    from a metric's ``onwards`` date on."""
+    """Source metric -> {date: value}, with excluded readings removed (single days, and every day
+    from a metric's ``onwards`` date on) and known steps joined."""
     skip = set(excluded)
     from_day = onwards or {}
     out: dict[str, dict[date, float]] = defaultdict(dict)
     for r in readings:
         first = from_day.get(r.metric)
         if (r.metric, r.date) not in skip and (first is None or r.date < first):
-            out[r.metric][r.date] = r.value
+            out[r.metric][r.date] = joined(r.value, r.date, (steps or {}).get(r.metric, ()))
     return out
+
+
+def joined(value: float, day: date, steps: Iterable[tuple[date, float]]) -> float:
+    """``value`` plus the shift of every step on or before ``day``. Decimal sums, so 17.7 + 8.5
+    is 26.2, not 26.199999999999996."""
+    shifts = [shift for first, shift in steps if first <= day]
+    if not shifts:
+        return value
+    return float(Decimal(str(value)) + sum(Decimal(str(s)) for s in shifts))
 
 
 def trailing_mean(

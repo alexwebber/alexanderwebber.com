@@ -1,0 +1,13 @@
+# Known steps in a source's readings (FR-062a; schemas/owner/health-steps.schema.json): every
+# reading of the metric from the date on has the shift added, joining it to the readings before.
+
+# The scale's body fat (owner, 2026-11-24): on 6 Nov 2026 Garmin's Set Body Composition was set to
+# 18% from a photo estimate, and the Index S2 estimates every later weigh-in from that reference,
+# at the same weight. Median of the eight readings 28 Oct-5 Nov: 25.8; of the ten from 10 to 19 Nov:
+# 17.35 (means 25.81 and 17.29), so the step is 8.45 to 8.52 points: 8.5. The joined series is the
+# scale's own trend on its original basis, not checked against a lab scan. When a DEXA scan comes,
+# its result anchors the level (an offset per scan, sliding between scans; DECISIONS.md 2026-11-24).
+- metric: body_fat_pct
+  date: 2026-11-06
+  shift: 8.5
+  reason: Garmin's body composition reference was reset by hand to 18% from a photo estimate.

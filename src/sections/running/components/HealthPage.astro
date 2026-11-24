@@ -8,7 +8,8 @@
 //   with the change since the goal's start, then the quieter change since the all-time reference,
 //   worded as on the Goals page card.
 // - Body fat, resting HR and HRV: each reading a faint dot under the 7-day average line; the
-//   headline is the 7-day average, labelled so (like the goal cards).
+//   headline is the 7-day average, labelled so (like the goal cards). Body fat joined across a
+//   reset of the scale's reference carries a note saying so (FR-062a).
 // - Targets come from the goals (FR-063); lab results are labelled markers with a comparison
 //   against the nearest Garmin reading within 7 days (FR-065).
 // - Garmin attribution: plain "Garmin" under the heading (the page mixes the scale, the watch's
@@ -104,6 +105,7 @@ const description = weightNow
     >
       <GarminAttribution slot="source" scale />
       <MetricNow slot="lead" lines={bodyFatLines} value={bodyFatNow && reading('body_fat_pct')(bodyFatNow.value)} basis="7-day average" date={bodyFatNow?.date} target={targetText(goals.bodyFat)} />
+      {data.bodyFatNote && <p class="metric-note" data-body-fat-note>{data.bodyFatNote}</p>}
       <LabComparison comparisons={comparisons('body_fat_pct', data.bodyFat.readings)} metric="body_fat_pct" device={scaleName} />
     </MetricTrendChart>
 
@@ -154,5 +156,10 @@ const description = weightNow
 <style>
   .health-page > :global(section) {
     margin-bottom: var(--space-6);
+  }
+
+  .metric-note {
+    margin: 0 0 var(--space-3);
+    color: var(--color-text-secondary);
   }
 </style>

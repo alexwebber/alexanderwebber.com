@@ -29,9 +29,15 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   something new or at its 00:17 UTC daily run: after the merge, dispatch Refresh with
   `reimport_from=<today>` and `missing_only=true`, then check a few run pages' charts and notes
   live. To be re-evaluated once it has been live for a while (owner).
+- **Body fat joined across the scale's reset (2026-11-24, this PR):** `health-steps.yaml`
+  (FR-062a) shifts readings from 6 Nov 2026 by 8.5 points; the goal stays paused until a DEXA at
+  about 93 kg (`DECISIONS.md`). The merge changes owner files, so its push
+  starts a Refresh that republishes the 2026 body fat file; then check `/running/health/` for the
+  joined chart, its note and the goal card.
 - **Next session (here):** work in this repo comes from HQ's *maintenance* stream, in this
-  order: body fat's recalibration (research and a question round), then the recurring site-upkeep task. astro 7.4.13 and maplibre-gl 6.19.0 are routine bumps with no
-  security alert: skipped. Sessions open in `C:\Projects\hq`. Nothing from the career repo comes
+  order: T149 (due since 2026-11-23; needs each run's sync time against its publish time, not
+  just the Refresh run list), then the recurring site-upkeep task. astro 7.4.13 and maplibre-gl
+  6.19.0 are routine bumps with no security alert: skipped. Sessions open in `C:\Projects\hq`. Nothing from the career repo comes
   into this repo before the owner approves that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;

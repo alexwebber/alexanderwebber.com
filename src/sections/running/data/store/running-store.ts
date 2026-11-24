@@ -7,6 +7,7 @@ import type {
   CampaignStory,
   Goal,
   HealthExclusion,
+  HealthStep,
   HealthSeries,
   JourneyChapter,
   JourneyClosing,
@@ -34,6 +35,7 @@ export type {
   CampaignStory,
   Goal,
   HealthExclusion,
+  HealthStep,
   HealthSeries,
   JourneyChapter,
   JourneyClosing,
@@ -82,6 +84,8 @@ export interface OwnerData {
   races: Race[];
   overrides: RunOverride[];
   exclusions: HealthExclusion[];
+  /** Known steps in a source's readings (health-steps.yaml), already joined in the published series. */
+  steps: HealthStep[];
   /** Sorted by date, oldest first. */
   lab: LabMeasurement[];
   /** Empty lists until manual-metrics.yaml exists ("not recorded yet"). */

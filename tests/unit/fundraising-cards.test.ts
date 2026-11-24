@@ -239,6 +239,7 @@ function pageStore({ campaigns = [campaignOn('seaside-2027')], figures = [], upc
       races,
       overrides: [],
       exclusions: [],
+      steps: [],
       lab: [],
       manualMetrics: { training_status: [], race_predictions: [] },
       campaigns,

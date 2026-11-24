@@ -8,6 +8,7 @@ import { allTimeText, startChangeText } from '../../src/sections/running/domain/
 import type { ValueEvaluation } from '../../src/sections/running/domain/goals.ts';
 import {
   FITNESS_MODEL_LABEL,
+  bodyFatStepNote,
   chartRanges,
   compareLab,
   dailyMetric,
@@ -142,6 +143,29 @@ describe('HRV start (US5.7)', () => {
     const late = [{ date: '2025-11-20', device: 'Venu 2 Plus' }, { date: '2026-01-10', device: 'Venu X1' }];
     expect(hrvNote(hrvStart(hrv, late)!)).toBe('HRV readings start on 1 Dec 2025.');
     expect(hrvStart([], runs)).toBeUndefined();
+  });
+});
+
+describe('body fat joined across a reset of the scale (FR-062a)', () => {
+  const step = { metric: 'body_fat_pct' as const, date: '2026-11-06', shift: 8.5 };
+  const dexa: LabMeasurement = { date: '2027-03-01', type: 'dexa', provider: 'Clinic', values: { body_fat_pct: 21.4 } };
+
+  it('says when and by how much, and that no lab scan has checked the level', () => {
+    expect(bodyFatStepNote([step], [])).toBe(
+      "The scale's body composition reference was reset by hand on 6 Nov 2026, so its readings from that day on are raised by 8.5 percentage points to join the earlier ones. The level is the scale's own: no lab scan has checked it yet.",
+    );
+  });
+
+  it('drops the lab sentence once a scan has a body fat figure, and lists several steps', () => {
+    const later = { metric: 'body_fat_pct' as const, date: '2027-03-02', shift: -0.4 };
+    expect(bodyFatStepNote([later, step], [dexa])).toBe(
+      "The scale's body composition reference was reset by hand on 6 Nov 2026 and 2 Mar 2027, so its readings from each of those days on are shifted (+8.5, −0.4 percentage points) to join the earlier ones.",
+    );
+  });
+
+  it('says nothing without a body fat step', () => {
+    expect(bodyFatStepNote([], [dexa])).toBeUndefined();
+    expect(bodyFatStepNote([{ ...step, metric: 'weight_kg' }], [])).toBeUndefined();
   });
 });
 

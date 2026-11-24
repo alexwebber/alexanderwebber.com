@@ -16,6 +16,7 @@ data/running/owner/section.yaml                      schemas/owner/section.schem
 data/running/owner/upcoming-races.yaml               schemas/owner/upcoming-races.schema.json
 data/running/owner/run-overrides.yaml                schemas/owner/run-overrides.schema.json
 data/running/owner/health-exclusions.yaml            schemas/owner/health-exclusions.schema.json
+data/running/owner/health-steps.yaml                 schemas/owner/health-steps.schema.json
 data/running/owner/races/<slug>/race.yaml            schemas/owner/race.schema.json
 data/running/owner/lab/<date>-<type>.yaml            schemas/owner/lab.schema.json
 data/running/owner/manual-metrics.yaml               schemas/owner/manual-metrics.schema.json
@@ -152,6 +153,11 @@ race_predictions:
 # health-exclusions.yaml
 - { metric: weight_kg, date: 2026-09-14, reason: "partner stepped on the scale" }
 - { metric: body_fat_pct, date: 2026-11-06, onwards: true, reason: "scale being recalibrated" }  # this day and every later one
+```
+
+```yaml
+# health-steps.yaml (FR-062a): every reading from date on has shift added; applied after exclusions
+- { metric: body_fat_pct, date: 2026-11-06, shift: 8.5, reason: "scale reference reset by hand" }
 ```
 
 ```yaml

@@ -2498,3 +2498,20 @@ end. Add each new decision as a dated entry at the end, as it's made.
     Cloudflare's free plan gives them per page (checked in the plan; dropped if not).
   - **The 2026-11-23 career trigger is removed**: what it asked for is now tracked outside this
     repo, with the owner.
+- **2026-11-24** — **Body fat joined across the scale's reset; the goal stays paused** (owner).
+  The 6 Nov 2026 drop was the scale, not the body: Garmin estimates every
+  weigh-in from the *Set Body Composition* reference, which was set to 18% from a photo estimate.
+  At the same weight the Index S2 read a median of 25.8% (28 Oct-5 Nov, eight readings) and 17.35%
+  (10-19 Nov, ten), means 25.81 and 17.29: a step of 8.45 to 8.52 points, taken as 8.5 so every
+  reading keeps one decimal. A new owner file, `health-steps.yaml` (FR-062a), adds the shift to
+  every reading from the step's date on, after exclusions and before any average; the open-ended
+  exclusion of 2026-11-19 goes, and the three days the scale was settling (6, 7 and 9 Nov: 18.2,
+  13.5, 12.9) are excluded singly. Joined, the readings run 25.4-26.2% from 10 Nov with no visible
+  step; the 7-day average is 25.7% on 19 Nov. Additive, not proportional: the two differ by under
+  0.1 points over the month of evidence, and the later DEXA design is an offset too. The chart's
+  note says the level is the scale's own until a lab scan has checked it. The 17.5% goal stays
+  paused (`status_override: active`, its card says so) until the DEXA. **The owner's picks for
+  what comes next:** a DEXA scan at about 93 kg, not before (T142 says so); then the scale's
+  reference is set to the DEXA figure (one more step in `health-steps.yaml`), and the DEXA anchors
+  the level: an offset per scan, sliding linearly between scans and held before the first and
+  after the last, built when the first result comes. Nothing short of a lab scan sets the level.
