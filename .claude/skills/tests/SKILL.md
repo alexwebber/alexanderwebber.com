@@ -56,10 +56,11 @@ II(a)). Playwright page tests have their own skill, `page-tests`.
 
 - `npm test` (runs `gen-types` first); one file: `npx vitest run tests/unit/<file>.test.ts`.
 - `cd ingest; uv run pytest` when `schemas/` or `ingest/` changed.
-- `node scripts/process/pr-ready.ts --suites` runs what the branch's changes need.
+- `node scripts/process/pr-ready.ts` runs the touched files' tests; the PR's checks run the full
+  suites. `--suites` runs them here, for what CI can't cover (`/pr-ready` says when).
 
 ## Done when
 
 - Each new behaviour has a test that fails when the behaviour breaks: break it once, see it fail.
-- The suites `--suites` picks are green, and no test reads the real `data/` unless it's meant to (the
-  "parses the repo file" kind).
+- The touched files' tests and the PR's checks are green, and no test reads the real `data/`
+  unless it's meant to (the "parses the repo file" kind).

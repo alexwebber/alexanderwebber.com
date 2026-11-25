@@ -1,12 +1,16 @@
-// The PR routine's checks for the current branch (/pr-ready skill): a private-term search, a dist/
-// comparison against the branch's base on main, and the PR's own checks once it exists.
+// The PR routine's checks for the current branch (/pr-ready skill): a private-term search, the tests
+// for the files the branch touched, a dist/ comparison against the branch's base on main, and the
+// PR's own checks once it exists.
 //
 //   node scripts/process/pr-ready.ts [--suites[=all]] [--no-dist] [--reuse-dist]
 //
-// --suites runs the PR routine's suites for what the branch changed (suitesFor in lib.ts; =all runs
-// every one): `npm test`, `astro check`, ingest's pytest, a SHELL_PREVIEW=1 build with Playwright on
-// both projects (with passed, failed and skipped counts per project), and the gate's commands over a
-// deploy build. A failure prints its output's tail.
+// By default only the touched files' tests run (touchedTests in lib.ts): `vitest related` over the
+// changed files, and ingest's pytest for the changed test files and the tests of changed modules. The
+// PR's checks run the full suites on GitHub (tests.yml, gate.yml), so the rest is left to them
+// (owner, 2026-11-24). --suites runs the PR routine's whole suites for what the branch changed
+// instead (suitesFor in lib.ts; =all runs every one): `npm test`, `astro check`, ingest's pytest, a
+// SHELL_PREVIEW=1 build with Playwright on both projects (with passed, failed and skipped counts per
+// project), and the gate's commands over a deploy build. A failure prints its output's tail.
 //
 // Private terms: one per line in the file named by PRIVATE_TERMS_FILE (default
 // C:\temp\private-terms.txt), kept outside the repo. Added lines, new file names, commit messages
@@ -21,7 +25,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { addedLines, diffTrees, ghJson, hashTree, maskTerm, parseTerms, playwrightCounts, run, section, suitesFor, summarisePaths, tail, termMatchers, type Suite } from './lib.ts';
+import { addedLines, diffTrees, ghJson, hashTree, maskTerm, parseTerms, playwrightCounts, run, section, suitesFor, summarisePaths, tail, termMatchers, touchedTests, type Suite } from './lib.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const git = (...args: string[]) => run('git', args, ROOT);
@@ -101,10 +105,14 @@ function deployBuild(cwd: string): void {
 // Child processes inherit this environment, and a deploy build must not include the previews.
 delete process.env.SHELL_PREVIEW;
 
-/** Runs a shell command (fixed text, never input); prints pass or fail, and the output's tail on failure. */
+/** The last step's output, for a summary line read from it. */
+let lastOutput = '';
+
+/** Runs a shell command (fixed text, or repo paths quoted); prints pass or fail, and the output's tail on failure. */
 function step(label: string, command: string, cwd: string = ROOT, env: NodeJS.ProcessEnv = process.env): boolean {
   const started = Date.now();
   const result = spawnSync(command, { cwd, env, shell: true, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
+  lastOutput = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
   const ok = result.status === 0;
   flag(ok, `${label}: ${ok ? 'passed' : `failed (exit ${result.status ?? result.signal})`}, ${Math.round((Date.now() - started) / 1000)} s`);
   if (!ok) for (const line of tail(`${result.stdout ?? ''}\n${result.stderr ?? ''}`, 15)) console.log(`      ${line}`);
@@ -114,9 +122,46 @@ function step(label: string, command: string, cwd: string = ROOT, env: NodeJS.Pr
 const BUILD = `node scripts/gen-types.ts && node "${ASTRO}" build --silent`;
 const suitesArg = [...args].find((a) => a === '--suites' || a.startsWith('--suites='));
 const ALL_SUITES: Suite[] = ['unit', 'astro-check', 'pytest', 'e2e', 'gate'];
-const suites: Suite[] = !suitesArg ? [] : suitesArg === '--suites=all' ? ALL_SUITES : suitesFor(git('diff', '--name-only', base, 'HEAD').split('\n').filter(Boolean));
+const changed = git('diff', '--name-only', base, 'HEAD').split('\n').filter(Boolean);
+const suites: Suite[] = !suitesArg ? [] : suitesArg === '--suites=all' ? ALL_SUITES : suitesFor(changed);
 /** What dist/ holds now: unknown until this run builds it. */
 let dist: 'unknown' | 'preview' | 'deploy' = 'unknown';
+/** Above this many files, `vitest related` gives way to the whole unit suite (a shell line's length). */
+const RELATED_LIMIT = 150;
+
+if (!suitesArg) {
+  await section("Touched files' tests", () => {
+    const present = changed.filter((file) => existsSync(join(ROOT, file)));
+    const pytestFiles = new Map(
+      run('git', ['ls-files', 'tests'], join(ROOT, 'ingest'))
+        .split('\n')
+        .filter((file) => /(^|\/)test_[^/]+\.py$/.test(file))
+        .map((file) => [file, readFileSync(join(ROOT, 'ingest', file), 'utf8')] as [string, string]),
+    );
+    const touched = touchedTests(present, pytestFiles);
+    const forVitest = touched.vitest.filter((file) => !file.endsWith('.md'));
+    const nvmrc = readFileSync(join(ROOT, '.nvmrc'), 'utf8').trim();
+    if (forVitest.length > 0 && process.versions.node.split('.')[0] !== nvmrc) {
+      console.log(`  Node ${process.versions.node} here, ${nvmrc} on GitHub: the PR's vitest check decides.`);
+    }
+    if (forVitest.length > RELATED_LIMIT) {
+      step(`npm test (${forVitest.length} files changed)`, 'npm test');
+    } else if (forVitest.length > 0) {
+      const files = forVitest.map((file) => `"${file}"`).join(' ');
+      if (step('vitest related', `node scripts/gen-types.ts && node node_modules/vitest/vitest.mjs related --run ${files}`)) {
+        const affected = /Affected\s+(.+)/.exec(lastOutput)?.[1] ?? (/No affected test files/.test(lastOutput) ? 'no test files' : undefined);
+        if (affected) console.log(`      ${affected.trim()}`);
+      }
+    }
+    if (touched.pytest.length > 0) {
+      step(`pytest (${touched.pytest.join(', ')})`, `uv run pytest -q ${touched.pytest.map((file) => `"${file}"`).join(' ')}`, join(ROOT, 'ingest'));
+    }
+    if (touched.unmapped.length > 0) console.log(`  No test maps to ${touched.unmapped.join(', ')}: the PR's pytest check runs them all.`);
+    if (forVitest.length === 0 && touched.pytest.length === 0 && touched.unmapped.length === 0) console.log('  No code changed: nothing to run.');
+    const left = suitesFor(changed).filter((suite) => suite !== 'unit' && suite !== 'pytest');
+    if (left.length > 0) console.log(`  Left to the PR's checks: ${left.join(', ')} (--suites runs them here).`);
+  });
+}
 
 if (suitesArg) {
   await section('Suites', () => {

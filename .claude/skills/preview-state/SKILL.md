@@ -74,4 +74,4 @@ screenshots run against it (`page-tests`, `pr-screenshots`).
 
 - `SHELL_PREVIEW=1` build: every state answers 200; a plain build has none of the routes.
 - `generate.ts` rerun leaves `git status` clean, and the validation test passes.
-- `pr-ready --suites` is green (the e2e suite builds with `SHELL_PREVIEW=1`).
+- `pr-ready` and the PR's `playwright` check are green (the e2e suite builds with `SHELL_PREVIEW=1`).

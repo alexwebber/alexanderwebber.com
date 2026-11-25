@@ -81,7 +81,8 @@ Load the `gate-drill` skill: `runGate` runs the gate's steps on the copy, and `s
 
 ## Running them
 
-- Everything, as the PR routine does: `node scripts/process/pr-ready.ts --suites`.
+- Everything: the PR's `playwright` check runs both projects on GitHub. Locally, only to
+  reproduce a red check: `node scripts/process/pr-ready.ts --suites`.
 - One spec: build with `SHELL_PREVIEW=1` (`$env:SHELL_PREVIEW='1'; npm run build` in PowerShell),
   then `npx playwright test tests/e2e/<file>.spec.ts --reporter=line`, both projects. Run
   `npx astro preview stop` first if a preview server is running, and nothing else alongside.

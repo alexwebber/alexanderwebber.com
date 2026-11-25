@@ -138,6 +138,62 @@ export function suitesFor(files: string[]): Suite[] {
   return SUITE_RULES.filter(([, pattern]) => files.some((file) => pattern.test(file))).map(([suite]) => suite);
 }
 
+// --- The touched files' tests (pr-ready's default) ----------------------------------------------
+
+export interface TouchedTests {
+  /** Repo-relative files for `vitest related`: everything the branch changed outside ingest/. */
+  vitest: string[];
+  /** Test files to run, relative to ingest/. */
+  pytest: string[];
+  /** Changed ingest/ files that no test is mapped to (conftest, fixtures, the lock file): CI runs them all. */
+  unmapped: string[];
+}
+
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * The tests pr-ready runs by default for a branch that changed `files` (repo-relative). vitest finds
+ * its own (`vitest related`); pytest runs a changed test file, and for a changed module under
+ * ingest/src/ every test file named after it or its package (`test_<name>.py`) or importing it.
+ * `pytestFiles` maps each test file under ingest/tests/ (relative to ingest/) to its text.
+ */
+export function touchedTests(files: string[], pytestFiles: Map<string, string>): TouchedTests {
+  const pytest = new Set<string>();
+  const unmapped: string[] = [];
+  for (const file of files.filter((f) => f.startsWith('ingest/'))) {
+    const local = file.slice('ingest/'.length);
+    if (/^tests\/(.+\/)?test_[^/]+\.py$/.test(local)) {
+      if (pytestFiles.has(local)) pytest.add(local);
+      continue;
+    }
+    const module = /^src\/(awingest(?:\/[^/]+)*)\.py$/.exec(local);
+    if (!module) {
+      unmapped.push(file);
+      continue;
+    }
+    // awingest/process/health -> awingest.process.health; a package's __init__ is the package.
+    const parts = module[1]!.split('/');
+    if (parts.at(-1) === '__init__') parts.pop();
+    const name = parts.at(-1)!;
+    const parent = parts.length > 2 ? parts.at(-2)! : undefined;
+    const names = new Set([`test_${name}.py`, ...(parent ? [`test_${parent}.py`] : [])]);
+    const dotted = escapeRegExp(parts.join('.'));
+    const imports = [new RegExp(`\\b${dotted}\\b`)];
+    if (parts.length > 1) {
+      imports.push(new RegExp(`from\\s+${escapeRegExp(parts.slice(0, -1).join('.'))}\\s+import\\s+[^\\n]*\\b${escapeRegExp(name)}\\b`));
+    }
+    let found = false;
+    for (const [test, text] of pytestFiles) {
+      if (names.has(test.split('/').at(-1)!) || imports.some((re) => re.test(text))) {
+        pytest.add(test);
+        found = true;
+      }
+    }
+    if (!found) unmapped.push(file);
+  }
+  return { vitest: files.filter((f) => !f.startsWith('ingest/')), pytest: [...pytest].sort(), unmapped };
+}
+
 /** The last `count` non-blank lines of a command's output, for a failure report. */
 export function tail(text: string, count: number): string[] {
   return text.split(/\r?\n/).filter((line) => line.trim() !== '').slice(-count);
