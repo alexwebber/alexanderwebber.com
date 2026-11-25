@@ -2527,3 +2527,13 @@ end. Add each new decision as a dated entry at the end, as it's made.
   Vitest loads under Node 24 from PowerShell on the laptop (checked 2026-11-25; it failed at load
   on 2026-11-19), so the default runs on the local Node and prints a note when it isn't `.nvmrc`'s:
   the PR's check on Node 22 decides.
+- **2026-11-25** — **SC-002 met: every synced run was live within 3 hours** (001 T149). From
+  go-live to 24 Nov, 19 runs reached intervals.icu, and all 19 appeared on the site within 3 h
+  (target 95%): median 1.1 h, slowest 2.0 h (9 Nov, synced just after a Refresh). Measured per
+  run from intervals.icu's `created` (when the run reached it) in the raw archive's `detail.json`,
+  to the end of the Refresh run that made the commit first adding the run's published file (its
+  deploy included). The Refresh run list alone, as T149 first said, can't give the sync time.
+  The margin is one missed Refresh: the Worker's cron dispatches every 2 h, so a run synced just
+  after a Refresh waits up to 2 h, and one failed Refresh makes that about 4 h. The backup schedule
+  (every 6 h) and the `refresh-trigger-failing` issue cover a cron that stops; a single failed
+  Refresh is what would breach SC-002, and session start already flags one that isn't green.
