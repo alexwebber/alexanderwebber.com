@@ -6,10 +6,6 @@
 #   - due: YYYY-MM-DD   # first day it's due
 #     task: what to do, and where the details are
 
-- due: 2026-11-23
-  task: >-
-    001 T149 (SC-002 follow-up, 30 days after go-live): from `gh run list --workflow refresh.yml`,
-    how often a synced run appears within 3 h (target >= 95%). Details in 001's tasks.md.
 - due: 2026-12-01
   task: >-
     002 T118 (SC-002): the month of timing ends. Summarise how each bot commit's time compared

@@ -39,7 +39,7 @@ what's wrong without leaking what it found. Copy `scripts/check-boundaries.ts` (
   `dist/` and see exit 1, then 0 (`check-links` is the precedent). A rule in a function isn't a rule
   in the gate until this passes. Put the drill's output in the PR.
 - The check runs clean on today's site (`npm run <name>` after a deploy build), and
-  `node scripts/process/pr-ready.ts --suites` is green.
+  `node scripts/process/pr-ready.ts` and the PR's checks (the gate among them) are green.
 - After the merge: `/after-merge` follows `main`'s Gate to the end, then dispatch one refresh
   (`gh workflow run refresh.yml --ref main`) and confirm the bot's gate passes too.
 

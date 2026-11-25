@@ -67,14 +67,14 @@ schema, its fixtures, the store and validation in one PR. Copy the nearest prece
   test per refused case, asserting file, entry, field and severity through `formatIssue`, each case
   planted alone.
 - `npm run validate-data` is clean on the real data, and `astro check` passes.
-- `node scripts/process/pr-ready.ts --suites` is green.
+- `node scripts/process/pr-ready.ts` and the PR's checks are green.
 
 ## Pitfalls
 
 - YAML is parsed as 1.2 core: `yes` stays a string, and an unquoted date is a string. A file holding
   only comments parses to `null` and counts as absent.
-- A schema change regenerates types, so `astro check` and both Playwright projects run (`--suites`
-  picks them).
+- A schema change regenerates types, so `astro check` and both Playwright projects run (the PR's
+  checks run them; `--suites` picks them too).
 - `.github/workflows/tests.yml` runs Vitest only for paths in its `vitest=` filter; a test that imports
   from a new folder needs that folder added there (003's T001 did it for `tests/fixtures`).
 - ajv's `strictTypes` needs an explicit `type` beside type-specific keywords (`maxLength`, `pattern`,

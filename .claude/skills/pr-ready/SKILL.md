@@ -1,18 +1,24 @@
 ---
 name: pr-ready
-description: The PR routine's checks for the current branch in this project — a private-term search of the diff, commit messages and PR body, a dist/ comparison against the branch's base on main, and the PR's own checks. Use before raising a PR, and again before telling the owner it's ready.
+description: The PR routine's checks for the current branch in this project — a private-term search of the diff, commit messages and PR body, the tests for the touched files, a dist/ comparison against the branch's base on main, and the PR's own checks. Use before raising a PR, and again before telling the owner it's ready.
 ---
 
 # PR ready
 
 1. Commit everything first; uncommitted changes aren't checked.
-2. Run `node scripts/process/pr-ready.ts --suites` **in the background** (two deploy builds, a
-   few minutes; with Playwright, about ten). `--suites` runs the PR routine's suites for what the
-   branch changed (`npm test`, `astro check`, pytest, a preview build with both Playwright
-   projects, the gate's commands), and `--suites=all` runs every one. A failing suite prints its
-   output's tail: fix it and run again. Use `--no-dist` for a PR that changes no site code or data
-   (docs, process, ingest-only), and `--reuse-dist` if `dist/` is already a deploy build of this
-   commit.
+2. Run `node scripts/process/pr-ready.ts` **in the background** (the dist/ comparison's two deploy
+   builds, a few minutes). By default it runs only the tests for the files the branch touched
+   (`vitest related` over them, and ingest's pytest for changed test files and the tests of changed
+   modules), and names the suites it leaves to the PR's checks: GitHub runs the full suites on the
+   PR (`tests.yml`, `gate.yml`), so the laptop doesn't (owner, 2026-11-24). A failing test prints
+   its output's tail: fix it and run again. Use `--no-dist` for a PR that changes no site code or
+   data (docs, process, ingest-only), and `--reuse-dist` if `dist/` is already a deploy build of
+   this commit.
+   **`--suites` only for what CI can't cover:** a suite the change needs that `tests.yml`'s path
+   filters skip (Vitest doesn't run in CI for a `data/`-only change), or a red PR check to reproduce
+   here before fixing it. It runs the PR routine's suites for what the branch changed (`npm test`,
+   `astro check`, pytest, a preview build with both Playwright projects, the gate's commands; about
+   ten minutes with Playwright), and `--suites=all` runs every one.
 3. **Private terms** (`C:\temp\private-terms.txt`, one per line, outside the repo): a match
    prints its place and the term's number and mask, never the term. Remove every match before
    pushing, rewording the commit message too if it matched. If the file is missing (a cloud

@@ -29,16 +29,19 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   something new or at its 00:17 UTC daily run: after the merge, dispatch Refresh with
   `reimport_from=<today>` and `missing_only=true`, then check a few run pages' charts and notes
   live. To be re-evaluated once it has been live for a while (owner).
-- **Body fat joined across the scale's reset (2026-11-24, this PR):** `health-steps.yaml`
+- **Body fat joined across the scale's reset (#157, live 2026-11-25):** `health-steps.yaml`
   (FR-062a) shifts readings from 6 Nov 2026 by 8.5 points; the goal stays paused until a DEXA at
-  about 93 kg (`DECISIONS.md`). The merge changes owner files, so its push
-  starts a Refresh that republishes the 2026 body fat file; then check `/running/health/` for the
-  joined chart, its note and the goal card.
-- **Next session (here):** work in this repo comes from HQ's *maintenance* stream, in this
-  order: T149 (due since 2026-11-23; needs each run's sync time against its publish time, not
-  just the Refresh run list), then the recurring site-upkeep task. astro 7.4.13 and maplibre-gl
-  6.19.0 are routine bumps with no security alert: skipped. Sessions open in `C:\Projects\hq`. Nothing from the career repo comes
-  into this repo before the owner approves that exact text.
+  about 93 kg (`DECISIONS.md`). Checked live: the joined chart at 25.7%, its note, the goal card's
+  pause, and the first new reading (25 Nov) joined at 25.7%.
+- **SC-002 measured (T149, 2026-11-25):** all 19 runs synced since go-live appeared on the site
+  within 3 h (100%; slowest 2.0 h, median 1.1 h), measured from intervals.icu's `created` in each
+  raw `detail.json` to the end of the Refresh run that first published it (`DECISIONS.md`).
+- **`/pr-ready` runs only the touched files' tests by default (2026-11-25):** the PR's checks run
+  the full suites; `--suites` is for what CI can't cover (the skill says when).
+- **Next session (here):** work in this repo comes from HQ's *maintenance* stream: the recurring
+  site-upkeep task, designed after HQ's cloud-sessions review. astro 7.4.13 and maplibre-gl 6.19.0
+  are routine bumps with no security alert: skipped. Sessions open in `C:\Projects\hq`. Nothing
+  from the career repo comes into this repo before the owner approves that exact text.
 - **The Martlets story is live** (2026-11-10, #141) on the site and JustGiving. When the CV & Blog
   work specifies its drafting eval suite, its first example is this story, anonymised (owner, #141;
   the draft is in `C:\temp\story-draft.md`).

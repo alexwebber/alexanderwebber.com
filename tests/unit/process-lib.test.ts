@@ -23,6 +23,7 @@ import {
   summarisePaths,
   tail,
   termMatchers,
+  touchedTests,
 } from '../../scripts/process/lib.ts';
 
 describe('skill candidates', () => {
@@ -71,6 +72,45 @@ describe('suitesFor', () => {
 
   it('runs every suite for a dependency bump', () => {
     expect(suitesFor(['package.json', 'package-lock.json'])).toEqual(['unit', 'astro-check', 'e2e', 'gate']);
+  });
+});
+
+describe('touchedTests', () => {
+  const pytestFiles = new Map([
+    ['tests/unit/test_health.py', 'from awingest.process.health import build_series\n'],
+    ['tests/unit/test_pipeline.py', 'from awingest.process import elevation, health\nfrom awingest.process.pipeline import run\n'],
+    ['tests/unit/test_fundraising.py', 'from awingest.fundraising.read import read_page\n'],
+    ['tests/unit/test_provider_base.py', 'from awingest.providers.base import Provider\n'],
+    ['tests/contract/test_alerts.py', 'import awingest.alerts\n'],
+  ]);
+
+  it('gives vitest everything outside ingest/', () => {
+    const { vitest, pytest } = touchedTests(['src/lib/format.ts', 'DECISIONS.md', 'ingest/src/awingest/cli.py'], pytestFiles);
+    expect(vitest).toEqual(['src/lib/format.ts', 'DECISIONS.md']);
+    expect(pytest).toEqual([]);
+  });
+
+  it('runs a changed test file, and a module by its name or its imports', () => {
+    expect(touchedTests(['ingest/tests/unit/test_pipeline.py'], pytestFiles).pytest).toEqual(['tests/unit/test_pipeline.py']);
+    expect(touchedTests(['ingest/src/awingest/process/health.py'], pytestFiles).pytest).toEqual(['tests/unit/test_health.py', 'tests/unit/test_pipeline.py']);
+    expect(touchedTests(['ingest/src/awingest/providers/base.py'], pytestFiles).pytest).toEqual(['tests/unit/test_provider_base.py']);
+  });
+
+  it('maps a module in a package to the package test, and an __init__ to its package', () => {
+    expect(touchedTests(['ingest/src/awingest/fundraising/publish.py'], pytestFiles).pytest).toEqual(['tests/unit/test_fundraising.py']);
+    expect(touchedTests(['ingest/src/awingest/fundraising/__init__.py'], pytestFiles).pytest).toEqual(['tests/unit/test_fundraising.py']);
+  });
+
+  it('doesn\'t take a longer module name for the changed one', () => {
+    // awingest.alerts must not match awingest.alerts_extra, nor awingest.process.health match awingest.process.healthy.
+    const files = new Map([['tests/unit/test_x.py', 'import awingest.process.healthy\n']]);
+    expect(touchedTests(['ingest/src/awingest/process/health.py'], files).pytest).toEqual([]);
+  });
+
+  it('lists ingest changes no test maps to', () => {
+    const { pytest, unmapped } = touchedTests(['ingest/tests/conftest.py', 'ingest/uv.lock', 'ingest/src/awingest/yaml12.py', 'ingest/tests/unit/test_gone.py'], pytestFiles);
+    expect(pytest).toEqual([]);
+    expect(unmapped).toEqual(['ingest/tests/conftest.py', 'ingest/uv.lock', 'ingest/src/awingest/yaml12.py']);
   });
 });
 
