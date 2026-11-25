@@ -1,11 +1,11 @@
 ---
 name: speckit-house-process-tips-shell
-description: 'Agent tips for shell commands and processes: stopping servers safely, heredocs and backslashes, reading test output, Git Bash path rewriting, sed and node -e on Windows, generator reruns under autocrlf, User-Agents and re-reading settings. Read before starting or stopping a long-running process, writing files from a shell, or scripting gh.'
+description: 'Agent tips for shell commands and processes: stopping servers safely, heredocs and backslashes, reading test output, Git Bash path rewriting, sed and node -e on Windows, generator reruns under autocrlf, User-Agents and re-reading settings, PowerShell 5.1''s trailing backslashes, byte-order marks and CRLF splices, and wait loops without jq. Read before starting or stopping a long-running process, writing files from a shell, or scripting gh.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
   source: house-process:commands/speckit.house-process.tips-shell.md
-  version: 0.16.2
+  version: 0.17.0
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -69,3 +69,20 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **Retry a live-site check before calling the site down.** Node's `fetch` failed twice ("fetch
   failed") right after a long `gh` wait, while curl, and Node moments later, got 200. Retry a few
   times, about 10 s apart, and print the cause's code if all fail.
+- **In Windows PowerShell 5.1 a native argument that ends in a backslash eats its closing
+  quote:** `gh issue create --title '...\'` failed. Don't end a title or path argument with `\`.
+- **Do text surgery on repo files in a small node script that detects the line ending.** In
+  PowerShell 5.1, ``String.IndexOf("`n`n")`` on a CRLF file returns -1 and the splice then fails.
+  Through Git Bash, a quoted heredoc fed to `python -` still turned `\\n` into real newlines, and
+  `node -e "..."` broke on backticks and `$`. Write the script to a scratch file with the editor
+  and run that file.
+- **PowerShell 5.1 and UTF-8.** `Set-Content -Encoding utf8` writes a byte-order mark, which
+  became the first character of a commit subject: write message files with
+  `[IO.File]::WriteAllText($f, $text, (New-Object Text.UTF8Encoding $false))`. `Get-Content`
+  reads UTF-8 without a BOM as ANSI, so a correct file shows `Â£` or `Â·`. Check for mojibake
+  with node or `git grep -P 'Â'`, not PowerShell's display, before text is marked approved.
+- **`gh ... | node` in PowerShell 5.1 puts a byte-order mark in front of the JSON.** Call `gh`
+  from the node script (`execFileSync`) instead.
+- **`jq` may not be installed in Git Bash,** and a wait loop built on it failed silently on every
+  poll. Use `gh ... --json ... --jq`, and make a wait loop fail loudly when its command errors
+  (alexanderwebber.com).

@@ -5,7 +5,7 @@ compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
   source: house-process:commands/speckit.house-process.model-canary.md
-  version: 0.16.2
+  version: 0.17.0
 user-invocable: true
 disable-model-invocation: false
 ---

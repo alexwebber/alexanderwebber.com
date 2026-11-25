@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for GitHub Actions: unreliable schedule triggers, billed minutes per job, read-only builds with a separate write job, bash -e in retry loops, setup-node, Playwright installs, red non-required checks, continue-on-error, jq, rulesets, npm overrides, finding runs by commit, createdAt in run listings, CodeQL PR alerts and path-injection, and proving a step ran. Read before writing or changing a workflow, a composite action, or CI checks."
+description: "Agent tips for GitHub Actions: unreliable schedule triggers, billed minutes per job, read-only builds with a separate write job, bash -e in retry loops, setup-node, Playwright installs, red non-required checks, continue-on-error, jq, rulesets, npm overrides, finding runs by commit, createdAt in run listings, CodeQL PR alerts and path-injection, proving a step ran, and whether a merge publishes by itself or needs a dispatch. Read before writing or changing a workflow, a composite action, or CI checks."
 ---
 
 # Agent tips: GitHub Actions
@@ -78,3 +78,8 @@ candidates* in the moment, and the lesson harvest adds it here.
   a local static server. Serving only from a map of files indexed up front cleared the alerts.
 - **A green run doesn't prove a step ran.** An idle scheduled run skipped the job where a new gate
   step lives. Check for the step's log line, not the run's conclusion.
+- **Read a workflow's triggers before telling the owner a merge needs a dispatch.** A publishing
+  workflow ran on any push that changed data files, and skipped publishing when nothing new had
+  been fetched, so a code-only change looked merged while the pages were unchanged. Where a
+  change waits for the next publish, dispatch a run after the merge and check a page for the new
+  text (alexanderwebber.com).

@@ -63,6 +63,8 @@ looks back over the work just completed and proposes which lessons should be sen
 3. **Present the list** to the owner: one line per candidate with its proposed destination and
    the concrete change (file + gist of the wording). If there are none (and the Upstream
    candidates list is empty), say so in one line and stop. Do not change anything until the owner picks which ones to apply.
+   Where no one is present (a background agent), present the list as an issue the owner answers
+   instead (`speckit-house-process-tips-background-agents`).
 
 4. **Apply the accepted ones:**
    - software-factory: locate it as a sibling folder (`../software-factory`) or clone

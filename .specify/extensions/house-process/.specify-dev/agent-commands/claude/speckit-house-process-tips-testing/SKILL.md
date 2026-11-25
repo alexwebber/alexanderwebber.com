@@ -1,11 +1,11 @@
 ---
 name: speckit-house-process-tips-testing
-description: 'Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, beforeAll per project, exact and scoped locators, fixture seeds, absence checks, proving checks fail, per-project counts, lazy images and screenshots, toBeInViewport on focused links, accessible names of SVGs, and failures from a sleeping machine. Read before writing or debugging tests, Playwright ones especially.'
+description: 'Agent tips for testing, unit and end-to-end: path-filtered jobs and bot data, fakes for store interfaces, expectations taken from the data, every Playwright project locally, pointer-interception, font-dependent layout checks, timeouts, beforeAll per project, exact and scoped locators, fixture seeds, absence checks, proving checks fail, per-project counts, lazy images and screenshots, toBeInViewport on focused links, accessible names of SVGs, failures from a sleeping machine, touched tests locally and full suites in CI, rolling windows at their edges, phone widths in headless Chrome, and restoring planted data. Read before writing or debugging tests, Playwright ones especially.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
   source: house-process:commands/speckit.house-process.tips-testing.md
-  version: 0.16.2
+  version: 0.17.0
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -81,3 +81,16 @@ candidates* in the moment, and the lesson harvest adds it here.
   failed on CI's Linux by 24 px. To compare layouts before touching code, inject CSS and DOM
   changes into the built site with Playwright and measure under several fonts: DejaVu Sans (from
   jsdelivr) reproduced CI's Linux exactly, and Roboto stands in for Android.
+- **Locally, run the tests for the files a change touches, and leave the full suites to CI.** A
+  routine that ran every suite before raising a PR took about 8 minutes on a 4-core laptop and
+  timed a test out under load, while CI runs the same suites on the PR anyway. Keep a full local
+  run for what CI can't cover, and while a long step runs, tell the owner what it's costing
+  (alexanderwebber.com).
+- **Test a rolling-window check at the window's edges.** A seven-day check called a day missed
+  because that day's run fell before the window's start time on its first, partial day.
+- **Headless Chrome on Windows won't make a window narrower than about 500px,** so a
+  `--window-size=400,...` "phone" screenshot is a cropped 500px layout. Use device emulation for a
+  phone check.
+- **A test that plants files into a copy of the real data sets aside and restores what was
+  there,** never deletes the folder afterwards. It passed while the folder was empty, and broke
+  the next test once real files arrived (alexanderwebber.com).
