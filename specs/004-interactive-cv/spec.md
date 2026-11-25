@@ -67,8 +67,8 @@ in the built page.
 **Acceptance Scenarios**:
 
 1. **Given** a phone held upright, **When** the page loads, **Then** the name, headline and the
-   start of the pitch are on the first screen, and the timeline runs down the page with the years
-   in order.
+   start of the pitch are on the first screen, and the timeline opens on its themes, each tappable
+   to see its changes over time (amended by the plan, 2026-11-25).
 2. **Given** a desktop, **When** the page loads, **Then** the timeline is landscape: years left to
    right, one lane per type of change, hats along the top, the latest year magnified, "next" at
    the right.
@@ -93,7 +93,9 @@ every claim gets its "why".
 
 **Independent Test**: In the preview, open a card for a bar, a dot and a hat with mouse, touch and
 keyboard alone; follow a thread to its end; zoom into an era and back out; close every card with
-Escape or its close control, and focus returns to the mark that opened it.
+Escape or its close control, and focus returns to the mark that opened it. On a phone, the same
+from the themes: open a theme, a change, follow its thread, and step back out with the trail, the back
+control and the browser's back button.
 
 **Acceptance Scenarios**:
 
@@ -113,8 +115,8 @@ Escape or its close control, and focus returns to the mark that opened it.
 
 ### User Story 3 - The timeline draws itself (Priority: P3)
 
-The first time the timeline comes into view, the years sweep across (down the page on a phone) and
-the lanes, hats and changes grow in, settling in about three seconds. A reader can skip it, and
+The first time the timeline comes into view, the years sweep across and the lanes, hats and changes
+grow in (on a phone, each theme's strip grows across), settling in about three seconds. A reader can skip it, and
 anyone who has asked their device for reduced motion sees the finished picture straight away. After
 that, opening cards, following threads and zooming animate.
 
@@ -251,11 +253,16 @@ each PDF for the last seven days, and the page makes no third-party request.
 **The timeline**
 
 - **FR-007**: The timeline MUST show every approved change in its lane, as a bar for a period or a
-  dot for a single point, with the hats along the top (or side, on a phone) and the "next" items at
-  the end. The latest year MUST be magnified month by month, continuous with the years before it.
-- **FR-008**: From a width the plan sets (tablet and up), the timeline MUST be landscape (years left
-  to right). Below it, time MUST run down the page, with the lanes as narrow columns and the hats
-  beside them, readable without pinching or sideways scrolling at 320 px.
+  dot for a single point, with the hats and the "next" items as first-class parts of it. The latest
+  year MUST be magnified month by month, continuous with the years before it. (Amended by the plan,
+  2026-11-25: hats are a theme of their own on the phone form.)
+- **FR-008**: From 1024 px wide, the timeline MUST be landscape (years left to right, hats along the
+  top, "next" at the right). Below 1024 px it MUST be a drill-down: first the themes (with roles,
+  threads and "next" beside them), each showing when it was busy; then one theme's changes over time;
+  then one change's card; with a visible trail of where the reader is and a one-step way back out
+  (including the browser's back button), readable without pinching or sideways scrolling at 320 px.
+  (Amended by the plan, 2026-11-25, owner: a swimlane picture running down the page was unreadable on
+  a phone in both forms mocked up.)
 - **FR-009**: Changes marked as adding value MUST be visibly marked, in a way that doesn't rely on
   colour alone.
 - **FR-010**: Every change, hat and "next" item MUST open a card with its label, dates (with "about"

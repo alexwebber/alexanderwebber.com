@@ -2537,3 +2537,25 @@ end. Add each new decision as a dated entry at the end, as it's made.
   after a Refresh waits up to 2 h, and one failed Refresh makes that about 4 h. The backup schedule
   (every 6 h) and the `refresh-trigger-failing` issue cover a cron that stops; a single failed
   Refresh is what would breach SC-002, and session start already flags one that isn't green.
+- **2026-11-25** — **Spec 004's plan** (`specs/004-interactive-cv/plan.md`, with a question round and
+  three phone mock-ups, made-up labels on the real record's shape; every pick the recommended option
+  unless noted).
+  - **Landscape from 1024 px**; below it, the phone form. Tablets held upright get the phone form with
+    two columns of tiles.
+  - **The phone form is a drill-down** (owner, not one of the options offered). Both swimlane takes for
+    phones were rejected: with every change labelled, "too cluttered and it's very hard to determine what
+    all the lines mean"; with marks only, "you can only see 1 thing at a time and thus it's pretty
+    pointless". The owner's direction: start from the themes on the first screen, drill into one to see change
+    over time, with a clear trail of where you are and an easy way back out; more at the first level on
+    wider screens. The third mock-up did that and the owner took it as it is. FR-007, FR-008 and US1 to US3's
+    phone wording are amended to match.
+  - **Roles (hats) are first-class** (owner): on the phone a theme of their own; on the landscape form,
+    the bars along the top, and the way to zoom (by role).
+  - **Cards: 280 characters.** Other budgets are the plan's, for confirmation in the PR.
+  - **Fonts: the lean set** (Space Grotesk 700, Inter Tight 400 and 600, about 58 KB measured), self-hosted
+    through Astro's Fonts API, over the visual CV's full set (about 160 KB) or system fonts.
+  - **Use counts (US6) stay out of this repository**: the owner's private tooling reads them with a
+    read-only token, because a workflow here would publish them. Cloudflare's documentation doesn't say
+    whether the free plan allows the path field, so one test query settles it; if not, US6 is dropped.
+  - **New dependencies**: `unpdf` (PDF text for the phone check), `@fontsource/inter-tight`,
+    `@fontsource/space-grotesk` (research.md R17).
