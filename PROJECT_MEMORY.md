@@ -187,86 +187,10 @@ project-specific notes.
 
 ## Upstream candidates
 
-Since the evening harvest of 2026-11-06 ([software-factory#21](https://github.com/alexwebber/software-factory/pull/21)):
+Since the harvest of 2026-11-25 ([software-factory#22](https://github.com/alexwebber/software-factory/pull/22)),
+which took every entry up to then:
 
-- `gh pr view <branch>` falls back to a merged PR when a branch name is reused (the upgrade script's
-  `chore-speckit-<version>` on a bundle-only reinstall), and a PR's checks list is empty for a few
-  seconds after a push: a "checks green" routine filters to `state == OPEN` and treats zero checks as
-  not ready (fixed in `pr-ready.ts`, 2026-11-06).
-- A site copy outside the repo (a scratchpad, to keep it out of git) can't build: Astro resolves
-  `astro/tsconfigs/strict` by walking up to `node_modules`. Add a junction to the repo's
-  `node_modules` (`mklink /J`), and remove it on its own (`cmd /c rmdir`) before deleting the copy,
-  so a recursive delete can't reach the repo's packages (003 T080, 2026-11-06).
-- **Two sessions at once:** the owner ran a side task (the Martlets story) in one session while
-  another worked in the same checkout. The side session works in a `git worktree` from `origin/main`
-  with a `node_modules` junction, so neither switches the other's branch; it edits only the parts of
-  `PROJECT_MEMORY.md` the other branch doesn't touch (2026-11-10).
-- `upgrade-speckit.ps1` wants to run from `main` and switch that checkout to its own branch, which
-  would move a parallel session's branch. Run it with `-ProjectDir` on a worktree made with
-  `git worktree add -b chore-speckit-<version> <path> origin/main`: it works, but warns that a
-  hand-made branch "is usually left empty". The script (and the skill) could accept a fresh worktree
-  without the warning (Spec Kit 1.4.0, 2026-11-14).
-- A chart's `nowrap` axis labels count towards its minimum width, so the bot's weekly data changed
-  which dates showed and widened the landing page by half a pixel at 320 px under Linux's font: red
-  `playwright` on an unrelated text PR (#141). `contain: inline-size` on the label cells keeps
-  labels out of the minimum width. Data-driven text needs the same care as fixed text (2026-11-10).
-- A test that plants files into a copy of the real data must set aside and restore what was there,
-  not delete the folder afterwards: it passed while the folder was empty, and broke the next test
-  once the content PR filled it with real files (`scratch-site.test.ts`, 2026-11-06).
-- Open a PR as a **draft** and mark it ready only once every check is green: the owner merged #135
-  while its `playwright` check was still running, and it was red (Linux font). `pr-ready` also called a
-  PR merged at the current commit "no PR yet"; it now reads its checks (2026-11-07).
-- Before pushing a layout sized from measured widths (a frame, a grid track), measure it under DejaVu
-  Sans too (injected from jsdelivr, as tips-testing says): twice in one day a layout fitted Windows'
-  Segoe UI and failed CI's Linux font by a few pixels (#135's menu, #137's grid, 2026-11-07).
-- In Windows PowerShell 5.1, a `gh pr edit --body @'...'@` whose text holds double quotes fails
-  ("accepts at most 1 arg(s), received 5"): 5.1 splits a native argument at embedded quotes. Write the
-  body to a scratchpad file and pass `--body-file` (career#1, 2026-11-07).
-- `gh repo create --clone` clones into the current folder even when a clone path is also attempted
-  after it, so it left an empty nested clone inside the site repo: create without `--clone`, then
-  `gh repo clone <repo> <path>` (2026-11-07).
-- **Owner preference:** for data from an employer's systems, the agent gives what it needs back (the
-  output's headings and confidentiality rules) and an example prompt; the owner adapts the prompt and
-  decides what runs with company access (career briefs, 2026-11-07).
-- **Owner preference, interviews:** research the public facts (company history, products, terms)
-  before asking and bring them for confirmation; ask only what only the owner knows. For a career
-  story, rough eras beat exact dates (career interview, 2026-11-08).
-- On Windows without poppler, the Read tool can't render a PDF page (no `pdftoppm`), and
-  `pdftotext` drops a form's selected options (the scores). `pip install --target <scratchpad>
-  pymupdf` and a small script that renders the pages to PNG worked (career reviews, 2026-11-11).
-- `jq` isn't installed in this machine's Git Bash, so a checks-wait loop built on it failed silently
-  every poll: use `gh pr checks --json ... --jq` instead, and make a wait loop fail loudly (#143, 2026-11-11).
-- The `docx` skill's checks assume LibreOffice and poppler, which this Windows machine lacks. Word is
-  installed: `Documents.Open(...).ExportAsFixedFormat(out, 17)` over COM made the PDF, and PyMuPDF
-  (installed with `--target` into the scratchpad) rendered its pages to PNG (the CV draft, 2026-11-11).
-- **Owner preference, parallel work** (2026-11-14): the owner doesn't want to down tools while the agent
-  works. Several workstreams run in parallel sessions, coordinated from one private control-tower repo
-  (a register of streams, briefs, nudges), and the agent drives them, pushing him to act. A candidate for
-  the house process once it has been tried.
-- **Owner preference, cloud sessions** (2026-11-14): the owner works locally mainly because the lesson
-  harvest and retros (which write to software-factory, another repo) don't work from a cloud session.
-  He'd rather use cloud sessions: his laptop isn't powerful, and they cost nothing extra. Find a way to
-  keep improving software-factory from each session's lessons without a local session (part of the
-  HQ set-up).
-- **Owner preference, costs** (2026-11-14): watch the cost of AI usage (a strategy for the plan and the
-  model mix, near the plan's limits) and of every service, with a daily spend view and spending limits
-  and alerts wherever a provider offers them. A candidate for the house process's checks.
-- A question's options mustn't carry prices or other market facts from memory: the owner saw at once
-  that the examples didn't match their price bands. Research first, or leave the examples out
-  (HQ's first question rounds, 2026-11-14).
-- A new repo has no git identity on this machine (only this repo's local config has one): copy
-  `user.name` and `user.email` across before the first commit (2026-11-14).
-- **Owner preference, briefs for another agent:** ask for a general summary of named sources and say
-  "report only what's there", not headings shaped by what the agent assumes: specific headings invite the
-  other agent to fill gaps (career brief 04, 2026-11-11).
-- Test an owner's pick against the real data before building it: "level out loops" assumed runs end
-  where they start, and a two-minute scan of the archive showed most end 150–700 m away, while the
-  watch's own totals already held the answer. He changed his pick on that evidence (elevation,
-  2026-11-19).
-- Without a Node version manager on Windows, `npx -y -p node@22 node node_modules/vitest/vitest.mjs run`
-  runs the tests under `.nvmrc`'s major (Node 24 fails every suite at load). On this laptop a full
-  parallel run still trips the 5 s test timeout in the slow render tests: rerun the failed files
-  with `--no-file-parallelism --testTimeout=60000` before calling a failure real (2026-11-19).
+- _None yet._
 
 ## Open questions
 
