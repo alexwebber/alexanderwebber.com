@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for Windows and cloud test environments: symlinks and junctions, running bins with node not npx, Playwright's webServer from Git Bash, sharp's file cache, MSYS_NO_PATHCONV paths, removing worktrees and junctions, watchers that outlive the editor, and cloud sessions (set-up hooks, no pwsh, browser builds, pushing only to their own branch). Read before writing cross-platform scripts or test helpers, or running suites on Windows or in a cloud session."
+description: "Agent tips for Windows and cloud test environments: symlinks and junctions, running bins with node not npx, Playwright's webServer from Git Bash, sharp's file cache, MSYS_NO_PATHCONV paths, removing worktrees and junctions, watchers that outlive the editor, the Node version and shell a local test run needs, ln -s in Git Bash, and cloud sessions (set-up hooks, no pwsh, browser builds, pushing only to their own branch). Read before writing cross-platform scripts or test helpers, or running suites on Windows or in a cloud session."
 ---
 
 # Agent tips: Windows and cloud test environments
@@ -46,3 +46,13 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **A cloud session may push only to its own branch,** so PR screenshots can't use a side branch:
   add them in one commit, link them by that SHA, and remove them in the next. Convert to WebP
   first (1.6 MB of PNG became 420 KB).
+- **A local test run is only evidence under the project's Node and a shell that works.** vitest
+  failed at load in every suite under a newer Node than `.nvmrc`'s, on unmodified `main` too (a
+  week later it loaded again), and from Git Bash ("failed to find the runner") where PowerShell
+  passed. Without a version manager, `npx -y -p node@<major> node node_modules/vitest/vitest.mjs
+  run` runs `.nvmrc`'s major; either way, the PR's check on `.nvmrc`'s Node decides. On a slow
+  machine a full parallel run can trip the default test timeout in slow tests: rerun the failed
+  files with `--no-file-parallelism --testTimeout=60000` before calling a failure real
+  (alexanderwebber.com).
+- **Git Bash's `ln -s` copies a directory instead of linking it,** so don't link `node_modules`
+  into a worktree that way: run `npm ci` there, or make a junction (`cmd /c mklink /J`).

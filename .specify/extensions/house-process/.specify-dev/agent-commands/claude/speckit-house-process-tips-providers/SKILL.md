@@ -1,11 +1,11 @@
 ---
 name: speckit-house-process-tips-providers
-description: 'Agent tips for external providers and file formats: intervals.icu FIT endpoints, garmin-fit-sdk, proving a response with a live call, urllib redirects and headers, credential shape checks, Decimal precision and strict Python regexes. Read before writing or changing a provider adapter or parser.'
+description: 'Agent tips for external providers and file formats: intervals.icu FIT endpoints, garmin-fit-sdk, proving a response with a live call, urllib redirects and headers, credential shape checks, Decimal precision and strict Python regexes, sign-up screens that differ from the help pages, and DNS checks red from a cached answer. Read before writing or changing a provider adapter or parser, or guiding the owner through a provider''s sign-up.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
   source: house-process:commands/speckit.house-process.tips-providers.md
-  version: 0.16.2
+  version: 0.17.0
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -34,3 +34,11 @@ candidates* in the moment, and the lesson harvest adds it here.
   past the pence passed `* 100` until precision was set from the input's length.
 - **In Python `str` regexes, `\d` matches Unicode digits and `$` allows a trailing newline.** Use
   `[0-9]` and `fullmatch` for strict parsing.
+- **A provider's sign-up screens rarely match steps written from its help pages** (a token
+  editor laid out differently, a wizard in another order, payment asked before verification,
+  region-specific server names). Write the owner's task as the goal and the values to bring back,
+  and walk them through the screens live from their screenshots. Ask for a long public value (a
+  DNS key) as pasted text, not a screenshot; secrets still come through the local file.
+- **A DNS check that turns red straight after records are added can be the checker's cached "no
+  record" answer,** kept for up to the zone's negative TTL (30 minutes here). Confirm against the
+  authoritative name servers and carry on.

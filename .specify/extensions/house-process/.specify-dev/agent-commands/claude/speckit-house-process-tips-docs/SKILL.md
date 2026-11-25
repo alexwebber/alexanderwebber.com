@@ -1,11 +1,11 @@
 ---
 name: speckit-house-process-tips-docs
-description: 'Agent tips for docs: rendering Mermaid diagrams locally before a PR, and diagram direction for GitHub mobile. Read before adding or changing a diagram in Markdown.'
+description: 'Agent tips for docs, PDFs and print designs: rendering Mermaid diagrams locally before a PR, diagram direction for GitHub mobile, rendering PDF and Word files without poppler or LibreOffice, hyphens in Chrome''s PDFs, pdftotext''s layout, and print designs that fit their page. Read before adding or changing a diagram in Markdown, or making, reading or designing a PDF.'
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Alex Webber
   source: house-process:commands/speckit.house-process.tips-docs.md
-  version: 0.16.2
+  version: 0.17.0
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -23,3 +23,19 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **Mermaid flowcharts with subgraphs read better top-to-bottom on GitHub mobile.** A
   left-to-right overview was about 1,400 px wide. Inner `direction` is ignored once a subgraph
   links outside itself.
+- **Rendering a PDF or Word file on Windows without poppler or LibreOffice:**
+  `pip install --target <scratchpad> pymupdf` and a small script render PDF pages to PNG, and with
+  Word installed, `Documents.Open(...).ExportAsFixedFormat(out, 17)` over COM makes the PDF.
+  `pdftotext` drops a form's selected options (alexanderwebber.com).
+- **Chrome's PDFs break lines at hyphens, and text extraction then joins the halves**
+  ("customer-data" became "customerdata"). Keep hyphenated words unbroken (`white-space: nowrap`)
+  in anything a parser will read.
+- **`pdftotext -layout` can lay a label a line away from its figure.** Check one extracted value
+  against an arithmetic total in the same document before tabulating.
+- **Let a fixed-size design size its own type, and print the figure.** A one-page design chosen
+  from a mock-up drifted as review rounds lengthened the text, until it only fitted at 8.26pt. A
+  build that sizes the type to fit and prints it makes the cost of words a number the owner can
+  trade; check each block against its budget before the design build. For SVG print designs,
+  wrap and pack text in the browser after `document.fonts.ready` (measured widths), and give the
+  page a `?check` flag that turns any text past its line or row budget red, so the agent's own
+  screenshots show every collision first.

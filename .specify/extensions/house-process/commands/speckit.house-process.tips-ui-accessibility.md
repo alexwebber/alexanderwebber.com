@@ -1,5 +1,5 @@
 ---
-description: "Agent tips for UI and accessibility: short labels that mustn't wrap, keyboard-path tests, visually-hidden inputs, round chart dots on a stretched SVG, 320 px overflow from nowrap and hidden labels, stretched grid items, focus in sideways lists, target size under a summary, time ranges, target labels, and what only screenshots catch. Read before changing page layout, CSS toggles, charts, or keyboard and screen-reader behaviour."
+description: "Agent tips for UI and accessibility: short labels that mustn't wrap, keyboard-path tests, visually-hidden inputs, round chart dots on a stretched SVG, 320 px overflow from nowrap and hidden labels, stretched grid items, focus in sideways lists, target size under a summary, time ranges, target labels, what only screenshots catch, and nowrap axis labels in a chart's minimum width. Read before changing page layout, CSS toggles, charts, or keyboard and screen-reader behaviour."
 ---
 
 # Agent tips: UI and accessibility
@@ -40,3 +40,7 @@ candidates* in the moment, and the lesson harvest adds it here.
 - **Look at a screenshot of every changed page.** A page that dropped the standard line under its
   `<h1>` ("Last updated") left the next heading reading as a subtitle. Every test passed; only the
   screenshot showed it.
+- **A chart's `nowrap` axis labels count towards its minimum width,** so data-driven labels can
+  widen a page: a weekly data change altered which dates showed and widened a page by half a pixel
+  at 320 px under Linux's font. `contain: inline-size` on the label cells keeps them out of the
+  minimum width. Data-driven text needs the same care as fixed text (alexanderwebber.com).
