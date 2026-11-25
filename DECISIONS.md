@@ -2559,3 +2559,27 @@ end. Add each new decision as a dated entry at the end, as it's made.
     whether the free plan allows the path field, so one test query settles it; if not, US6 is dropped.
   - **New dependencies**: `unpdf` (PDF text for the phone check), `@fontsource/inter-tight`,
     `@fontsource/space-grotesk` (research.md R17).
+- **2026-11-25** — **Spec 004's tasks** (`specs/004-interactive-cv/tasks.md`: 119 tasks in seven slices,
+  each its own PR; tasks subagent about 271k tokens, analyze subagent about 184k). The plan PR's seven
+  answers are taken in as given, but the owner picked them before he could see anything, so the four
+  judged by eye each get a show-and-confirm task in the slice that first shows them: the email in words
+  (T067, slice 2), zoom by role (T082) and the label fallback (T083, slice 3), "Last updated" only beside
+  the downloads (T095, slice 5). Each PR shows the thing itself and asks keep or change; a change is made
+  on that branch before it merges. `/speckit-analyze` found no critical issue; its 2 high and 12 medium
+  findings are fixed in the spec, plan, data model, contracts, quickstart and tasks. The owner's answers
+  in a question round (recommended option each time):
+  - **The page's data date** (constitution Principle V) is the timeline axis's last tick, the `as_of`
+    month in words, so "Last updated" stays beside the downloads only. A test pins it.
+  - **FR-010 is per kind**: a change shows label, dates, lane and thread; a role label and dates; a
+    "next" item its title. Next items get no dates, which would have been new text to approve.
+  - **Page title <= 60 characters, description <= 160**, failing the import like the other budgets (the
+    title is also drawn on the share image).
+  - **A thread with one change is refused** by the import and the build rather than quietly dropped, so
+    approved text never vanishes from the page unnoticed. The spec's edge case is reworded.
+  - Fixed without a decision: one definition of a PDF's approval hash (over kind, file, title and the
+    bytes' sha256); the compared fields for `compare-cv`, one marked occurrence per item; back and Escape
+    go to the parent level and never leave the page from a shared link; the landscape SVG is sent at
+    every width and hidden by CSS; zoom is reached from a role's card ("Zoom to these years"), one step
+    more than the plan's question described, which T082 says; Escape's order (card, thread, zoom); the
+    no-script thread link is `#thread-<id>`; schema fixtures in `schemas/fixtures/cv/`; scripts run with
+    `node`, not `npx tsx`; `dist/_headers` is appended to at build, never overwritten.

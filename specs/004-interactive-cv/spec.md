@@ -219,7 +219,8 @@ each PDF for the last seven days, and the page makes no third-party request.
 - The magnified latest year: months are labelled, and the join to the years before it is
   continuous, so a bar running across it isn't broken.
 - A phone turned sideways or a tablet: the layout follows the width available, not the device.
-- A thread with one change in it: treated as no thread, so nothing offers to "follow" it.
+- A thread with one change in it: refused by the import and the build (a thread needs two or more
+  changes), so the page never offers to "follow" one (owner, 2026-11-25).
 - A card's text is longer than its budget: the build flags it rather than letting the card grow off
   screen.
 - Printing the page: it prints readably (the still timeline and the text), and points to the PDFs.
@@ -265,9 +266,11 @@ each PDF for the last seven days, and the page makes no third-party request.
   a phone in both forms mocked up.)
 - **FR-009**: Changes marked as adding value MUST be visibly marked, in a way that doesn't rely on
   colour alone.
-- **FR-010**: Every change, hat and "next" item MUST open a card with its label, dates (with "about"
-  or "to now" in words where they apply), lane, thread and approved card text. A value change's card
-  MUST link to its value story on the page.
+- **FR-010**: Every change, hat and "next" item MUST open a card with its approved card text and the
+  details its kind has: a change its label, dates (with "about" or "to now" in words where they apply),
+  lane and thread (if any); a hat its label and dates; a "next" item its title. A value change's card
+  MUST link to its value story on the page. (Amended 2026-11-25 by the tasks' analysis, owner: next
+  items carry no dates.)
 - **FR-011**: A reader MUST be able to follow a thread from any card in it: the thread's changes
   highlighted, others dimmed, with steps to the previous and next change in time order.
 - **FR-012**: On the landscape timeline, a reader MUST be able to zoom into an era and back out to

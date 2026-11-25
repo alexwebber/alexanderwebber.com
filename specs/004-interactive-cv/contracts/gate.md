@@ -17,7 +17,7 @@ The CV adds checks to existing gate steps; it adds no step.
 ## Privacy scan
 
 `scan-privacy.ts` covers `data/cv/` and `dist/cv/` like the rest of the site. Its findings in CV files are
-redacted (kind, id and field, no excerpt), as for the story: an excerpt would quote CV text into a public log.
+redacted (file, line and column with `[<n> chars redacted]`, no excerpt), as for the story: an excerpt would quote CV text into a public log.
 
 ## Messages
 

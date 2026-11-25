@@ -63,7 +63,7 @@ next:
 | Role | `id`, `label`, `when`, `card` |
 | Change | `id`, `label`, `when`, `theme`, `thread`, `value`, `card` |
 | Next item | `id`, `title`, `card` |
-| Download | `kind`, `file`, `title`, and the file's bytes (sha256 of the bytes, then of the canonical JSON with it) |
+| Download | `kind`, `file`, `title`, `bytes` (`bytes` is the sha256 of the file's bytes, 64 lower-case hex; the approval's sha256 is of the canonical JSON of those four) |
 
 A field absent from an item is absent from its canonical JSON (not `null`). Adding a new optional field to
 a kind later appends to its list without changing existing hashes, as long as items without it hash the same.
@@ -91,7 +91,7 @@ number: the import checks anyway.
 ## `scripts/import-cv.ts`
 
 ```text
-npx tsx scripts/import-cv.ts --from=<export.json> --rules-checked=<YYYY-MM-DD> [--dry-run]
+node scripts/import-cv.ts --from=<export.json> --rules-checked=<YYYY-MM-DD> [--dry-run]
 ```
 
 1. Validate the export's schema.
@@ -108,13 +108,23 @@ npx tsx scripts/import-cv.ts --from=<export.json> --rules-checked=<YYYY-MM-DD> [
 ## `scripts/compare-cv.ts`
 
 ```text
-npx tsx scripts/compare-cv.ts --from=<export.json> [--dist=dist]
+node scripts/compare-cv.ts --from=<export.json> [--dist=dist]
 ```
 
-Reads `dist/cv/index.html`. Every rendered item carries `data-cv-item="<kind>:<id>"` and each of its text
-fields `data-cv-field="<field>"`. The script compares each field's text content (whitespace collapsed,
+Reads `dist/cv/index.html`. The canonical occurrence of each item (its card; a block, the header or the
+downloads block for those kinds) carries `data-cv-item="<kind>:<id>"` and each compared field
+`data-cv-field="<field>"`. Tiles, rows, SVG labels, tooltips and crumbs carry neither. The script compares each field's text content (whitespace collapsed,
 entities decoded) with the export, and prints `no differences` or one line per difference with kind, id and
 field (no text). Exit code 1 on any difference. Its output is pasted into the content PR (SC-005).
+
+**Compared fields**: Page `name`, `headline`, `location` (the header), `title` (the `<title>` text),
+`description` (the meta description); a text block's heading and each paragraph
+(`data-cv-field="paragraphs.<n>"`); each value story's title and text (`data-cv-item="story:<id>"`); Theme
+`name`, `line`; Thread `name`, `line`; Role `label`, `when`, `card`; Change `label`, `when`, `card`; Next
+item `title`, `card`; Download `title`. `when` is compared as its words (`whenText(parseWhen(when))`).
+Not compared as text: ids, `kind`, `colour`, references (validate-data checks them) and `as_of`;
+`email_user` and `email_domain` are compared with the element's `data-user` and `data-domain`, `linkedin`
+with the link's `href`.
 
 ## Messages
 

@@ -30,7 +30,7 @@ A small script (budget 10 KB gzip, no library) turns them into the drill, the an
 `data/cv/` with a sha256 approval per item, and the loader refuses anything without a matching approval,
 so unapproved text can't reach a page by any build path (spec 003's mechanism, per item). The import also
 scans for phone numbers, checks every budget, and `scripts/compare-cv.ts` compares the built page's text
-with the export word for word. The two PDFs are approved by the sha256 of their bytes, and the build reads
+with the export word for word. The two PDFs are approved by a sha256 over their bytes, kind, file name and title, and the build reads
 their text to refuse a phone number.
 
 **Use counts (US6) are delivered outside this repository**, by the owner's private tooling reading
@@ -68,7 +68,8 @@ forced colours, reduced motion and with scripts off; Lighthouse on the preview (
 HTML+CSS+JS <= 150 KB gzip, no third-party request. Fonts about 58 KB of WOFF2 (Space Grotesk 700 12.8 KB,
 Inter Tight 400 22.0 KB and 600 22.7 KB, measured from the 5.3.0 packages), one preloaded. WCAG 2.2 AA in
 light, dark and forced colours. Text budgets: card 280 characters, change label 72, role label 48,
-theme line 100 (owner, 2026-11-25, for the card). No phone number anywhere in the section's output.
+theme line 100 (owner, 2026-11-25, for the card), page title 60, page description 160 (owner, 2026-11-25,
+the tasks' analysis). No phone number anywhere in the section's output.
 
 **Scale/Scope**: designed for any CV from one theme with one change; tested with a typical made-up CV
 (5 themes, about 50 changes, 8 roles, 5 threads, 3 "next") and a stress CV (8 themes, 90 changes, 12 roles,
@@ -94,7 +95,7 @@ on the answer.
 | II(c) Error handling and logging | PASS | Every refusal names the file, the item id and the field, and never quotes CV text (a sentinel test proves it) |
 | III. Own your data | PASS | Approved files in git, rendered at build. No provider, no request at view time |
 | IV. Pluggable providers and storage | PASS | No provider. Read through `CvStore` on the shared storage layer; the career record is reached only by the import script, offline |
-| V. Serverless, gracefully degrading | PASS | Static pages, no new Worker route. Without scripts the whole CV reads as linked sections. "Last updated" shown for the downloads, the only dated things |
+| V. Serverless, gracefully degrading | PASS | Static pages, no new Worker route. Without scripts the whole CV reads as linked sections. The page's data date is the timeline axis's last tick, the `as_of` month (the month of the import), shown in words on both forms and without scripts (owner, 2026-11-25); each download shows its own "Last updated" date |
 | VI. Privacy by default | PASS, one new category | CV text is a new category, published only per item with the owner's approval and after the sharing rules are re-checked (FR-023). No phone number in text or PDFs, checked at build. The email address never appears literally in the HTML. Unlisted until one setting changes |
 | VII. Modular sections | PASS | Everything in `src/sections/cv/`, `schemas/cv/`, `data/cv/`. Shared code gains nothing section-specific; `astro.config.mjs` gains the integration, the Fonts API entries and the sitemap filter, as it did for Running |
 | VIII. Authentic voice | PASS | Text comes only from the career record's approved set, word for word (FR-021, SC-005). Edits during approval go into `VOICE.md` (FR-024) |
@@ -130,7 +131,7 @@ Each has the decision and its reason; the fuller reasoning is in [research.md](r
    the PDFs. One file per kind, because the set is imported whole from one export, never hand-edited.
 3. **Approval** (R3). Each item carries `approved: {date, source, sha256}`: the sha256 of a canonical JSON
    of its named fields, `source` the career-record commit it came from. The loader recomputes every hash;
-   a missing or stale one fails the build naming the item. PDFs: the sha256 of the bytes.
+   a missing or stale one fails the build naming the item. PDFs: a sha256 over the bytes' sha256, kind, file and title.
 4. **Import and compare** (R4). `import-cv.ts --from=<export.json> --rules-checked=<date>` validates the
    export, refuses an item not marked approved, a phone number or an over-budget text, and writes the files.
    `--rules-checked` must be on or after the date the owner last re-confirmed the sharing rules, which the
@@ -144,9 +145,12 @@ Each has the decision and its reason; the fuller reasoning is in [research.md](r
 6. **The landscape form** (R7). From 1024 px: an SVG of the swimlanes built at build time (years left to
    right, the latest year month by month, roles across the top, "next" at the right), each change a link to
    its card. Labels are placed at build in free rows from the font's measured advance widths; a label with
-   no room shows on hover and focus, and on its card. Below 1024 px the same SVG is not sent.
-7. **Zoom** (R8). Tapping a role on the landscape form zooms to that role's years; "Whole career" zooms
-   back out. Keyboard: Enter on a role, Escape to zoom out. No new content to approve.
+   no room shows on hover and focus, and on its card. The SVG is in the HTML at every width, inside a
+   container hidden below 1024 px (R7); its weight counts toward the page budget at phone widths (measured
+   in slice 3).
+7. **Zoom** (R8). On the landscape form, a role's card (opened by tapping the role, or Enter on it) offers
+   "Zoom to these years", which fills the width with that role's years; "Whole career" or Escape zooms back
+   out (contracts/timeline-ui.md *Escape*). No new content to approve.
 8. **Threads** (R6, R7). Landscape: following a thread lights its changes and dims the rest, with previous
    and next. Phone: a thread is a list like a theme. A thread needs two or more changes.
 9. **Animation** (R10). The finished picture is the resting state; the script adds the draw-in only when it
@@ -186,8 +190,8 @@ specs/004-interactive-cv/
 ```text
 schemas/cv/
 ├── page.schema.json, blocks.schema.json, timeline.schema.json, downloads.schema.json   # new
-├── export.schema.json                       # the career record's export, read by import-cv
-└── fixtures/                                # valid and invalid, made up
+└── export.schema.json                       # the career record's export, read by import-cv
+schemas/fixtures/cv/<schema>/{valid,invalid}/   # made up; where both contract suites (Vitest and pytest) look
 src/sections/cv/                             # new section
 ├── README.md                                # the graduation design note
 ├── integration.ts                           # routes, only when data/cv/page.yaml exists
@@ -216,7 +220,7 @@ scripts/
 ├── scan-privacy.ts                          # findings in CV files redacted, as for the story
 └── lighthouse-budget.mjs                    # the CV page type
 astro.config.mjs                             # cv integration, fonts, sitemap filter, /cv-preview/[state]
-public/_headers                              # X-Robots-Tag for /cv/*.pdf while unlisted (generated at build)
+dist/_headers                                # X-Robots-Tag for /cv/*.pdf while unlisted; appended by the cv integration's astro:build:done hook, nothing committed
 .github/workflows/tests.yml                  # path filters
 tests/
 ├── fixtures/cv-preview/                     # made-up CVs: typical, stress, minimal, unlisted
