@@ -1,14 +1,20 @@
 // Generates TypeScript types from schemas/** into each section's store (T034): Running's go to
-// src/sections/running/data/store/generated/. Runs as the prebuild and pretest hooks, so the
-// types never drift from the schemas.
+// src/sections/running/data/store/generated/, the CV's to src/sections/cv/data/store/generated/.
+// Runs as the prebuild and pretest hooks, so the types never drift from the schemas.
+//
+// A definition one schema references in another file (the CV's shared approval block) is declared
+// in each file that uses it, so the index exports each name once, from its first file, and stops if
+// two declarations of one name differ.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { compile } from 'json-schema-to-typescript';
 import { RUNNING_SCHEMAS } from '../src/sections/running/data/store/schemas.ts';
+import { CV_SCHEMAS } from '../src/sections/cv/data/store/schemas.ts';
 
 /** Each section's file schemas and where their types go. */
 const SECTIONS: { schemas: readonly string[]; outDir: string }[] = [
   { schemas: RUNNING_SCHEMAS, outDir: 'src/sections/running/data/store/generated' },
+  { schemas: CV_SCHEMAS, outDir: 'src/sections/cv/data/store/generated' },
 ];
 
 const root = resolve(import.meta.dirname, '..');
@@ -20,6 +26,7 @@ for (const section of SECTIONS) {
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
   const index: string[] = [banner];
+  const declared = new Map<string, { out: string; text: string }>();
 
   for (const name of section.schemas) {
     const file = join(schemaDir, `${name}.schema.json`);
@@ -36,9 +43,33 @@ for (const section of SECTIONS) {
     });
     const out = `${name.replace('/', '-')}.ts`;
     writeFileSync(join(outDir, out), ts);
-    index.push(`export type * from './${out}';`);
+    const fresh: string[] = [];
+    for (const [typeName, text] of declarations(ts)) {
+      const first = declared.get(typeName);
+      if (!first) {
+        declared.set(typeName, { out, text });
+        fresh.push(typeName);
+      } else if (first.text !== text) {
+        throw new Error(`gen-types: ${out} and ${first.out} both declare ${typeName}, differently: give one of them another name`);
+      }
+    }
+    if (fresh.length === declarations(ts).size) index.push(`export type * from './${out}';`);
+    else index.push(`export type { ${fresh.join(', ')} } from './${out}';`);
   }
 
   writeFileSync(join(outDir, 'index.ts'), `${index.join('\n')}\n`);
   console.log(`gen-types: ${section.schemas.length} schemas -> ${section.outDir}`);
+}
+
+/** Each top-level `export interface|type <Name>` in generated code, with its text up to the next one. */
+function declarations(ts: string): Map<string, string> {
+  const found = new Map<string, string>();
+  const starts = [...ts.matchAll(/^export (?:interface|type) (\w+)/gm)];
+  starts.forEach((match, i) => {
+    const end = i + 1 < starts.length ? starts[i + 1]!.index : ts.length;
+    // Drop the next declaration's doc comment, which sits between the two.
+    const text = ts.slice(match.index, end).replace(/\/\*\*(?:(?!\*\/)[\s\S])*\*\/\s*$/, '').trim();
+    found.set(match[1]!, text);
+  });
+  return found;
 }

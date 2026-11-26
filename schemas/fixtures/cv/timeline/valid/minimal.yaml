@@ -1,0 +1,23 @@
+# Made up (T009): one theme and one change, no threads, roles or next items
+themes:
+- id: theme-a
+  name: Change type A
+  line: A made-up line on change type A.
+  colour: lane-1
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+threads: []
+roles: []
+changes:
+- id: change-a
+  label: Change A
+  when: '2014'
+  theme: theme-a
+  card: The problem it solved, and what it changed, in made-up words.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+next: []

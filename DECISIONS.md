@@ -2590,3 +2590,27 @@ end. Add each new decision as a dated entry at the end, as it's made.
     more than the plan's question described, which T082 says; Escape's order (card, thread, zoom); the
     no-script thread link is `#thread-<id>`; schema fixtures in `schemas/fixtures/cv/`; scripts run with
     `node`, not `npx tsx`; `dist/_headers` is appended to at build, never overwritten.
+- **2026-11-26** — **Spec 004 slice 1, files and checks** (T001–T038, made-up text only; nothing a visitor
+  sees changes). Choices made while building it, none needing the owner:
+  - **The CV schemas share one set of `$defs`** (`id`, `line`, `when`, `approval`) in `cv/timeline`, by
+    reference, rather than T004–T008's approval block written out in each file. json-schema-to-typescript
+    declares a referenced object in every file that uses it, titled or not, so any copy clashed in the
+    generated index (TS2308). `scripts/gen-types.ts` now exports each name once and stops if two
+    declarations of one name differ; the owner-data-file skill's pitfall is corrected.
+  - **All CV text is one line**: a block's paragraphs are a list of one-line strings, as the import writes
+    them (`lineWidth: 0`), so a line break in approved text is refused by the schema, never reflowed.
+  - **`whenText` (the *Shown as* words) came forward from T041** to slice 1, because `compare-cv` compares
+    `when` as words; durations and `<time>` values stay with T041.
+  - **compare-cv's markup**: the header is `data-cv-item="page:page"`, a block's paragraphs are
+    `paragraphs.0`, `paragraphs.1` … (from 0), the email is `data-cv-field="email"` with `data-user` and
+    `data-domain`, LinkedIn is `data-cv-field="linkedin"`'s `href`. Slice 2 marks the page this way.
+  - **The import checks the files as they'd be written before writing any** (the CV's own schemas and the
+    rules across items, besides the export's), so a refused import leaves `data/cv/` untouched; it also
+    removes a PDF the new export no longer lists, which the store would otherwise refuse as unlisted.
+  - **No `page.yaml` means no CV** whatever else is in `data/cv/`; with it, `blocks.yaml` and
+    `timeline.yaml` are required and `downloads.yaml` may be absent (no downloads).
+  - **Phone numbers**: 10 to 15 digits with single spaces, dots, hyphens or brackets between them (8 or more
+    after a `+`), not against a letter or digit, and any `tel:` link; a run of four-digit years isn't one.
+    Two numbers separated only by spaces are both found.
+  - A schema message's leading value is dropped as the shared messages write it (raw, in quotes), not as
+    JSON: the sentinel test found a two-line card quoted back before the fix.

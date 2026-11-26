@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/cv/downloads.schema.json",
+  "title": "CvDownloads",
+  "description": "data/cv/downloads.yaml: the approved PDFs offered for download, each in data/cv/downloads/ and served at /cv/<file> (specs/004-interactive-cv/data-model.md, Download). Written by scripts/import-cv.ts. At most one of each kind is checked by validate.ts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "downloads"
+  ],
+  "properties": {
+    "downloads": {
+      "type": "array",
+      "maxItems": 2,
+      "x-error": "must list at most two downloads",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "file",
+          "title",
+          "approved"
+        ],
+        "properties": {
+          "kind": {
+            "description": "plain (the job-site version) or visual (the designed page).",
+            "enum": [
+              "plain",
+              "visual"
+            ],
+            "x-error": "is not a download kind (expected plain or visual)"
+          },
+          "file": {
+            "description": "The file name in data/cv/downloads/. Fixed per kind (owner decision 6), so a new version replaces the old at the same link (FR-020).",
+            "type": "string",
+            "enum": [
+              "alexander-webber-cv.pdf",
+              "alexander-webber-cv-visual.pdf"
+            ],
+            "x-error": "is not a CV file name (expected alexander-webber-cv.pdf or alexander-webber-cv-visual.pdf)"
+          },
+          "title": {
+            "description": "The link text. Hashed with the file's bytes.",
+            "$ref": "timeline.schema.json#/$defs/line"
+          },
+          "approved": {
+            "description": "The owner's approval: its date is shown as \"Last updated\"; sha256 covers kind, file, title and the sha256 of the file's bytes.",
+            "$ref": "timeline.schema.json#/$defs/approval"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "plain"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "file": {
+                  "const": "alexander-webber-cv.pdf",
+                  "x-error": "must be alexander-webber-cv.pdf for the plain CV"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "visual"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "file": {
+                  "const": "alexander-webber-cv-visual.pdf",
+                  "x-error": "must be alexander-webber-cv-visual.pdf for the visual CV"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

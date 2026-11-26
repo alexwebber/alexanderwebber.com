@@ -1,7 +1,7 @@
 # schemas/
 
-JSON Schema (draft 2020-12) for every Running data file: the single source of truth for the
-site (TypeScript, ajv) and the ingest (Python, jsonschema). File layout and cross-cutting rules
+JSON Schema (draft 2020-12) for every data file, Running's and the CV's: the single source of
+truth for the site (TypeScript, ajv) and the ingest (Python, jsonschema). File layout and cross-cutting rules
 are in [contracts/data-files.md](../specs/001-running-section/contracts/data-files.md).
 
 - `published/*.schema.json`: machine-written, sanitised JSON in `data/running/published/`.
@@ -22,6 +22,23 @@ are in [contracts/data-files.md](../specs/001-running-section/contracts/data-fil
     landing-link label.
   - `journey-note`: `note.yaml`, the one-paragraph note that the story isn't medical advice.
   - `journey-closing`: `closing.yaml`, the optional closing section's heading and text.
+- `cv/*.schema.json`: the CV's files in `data/cv/` ([spec 004's contracts](../specs/004-interactive-cv/contracts/content-files.md)).
+  They are written by `scripts/import-cv.ts` from the private career record's export, never by
+  hand: each item carries `approved` (`date`, `source`, `sha256` of its named fields), and a hand
+  edit breaks it. Text budgets aren't in the schemas (`src/sections/cv/domain/budgets.ts` checks
+  them, so the message can give the count):
+  - `cv/page`: `page.yaml`, the header, the page's title and description, the email in two parts,
+    an optional LinkedIn link, `as_of` (the timeline's last month), `listed` and
+    `sharing_rules_confirmed`.
+  - `cv/blocks`: `blocks.yaml`, the text blocks in page order (one pitch; value stories on value
+    blocks only).
+  - `cv/timeline`: `timeline.yaml`, the themes (one to eight), threads, roles, changes and next
+    items. Its `$defs` (`id`, `line`, `when`, `approval`) are shared by the other CV schemas, by
+    reference to this file, so gen-types declares each type once.
+  - `cv/downloads`: `downloads.yaml`, at most two approved PDFs in `data/cv/downloads/`, each kind
+    with its fixed file name.
+  - `cv/export`: the career record's export, the import's only input (never stored here; tests use
+    made-up exports in `tests/fixtures/cv-export/`).
 - `defs.schema.json`: shared building blocks (dates, run IDs, owner times and distances), used
   through `$ref: ../defs.schema.json#/$defs/...`.
 - `distances.json`: each named race distance in metres, the one table for both languages

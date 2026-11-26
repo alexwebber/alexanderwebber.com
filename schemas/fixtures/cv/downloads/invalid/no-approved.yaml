@@ -1,0 +1,12 @@
+# Made up (T009): a download without approval
+downloads:
+- kind: plain
+  file: alexander-webber-cv.pdf
+  title: The plain CV (PDF)
+- kind: visual
+  file: alexander-webber-cv-visual.pdf
+  title: The visual CV (PDF)
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

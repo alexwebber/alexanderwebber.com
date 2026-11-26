@@ -253,3 +253,30 @@ describe('scan-privacy: findings in story text are redacted', () => {
     expect(rules('data/running/owner/journey/note.yaml', 'text: |\n  Donations: every one helps.\n')).toEqual(['donor, Gift Aid or JustGiving account key in data']);
   });
 });
+
+describe('scan-privacy: phone numbers in the CV (spec 004)', () => {
+  const PLANTED = 'Ring 07700 900123 for more';
+
+  it('finds a phone number in data/cv/ and dist/cv/, with line and column, redacted', () => {
+    for (const file of ['data/cv/timeline.yaml', 'dist/cv/index.html']) {
+      const findings = scanText(file, `first line\n${PLANTED}\n`);
+      expect(findings).toEqual([{ file, rule: 'phone number in the CV', line: 2, column: 6, excerpt: '[12 chars redacted]' }]);
+    }
+  });
+
+  it("doesn't ask the phone rule about Running's pages", () => {
+    expect(rules('dist/running/index.html', `<p>${PLANTED}</p>`)).toEqual([]);
+  });
+
+  it('redacts any other rule\'s finding in the CV\'s files', () => {
+    const [finding] = scanText('data/cv/page.yaml', 'name: x\nlatitude: 50.8\n');
+    expect(finding).toMatchObject({ rule: 'coordinates outside race tracks and race pages', excerpt: expect.stringMatching(/^\[\d+ chars redacted\]$/) });
+  });
+
+  it('scans the CV files in a repo', async () => {
+    repo = tempRepo();
+    repo.write('data/cv/timeline.yaml', `changes:\n  - card: ${PLANTED}\n`);
+    const findings = await scanPrivacy(repo.root);
+    expect(findings.map((f) => `${f.file}:${f.line}:${f.column} ${f.rule} ${f.excerpt}`)).toEqual(['data/cv/timeline.yaml:2:16 phone number in the CV [12 chars redacted]']);
+  });
+});

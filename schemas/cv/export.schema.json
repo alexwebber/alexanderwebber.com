@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/cv/export.schema.json",
+  "title": "CvExport",
+  "description": "The private career record's export, the only input to scripts/import-cv.ts (specs/004-interactive-cv/contracts/content-files.md, The career record's export). Never stored in this repository: tests use made-up exports. approved_on and page.sharing_rules_confirmed are optional here so the import can refuse their absence naming the item.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "source", "exported", "page", "blocks", "timeline", "downloads"],
+  "properties": {
+    "format": { "const": 1, "x-error": "is not export format 1" },
+    "source": {
+      "description": "The career record's commit the export was made from.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$",
+      "x-error": "is not a commit (7 to 40 lower-case hexadecimal characters)"
+    },
+    "exported": { "$ref": "../defs.schema.json#/$defs/date" },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "headline", "location", "title", "description", "email_user", "email_domain", "as_of", "listed"],
+      "properties": {
+        "name": { "$ref": "timeline.schema.json#/$defs/line" },
+        "headline": { "$ref": "timeline.schema.json#/$defs/line" },
+        "location": { "$ref": "timeline.schema.json#/$defs/line" },
+        "title": { "$ref": "timeline.schema.json#/$defs/line" },
+        "description": { "$ref": "timeline.schema.json#/$defs/line" },
+        "email_user": { "$ref": "page.schema.json#/properties/email_user" },
+        "email_domain": { "$ref": "page.schema.json#/properties/email_domain" },
+        "linkedin": { "$ref": "page.schema.json#/properties/linkedin" },
+        "as_of": { "$ref": "page.schema.json#/properties/as_of" },
+        "listed": { "$ref": "page.schema.json#/properties/listed" },
+        "sharing_rules_confirmed": { "$ref": "../defs.schema.json#/$defs/date" },
+        "approved_on": { "$ref": "#/$defs/approvedOn" }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "heading", "kind", "paragraphs"],
+        "properties": {
+          "id": { "$ref": "timeline.schema.json#/$defs/id" },
+          "heading": { "$ref": "timeline.schema.json#/$defs/line" },
+          "kind": { "$ref": "blocks.schema.json#/$defs/block/properties/kind" },
+          "paragraphs": { "$ref": "blocks.schema.json#/$defs/block/properties/paragraphs" },
+          "stories": { "$ref": "blocks.schema.json#/$defs/block/properties/stories" },
+          "approved_on": { "$ref": "#/$defs/approvedOn" }
+        },
+        "if": { "required": ["kind"], "properties": { "kind": { "const": "value" } } },
+        "else": { "not": { "required": ["stories"] }, "x-error": "has stories, which only a value block may have" }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["themes", "threads", "roles", "changes", "next"],
+      "properties": {
+        "themes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "line", "colour"],
+            "properties": {
+              "id": { "$ref": "timeline.schema.json#/$defs/id" },
+              "name": { "$ref": "timeline.schema.json#/$defs/line" },
+              "line": { "$ref": "timeline.schema.json#/$defs/line" },
+              "colour": { "$ref": "timeline.schema.json#/properties/themes/items/properties/colour" },
+              "approved_on": { "$ref": "#/$defs/approvedOn" }
+            }
+          }
+        },
+        "threads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "line"],
+            "properties": {
+              "id": { "$ref": "timeline.schema.json#/$defs/id" },
+              "name": { "$ref": "timeline.schema.json#/$defs/line" },
+              "line": { "$ref": "timeline.schema.json#/$defs/line" },
+              "approved_on": { "$ref": "#/$defs/approvedOn" }
+            }
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "when"],
+            "properties": {
+              "id": { "$ref": "timeline.schema.json#/$defs/id" },
+              "label": { "$ref": "timeline.schema.json#/$defs/line" },
+              "when": { "$ref": "timeline.schema.json#/$defs/when" },
+              "card": { "$ref": "timeline.schema.json#/$defs/line" },
+              "approved_on": { "$ref": "#/$defs/approvedOn" }
+            }
+          }
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "when", "theme"],
+            "properties": {
+              "id": { "$ref": "timeline.schema.json#/$defs/id" },
+              "label": { "$ref": "timeline.schema.json#/$defs/line" },
+              "when": { "$ref": "timeline.schema.json#/$defs/when" },
+              "theme": { "$ref": "timeline.schema.json#/$defs/id" },
+              "thread": { "$ref": "timeline.schema.json#/$defs/id" },
+              "value": { "$ref": "timeline.schema.json#/$defs/id" },
+              "card": { "$ref": "timeline.schema.json#/$defs/line" },
+              "approved_on": { "$ref": "#/$defs/approvedOn" }
+            }
+          }
+        },
+        "next": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title"],
+            "properties": {
+              "id": { "$ref": "timeline.schema.json#/$defs/id" },
+              "title": { "$ref": "timeline.schema.json#/$defs/line" },
+              "card": { "$ref": "timeline.schema.json#/$defs/line" },
+              "approved_on": { "$ref": "#/$defs/approvedOn" }
+            }
+          }
+        }
+      }
+    },
+    "downloads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "file", "title", "path"],
+        "properties": {
+          "kind": { "$ref": "downloads.schema.json#/properties/downloads/items/properties/kind" },
+          "file": { "$ref": "downloads.schema.json#/properties/downloads/items/properties/file" },
+          "title": { "$ref": "timeline.schema.json#/$defs/line" },
+          "path": {
+            "description": "The PDF's path, relative to the export file's folder.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*\\.pdf$",
+            "x-error": "is not a relative path to a PDF"
+          },
+          "approved_on": { "$ref": "#/$defs/approvedOn" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "approvedOn": {
+      "description": "The day the owner approved the item in the career record. An item without it is refused by the import, never skipped.",
+      "$ref": "../defs.schema.json#/$defs/date"
+    }
+  }
+}

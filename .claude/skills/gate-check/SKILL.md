@@ -48,3 +48,7 @@ what's wrong without leaking what it found. Copy `scripts/check-boundaries.ts` (
 - A `dist/` check needs a **deploy** build (no `SHELL_PREVIEW`); a preview build has test-only pages.
 - Ignore what isn't the site's own: external links, `mailto:`, `/_astro/` assets, `/running/api/`.
 - `.github/workflows/tests.yml` runs Vitest only for the paths in its filter; `scripts/` is covered.
+- The CV (spec 004) adds no gate step: its checks live in `validateCv` (`src/sections/cv/validate.ts`,
+  run by `validate-data` and the build's first hook), its phone rule in `scan-privacy` (over
+  `data/cv/` and `dist/cv/`, redacted), and its fragment checks in `check-links` (`/cv/`, naming the
+  `data-cv-item`).

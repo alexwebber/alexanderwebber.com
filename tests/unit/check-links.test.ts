@@ -100,3 +100,29 @@ describe('check-links', () => {
     expect(messages(dead)).toEqual(["dist/index.html: links to /running, which the build didn't make"]);
   });
 });
+
+describe('check-links: the CV page (spec 004)', () => {
+  const CV = page(
+    '<article id="change-change-a" data-cv-item="change:change-a"><a href="#value-story-a">Why it mattered</a><a href="/cv/#theme-theme-a">Theme</a></article>' +
+      '<section id="value-story-a" data-cv-item="story:story-a"><a href="#change-change-a">Back</a></section><div id="theme-theme-a"></div>' +
+      '<a href="/cv/alexander-webber-cv.pdf">Plain CV</a>',
+  );
+
+  it('passes good #change-, #value- and #theme- links and a present download', () => {
+    expect(checkLinks(site({ 'dist/cv/index.html': CV, 'dist/cv/alexander-webber-cv.pdf': '%PDF-1.4' }))).toEqual([]);
+  });
+
+  it('fails a dead #change- or #value- link, naming the CV item, not the link text', () => {
+    const html = CV.replace('#value-story-a', '#value-story-z').replace('<a href="#change-change-a">Back</a>', '<a href="#change-change-z">Back</a>');
+    const dist = site({ 'dist/cv/index.html': html, 'dist/cv/alexander-webber-cv.pdf': '%PDF-1.4' });
+    expect(messages(dist)).toEqual([
+      'dist/cv/index.html: change "change-a" links to /cv/#value-story-z, which the build didn\'t make',
+      'dist/cv/index.html: story "story-a" links to /cv/#change-change-z, which the build didn\'t make',
+    ]);
+    expect(messages(dist).join('\n')).not.toContain('Why it mattered');
+  });
+
+  it('fails a missing download', () => {
+    expect(messages(site({ 'dist/cv/index.html': CV }))).toEqual(["dist/cv/index.html: links to /cv/alexander-webber-cv.pdf, which the build didn't make"]);
+  });
+});
