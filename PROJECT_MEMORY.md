@@ -11,7 +11,7 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   003's launch is done: live checks (T087), guided review (T088), reader test skipped (T089). The
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
-  page type. House-process 0.16.2 is installed. Open: 003's standing follow-ups (T090–T092, below).
+  page type. House-process 0.17.0 is installed (2026-11-25). Open: 003's standing follow-ups (T090–T092, below).
 - **Spec 004, the interactive CV (2026-11-25):** planned and tasked (`specs/004-interactive-cv/tasks.md`,
   119 tasks in seven slices, each its own PR; analysed, fixes and four owner answers in `DECISIONS.md`).
   **Next: slice 1, files and checks (T001–T038)**, with `/speckit-implement` in a session opened from

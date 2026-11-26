@@ -48,6 +48,7 @@ Update this as decisions get made — treat it as the source of truth alongside
   before building on them. Before telling the owner a PR is ready, and again after it merges,
   the agent checks that every check on it is green (`gh pr checks`), not just the required ones.
   After a merge, that includes `main`'s own run, which it waits for to the end.
+  PRs open as drafts and are marked ready only once every check is green.
 - **Draw requirements out with questions.** For the constitution, specs, clarifications and
   design decisions, the agent asks focused rounds of questions with recommended options rather
   than expecting the owner to supply everything up front.

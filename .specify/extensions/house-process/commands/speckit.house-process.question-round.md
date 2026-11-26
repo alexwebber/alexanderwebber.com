@@ -19,11 +19,23 @@ subagents build on them rather than asking again.
    name the items it's about and what was found. Two to four mutually exclusive options; the
    recommended one first, marked *(Recommended)*, with a one-line why in its description. Use an
    option's preview for things to compare visually (a layout sketch, wording side by side).
+   No prices or other market facts from memory in an option: an owner saw at once that example
+   products didn't match their price bands, and a tool's monthly price turned out not to be
+   published at all. Read them from the source that day, write "price not checked", or ask
+   without examples. Ask a factual gap as an open option, not a list of guesses: an owner answered
+   a question about placements with the fact itself under *Other*.
 3. **Ask in rounds** of up to four questions (`AskUserQuestion`), most consequential first. Let
    later rounds follow from earlier answers rather than asking everything at once. Stop when what's
    left has a sensible default.
+   Keep *Other* open and read its free text for requests outside the round: most of the content
+   may arrive that way. Before mocking up a design, ask what the reader should take away at a
+   glance and how much text it holds, and show one dense and one sparse sketch: a "visual" brief
+   was read first as styled text, then as sparse, and both rounds of mock-ups were rejected.
 4. **Check stated facts** (figures, dates, names) against the stored data or a source before
    anything uses them, and confirm with the owner where they differ.
+   Test an owner's pick against the real data before building it: "level out loops" assumed runs
+   end where they start, and a scan of the archive showed most didn't. The owner changed their
+   pick on that evidence.
 5. **Record the answers** straight away: one decisions-log entry per round, with the owner's words
    where they matter (quote them; briefs pass them on word for word), the option picked, whether
    it was the recommendation, and the reason. Private answers go to the project's private notes,

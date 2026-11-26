@@ -15,4 +15,5 @@ made. Deferred/future work lives in `BACKLOG.md`.
 Before CI, framework, hosting or other technical work, load the matching house-process topic
 skill (`speckit-house-process-tips-<topic>`: shell, secrets, git, github-actions,
 privacy-pipelines, providers, research, windows-cloud, astro, testing, maps, share-images, docs,
-cloudflare, ui-accessibility, owner-content). Briefs for subagents name the ones their tasks need.
+cloudflare, ui-accessibility, owner-content, data-analysis, background-agents). Briefs for
+subagents name the ones their tasks need.

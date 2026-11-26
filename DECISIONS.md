@@ -2559,6 +2559,13 @@ end. Add each new decision as a dated entry at the end, as it's made.
     whether the free plan allows the path field, so one test query settles it; if not, US6 is dropped.
   - **New dependencies**: `unpdf` (PDF text for the phone check), `@fontsource/inter-tight`,
     `@fontsource/space-grotesk` (research.md R17).
+- **2026-11-25** — **House-process 0.16.2 → 0.17.0 installed** (software-factory#22, the lesson
+  harvest) with `upgrade-speckit.ps1`; Spec Kit stays 1.4.4 (latest), git extension 1.0.9 and the
+  `house-constitution` preset 0.1.2 unchanged, `extensions.yml` the same content, the constitution
+  template still resolves to the house preset. The diff is the release's skills only: the harvest's
+  edits across the tips and commands, and two new topic skills, `tips-data-analysis` and
+  `tips-background-agents`, now in CLAUDE.md's topic list. The project skills that name tips
+  (`page-tests`, `section-page`) point at ones that still exist. Nothing held.
 - **2026-11-25** — **Spec 004's tasks** (`specs/004-interactive-cv/tasks.md`: 119 tasks in seven slices,
   each its own PR; tasks subagent about 271k tokens, analyze subagent about 184k). The plan PR's seven
   answers are taken in as given, but the owner picked them before he could see anything, so the four
