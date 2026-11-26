@@ -1,0 +1,2 @@
+# PDFs are bytes: no line-ending conversion, so an approved PDF hashes the same on every machine (spec 004).
+*.pdf binary
