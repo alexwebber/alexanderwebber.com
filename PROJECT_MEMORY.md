@@ -12,14 +12,15 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
   page type. House-process 0.17.0 is installed (2026-11-25). Open: 003's standing follow-ups (T090–T092, below).
-- **Spec 004, the interactive CV (2026-11-25):** the plan is written (`specs/004-interactive-cv/plan.md`,
-  research, data model, contracts, quickstart; FR-007, FR-008 and US1 to US3 amended for the phone
-  form, a drill-down from the themes). **Next: `/speckit-tasks`** (and `/speckit-analyze`), in a session
-  opened from HQ's *career* stream, once the plan PR is merged and its checkboxes answered. Then slice 1
-  (files and checks). Real CV text still comes in only after the owner's sharing rules are re-checked
-  (FR-023); until then, made-up text in `/cv-preview/<state>/`. Use counts (US6) are built outside this
-  repo. The CV's paper forms are done in the private career repo; nothing comes here before the owner
-  approves that exact text.
+- **Spec 004, the interactive CV (2026-11-25):** planned and tasked (`specs/004-interactive-cv/tasks.md`,
+  119 tasks in seven slices, each its own PR; analysed, fixes and four owner answers in `DECISIONS.md`).
+  **Next: slice 1, files and checks (T001–T038)**, with `/speckit-implement` in a session opened from
+  HQ's *career* stream, once the tasks PR is merged. Slices 2 to 6 follow, one session each; slice 3 first
+  builds the Chart skill (`process/skill-candidates.yaml`). Four picks the owner made before he could see
+  them are confirmed by eye in the slice that first shows them (T067, T082, T083, T095). Real CV text
+  comes in only in slice 7, after the owner's sharing rules are re-checked (FR-023); until then, made-up
+  text in `/cv-preview/<state>/`. Use counts (US6) are built outside this repo. The CV's paper forms are
+  done in the private career repo; nothing comes here before the owner approves that exact text.
 - **Parallel workstreams (owner, 2026-11-14):** several workstreams run side by side, coordinated
   from the private repo `alexwebber/hq` (`C:\Projects\hq`, set up 2026-11-14), not this site. This
   repo is one stream among several (HQ's *maintenance* and, later, the CV page and blog). A session
@@ -194,7 +195,10 @@ project-specific notes.
 Since the harvest of 2026-11-25 ([software-factory#22](https://github.com/alexwebber/software-factory/pull/22)),
 which took every entry up to then:
 
-- _None yet._
+- On a branch not named `NNN-feature` (e.g. `004-interactive-cv-tasks`), `setup-tasks.ps1` ignores
+  `SPECIFY_FEATURE` and fails ("Feature directory not found"); setting `SPECIFY_FEATURE_DIRECTORY` to the
+  feature folder's absolute path works. A subagent brief should give that variable (spec 004's tasks,
+  2026-11-25).
 
 ## Open questions
 

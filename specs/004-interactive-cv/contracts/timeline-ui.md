@@ -19,13 +19,15 @@ The form follows the width available, not the device (a phone held sideways at 9
 1. **Overview** (`#cv`): a tile per theme in order (name; "N changes"; "N ★" if any; a strip of its changes
    packed into rows on the career scale), then under "Also": roles (a strip of roles), threads (count and
    line), next (count and line). One shared axis row above the tiles (first year, a middle year, the latest
-   year, its last month).
+   year, its last month). The last tick is `as_of`'s month in words (e.g. "Nov 2026"): the page's data date
+   (constitution Principle V; owner, 2026-11-25), shown on both forms and without scripts.
 2. **List** (`#theme-<id>` and the others): heading with the theme's colour mark, its line and count, the
    axis row, then one row per item oldest first: label; dates in words and duration; "★ Added value";
    "Thread: <name>" (in a theme) or the theme's name (in a thread); a one-row bar on the career scale.
 3. **Card** (`#change-<id>`, ...): theme or "Role" or "Where next" as a label; the item's label as the
    heading; dates in words; the axis row and bar; the card text; for a value change, a panel linking to
-   `#value-<story-id>`; for a change in a thread, "Follow this thread" (to `#change-<id>-in-<thread>`);
+   `#value-<story-id>`; for a change in a thread, "Follow this thread" (in the HTML a link to `#thread-<id>`; the script routes
+   it to `#change-<id>-in-<thread>`, so every href in the built page resolves for check-links);
    inside a thread, "Thread · n of N" with the thread's strip and "See it in <theme>"; previous and next
    within the current list, each naming the item, disabled at the ends.
 
@@ -58,6 +60,8 @@ level is shown.
   previous and next; Escape or "Done" ends it.
 - **Zoom**: activating a role offers "Zoom to these years"; the x-axis then spans the role; "Whole career"
   and Escape zoom out. Labels are re-placed for the zoomed scale from data computed at build per role.
+- **Escape** steps out one thing at a time on the landscape form: an open card closes first (focus back on
+  its mark), then a followed thread ends, then a zoom resets. On the drill, Escape goes up one level.
 
 ## Motion
 

@@ -35,7 +35,7 @@ listed per kind below.
 | Field | Rules |
 |---|---|
 | `name`, `headline`, `location` | Text, approved. Hashed |
-| `title`, `description` | Page title and meta description, approved. Hashed |
+| `title`, `description` | Page title (<= 60 characters) and meta description (<= 160), approved. Hashed |
 | `email_user`, `email_domain` | The address in two parts (never joined in the HTML). Hashed |
 | `linkedin` | Optional `https://www.linkedin.com/in/...` URL. Hashed |
 | `as_of` | `YYYY-MM`: the month the timeline runs to. Hashed |
@@ -95,7 +95,7 @@ one change is no thread", spec edge case).
 
 | Field | Rules |
 |---|---|
-| `id`, `title`, `card` | `title` <= 72; `card` <= 280. Hashed |
+| `id`, `title`, `card` | `title` <= 72; `card` <= 280, required. Hashed |
 | `approved` | As above |
 
 ### Download
@@ -105,7 +105,7 @@ one change is no thread", spec edge case).
 | `kind` | `plain` or `visual`; at most one of each |
 | `file` | File name in `data/cv/downloads/`, served at `/cv/<file>` |
 | `title` | Link text, approved. Hashed with the bytes |
-| `approved` | `date` (shown as "Last updated"), `source`, and `sha256` of the file's bytes |
+| `approved` | `date` (shown as "Last updated"), `source`, and `sha256` of the canonical JSON of `kind`, `file`, `title` and `bytes` (the sha256 of the file's bytes), as contracts/content-files.md *Hashed fields* |
 
 ## Rules across entities
 

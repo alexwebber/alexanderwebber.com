@@ -33,7 +33,7 @@ A test builds a scratch copy each way and checks all four columns.
 | `#cv` | The timeline section (the overview) |
 | `#theme-<id>`, `#roles`, `#threads`, `#thread-<id>`, `#next` | A list |
 | `#change-<id>`, `#role-<id>`, `#next-<id>` | A card |
-| `#change-<id>-in-<list>` | A card reached through a list other than its theme (a thread); routed by the script, falls back to `#change-<id>` without it |
+| `#change-<id>-in-<list>` | A card reached through a list other than its theme (a thread); routed by the script only and never written as an href (the no-script link is `#thread-<id>`); opened without scripts, such an address lands at the top of the page |
 | `#value-<story-id>` | A value story in the value block |
 
 Ids are the data's ids, so a shared link keeps working across imports.

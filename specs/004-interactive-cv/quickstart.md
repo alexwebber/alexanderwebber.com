@@ -19,7 +19,7 @@ exists.
 ## 2. Files and checks (slice 1; US5, SC-004, SC-005)
 
 ```powershell
-npx vitest run tests/unit/cv
+npx vitest run tests/unit/cv tests/unit/import-cv tests/unit/compare-cv tests/contract/cv-
 npx vitest run tests/contract/schemas.test.ts
 ```
 
@@ -38,11 +38,11 @@ sentinel word:
 Import round trip with the made-up export:
 
 ```powershell
-npx tsx scripts/import-cv.ts --from=tests/fixtures/cv-export/typical.json --rules-checked=2026-12-01 --dry-run
+node scripts/import-cv.ts --from=tests/fixtures/cv-export/typical/export.json --rules-checked=2026-12-01 --dry-run
 ```
 
 Then a full import into a scratch copy, a build, and
-`npx tsx scripts/compare-cv.ts --from=tests/fixtures/cv-export/typical.json` prints `no differences`.
+`node scripts/compare-cv.ts --from=tests/fixtures/cv-export/typical/export.json` prints `no differences`.
 
 ## 3. The phone form (slice 2; US1, US2, SC-003, SC-006, SC-007)
 
@@ -110,7 +110,7 @@ Only after the owner has re-confirmed the sharing rules (FR-023) and approved th
 3. The full gate locally; `compare-cv.ts` prints `no differences`; its output goes in the PR.
 4. The owner's edits made while approving, captured in `VOICE.md` (FR-024).
 5. After merge and deploy: `/cv/` on a phone and a desktop, a guided review with the owner, the page still
-   unlisted (`curl -sI https://alexanderwebber.com/cv/<plain pdf>` shows `X-Robots-Tag: noindex`).
+   unlisted (`curl.exe -sI https://alexanderwebber.com/cv/<plain pdf>` shows `X-Robots-Tag: noindex`).
 
 ## 9. Use counts (US6)
 
