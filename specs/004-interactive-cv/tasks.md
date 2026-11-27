@@ -303,7 +303,7 @@ the browser's back button and Escape.
 
 ### Ship the slice
 
-- [ ] T066 [US1] Run the PR routine's suites (`SHELL_PREVIEW=1` build, both Playwright projects for the new specs), look at phone-width and desktop screenshots of every state and level in light and dark and with scripts off, and compare `dist/` against `main` (expected byte-identical in a deploy build)
+- [X] T066 [US1] Run the PR routine's suites (`SHELL_PREVIEW=1` build, both Playwright projects for the new specs), look at phone-width and desktop screenshots of every state and level in light and dark and with scripts off, and compare `dist/` against `main` (expected byte-identical in a deploy build)
 - [ ] T067 [US1] (owner, guided by the agent) **Show-and-confirm Q4, the email (plan.md open question 4, provisional).** In this slice's PR, show the contact block of `typical` with scripts on (a `mailto:` link) and off (the address in words) at 360 px and on a desktop, light and dark (T057's `,nojs`), with the local steps to try both (the page as above; then the browser's settings to turn JavaScript off for `localhost`). Checkbox: "Keep: the address in words without scripts, a link with them, never the joined address in the HTML. *Recommended: keep.*" If the owner changes it (e.g. a plain `mailto:` link always), make the change on this branch before it merges: `CvContact.astro`, `timeline.client.ts`, T059 and T062's assertions, FR-003's wording if it's affected (with the owner's yes), and fresh screenshots. Record the pick in `DECISIONS.md`
 - [ ] T068 [US1] (owner, guided by the agent) Raise the PR by the PR routine with the phase header's *How to view it* and the screenshots. The owner looks at them in the PR review. Nothing is visible on the live site
 
