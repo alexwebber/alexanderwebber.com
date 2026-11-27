@@ -117,3 +117,7 @@ several checks fail when broken, run each with `-g`.
 - Drilling a removal ("every chapter removed") also removes what depends on it: `story_link` in
   `section.yaml` is an error with no chapter, so remove it too, unless that error is the point.
 - A clean copy plus a full build takes about 10–30 s locally; each extra build adds about as much.
+- `scan-privacy` reads the whole built HTML, markup included, so its phone pattern can match an SVG
+  path's numbers ("M12 2.5l2.9 6.1 6.6.8…": the CV's star, found by the launch drill). Write path
+  data with commas between numbers, and run a page test's phone check on the full HTML, not on
+  tag-stripped text, so it fails where `scan-privacy` would.

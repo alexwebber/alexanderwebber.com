@@ -2624,11 +2624,15 @@ end. Add each new decision as a dated entry at the end, as it's made.
     `sans-serif`); `<Font />` is only in `CvPage.astro`, so only CV pages load or preload them (Space
     Grotesk preloaded). Astro copies the three files to `dist/_astro/fonts/` in every build, CV or not:
     the only change a deploy build shows against `main`.
-  - **The palette** (T040): the visual CV's palette lives in the private career repo, which this slice
-    doesn't read, so the section's tokens are new: cool neutral surfaces, a blue accent, and eight lane
-    colours checked at 3:1 or more on the page and surface in light and dark (text at 4.5:1), by
-    `tests/unit/design-tokens.test.ts`. Swapping in the visual CV's hex values later changes
-    `styles/cv.css` only; the lane names stay.
+  - **The palette** (T040; FR-006, research.md R5): the visual CV's own colours, from the timeline the
+    owner signed off (career repo `cv/design/timeline`, take 1, bars): ink `#171b22`, soft `#5b6370`,
+    rules `#cfd5dd`, the teal accent `#0f6b6b`, the roles' slate `#2b3340`, and its five lane colours as
+    `lane-1` to `lane-5` in its order (`#0e7c86`, `#b06d00`, `#cf4636`, `#7a4fb5`, `#2c4fd1`). Colours
+    only; none of its text. The subagent couldn't read the private repo and drew a blue palette of its
+    own; the main conversation swapped these in before the PR. `lane-6` to `lane-8` (`#b83b78`,
+    `#4d7a1c`, `#7a6142`) and the dark set (the visual CV page's dark surfaces with lighter lanes) are
+    new. All checked by `tests/unit/design-tokens.test.ts`: text at 5.66:1 or more, lanes at 3.89:1 or
+    more, light and dark.
   - **The page item for `compare-cv` is a wrapper**, not the header: `data-cv-item="page:page"` sits on
     the `div.cv` holding the whole CV, so the contact block's email and LinkedIn fields (far from the
     header) belong to it; every other item inside carries its own `data-cv-item`. Slice 1's markup
@@ -2651,3 +2655,10 @@ end. Add each new decision as a dated entry at the end, as it's made.
   - **UI words** not from the career record: "Timeline", "Also", "Roles", "Threads", "Where next",
     "Changes that led from one to the next", "Where the work is heading", "N directions", "Added value",
     "Follow this thread", "See it in <theme>", "Back to themes", "Previous", "Next".
+  - **The launch drill caught a real fault**: the star's SVG path read as a phone number to `scan-privacy`;
+    the path was rewritten and `cv-page.test.ts` checks the whole HTML, markup included.
+  - **Cost**: implement subagent about **477k tokens**, 232 tool calls, 68 min (slice 1 inline; 003's
+    phases 272–352k; 002's slices 353–471k): the largest slice so far, with five browser specs and two
+    drills. The skill gaps it found are fixed in the same PR (`pr-ready`'s verdict when the term search is
+    skipped; `page-tests`, `gate-drill`, `preview-state`, `pr-screenshots`), and the Chart candidate
+    counts up to 9 (the strips and axis rows, by hand).

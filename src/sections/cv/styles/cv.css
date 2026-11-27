@@ -3,6 +3,10 @@
  * every rule under .theme-cv with a .cv- prefix: the timeline repeats its markup for every theme,
  * change and card, and a scoped <style> would add Astro's attribute to each element (astro tips).
  *
+ * Colours: the visual CV's (career repo cv/design/timeline, take 1): its ink, rules, teal accent and
+ * role slate, and its five lane colours as lane-1 to lane-5 in its order; lane-6 to lane-8 and the dark
+ * set are added here to the same checks (spec 004 FR-006, research.md R5).
+ *
  * Tokens: the section overrides the shared ones it needs under .theme-cv (as Running does) and adds
  * its own: --cv-lane-1 to --cv-lane-8, the lane colours a theme names (data-model.md Theme.colour),
  * each at 3:1 or more on the page and surface colours, and the fonts. A dark set follows the
@@ -15,26 +19,26 @@
 .theme-cv {
   --color-page: #f6f7f9;
   --color-surface: #ffffff;
-  --color-text: #111418;
-  --color-text-secondary: #4a505a;
-  --color-text-muted: #5f6672;
-  --color-border: #dfe2e7;
+  --color-text: #171b22;
+  --color-text-secondary: #5b6370;
+  --color-text-muted: #5b6370;
+  --color-border: #cfd5dd;
   --color-border-strong: #858b95;
-  --color-accent: #1f55b5;
-  --color-accent-strong: #173f87;
-  --color-focus: #1f55b5;
+  --color-accent: #0f6b6b;
+  --color-accent-strong: #0a4d4d;
+  --color-focus: #0f6b6b;
   --font-sans: var(--font-cv-text, system-ui, sans-serif);
   --weight-bold: 600;
 
-  --cv-lane-1: #2a6fd6;
-  --cv-lane-2: #d0531c;
-  --cv-lane-3: #158a60;
-  --cv-lane-4: #a87300;
-  --cv-lane-5: #c73e78;
-  --cv-lane-6: #0f7f8c;
-  --cv-lane-7: #6250d6;
-  --cv-lane-8: #d23b3a;
-  --cv-role: #4a505a;
+  --cv-lane-1: #0e7c86;
+  --cv-lane-2: #b06d00;
+  --cv-lane-3: #cf4636;
+  --cv-lane-4: #7a4fb5;
+  --cv-lane-5: #2c4fd1;
+  --cv-lane-6: #b83b78;
+  --cv-lane-7: #4d7a1c;
+  --cv-lane-8: #7a6142;
+  --cv-role: #2b3340;
   --cv-display: var(--font-cv-display, var(--font-sans));
   /* Room the sticky trail takes, so a heading or row scrolled to stays clear of it. */
   --cv-crumbs-room: 4.5rem;
@@ -42,26 +46,26 @@
 
 @media (prefers-color-scheme: dark) {
   .theme-cv {
-    --color-page: #0e1013;
-    --color-surface: #181b20;
-    --color-text: #eef0f3;
-    --color-text-secondary: #c2c7cf;
-    --color-text-muted: #a0a6b0;
-    --color-border: #2b2f36;
-    --color-border-strong: #6c727c;
-    --color-accent: #7cb0f5;
-    --color-accent-strong: #a8cbf8;
-    --color-focus: #7cb0f5;
+    --color-page: #15181e;
+    --color-surface: #1e232b;
+    --color-text: #e7eaf0;
+    --color-text-secondary: #c2c9d4;
+    --color-text-muted: #9ba4b5;
+    --color-border: #2e3540;
+    --color-border-strong: #6f7785;
+    --color-accent: #7cc7c0;
+    --color-accent-strong: #a6dbd6;
+    --color-focus: #7cc7c0;
 
-    --cv-lane-1: #5b9bf0;
-    --cv-lane-2: #f07a45;
-    --cv-lane-3: #3cc08e;
-    --cv-lane-4: #e0a42a;
-    --cv-lane-5: #ec6fa5;
-    --cv-lane-6: #3ab8c4;
-    --cv-lane-7: #9a8cf0;
-    --cv-lane-8: #f06b6a;
-    --cv-role: #c2c7cf;
+    --cv-lane-1: #3fb5bf;
+    --cv-lane-2: #e0a040;
+    --cv-lane-3: #f07a68;
+    --cv-lane-4: #b293ea;
+    --cv-lane-5: #7f99f4;
+    --cv-lane-6: #ec82b4;
+    --cv-lane-7: #97c45e;
+    --cv-lane-8: #c9ae86;
+    --cv-role: #c2c9d4;
   }
 }
 

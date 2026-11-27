@@ -68,9 +68,13 @@ try {
 const mergedHere = pr?.state === 'MERGED' && pr.headRefOid === git('rev-parse', 'HEAD').trim();
 if (pr && pr.state !== 'OPEN' && !mergedHere) pr = undefined;
 
+// A skipped search mustn't end in "no private terms": a subagent barred from C:\temp ran with a
+// missing file and was told it was ready (spec 004 slice 2, 2026-11-27).
+let termsChecked = true;
 await section('Private terms', () => {
   if (!existsSync(TERMS_FILE)) {
     console.log(`  Skipped: no term file at ${TERMS_FILE} (set PRIVATE_TERMS_FILE). Search by hand instead.`);
+    termsChecked = false;
     return;
   }
   const terms = parseTerms(readFileSync(TERMS_FILE, 'utf8'));
@@ -233,5 +237,6 @@ await section('PR checks', () => {
   for (const c of [...pending, ...bad]) console.log(`    - ${c.name ?? c.context}: ${c.conclusion || c.status || c.state}`);
 });
 
-console.log(attention ? '\n! Something needs action (lines starting with "!").' : '\nReady: no private terms, checks green.');
+const termsWord = termsChecked ? 'no private terms' : 'private terms NOT checked (no term file)';
+console.log(attention ? '\n! Something needs action (lines starting with "!").' : `\nReady: ${termsWord}, checks green.`);
 process.exit(attention ? 1 : 0);

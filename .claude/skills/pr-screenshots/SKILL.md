@@ -54,7 +54,9 @@ triggers no workflow.
   VI). Shots of the live site's real pages are fine; nothing from a private draft, ever.
 - Long pages over WebP's 16,383 px limit are cropped to their top part, and the script says so.
   Shoot such a page with `--first-screen` too, or split it by state. Anything far down a long page
-  (e.g. `long`'s later chapter photos) needs its own state or shot to be seen.
+  (e.g. `long`'s later chapter photos) needs its own state or shot to be seen. A `,nojs` page that
+  lays every level out in order (the CV without scripts: 45,000 px at 360 px) is cropped the same
+  way: shoot the levels further down as `<path>#<id>,nojs,first-screen`, each under its own name.
 - Full-page shots load every lazy image first (a full-page shot doesn't scroll, so they'd show as
   empty boxes). First-screen shots don't; they show what a visitor sees.
 - A cloud session may push only to its own branch: there, skip `--publish`, commit the images
