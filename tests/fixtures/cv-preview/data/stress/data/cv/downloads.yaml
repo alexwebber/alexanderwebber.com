@@ -1,0 +1,17 @@
+# Written by scripts/import-cv.ts from the career record's export. Don't edit it by hand: an edit
+# breaks the item's approval, and the build refuses it (specs/004-interactive-cv).
+downloads:
+  - kind: plain
+    file: alexander-webber-cv.pdf
+    title: The plain CV (PDF)
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 65b030ec18f2ca58769e9f4733db21d308586effce37d2c6cd50b5e5a418eade
+  - kind: visual
+    file: alexander-webber-cv-visual.pdf
+    title: The visual CV (PDF)
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: a04ff4843c8643790f9f14216e6cb9b6544e54dfbf7743d28dee0ef3f78490b8

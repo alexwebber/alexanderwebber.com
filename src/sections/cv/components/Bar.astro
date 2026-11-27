@@ -1,0 +1,20 @@
+---
+// One item's place on the career scale, in one row (contracts/timeline-ui.md levels 2 and 3): a bar
+// for a period, a dot for a point. Rough dates draw a dashed edge and ongoing bars end in an arrow
+// (data-model.md *Common fields* **When**). HTML boxes, not SVG, so borders show in forced colours.
+// Decorative: the dates are in words beside it.
+interface Props {
+  x0: number;
+  x1: number;
+  point: boolean;
+  rough: boolean;
+  ongoing: boolean;
+}
+
+const { x0, x1, point, rough, ongoing } = Astro.props;
+const pct = (v: number) => `${(v * 100).toFixed(2)}%`;
+const style = point ? `--x: ${pct((x0 + x1) / 2)}` : `--x0: ${pct(x0)}; --x1: ${pct(x1)}`;
+const classes = ['cv-bar', point ? 'is-point' : 'is-period', rough && 'is-rough', ongoing && 'is-ongoing'].filter(Boolean).join(' ');
+---
+
+<span class="cv-bar-track" aria-hidden="true"><span class={classes} style={style}></span></span>

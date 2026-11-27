@@ -1,0 +1,35 @@
+---
+// The axis row (contracts/timeline-ui.md level 1): the first year, a middle year, the latest year and
+// its last month on the career scale. The last tick is Page.as_of's month in words ("Nov 2026"), the
+// page's data date (constitution Principle V; owner, 2026-11-25), on both forms and without
+// scripts. Screen readers hear "Timeline from <first> to <last>"; the ticks between are for the eye.
+// `copies` repeats the row for the two-column tiles (768 to 1023 px), the copies after the first
+// hidden from screen readers.
+import type { CareerScale } from '../domain/scale.ts';
+
+interface Props {
+  scale: CareerScale;
+  copies?: number;
+}
+
+const { scale, copies = 1 } = Astro.props;
+const ticks = scale.ticks();
+const pct = (v: number) => `${(v * 100).toFixed(2)}%`;
+const inner = (kind: string) => kind === 'middle' || kind === 'latest';
+---
+
+<div class="cv-axis" data-copies={copies}>
+  {
+    Array.from({ length: copies }, (_, copy) => (
+      <p class="cv-axis-row" aria-hidden={copy > 0 ? 'true' : undefined}>
+        <span class="visually-hidden">{ticks.length > 1 ? 'Timeline from ' : 'Timeline up to '}</span>
+        {ticks.map((tick) => (
+          <span class={`cv-tick cv-tick-${tick.kind}`} style={`--x: ${pct(tick.x)}`} aria-hidden={inner(tick.kind) ? 'true' : undefined}>
+            {tick.kind === 'last' && ticks.length > 1 && <span class="visually-hidden">{' to '}</span>}
+            <time datetime={tick.datetime}>{tick.label}</time>
+          </span>
+        ))}
+      </p>
+    ))
+  }
+</div>

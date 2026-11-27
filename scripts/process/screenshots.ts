@@ -3,7 +3,7 @@
 // branch that never merges, then prints the Markdown for the PR body, linked by commit SHA (`gh`
 // can't attach images to a PR).
 //
-//   node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen][,open] ... [--build]
+//   node scripts/process/screenshots.ts <path>[#hash][=<name>][,width=<px>][,height=<px>][,first-screen][,open][,nojs] ... [--build]
 //     [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--width=360] [--publish]
 //
 // - Serves dist/ itself (no `astro preview`, which a coding agent's session backgrounds and which
@@ -18,7 +18,10 @@
 //   (Playwright can't capture a full page with it on), at 2x. --first-screen (or `,first-screen`)
 //   shoots only the first screen (width x 780, or `,height=` for one path, e.g. 640 for the small
 //   phone landing.spec.ts holds Donate to), for "what a visitor sees first" checks. `,open` opens
-//   every <details> on the page first (e.g. the story's chapter list shown open). A full-page shot
+//   every <details> on the page first (e.g. the story's chapter list shown open). `,nojs` shoots it with
+//   JavaScript off (what a reader without scripts sees). A path may end in a #hash (a drill level,
+//   e.g. /cv-preview/typical/#theme-theme-a): the shot waits until the page's script shows the element
+//   with that id, so each level is shot as a reader sees it. A full-page shot
 //   loads every lazy image first. Pages taller than WebP's limit are cropped, and say so.
 // - Files go to spikes/screens/out/ (gitignored). --publish commits them with git plumbing (the
 //   working tree is untouched) to `<branch>-screens`, pushes, and prints the PR body's table. The
@@ -54,17 +57,20 @@ const targets = args
   .filter((a) => !a.startsWith('--'))
   .map((a) => {
     const [spec, ...options] = a.split(',') as [string, ...string[]];
-    const [path, name] = spec.split('=') as [string, string | undefined];
+    const [address, name] = spec.split('=') as [string, string | undefined];
+    const [path, hash] = address.split('#') as [string, string | undefined];
     const clean = path.endsWith('/') || extname(path) ? path : `${path}/`;
     const own = options.find((o) => o.startsWith('width='));
     const ownHeight = options.find((o) => o.startsWith('height='));
     return {
       path: clean,
-      name: name ?? (clean.split('/').filter(Boolean).join('-') || 'home'),
+      hash: hash ? `#${hash}` : '',
+      name: name ?? ([...clean.split('/').filter(Boolean), ...(hash ? [hash] : [])].join('-') || 'home'),
       width: own ? Number(own.slice('width='.length)) : width,
       height: ownHeight ? Number(ownHeight.slice('height='.length)) : PHONE_HEIGHT,
       firstScreen: options.includes('first-screen') || flag('first-screen'),
       open: options.includes('open'),
+      noJs: options.includes('nojs'),
     };
   });
 if (distArg && flag('build')) {
@@ -81,7 +87,7 @@ if (rewritten) {
   process.exit(2);
 }
 if (targets.length === 0) {
-  console.error('Usage: node scripts/process/screenshots.ts <path>[=<name>][,width=<px>][,height=<px>][,first-screen][,open] ... [--build] [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
+  console.error('Usage: node scripts/process/screenshots.ts <path>[#hash][=<name>][,width=<px>][,height=<px>][,first-screen][,open][,nojs] ... [--build] [--dist=<dir>] [--first-screen] [--no-dark] [--no-desktop] [--desktop-dark] [--width=360] [--publish]');
   process.exit(2);
 }
 
@@ -179,11 +185,19 @@ const shots: Shot[] = [];
 try {
   for (const target of targets) {
     for (const v of variantsFor(target.width, target.height)) {
-      const context = await browser.newContext({ viewport: v.viewport, deviceScaleFactor: v.scale, colorScheme: v.scheme, isMobile: false });
+      const context = await browser.newContext({ viewport: v.viewport, deviceScaleFactor: v.scale, colorScheme: v.scheme, isMobile: false, javaScriptEnabled: !target.noJs });
       const page = await context.newPage();
-      const response = await page.goto(`${base}${target.path}`, { waitUntil: 'load' });
+      const response = await page.goto(`${base}${target.path}${target.hash}`, { waitUntil: 'load' });
       if (response?.status() !== 200) throw new Error(`${target.path} answered ${response?.status()}`);
+      // page.evaluate still runs with the page's scripts off (Playwright's own world).
       await page.evaluate(() => document.fonts.ready);
+      // A #hash names a level the page's script shows: wait until the element with that id is
+      // visible (an address with no such element, e.g. a change inside its thread, waits two frames).
+      if (target.hash && !target.noJs) {
+        const id = decodeURIComponent(target.hash.slice(1));
+        if (await page.evaluate((i) => document.getElementById(i) !== null, id)) await page.locator(`[id="${id}"]`).waitFor({ state: 'visible', timeout: 5000 });
+        await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+      }
       if (target.open) await page.evaluate(() => document.querySelectorAll('details').forEach((details) => (details.open = true)));
       // A full-page shot doesn't scroll, so lazy images below the first screen would show as empty
       // boxes: load every image first (one that fails stays as the page shows it).
@@ -253,8 +267,9 @@ const label = (t: (typeof targets)[number]) => {
     ...(t.width !== width || t.height !== PHONE_HEIGHT ? [t.height !== PHONE_HEIGHT ? `${t.width} x ${t.height}` : `${t.width} px`] : []),
     ...(t.firstScreen && !flag('first-screen') ? ['first screen'] : []),
     ...(t.open ? ['details open'] : []),
+    ...(t.noJs ? ['scripts off'] : []),
   ];
-  return `\`${t.path}\`${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`;
+  return `\`${t.path}${t.hash}\`${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`;
 };
 const pathOf = new Map(targets.map((t) => [t.name, t.path]));
 const img = (shot: Shot) => `<img src="${url(shot.file)}" width="240" alt="${pathOf.get(shot.name)} ${shot.variant}">`;

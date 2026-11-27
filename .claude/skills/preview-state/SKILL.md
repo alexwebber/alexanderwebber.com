@@ -62,6 +62,9 @@ screenshots run against it (`page-tests`, `pr-screenshots`).
 5. **A unit test** that each state passes `validateData(root, { today, schemaRoot: REPO_ROOT })` with
    no errors, as `tests/unit/fundraising-validate.test.ts` does for its previews. A tree without
    `section.yaml` always carries that one warning: assert it's the only one (or add the file).
+   A section with its own validator and store checks its states with those instead (the CV:
+   `validateCv` and `CvStore`, `tests/unit/cv-validate.test.ts`), plus a test that `generate.ts`
+   is deterministic (its output equals the committed files).
 
 ## Rules
 

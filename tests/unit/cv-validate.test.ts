@@ -3,8 +3,10 @@
 // made-up word in every text field of every file, every refused case run through validateCv,
 // CvStore, importCv and compareCv, and the word in no message, warning or output line
 // (contracts/content-files.md *Messages*; privacy-pipelines tips).
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parse, stringify } from 'yaml';
 import { compareCv, differenceLine } from '../../scripts/compare-cv.ts';
@@ -13,7 +15,8 @@ import { CvStore, type CvExport } from '../../src/sections/cv/data/store/index.t
 import { validateCv } from '../../src/sections/cv/validate.ts';
 import { formatIssue, type DataIssue } from '../../src/shared/storage/index.ts';
 import { minimalPdf, smallExport, smallPdfs, writeCv, writeExport } from '../helpers/cv.ts';
-import { tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
+import { PREVIEW_STATES, previewRoot } from '../fixtures/cv-preview/store.ts';
+import { REPO_ROOT, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
 let repo: TempRepo;
 beforeEach(() => {
@@ -200,3 +203,37 @@ describe('the sentinel: no message quotes CV text', () => {
     });
   }
 });
+
+// T060: the previews (tests/fixtures/cv-preview/) pass validation and load, and generate.ts writes
+// exactly the committed files.
+describe('the CV previews', () => {
+  it.each(PREVIEW_STATES)('%s passes validateCv and CvStore with no issue', (state) => {
+    expect(validateCv(previewRoot(state), { schemaRoot: REPO_ROOT }).map(formatIssue)).toEqual([]);
+    expect(new CvStore(previewRoot(state), REPO_ROOT).load()).toBeDefined();
+  });
+
+  it('generate.ts is deterministic: its output equals the committed files', () => {
+    const before = snapshotTree(join(REPO_ROOT, 'tests/fixtures/cv-preview/data'));
+    execFileSync(process.execPath, [join(REPO_ROOT, 'tests/fixtures/cv-preview/generate.ts')], { cwd: REPO_ROOT, stdio: 'pipe' });
+    expect(snapshotTree(join(REPO_ROOT, 'tests/fixtures/cv-preview/data'))).toEqual(before);
+    expect(Object.keys(before).length).toBeGreaterThan(10);
+  }, 60_000);
+});
+
+/** Every file under `dir` by relative path, with its bytes' sha256 (line endings as on disk, normalised to \n). */
+function snapshotTree(dir: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const visit = (at: string) => {
+    for (const entry of readdirSync(at, { withFileTypes: true })) {
+      const path = join(at, entry.name);
+      if (entry.isDirectory()) visit(path);
+      else {
+        const bytes = readFileSync(path);
+        const body = path.endsWith('.pdf') ? bytes : Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'));
+        out[relative(dir, path).split(sep).join('/')] = createHash('sha256').update(body).digest('hex');
+      }
+    }
+  };
+  visit(dir);
+  return out;
+}

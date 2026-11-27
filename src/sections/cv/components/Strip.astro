@@ -1,0 +1,35 @@
+---
+// A strip of packed marks on the career scale (contracts/timeline-ui.md level 1): a theme's changes,
+// the roles, or a thread's changes. Inline SVG stretched to the strip's width
+// (preserveAspectRatio="none"), one row per packed row, 8 px each. Periods are lines and points are
+// zero-length round-capped paths, both with non-scaling strokes, so dots stay round at any width
+// (ui-accessibility tips); a rough point is a ring (the "About" in words says so). Its accessible
+// name says what it shows; inside a tile it adds to the tile's link name.
+import type { Strip } from '../data/cv.ts';
+
+interface Props {
+  strip: Strip;
+  /** The accessible name. */
+  label: string;
+  /** A mark drawn as the current one (a thread's strip on a card). */
+  current?: string;
+}
+
+const { strip, label, current } = Astro.props;
+const ROW = 8;
+const height = Math.max(strip.rows, 1) * ROW;
+const fixed = (v: number) => Number((v * 1000).toFixed(1));
+---
+
+<svg class="cv-strip" viewBox={`0 0 1000 ${height}`} preserveAspectRatio="none" role="img" aria-label={label} style={`height: ${height}px`}>
+  {
+    strip.marks.map((mark) => {
+      const y = mark.row * ROW + ROW / 2;
+      const cls = mark.id === current ? ' is-current' : '';
+      if (!mark.point) return <line class={`cv-mark-bar${cls}`} x1={fixed(mark.from)} x2={fixed(mark.to)} y1={y} y2={y} />;
+      const x = fixed((mark.x0 + mark.x1) / 2);
+      const dot = <path class={`cv-mark-dot${cls}`} d={`M${x} ${y}h0`} />;
+      return mark.rough ? <>{dot}<path class="cv-mark-hole" d={`M${x} ${y}h0`} /></> : dot;
+    })
+  }
+</svg>

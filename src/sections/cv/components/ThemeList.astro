@@ -1,0 +1,93 @@
+---
+// The drill's second level, a list (contracts/timeline-ui.md level 2): a heading with the theme's
+// colour mark (the heading's id is the list's anchor, tabindex -1 so the script can move focus to
+// it), its line and count, the axis row, then one row per item, oldest first: its label, its dates
+// in words and how long, "Added value" with the star, "Thread: <name>" in a theme or the theme's
+// name in a thread, and a one-row bar on the career scale. Each row links to the item's card. The
+// same component renders a theme (#theme-<id>), #roles, #threads (each thread linking to its own
+// list), each #thread-<id> and #next. Without scripts every list ends with "Back to themes".
+//
+// The canonical occurrence of a theme's or a thread's name and line is this list's head, which
+// carries data-cv-item and data-cv-field for scripts/compare-cv.ts; rows carry neither.
+import type { CareerScale } from '../domain/scale.ts';
+import type { WhenView } from '../data/cv.ts';
+import Axis from './Axis.astro';
+import Bar from './Bar.astro';
+import Star from './Star.astro';
+import When from './When.astro';
+import { anchor, laneStyle } from './words.ts';
+
+export interface ListRow {
+  href: string;
+  /** Where the script points the row once it runs (a change in a thread: #change-<id>-in-<thread>). */
+  to?: string;
+  label: string;
+  when?: WhenView;
+  /** A second line instead of dates (a thread's count on #threads). */
+  note?: string;
+  value?: boolean;
+  /** "Thread: <name>" in a theme; the theme's name in a thread. */
+  extra?: string;
+  /** The lane colour of the row's bar. */
+  colour?: string;
+}
+
+interface Props {
+  /** The heading's id: the list's anchor. */
+  id: string;
+  heading: string;
+  line?: string;
+  countText: string;
+  colour?: string;
+  /** `theme:<id>` or `thread:<id>` for the canonical name and line. */
+  cvItem?: string;
+  /** The axis row and bars; none for #threads and #next. */
+  scale?: CareerScale;
+  rows: ListRow[];
+}
+
+const { id, heading, line, countText, colour, cvItem, scale, rows } = Astro.props;
+---
+
+<div class="cv-level cv-list" data-level={id}>
+  <div class="cv-list-head" data-cv-item={cvItem} style={colour ? laneStyle(colour) : undefined}>
+    <h3 id={id} tabindex="-1">
+      {colour && <span class="cv-lane-mark" aria-hidden="true" />}
+      <span data-cv-field={cvItem ? 'name' : undefined}>{heading}</span>
+    </h3>
+    {line && <p class="cv-list-line" data-cv-field={cvItem ? 'line' : undefined}>{line}</p>}
+    <p class="cv-list-count">{countText}</p>
+  </div>
+  {scale && <Axis scale={scale} />}
+  <ol class="cv-rows" role="list">
+    {
+      rows.map((row) => (
+        <li>
+          <a class="cv-row" href={row.href} data-to={row.to} style={row.colour ? laneStyle(row.colour) : undefined}>
+            <span class="cv-row-label">{row.label}</span>
+            {row.when && (
+              <span class="cv-row-when">
+                <When parts={row.when.parts} />
+                {row.when.duration && <span class="cv-row-duration">{` · ${row.when.duration}`}</span>}
+              </span>
+            )}
+            {row.note && <span class="cv-row-when">{row.note}</span>}
+            {(row.value || row.extra) && (
+              <span class="cv-row-tags">
+                {row.value && (
+                  <span class="cv-value-tag">
+                    <Star />
+                    Added value
+                  </span>
+                )}
+                {row.extra && <span class="cv-row-extra">{row.extra}</span>}
+              </span>
+            )}
+            {row.when && scale && <Bar x0={row.when.x0} x1={row.when.x1} point={row.when.parsed.kind === 'point'} rough={row.when.parsed.rough} ongoing={row.when.parsed.ongoing} />}
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+  <p class="cv-back-link"><a href={`#${anchor.overview}`}>Back to themes</a></p>
+</div>

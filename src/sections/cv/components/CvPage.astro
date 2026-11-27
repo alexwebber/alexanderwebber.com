@@ -1,0 +1,31 @@
+---
+// The CV page (contracts/routes.md *Page head*; FR-002 to FR-004): the shared shell with the CV's
+// theme and fonts, the approved title and description, and every block in order (CvBlocks.astro).
+// While Page.listed is false the page carries noindex (FR-004). Until the CV's own share image
+// (slice 6, T097) it uses the site's. No "Last updated" anywhere on the page (owner decision 7): the
+// timeline axis's last tick is its data date.
+//
+// cv-js on <html> is set before the first paint, so with scripts the drill's levels never flash in
+// reading order; without scripts the line never runs and the whole CV reads in order.
+import { Font } from 'astro:assets';
+import Base from '../../../shared/layout/Base.astro';
+import type { CvView } from '../data/cv.ts';
+import CvBlocks from './CvBlocks.astro';
+import '../styles/cv.css';
+
+interface Props {
+  cv: CvView;
+}
+
+const { cv } = Astro.props;
+---
+
+<Base title={cv.page.title} description={cv.page.description} image="/og/site.png" imageAlt="Alexander Webber: running, training and the road to Brighton Marathon 2027." theme="theme-cv">
+  <Fragment slot="head">
+    <Font cssVariable="--font-cv-display" preload />
+    <Font cssVariable="--font-cv-text" />
+    {!cv.page.listed && <meta name="robots" content="noindex" />}
+    <script is:inline>document.documentElement.classList.add('cv-js');</script>
+  </Fragment>
+  <CvBlocks cv={cv} />
+</Base>

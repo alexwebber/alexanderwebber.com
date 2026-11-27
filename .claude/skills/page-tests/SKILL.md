@@ -29,7 +29,11 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
   `document.documentElement.scrollWidth - document.documentElement.clientWidth` is 0 after
   `page.setViewportSize({ width: 320, height: 800 })`.
 - **Without JavaScript**: `test.describe` with `test.use({ javaScriptEnabled: false })`, same text,
-  and no script files where the page promises none.
+  and no script files where the page promises none. **axe can't run there**: `@axe-core/playwright`
+  injects a script, and with JavaScript off it hangs until the test times out (six CV tests at
+  180 s). For the no-script layout's accessibility, run axe with scripts on after removing the
+  classes the page's script adds, so every level shows as it does without scripts
+  (`tests/a11y/cv.spec.ts`), and keep the real no-script page's checks in its own spec.
 - **Accessibility** (`tests/helpers/a11y.ts`): `axe(page)` is `[]` in light and dark
   (`sweepOnlyInDark`), in forced colours on the phone project (`fullSweep()`), with `<details>`
   opened first; `outline(page)` for headings; named regions (`getByRole('region', { name })`).
@@ -69,6 +73,11 @@ Unit tests (`tests` skill) prove the markup; these prove the page in a real brow
   checking each one's box as you go.
 - **An SVG labelled by title and desc**: `toHaveAccessibleName`, not the description.
 - **Dates**: previews pin "today" (`PREVIEW_TODAY`); never read the clock in an expectation.
+- **Hash-routed levels** (the CV's drill): `page.goto` to the same page with only a new `#hash`
+  returns no response, so `open()`'s status check fails: go to `about:blank` first. On back and
+  forward, Chrome itself focuses the element the new hash names (if it's focusable, as a heading with
+  `tabindex="-1"` is) after `popstate`, undoing focus the script set; the script restores its focus
+  in a `setTimeout`, and the spec checks focus after `page.goBack()`, not only after a click.
 
 ## Build drills (a scratch copy)
 

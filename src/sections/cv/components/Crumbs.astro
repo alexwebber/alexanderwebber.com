@@ -1,0 +1,14 @@
+---
+// Where you are (contracts/timeline-ui.md *Where you are*): from the list level down, a trail pinned
+// under the timeline's heading, sticky and clear of the safe-area inset: a back control (a 44 x 44 px
+// target) and "Themes › <list> › <item>", the current item truncated with an ellipsis and marked
+// aria-current. Rendered empty and hidden; timeline.client.ts fills and shows it. Without scripts
+// there's no level to be in, so it stays hidden.
+---
+
+<nav class="cv-crumbs" aria-label="Where you are in the timeline" data-crumbs hidden>
+  <button type="button" class="cv-back" data-back aria-label="Back">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"></path></svg>
+  </button>
+  <ol class="cv-trail" data-trail role="list"></ol>
+</nav>

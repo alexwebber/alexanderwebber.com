@@ -1,0 +1,17 @@
+# Written by scripts/import-cv.ts from the career record's export. Don't edit it by hand: an edit
+# breaks the item's approval, and the build refuses it (specs/004-interactive-cv).
+name: Ada Example
+headline: Eiusmod minim ad et amet exercitation incididunt consequat commodo et labore exercitation veniam et dolore minim sed en.
+location: Somewhere, Nowhere
+title: Dolor minim adipiscing quis commodo do veniam do ex ipsum s.
+description: Quis amet minim dolor laboris sed exercitation amet quis sed sit adipiscing magna dolor sit adipiscing ea adipiscing laboris aliqua consequat ullamco quis adip.
+email_user: ada
+email_domain: example.com
+linkedin: https://www.linkedin.com/in/ada-example/
+as_of: 2026-11
+listed: false
+sharing_rules_confirmed: 2026-11-30
+approved:
+  date: 2026-12-01
+  source: 0a1b2c3d
+  sha256: 0a6caf53ccc0b28fb5b925361dea4ad8497110085a05ac72c908f78e85c50228

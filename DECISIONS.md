@@ -2614,3 +2614,51 @@ end. Add each new decision as a dated entry at the end, as it's made.
     Two numbers separated only by spaces are both found.
   - A schema message's leading value is dropped as the shared messages write it (raw, in quotes), not as
     JSON: the sentinel test found a two-line card quoted back before the fix.
+- **2026-11-27** — **Spec 004 slice 2, the page and the phone form** (T039–T066, made-up text only; nothing a
+  visitor sees changes: a deploy build has no `/cv/`). Choices made while building it:
+  - **Fonts** (T039): `@fontsource/inter-tight` and `@fontsource/space-grotesk` 5.3.0, both still the
+    current release on 27 Nov (published 19 Jul 2026, OFL-1.1; the fontsource repo pushed 9 Nov, not
+    archived), installed exact. Through Astro's Fonts API (stable since Astro 6, the local provider
+    pointing at the packages' latin WOFF2 files): Space Grotesk 700 12.8 KB, Inter Tight 400 22.0 KB and
+    600 22.7 KB, 57.5 KB in all. Astro generates the metric-matched fallbacks (Arial, from
+    `sans-serif`); `<Font />` is only in `CvPage.astro`, so only CV pages load or preload them (Space
+    Grotesk preloaded). Astro copies the three files to `dist/_astro/fonts/` in every build, CV or not:
+    the only change a deploy build shows against `main`.
+  - **The palette** (T040; FR-006, research.md R5): the visual CV's own colours, from the timeline the
+    owner signed off (career repo `cv/design/timeline`, take 1, bars): ink `#171b22`, soft `#5b6370`,
+    rules `#cfd5dd`, the teal accent `#0f6b6b`, the roles' slate `#2b3340`, and its five lane colours as
+    `lane-1` to `lane-5` in its order (`#0e7c86`, `#b06d00`, `#cf4636`, `#7a4fb5`, `#2c4fd1`). Colours
+    only; none of its text. The subagent couldn't read the private repo and drew a blue palette of its
+    own; the main conversation swapped these in before the PR. `lane-6` to `lane-8` (`#b83b78`,
+    `#4d7a1c`, `#7a6142`) and the dark set (the visual CV page's dark surfaces with lighter lanes) are
+    new. All checked by `tests/unit/design-tokens.test.ts`: text at 5.66:1 or more, lanes at 3.89:1 or
+    more, light and dark.
+  - **The page item for `compare-cv` is a wrapper**, not the header: `data-cv-item="page:page"` sits on
+    the `div.cv` holding the whole CV, so the contact block's email and LinkedIn fields (far from the
+    header) belong to it; every other item inside carries its own `data-cv-item`. Slice 1's markup
+    otherwise as recorded (paragraphs from 0, `email` with `data-user` and `data-domain`, `linkedin`'s
+    `href`).
+  - **The career scale**: the years before `as_of`'s year share four fifths of the width, January to
+    `as_of`'s month the last fifth. At narrow widths the latest year's tick label is hidden where it
+    would meet the last tick ("Nov 2026", the data date), which always shows.
+  - **Packing** leaves a gap of a quarter of the minimum mark (8 px at 320 px) between marks in a row,
+    so back-to-back periods read as two bars; a rough point draws as a ring in a strip, and with a
+    dashed edge in a list or card.
+  - **The drill's history**: tiles, rows, "Follow this thread" and the trail push an entry; previous and
+    next replace it, so the browser's back always goes up a level. On back and forward the browser
+    focuses the address's heading after the script runs, so the script puts focus back on the row that
+    led in a moment later. `cv-js` is set on `<html>` by one inline line in `<head>`, so with scripts
+    the levels never flash in reading order first.
+  - **A thread's panel and its previous and next are in the card's HTML, hidden**, and shown by the
+    script inside the thread; their links point at `#change-<id>` and carry `data-to` with the
+    `-in-<thread>` address the script swaps in, so every `href` in the HTML resolves.
+  - **UI words** not from the career record: "Timeline", "Also", "Roles", "Threads", "Where next",
+    "Changes that led from one to the next", "Where the work is heading", "N directions", "Added value",
+    "Follow this thread", "See it in <theme>", "Back to themes", "Previous", "Next".
+  - **The launch drill caught a real fault**: the star's SVG path read as a phone number to `scan-privacy`;
+    the path was rewritten and `cv-page.test.ts` checks the whole HTML, markup included.
+  - **Cost**: implement subagent about **477k tokens**, 232 tool calls, 68 min (slice 1 inline; 003's
+    phases 272–352k; 002's slices 353–471k): the largest slice so far, with five browser specs and two
+    drills. The skill gaps it found are fixed in the same PR (`pr-ready`'s verdict when the term search is
+    skipped; `page-tests`, `gate-drill`, `preview-state`, `pr-screenshots`), and the Chart candidate
+    counts up to 9 (the strips and axis rows, by hand).

@@ -1,0 +1,27 @@
+---
+// The CV's blocks in FR-002's order: the header, the pitch, the timeline, the other blocks in file
+// order, the contact block, and (slice 5) the downloads. The pitch comes before the timeline wherever
+// it sits in blocks.yaml. The wrapper is the page item for scripts/compare-cv.ts
+// (data-cv-item="page:page"): it holds the header's fields and the contact block's email and LinkedIn,
+// which sit far apart on the page; every other item inside it carries its own data-cv-item.
+import type { CvView } from '../data/cv.ts';
+import CvContact from './CvContact.astro';
+import CvHeader from './CvHeader.astro';
+import TextBlock from './TextBlock.astro';
+import Timeline from './Timeline.astro';
+
+interface Props {
+  cv: CvView;
+}
+
+const { cv } = Astro.props;
+---
+
+<div class="cv" data-cv-item="page:page">
+  <CvHeader page={cv.page} />
+  <TextBlock block={cv.pitch} />
+  <Timeline timeline={cv.timeline} />
+  {cv.blocks.map((block) => <TextBlock block={block} />)}
+  <CvContact page={cv.page} />
+  {/* Slice 5: the downloads (CvDownloads.astro), each with its "Last updated" date. */}
+</div>

@@ -11,7 +11,7 @@
 #     next: the work that next needs it (optional)
 
 - task: Chart (SVG with an accessible name, the dataviz palette, label placement)
-  times: 8
+  times: 9
   home: project
   next: spec 004 slice 3 (the landscape swimlanes, T069-T079)
 - task: Provider adapter or ingest stage (Python, provider contract, archive)

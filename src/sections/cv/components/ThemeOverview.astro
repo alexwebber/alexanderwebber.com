@@ -1,0 +1,90 @@
+---
+// The drill's first level, the overview (contracts/timeline-ui.md level 1; research.md R6): the
+// axis row, then a tile per theme in order (its name, "N changes", "N added value" with the star
+// when any, and a strip of its changes packed on the career scale), then under "Also" tiles for the
+// roles (with their strip), the threads and where next. Each tile is a link to its list's anchor, so
+// it works without scripts too. Roles are a theme of their own here (owner, 2026-11-25: "hats
+// should be a first-class citizen").
+import type { TimelineView } from '../data/cv.ts';
+import Axis from './Axis.astro';
+import Star from './Star.astro';
+import Strip from './Strip.astro';
+import { anchor, count, laneStyle } from './words.ts';
+
+interface Props {
+  timeline: TimelineView;
+}
+
+const { timeline } = Astro.props;
+const { themes, roles, threads, next, scale } = timeline;
+const span = scale.ticks();
+const range = span.length > 1 ? `${span[0]!.label} to ${span.at(-1)!.label}` : `up to ${span[0]!.label}`;
+const also = roles.length > 0 || threads.length > 0 || next.length > 0;
+---
+
+<div class="cv-level cv-overview" data-level={anchor.overview}>
+  <Axis scale={scale} copies={2} />
+  <ul class="cv-tiles" role="list">
+    {
+      themes.map(({ theme, changes, valueCount, strip }) => (
+        <li>
+          <a class="cv-tile" href={`#${anchor.theme(theme.id)}`} style={laneStyle(theme.colour)}>
+            <span class="cv-tile-name">{theme.name}</span>
+            <span class="cv-tile-counts">
+              <span>{count(changes.length, 'change')}</span>
+              {valueCount > 0 && (
+                <span class="cv-value-count">
+                  <Star />
+                  {`${valueCount} added value`}
+                </span>
+              )}
+            </span>
+            <Strip strip={strip} label={`When: ${range}`} />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  {
+    also && (
+      <>
+        <h3 class="cv-also">Also</h3>
+        <ul class="cv-tiles cv-tiles-also" role="list">
+          {roles.length > 0 && (
+            <li>
+              <a class="cv-tile cv-tile-roles" href={`#${anchor.roles}`}>
+                <span class="cv-tile-name">Roles</span>
+                <span class="cv-tile-counts">
+                  <span>{count(roles.length, 'role')}</span>
+                </span>
+                <Strip strip={timeline.rolesStrip} label={`When: ${range}`} />
+              </a>
+            </li>
+          )}
+          {threads.length > 0 && (
+            <li>
+              <a class="cv-tile cv-tile-threads" href={`#${anchor.threads}`}>
+                <span class="cv-tile-name">Threads</span>
+                <span class="cv-tile-counts">
+                  <span>{count(threads.length, 'thread')}</span>
+                </span>
+                <span class="cv-tile-line">Changes that led from one to the next</span>
+              </a>
+            </li>
+          )}
+          {next.length > 0 && (
+            <li>
+              <a class="cv-tile cv-tile-next" href={`#${anchor.next}`}>
+                <span class="cv-tile-name">Where next</span>
+                <span class="cv-tile-counts">
+                  <span>{count(next.length, 'direction')}</span>
+                </span>
+                <span class="cv-tile-line">Where the work is heading</span>
+              </a>
+            </li>
+          )}
+        </ul>
+      </>
+    )
+  }
+</div>
