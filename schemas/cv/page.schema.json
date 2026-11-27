@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/cv/page.schema.json",
+  "title": "CvPage",
+  "description": "data/cv/page.yaml: the CV page's header, its title and description, the email in two parts and the timeline's last month (specs/004-interactive-cv/data-model.md, Page). Written by scripts/import-cv.ts from approved text only; a hand edit breaks the approval hash. Messages never quote a value (contracts/content-files.md, Messages).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "headline",
+    "location",
+    "title",
+    "description",
+    "email_user",
+    "email_domain",
+    "as_of",
+    "listed",
+    "sharing_rules_confirmed",
+    "approved"
+  ],
+  "properties": {
+    "name": {
+      "description": "The owner's name as the page heading. Hashed.",
+      "$ref": "timeline.schema.json#/$defs/line"
+    },
+    "headline": {
+      "description": "One line under the name. Hashed.",
+      "$ref": "timeline.schema.json#/$defs/line"
+    },
+    "location": {
+      "description": "Where the owner is based, in words. Hashed.",
+      "$ref": "timeline.schema.json#/$defs/line"
+    },
+    "title": {
+      "description": "The page's <title>. At most 60 characters, checked by validate.ts's budgets so the message gives the count. Hashed.",
+      "$ref": "timeline.schema.json#/$defs/line"
+    },
+    "description": {
+      "description": "The meta and share description. At most 160 characters (budgets). Hashed.",
+      "$ref": "timeline.schema.json#/$defs/line"
+    },
+    "email_user": {
+      "description": "The part of the address before the @. Never written joined in the HTML (FR-003). Hashed.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+([._+-][a-z0-9]+)*$",
+      "x-error": "is not the first part of an email address (lower-case letters, digits and . _ + - between them)"
+    },
+    "email_domain": {
+      "description": "The part of the address after the @. Hashed.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*(\\.[a-z0-9]+(-[a-z0-9]+)*)+$",
+      "x-error": "is not a domain (lower-case labels joined by dots, such as example.com)"
+    },
+    "linkedin": {
+      "description": "Optional link to the owner's LinkedIn profile. Hashed.",
+      "type": "string",
+      "pattern": "^https://www\\.linkedin\\.com/in/[A-Za-z0-9_-]+/?$",
+      "x-error": "is not a LinkedIn profile link (expected https://www.linkedin.com/in/<name>)"
+    },
+    "as_of": {
+      "description": "YYYY-MM: the month the timeline runs to, and the page's data date. Months in a `when` are allowed only in its year. Hashed.",
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+      "x-error": "is not a month (expected YYYY-MM)"
+    },
+    "listed": {
+      "description": "false while the page is unlisted (FR-004): noindex, out of the sitemap and linked from nowhere. A setting, not hashed.",
+      "type": "boolean",
+      "x-error": "must be true or false"
+    },
+    "sharing_rules_confirmed": {
+      "description": "The date the owner last re-confirmed the sharing rules (FR-023), carried from the export. Not hashed.",
+      "$ref": "../defs.schema.json#/$defs/date"
+    },
+    "approved": {
+      "$ref": "timeline.schema.json#/$defs/approval"
+    }
+  }
+}

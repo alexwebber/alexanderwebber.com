@@ -1,0 +1,680 @@
+{
+  "format": 1,
+  "source": "0a1b2c3d",
+  "exported": "2026-12-01",
+  "page": {
+    "name": "Ada Example",
+    "headline": "A made-up headline for a made-up person",
+    "location": "Somewhere, Nowhere",
+    "title": "Ada Example: a made-up CV",
+    "description": "A made-up description of a made-up career, for tests and previews.",
+    "email_user": "ada",
+    "email_domain": "example.com",
+    "linkedin": "https://www.linkedin.com/in/ada-example/",
+    "as_of": "2026-11",
+    "listed": true,
+    "sharing_rules_confirmed": "2026-11-30",
+    "approved_on": "2026-12-01"
+  },
+  "blocks": [
+    {
+      "id": "pitch",
+      "heading": "A made-up pitch",
+      "kind": "pitch",
+      "paragraphs": [
+        "Dolor minim adipiscing quis commodo do veniam do ex ipsum sed consectetur incididunt quis nostrud do amet laboris labore quis nostrud consequat adipiscing magna amet minim aliqua ut amet ut.",
+        "Quis amet minim dolor laboris sed exercitation amet quis sed sit adipiscing magna dolor sit adipiscing ea adipiscing laboris aliqua consequat ullamco quis adipiscing quis commodo aliquip ullamco aliquip ullamco."
+      ],
+      "approved_on": "2026-12-01"
+    },
+    {
+      "id": "value",
+      "heading": "Made-up value",
+      "kind": "value",
+      "paragraphs": [
+        "Eiusmod minim ad et amet exercitation incididunt consequat commodo et labore exercitation veniam et dolore minim sed enim veniam ut nostrud ipsum veniam aliquip sed laboris nostrud quis amet quis."
+      ],
+      "stories": [
+        {
+          "id": "story-a",
+          "title": "Story A",
+          "text": "Consectetur aliqua exercitation aliqua et labore exercitation amet laboris lorem magna veniam minim veniam aliquip labore enim nostrud consequat dolor exercitation eiusmod ea eiusmod."
+        },
+        {
+          "id": "story-b",
+          "title": "Story B",
+          "text": "Ullamco ipsum nostrud ea eiusmod ut nisi consequat dolor elit nisi elit ullamco ipsum sed aliquip ex sit incididunt ea lorem sit labore consequat."
+        },
+        {
+          "id": "story-c",
+          "title": "Story C",
+          "text": "Ut lorem consectetur eiusmod minim incididunt et nisi aliquip labore quis sed ea labore minim ullamco quis dolore exercitation eiusmod exercitation incididunt ut veniam."
+        }
+      ],
+      "approved_on": "2026-12-01"
+    },
+    {
+      "id": "future",
+      "heading": "Made-up future",
+      "kind": "future",
+      "paragraphs": [
+        "Minim ad exercitation ad et dolor sit dolore ea incididunt laboris lorem quis amet sit ad consequat sed do ex ea dolore magna ad minim adipiscing enim ex laboris labore."
+      ],
+      "approved_on": "2026-12-01"
+    },
+    {
+      "id": "skills",
+      "heading": "Made-up skills",
+      "kind": "skills",
+      "paragraphs": [
+        "Sed sit adipiscing consequat eiusmod enim adipiscing tempor adipiscing enim veniam ipsum nisi magna dolore ipsum eiusmod minim veniam exercitation veniam do lorem exercitation adipiscing magna ex do aliqua tempor."
+      ],
+      "approved_on": "2026-12-01"
+    },
+    {
+      "id": "public",
+      "heading": "Made-up public",
+      "kind": "public",
+      "paragraphs": [
+        "Aliquip ad minim incididunt minim aliqua laboris adipiscing consequat ullamco consequat ad consequat ex aliquip commodo minim lorem ipsum ad ea aliqua consequat labore exercitation incididunt elit adipiscing do nostrud."
+      ],
+      "approved_on": "2026-12-01"
+    },
+    {
+      "id": "education",
+      "heading": "Made-up education",
+      "kind": "education",
+      "paragraphs": [
+        "Dolore sit ad exercitation commodo magna labore ipsum sed consequat nisi minim amet do sed ut commodo ut ex et veniam tempor commodo sit eiusmod quis dolor enim aliqua sit."
+      ],
+      "approved_on": "2026-12-01"
+    }
+  ],
+  "timeline": {
+    "themes": [
+      {
+        "id": "theme-a",
+        "name": "Change type A",
+        "line": "Aliqua minim dolore elit eiusmod quis dolor quis.",
+        "colour": "lane-1",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "theme-b",
+        "name": "Change type B",
+        "line": "Quis aliqua et lorem minim lorem tempor nostrud.",
+        "colour": "lane-2",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "theme-c",
+        "name": "Change type C",
+        "line": "Nisi et labore tempor commodo tempor dolor elit.",
+        "colour": "lane-3",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "theme-d",
+        "name": "Change type D",
+        "line": "Consequat incididunt ut veniam laboris veniam tempor sed.",
+        "colour": "lane-4",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "theme-e",
+        "name": "Change type E",
+        "line": "Amet laboris nisi consequat amet et ad do.",
+        "colour": "lane-5",
+        "approved_on": "2026-12-01"
+      }
+    ],
+    "threads": [
+      {
+        "id": "thread-a",
+        "name": "Thread A",
+        "line": "Consectetur amet et ad minim veniam quis.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "thread-b",
+        "name": "Thread B",
+        "line": "Eiusmod ipsum ex ut commodo consequat labore.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "thread-c",
+        "name": "Thread C",
+        "line": "Et commodo aliquip nostrud laboris eiusmod quis.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "thread-d",
+        "name": "Thread D",
+        "line": "Ad aliquip nisi ipsum amet minim labore.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "thread-e",
+        "name": "Thread E",
+        "line": "Exercitation ullamco laboris incididunt et commodo quis.",
+        "approved_on": "2026-12-01"
+      }
+    ],
+    "roles": [
+      {
+        "id": "role-a",
+        "label": "A made-up role A",
+        "when": "2007–2009",
+        "card": "Ea amet ipsum nisi et nostrud et nisi exercitation veniam do ullamco laboris nisi aliquip aliqua enim commodo.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "role-b",
+        "label": "A made-up role B",
+        "when": "2009–2011",
+        "card": "Dolor ipsum lorem consectetur eiusmod ipsum nostrud aliquip ex consequat eiusmod consequat ex elit lorem laboris commodo laboris.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "role-c",
+        "label": "A made-up role C",
+        "when": "2011–2013",
+        "card": "Elit commodo et commodo minim incididunt consequat incididunt ipsum eiusmod tempor adipiscing et amet minim aliqua aliquip amet.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "role-d",
+        "label": "A made-up role D",
+        "when": "2013–2015",
+        "card": "Incididunt aliquip labore do commodo consectetur nostrud ut nostrud minim incididunt aliquip aliqua magna ullamco laboris sed consequat.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "role-e",
+        "label": "A made-up role E",
+        "when": "2015–2017",
+        "card": "Magna eiusmod ut ad laboris dolore consequat labore aliquip dolore ut dolor minim labore ea aliqua minim eiusmod.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "role-f",
+        "label": "A made-up role F",
+        "when": "2017–2019",
+        "card": "Veniam elit incididunt ea amet laboris sed ea lorem laboris labore do nostrud laboris dolor laboris lorem consectetur.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "role-g",
+        "label": "A made-up role G",
+        "when": "2019–2021",
+        "card": "Laboris amet tempor sed et amet consequat commodo consectetur amet ea dolore do nostrud elit aliqua ea dolore.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "role-h",
+        "label": "A made-up role H",
+        "when": "2023–now",
+        "card": "Commodo ipsum ullamco enim eiusmod et sed et nisi et commodo consectetur incididunt sit incididunt laboris eiusmod tempor.",
+        "approved_on": "2026-12-01"
+      }
+    ],
+    "changes": [
+      {
+        "id": "change-a",
+        "label": "Change A",
+        "when": "2007",
+        "theme": "theme-a",
+        "card": "Consectetur amet et ad minim veniam quis aliqua laboris dolor et incididunt sit ad sit ex elit nostrud do dolore.",
+        "thread": "thread-a",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-b",
+        "label": "Change B",
+        "when": "~2008",
+        "theme": "theme-a",
+        "card": "Eiusmod ipsum ex ut commodo consequat labore enim commodo ut dolore ipsum adipiscing consequat sed consectetur ad enim incididunt magna.",
+        "thread": "thread-a",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-c",
+        "label": "Change C",
+        "when": "2009–2011",
+        "theme": "theme-a",
+        "card": "Et commodo aliquip nostrud laboris eiusmod quis ad sit nostrud magna sed exercitation ex ut ex consequat ex et dolor.",
+        "thread": "thread-a",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-d",
+        "label": "Change D",
+        "when": "2010–now",
+        "theme": "theme-d",
+        "card": "Ad aliquip nisi ipsum amet minim labore sit ullamco ipsum aliqua et nisi do aliqua consectetur ex exercitation aliqua sit.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-e",
+        "label": "Change E",
+        "when": "2026 May",
+        "theme": "theme-e",
+        "card": "Exercitation ullamco laboris incididunt et commodo quis amet ea incididunt enim veniam ea adipiscing quis ex do dolor sit veniam.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-f",
+        "label": "Change F",
+        "when": "2026 Jan–May",
+        "theme": "theme-a",
+        "card": "Ex elit sed quis eiusmod exercitation commodo minim dolor elit ad aliquip lorem enim nisi consectetur veniam ea adipiscing quis.",
+        "value": "story-a",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-g",
+        "label": "Change G",
+        "when": "2013–2026 Jul",
+        "theme": "theme-b",
+        "card": "Ipsum amet elit lorem minim dolor quis veniam elit aliqua minim aliqua enim dolore consequat ex ipsum sed do sed.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-h",
+        "label": "Change H",
+        "when": "2014",
+        "theme": "theme-c",
+        "card": "Adipiscing ipsum adipiscing tempor commodo ut commodo quis ex aliquip veniam exercitation veniam aliquip amet consectetur commodo sit incididunt do.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-i",
+        "label": "Change I",
+        "when": "~2015",
+        "theme": "theme-d",
+        "card": "Tempor commodo consectetur amet laboris nostrud elit adipiscing ipsum adipiscing consectetur commodo exercitation ullamco exercitation labore tempor labore ea nisi.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-j",
+        "label": "Change J",
+        "when": "2016–2018",
+        "theme": "theme-e",
+        "card": "Dolore aliquip amet et amet ipsum commodo elit adipiscing ipsum adipiscing consectetur eiusmod consectetur ex consectetur nostrud do lorem aliquip.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-k",
+        "label": "Change K",
+        "when": "2017–now",
+        "theme": "theme-b",
+        "card": "Minim eiusmod enim ullamco consequat incididunt elit nostrud tempor incididunt elit nisi ut dolor ipsum labore sit ad sit labore.",
+        "thread": "thread-b",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-l",
+        "label": "Change L",
+        "when": "2026 Jan",
+        "theme": "theme-b",
+        "card": "Ullamco elit aliqua sit eiusmod consectetur dolore exercitation dolore quis sed ipsum dolore et adipiscing consectetur lorem et adipiscing et.",
+        "thread": "thread-b",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-m",
+        "label": "Change M",
+        "when": "2026 Mar–Jul",
+        "theme": "theme-b",
+        "card": "Ea amet magna labore minim dolore elit ullamco consectetur lorem do sed enim incididunt tempor labore ut ullamco exercitation lorem.",
+        "thread": "thread-b",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-n",
+        "label": "Change N",
+        "when": "2020–2026 Mar",
+        "theme": "theme-d",
+        "card": "Dolor ipsum dolore exercitation dolore laboris dolore do eiusmod tempor eiusmod et amet exercitation dolore consectetur ullamco minim nisi ipsum.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-o",
+        "label": "Change O",
+        "when": "2021",
+        "theme": "theme-e",
+        "card": "Elit commodo ea dolor laboris amet elit eiusmod et adipiscing tempor amet elit veniam minim labore consectetur dolore ea ad.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-p",
+        "label": "Change P",
+        "when": "~2022",
+        "theme": "theme-a",
+        "card": "Incididunt aliquip ex aliquip amet et dolore laboris ad magna incididunt tempor eiusmod ipsum ullamco consectetur dolor laboris dolore minim.",
+        "value": "story-a",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-q",
+        "label": "Change Q",
+        "when": "2023–2025",
+        "theme": "theme-b",
+        "card": "Magna eiusmod aliquip adipiscing consequat ullamco exercitation nisi do nisi ut aliqua ut commodo ea labore et veniam enim adipiscing.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-r",
+        "label": "Change R",
+        "when": "2024–now",
+        "theme": "theme-c",
+        "card": "Veniam elit nisi magna eiusmod enim dolore aliquip labore consectetur labore exercitation commodo tempor dolor quis nisi consequat veniam elit.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-s",
+        "label": "Change S",
+        "when": "2026 Aug",
+        "theme": "theme-d",
+        "card": "Laboris amet laboris nisi minim ex exercitation incididunt enim lorem et commodo ipsum sed elit labore elit nisi exercitation ullamco.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-t",
+        "label": "Change T",
+        "when": "2026 May–Sep",
+        "theme": "theme-e",
+        "card": "Commodo ipsum sed consectetur dolore elit lorem ut nostrud tempor dolore minim amet minim incididunt quis amet consectetur eiusmod laboris.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-u",
+        "label": "Change U",
+        "when": "2009–2026 Oct",
+        "theme": "theme-c",
+        "card": "Sit commodo elit dolore laboris aliqua exercitation ex ut veniam magna nisi quis aliqua magna labore magna lorem ut incididunt.",
+        "thread": "thread-c",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-v",
+        "label": "Change V",
+        "when": "2010",
+        "theme": "theme-c",
+        "card": "Sed ut adipiscing laboris amet aliquip lorem ea aliqua consequat aliqua ipsum ullamco ea amet quis ex tempor dolore ut.",
+        "thread": "thread-c",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-w",
+        "label": "Change W",
+        "when": "~2011",
+        "theme": "theme-c",
+        "card": "Ut eiusmod consectetur ad consequat veniam do commodo quis eiusmod enim sed aliquip nisi do labore do adipiscing enim commodo.",
+        "thread": "thread-c",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-x",
+        "label": "Change X",
+        "when": "2012–2014",
+        "theme": "theme-d",
+        "card": "Aliqua elit ad ea eiusmod consequat lorem et nisi consectetur dolor ea commodo elit labore quis adipiscing magna amet consequat.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-y",
+        "label": "Change Y",
+        "when": "2013–now",
+        "theme": "theme-e",
+        "card": "Quis amet enim sed minim eiusmod do dolore consequat dolore sit amet magna amet enim labore enim incididunt elit aliqua.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-z",
+        "label": "Change Z",
+        "when": "2026 Apr",
+        "theme": "theme-a",
+        "card": "Nisi ipsum aliqua enim dolore minim aliqua consequat veniam laboris amet tempor ad magna nostrud quis commodo quis eiusmod enim.",
+        "value": "story-b",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-aa",
+        "label": "Change AA",
+        "when": "2026 Feb–Jun",
+        "theme": "theme-b",
+        "card": "Consequat dolore magna ex laboris commodo do lorem laboris amet consectetur aliqua quis labore aliquip commodo tempor aliqua ut amet.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ab",
+        "label": "Change AB",
+        "when": "2016–2026 Jun",
+        "theme": "theme-c",
+        "card": "Amet ut commodo elit amet do aliqua ipsum commodo et adipiscing elit sed laboris lorem quis sed aliquip commodo consectetur.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ac",
+        "label": "Change AC",
+        "when": "2017",
+        "theme": "theme-d",
+        "card": "Do eiusmod ea lorem consequat dolor do aliqua sit eiusmod elit labore tempor nostrud consectetur commodo minim nostrud ipsum nostrud.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ad",
+        "label": "Change AD",
+        "when": "~2018",
+        "theme": "theme-e",
+        "card": "Labore elit ex tempor eiusmod ut aliqua enim ullamco minim sed minim labore sit eiusmod quis lorem ipsum amet exercitation.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ae",
+        "label": "Change AE",
+        "when": "2019–2021",
+        "theme": "theme-d",
+        "card": "Enim amet aliquip veniam minim nostrud laboris dolor ea commodo do nisi magna lorem et commodo ut ex elit eiusmod.",
+        "thread": "thread-d",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-af",
+        "label": "Change AF",
+        "when": "2020–now",
+        "theme": "theme-d",
+        "card": "Nostrud enim nisi consequat dolore ipsum aliqua sit dolor do eiusmod ipsum dolor ut ad quis eiusmod elit ullamco tempor.",
+        "thread": "thread-d",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ag",
+        "label": "Change AG",
+        "when": "2026 Nov",
+        "theme": "theme-d",
+        "card": "Aliquip dolore do eiusmod laboris incididunt laboris amet elit amet tempor nostrud consectetur eiusmod exercitation commodo quis dolor aliquip ex.",
+        "thread": "thread-d",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ah",
+        "label": "Change AH",
+        "when": "2026 Apr–Aug",
+        "theme": "theme-d",
+        "card": "Lorem ut sed minim amet consectetur dolor minim ex et incididunt ea sed quis ex quis dolor ea commodo ea.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ai",
+        "label": "Change AI",
+        "when": "2023–2026 Feb",
+        "theme": "theme-e",
+        "card": "Consectetur eiusmod elit commodo consequat dolore laboris veniam ipsum ullamco ut amet laboris ad magna commodo et sed ipsum dolore.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-aj",
+        "label": "Change AJ",
+        "when": "2024",
+        "theme": "theme-a",
+        "card": "Eiusmod elit adipiscing exercitation eiusmod laboris dolor consectetur adipiscing sit labore tempor ex consequat veniam quis incididunt sit ad magna.",
+        "value": "story-b",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ak",
+        "label": "Change AK",
+        "when": "~2007",
+        "theme": "theme-b",
+        "card": "Et amet minim dolor minim amet tempor adipiscing tempor labore et lorem consequat ex laboris commodo exercitation labore quis dolor.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-al",
+        "label": "Change AL",
+        "when": "2008–2010",
+        "theme": "theme-c",
+        "card": "Ad enim ad ut dolore et dolor elit dolore do dolore elit dolor do commodo elit amet do ullamco sit.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-am",
+        "label": "Change AM",
+        "when": "2009–now",
+        "theme": "theme-d",
+        "card": "Exercitation dolore enim nostrud laboris ullamco tempor nostrud consectetur ad consequat labore minim adipiscing sit commodo magna ad aliquip veniam.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-an",
+        "label": "Change AN",
+        "when": "2026 Jul",
+        "theme": "theme-e",
+        "card": "Ex ut aliqua ipsum amet enim dolor exercitation eiusmod ea lorem minim nostrud enim sed elit labore et labore quis.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ao",
+        "label": "Change AO",
+        "when": "2026 Jan–May",
+        "theme": "theme-e",
+        "card": "Ipsum eiusmod magna incididunt consequat ex tempor sed et sed ipsum eiusmod laboris dolore ut commodo laboris ullamco magna sed.",
+        "thread": "thread-e",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ap",
+        "label": "Change AP",
+        "when": "2012–2026 Sep",
+        "theme": "theme-e",
+        "card": "Adipiscing elit commodo quis eiusmod elit ad do ad sit dolor magna incididunt aliquip aliqua elit adipiscing minim ad do.",
+        "thread": "thread-e",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-aq",
+        "label": "Change AQ",
+        "when": "2013",
+        "theme": "theme-e",
+        "card": "Tempor veniam ea dolore minim aliqua tempor eiusmod do labore sit nostrud et ullamco quis commodo enim commodo quis nisi.",
+        "thread": "thread-e",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ar",
+        "label": "Change AR",
+        "when": "~2014",
+        "theme": "theme-d",
+        "card": "Dolore enim ex laboris dolore aliquip ad laboris labore exercitation amet ea aliqua consectetur nisi elit dolore laboris sed aliquip.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-as",
+        "label": "Change AS",
+        "when": "2015–2017",
+        "theme": "theme-e",
+        "card": "Minim dolore aliquip amet laboris adipiscing aliquip nisi enim dolor consectetur amet minim dolor consequat commodo aliquip amet tempor labore.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-at",
+        "label": "Change AT",
+        "when": "2016–now",
+        "theme": "theme-a",
+        "card": "Ullamco ut eiusmod et amet consequat ad tempor nostrud ut adipiscing laboris adipiscing et amet elit sed consequat labore et.",
+        "value": "story-c",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-au",
+        "label": "Change AU",
+        "when": "2026 Mar",
+        "theme": "theme-b",
+        "card": "Ea eiusmod do ullamco consequat eiusmod aliquip incididunt ut sed elit lorem do incididunt do dolore minim eiusmod magna lorem.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-av",
+        "label": "Change AV",
+        "when": "2026 Mar–Jul",
+        "theme": "theme-c",
+        "card": "Dolor exercitation sed sit eiusmod minim amet ut aliqua enim sed elit incididunt exercitation ex elit aliqua consectetur dolor ipsum.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-aw",
+        "label": "Change AW",
+        "when": "2019–2026 May",
+        "theme": "theme-d",
+        "card": "Elit veniam elit labore minim commodo aliquip ex quis ex do labore ea veniam ipsum dolore ea dolore consectetur ad.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "change-ax",
+        "label": "Change AX",
+        "when": "2020",
+        "theme": "theme-e",
+        "card": "Incididunt enim adipiscing elit dolore do amet ea nisi elit eiusmod sit lorem ipsum adipiscing elit eiusmod tempor sed consectetur.",
+        "approved_on": "2026-12-01"
+      }
+    ],
+    "next": [
+      {
+        "id": "next-a",
+        "title": "A made-up direction A",
+        "card": "Ea amet ipsum nisi et nostrud et nisi exercitation veniam do ullamco laboris nisi aliquip aliqua.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "next-b",
+        "title": "A made-up direction B",
+        "card": "Dolor ipsum lorem consectetur eiusmod ipsum nostrud aliquip ex consequat eiusmod consequat ex elit lorem laboris.",
+        "approved_on": "2026-12-01"
+      },
+      {
+        "id": "next-c",
+        "title": "A made-up direction C",
+        "card": "Elit commodo et commodo minim incididunt consequat incididunt ipsum eiusmod tempor adipiscing et amet minim aliqua.",
+        "approved_on": "2026-12-01"
+      }
+    ]
+  },
+  "downloads": [
+    {
+      "kind": "plain",
+      "file": "alexander-webber-cv.pdf",
+      "title": "The plain CV (PDF)",
+      "path": "pdfs/alexander-webber-cv.pdf",
+      "approved_on": "2026-12-01"
+    },
+    {
+      "kind": "visual",
+      "file": "alexander-webber-cv-visual.pdf",
+      "title": "The visual CV (PDF)",
+      "path": "pdfs/alexander-webber-cv-visual.pdf",
+      "approved_on": "2026-12-01"
+    }
+  ]
+}

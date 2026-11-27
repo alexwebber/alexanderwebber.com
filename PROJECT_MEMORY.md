@@ -12,15 +12,21 @@ read on demand (search it for the topic at hand); this file keeps what's next an
   review's desktop changes are live (#134 to #137): on a wide screen the chapter list sits beside the
   text, 18 px from 1200 px, the usual frame. The first nightly Quality run with the story passed every
   page type. House-process 0.17.0 is installed (2026-11-25). Open: 003's standing follow-ups (T090–T092, below).
-- **Spec 004, the interactive CV (2026-11-25):** planned and tasked (`specs/004-interactive-cv/tasks.md`,
-  119 tasks in seven slices, each its own PR; analysed, fixes and four owner answers in `DECISIONS.md`).
-  **Next: slice 1, files and checks (T001–T038)**, with `/speckit-implement` in a session opened from
-  HQ's *career* stream, once the tasks PR is merged. Slices 2 to 6 follow, one session each; slice 3 first
-  builds the Chart skill (`process/skill-candidates.yaml`). Four picks the owner made before he could see
-  them are confirmed by eye in the slice that first shows them (T067, T082, T083, T095). Real CV text
-  comes in only in slice 7, after the owner's sharing rules are re-checked (FR-023); until then, made-up
-  text in `/cv-preview/<state>/`. Use counts (US6) are built outside this repo. The CV's paper forms are
-  done in the private career repo; nothing comes here before the owner approves that exact text.
+- **Spec 004, the interactive CV (2026-11-26):** planned and tasked (`specs/004-interactive-cv/tasks.md`,
+  119 tasks in seven slices, each its own PR). **Slice 1, files and checks (T001–T038), is in its PR**:
+  the CV's schemas, `CvStore` with per-item approval hashes, `validateCv`, `import-cv`, `compare-cv`, the
+  phone rule in `scan-privacy` and `/cv/` fragments in `check-links`, all over made-up text; nothing a
+  visitor sees changes (`DECISIONS.md`, 2026-11-26, for the choices made while building it).
+  **Next: slice 2, the page and the phone form (T039–T068)**, with `/speckit-implement` in a session
+  opened from HQ's *career* stream, once slice 1's PR is merged. It marks the page for `compare-cv` as
+  `DECISIONS.md` says (`page:page`, `paragraphs.0` …, `email`, `linkedin`), and `whenText` is already in
+  `src/sections/cv/domain/dates.ts` (T041 adds durations and `<time>` values). Slices 3 to 6 follow, one
+  session each; slice 3 first builds the Chart skill (`process/skill-candidates.yaml`). Four picks the
+  owner made before he could see them are confirmed by eye in the slice that first shows them (T067,
+  T082, T083, T095). Real CV text comes in only in slice 7, after the owner's sharing rules are
+  re-checked (FR-023); until then, made-up text in `/cv-preview/<state>/` from
+  `tests/fixtures/cv-export/<state>/`. Use counts (US6) are built outside this repo. The CV's paper forms
+  are done in the private career repo; nothing comes here before the owner approves that exact text.
 - **Parallel workstreams (owner, 2026-11-14):** several workstreams run side by side, coordinated
   from the private repo `alexwebber/hq` (`C:\Projects\hq`, set up 2026-11-14), not this site. This
   repo is one stream among several (HQ's *maintenance* and, later, the CV page and blog). A session
@@ -199,6 +205,19 @@ which took every entry up to then:
   `SPECIFY_FEATURE` and fails ("Feature directory not found"); setting `SPECIFY_FEATURE_DIRECTORY` to the
   feature folder's absolute path works. A subagent brief should give that variable (spec 004's tasks,
   2026-11-25).
+- json-schema-to-typescript declares a `$defs` object that another file references (titled or not) in
+  every file that uses it, so a generated index of `export type *` clashes (TS2308). Copying the def into
+  each file doesn't help; the index has to export each name once (and refuse two different declarations
+  of one name). Spec 004 slice 1's `scripts/gen-types.ts` does (2026-11-26).
+- Git for Windows converts the line endings of a PDF it guesses is text (a small hand-written one is all
+  ASCII), which changes its bytes and so any hash over them; a repo's first PDF needs `*.pdf binary` in
+  `.gitattributes` (spec 004 slice 1, 2026-11-26).
+- `check-prerequisites.ps1 -Json` on a slice branch (`004-interactive-cv-slice1`) reported spec 003's
+  folder, from a stale feature pointer; `/speckit-implement` should check FEATURE_DIR against the branch's
+  number before trusting it (2026-11-26).
+- A sentinel test found what reading didn't: a schema message's value was stripped only when it matched
+  `JSON.stringify(value)`, but the shared messages quote the raw string, so a value with a line break
+  came back whole. Strip values the way the message writer writes them (spec 004 slice 1, 2026-11-26).
 
 ## Open questions
 

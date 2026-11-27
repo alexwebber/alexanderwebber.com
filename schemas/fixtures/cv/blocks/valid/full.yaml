@@ -1,0 +1,73 @@
+# Made up (T009): a block of every kind, a value block with stories
+blocks:
+- id: pitch
+  heading: A made-up pitch
+  kind: pitch
+  paragraphs:
+  - Lorem ipsum dolor sit amet, a made-up pitch.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- id: value
+  heading: Made-up value
+  kind: value
+  paragraphs:
+  - Made-up words on the value added.
+  - A second made-up paragraph.
+  stories:
+  - id: story-a
+    title: Story A
+    text: A made-up story of value.
+  - id: story-b
+    title: Story B
+    text: Another made-up story.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- id: future
+  heading: Made-up future
+  kind: future
+  paragraphs:
+  - Made-up words for the future block.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- id: skills
+  heading: Made-up skills
+  kind: skills
+  paragraphs:
+  - Made-up words for the skills block.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- id: public
+  heading: Made-up public
+  kind: public
+  paragraphs:
+  - Made-up words for the public block.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- id: education
+  heading: Made-up education
+  kind: education
+  paragraphs:
+  - Made-up words for the education block.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- id: other
+  heading: Made-up other
+  kind: other
+  paragraphs:
+  - Made-up words for the other block.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

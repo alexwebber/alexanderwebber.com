@@ -1,15 +1,18 @@
 // Contract tests for schemas/ (T083): the shared fixtures (also run by ingest's pytest, T082)
-// and structural rules every schema must keep.
+// and structural rules every schema must keep, for every section's schemas (Running's and the CV's).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { RUNNING_SCHEMAS as SCHEMA_NAMES } from '../../src/sections/running/data/store/schemas.ts';
+import { RUNNING_SCHEMAS } from '../../src/sections/running/data/store/schemas.ts';
+import { CV_SCHEMAS } from '../../src/sections/cv/data/store/schemas.ts';
 import { DISTANCES_M } from '../../src/sections/running/domain/distances.ts';
 import { SchemaSet, listSchemaFiles } from '../../src/shared/storage/schemas.ts';
 import { walk } from '../../scripts/lib/walk.ts';
 import { REPO_ROOT } from '../helpers/temp-repo.ts';
 
+// Every section's file schemas, so the shared fixtures and the structure rules cover them all.
+const SCHEMA_NAMES = [...RUNNING_SCHEMAS, ...CV_SCHEMAS];
 const schemas = new SchemaSet(join(REPO_ROOT, 'schemas'), SCHEMA_NAMES);
 const fixtures = walk(REPO_ROOT, 'schemas/fixtures');
 

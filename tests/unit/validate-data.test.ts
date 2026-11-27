@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { formatIssue } from '../../src/shared/storage/errors.ts';
 import { validateData } from '../../scripts/validate-data.ts';
 import { run, runPath, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
+import { smallExport, writeCv } from '../helpers/cv.ts';
 
 let repo: TempRepo;
 afterEach(() => repo?.cleanup());
@@ -221,5 +222,23 @@ describe('validate-data', () => {
       'data/running/published/health/vo2max/2026.json  health series "vo2max"  field points[2].date: "2025-12-31" is not in 2026',
       'data/running/published/health/vo2max/2026.json  health series "vo2max"  field points[2].date: "2025-12-31" is not after the previous point (2026-01-31); points must be sorted, one per day',
     ]);
+  });
+});
+
+describe('validate-data: the CV section (spec 004)', () => {
+  it('reports nothing for the CV while data/cv/ does not exist', () => {
+    owner();
+    expect(validateData(repo.root, { today: TODAY }).filter((i) => i.file.startsWith('data/cv/'))).toEqual([]);
+  });
+
+  it("fails on a planted CV error alongside Running's issues", () => {
+    owner();
+    repo.write('data/running/owner/goals.yaml', '- { id: Bad Id }\n');
+    const exp = smallExport();
+    exp.timeline.changes[0]!.card += ' 07700 900123';
+    writeCv(repo.root, exp);
+    const all = errors();
+    expect(all).toContain('data/cv/timeline.yaml  change change-a  field card: has a phone number');
+    expect(all.some((e) => e.startsWith('data/running/owner/goals.yaml'))).toBe(true);
   });
 });

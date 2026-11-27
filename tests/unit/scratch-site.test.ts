@@ -83,3 +83,44 @@ describe('snapshotDist', () => {
     expect(snapshotDist(dist)).not.toEqual(before);
   });
 });
+
+describe('copySite', () => {
+  /** The smallest source copySite accepts: its folders and files, empty. */
+  function fakeSource(withCv: boolean): string {
+    const from = mkdtempSync(join(tmpdir(), 'aw-source-'));
+    for (const dir of ['src', 'public', 'schemas', 'data/running']) mkdirSync(join(from, dir), { recursive: true });
+    for (const file of ['astro.config.mjs', 'package.json', 'tsconfig.json']) writeFileSync(join(from, file), '');
+    if (withCv) {
+      mkdirSync(join(from, 'data/cv/downloads'), { recursive: true });
+      writeFileSync(join(from, 'data/cv/page.yaml'), '# made up\n');
+      writeFileSync(join(from, 'data/cv/downloads/alexander-webber-cv.pdf'), 'made up');
+    }
+    return from;
+  }
+
+  it('copies data/cv/ when the source has it (spec 004, after the content PR)', () => {
+    const from = fakeSource(true);
+    const to = join(mkdtempSync(join(tmpdir(), 'aw-copy-')), 'site');
+    try {
+      copySite(to, from);
+      expect(readFileSync(join(to, 'data/cv/page.yaml'), 'utf8')).toBe('# made up\n');
+      expect(existsSync(join(to, 'data/cv/downloads/alexander-webber-cv.pdf'))).toBe(true);
+    } finally {
+      rmSync(from, { recursive: true, force: true });
+      rmSync(join(to, '..'), { recursive: true, force: true });
+    }
+  });
+
+  it('copies no data/cv/ when the source has none', () => {
+    const from = fakeSource(false);
+    const to = join(mkdtempSync(join(tmpdir(), 'aw-copy-')), 'site');
+    try {
+      copySite(to, from);
+      expect(existsSync(join(to, 'data/running'))).toBe(true);
+      expect(existsSync(join(to, 'data/cv'))).toBe(false);
+    } finally {
+      rmSync(from, { recursive: true, force: true });
+      rmSync(join(to, '..'), { recursive: true, force: true });
+    }
+  });
+});

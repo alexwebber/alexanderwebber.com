@@ -79,6 +79,16 @@ schema, its fixtures, the store and validation in one PR. Copy the nearest prece
   from a new folder needs that folder added there (003's T001 did it for `tests/fixtures`).
 - ajv's `strictTypes` needs an explicit `type` beside type-specific keywords (`maxLength`, `pattern`,
   `required`), even next to a `$ref`, and inside `if`/`then` and `anyOf` branches.
-- gen-types exports every titled `$defs` object from each schema that references it, so a shared
-  def used across several files breaks the generated index's `export type *` (TS2308). Write it out
-  in each file, or leave its `title` off.
+- gen-types declares a referenced `$defs` object (titled or not) in every file that uses it, under
+  the def's title or key. Its index now exports each name once and stops if two declarations of one
+  name differ (spec 004, slice 1). So share a def by reference to one file (the CV's `approval` lives
+  in `cv/timeline`), not by copying it with edits: a copy that drifts stops gen-types.
+
+## Another section (the CV)
+
+The CV's files (`data/cv/`, spec 004) are imported, never hand-edited: `node scripts/import-cv.ts`
+writes them from the career record's export, each item approved over a hash of its named fields.
+Its pieces, for a brief or a change: `CV_SCHEMAS` (`src/sections/cv/data/store/schemas.ts`),
+`CvStore` and `loadCvData` (`src/sections/cv/data/store/`), `validateCv` (`src/sections/cv/validate.ts`),
+fixtures in `schemas/fixtures/cv/`, and `importCv` in place of `approve-story`. Text budgets live in
+`src/sections/cv/domain/budgets.ts`, not the schemas.

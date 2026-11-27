@@ -1,0 +1,54 @@
+{
+  "format": 1,
+  "source": "0a1b2c3d",
+  "exported": "2026-12-01",
+  "page": {
+    "name": "Ada Example",
+    "headline": "A made-up headline for a made-up person",
+    "location": "Somewhere, Nowhere",
+    "title": "Ada Example: a made-up CV",
+    "description": "A made-up description of a made-up career, for tests and previews.",
+    "email_user": "ada",
+    "email_domain": "example.com",
+    "as_of": "2026-11",
+    "listed": false,
+    "sharing_rules_confirmed": "2026-11-30",
+    "approved_on": "2026-12-01"
+  },
+  "blocks": [
+    {
+      "id": "pitch",
+      "heading": "A made-up pitch",
+      "kind": "pitch",
+      "paragraphs": [
+        "Aliqua minim dolore elit eiusmod quis dolor quis lorem aliquip ad laboris commodo elit."
+      ],
+      "approved_on": "2026-12-01"
+    }
+  ],
+  "timeline": {
+    "themes": [
+      {
+        "id": "theme-a",
+        "name": "Change type A",
+        "line": "Aliqua minim dolore elit eiusmod quis dolor quis.",
+        "colour": "lane-1",
+        "approved_on": "2026-12-01"
+      }
+    ],
+    "threads": [],
+    "roles": [],
+    "changes": [
+      {
+        "id": "change-a",
+        "label": "Change A",
+        "when": "2014",
+        "theme": "theme-a",
+        "card": "Consectetur amet et ad minim veniam quis aliqua laboris dolor et incididunt sit ad sit ex elit nostrud do dolore.",
+        "approved_on": "2026-12-01"
+      }
+    ],
+    "next": []
+  },
+  "downloads": []
+}

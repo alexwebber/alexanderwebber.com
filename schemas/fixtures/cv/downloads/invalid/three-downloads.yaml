@@ -1,0 +1,23 @@
+# Made up (T009): three downloads
+downloads:
+- kind: plain
+  file: alexander-webber-cv.pdf
+  title: The plain CV (PDF)
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- kind: visual
+  file: alexander-webber-cv-visual.pdf
+  title: The visual CV (PDF)
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- kind: plain
+  file: alexander-webber-cv.pdf
+  title: The plain CV (PDF)
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

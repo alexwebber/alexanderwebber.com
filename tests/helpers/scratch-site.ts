@@ -22,12 +22,13 @@ import type { TempRepo } from './temp-repo.ts';
 
 export const REPO = resolve(import.meta.dirname, '../..');
 
-/** Copies what a build needs into an empty `root`. */
-export function copySite(root: string): void {
+/** Copies what a build needs from `from` (the repo) into an empty `root`: data/cv/ too once the CV is in (spec 004). */
+export function copySite(root: string, from: string = REPO): void {
   rmSync(root, { recursive: true, force: true });
   mkdirSync(root, { recursive: true });
-  for (const dir of ['src', 'public', 'schemas', 'data/running']) cpSync(join(REPO, dir), join(root, dir), { recursive: true });
-  for (const file of ['astro.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(REPO, file), join(root, file));
+  for (const dir of ['src', 'public', 'schemas', 'data/running']) cpSync(join(from, dir), join(root, dir), { recursive: true });
+  if (existsSync(join(from, 'data/cv'))) cpSync(join(from, 'data/cv'), join(root, 'data/cv'), { recursive: true });
+  for (const file of ['astro.config.mjs', 'package.json', 'tsconfig.json']) cpSync(join(from, file), join(root, file));
 }
 
 /** A deploy build of the copy: no test-only preview pages. */

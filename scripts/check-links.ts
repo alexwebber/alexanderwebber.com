@@ -6,11 +6,14 @@
 // - Every `href` in every .html file under dist/ that is a site path (one leading `/`) must resolve
 //   to a built file, with any #fragment (and ?query) stripped first: `<path>index.html` for a path
 //   ending in `/`, else the file itself.
-// - Fragments are checked against element ids only for links to the story page (/running/story/),
-//   including the story page's own `#…` links; elsewhere they're ignored.
+// - Fragments are checked against element ids only for links to the story page (/running/story/)
+//   and the CV page (/cv/, spec 004: its #value-…, #change-…, #theme-…, #role-…, #thread-… and
+//   #next-… links), including each page's own `#…` links; elsewhere they're ignored. A missing
+//   download (/cv/<file>.pdf) fails as any missing file does.
 // - Ignored: external links (https:, http:), mailto:, links into /_astro/ and the /running/api/
 //   Worker routes, which aren't files.
-// - A link inside a chapter carries `data-chapter-link="<id>"`, so its message names the chapter
+// - A link inside a chapter carries `data-chapter-link="<id>"`, and a link inside a CV item sits in
+//   an element with `data-cv-item="<kind>:<id>"`, so its message names the chapter or the item
 //   instead of quoting the link's text. Paths are printed: they're site addresses, not story text.
 //
 //   node scripts/check-links.ts [--dist=<dir>]
@@ -25,12 +28,19 @@ export interface LinkIssue {
   path: string;
   /** The chapter the link sits in (`data-chapter-link`), if any. */
   chapter?: string;
+  /** The CV item the link sits in (`data-cv-item`, as `<kind>:<id>`), if any. */
+  cvItem?: string;
   message: string;
 }
 
 export const STORY_PAGE = '/running/story/';
+export const CV_PAGE = '/cv/';
+/** Pages whose links' fragments are checked against their element ids. */
+const FRAGMENT_PAGES = [STORY_PAGE, CV_PAGE];
+const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
 const IGNORED = [/^\/_astro\//, /^\/running\/api\//];
-const TAG = /<([a-zA-Z][\w-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*)\s*\/?>/g;
+// An opening tag (name, attributes, self-closing slash) or a closing one (its name).
+const TAG = /<\/([a-zA-Z][\w-]*)\s*>|<([a-zA-Z][\w-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*)\s*(\/?)>/g;
 const ATTRIBUTE = /([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
 const ID = /\sid\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
 
@@ -75,28 +85,38 @@ export function checkLinks(distDir: string, stats: LinkStats = { pages: 0, links
     }
     return exists.get(rel)!;
   };
-  let storyIds: Set<string> | undefined;
-  const idsOfStory = () => {
-    if (!storyIds) {
-      const file = join(root, dist, targetFile(STORY_PAGE));
+  const pageIds = new Map<string, Set<string>>();
+  const idsOf = (sitePath: string) => {
+    if (!pageIds.has(sitePath)) {
+      const file = join(root, dist, targetFile(sitePath));
       const html = existsSync(file) ? readFileSync(file, 'utf8') : '';
-      storyIds = new Set([...html.matchAll(ID)].map((m) => decodeEntities(m[1] ?? m[2] ?? m[3] ?? '')));
+      pageIds.set(sitePath, new Set([...html.matchAll(ID)].map((m) => decodeEntities(m[1] ?? m[2] ?? m[3] ?? ''))));
     }
-    return storyIds;
+    return pageIds.get(sitePath)!;
   };
-  const storyFile = `${dist}/${targetFile(STORY_PAGE)}`;
+  const fragmentPageOf = new Map(FRAGMENT_PAGES.map((p) => [`${dist}/${targetFile(p)}`, p]));
 
   const issues: LinkIssue[] = [];
   stats.pages = pages.length;
   for (const page of pages) {
     const html = readFileSync(join(root, page), 'utf8');
+    // The open elements that carry a CV item, so a link's message can name the item it sits in.
+    const open: { name: string; cvItem?: string }[] = [];
     for (const match of html.matchAll(TAG)) {
-      const attrs = attributes(match[2] ?? '');
+      if (match[1]) {
+        const at = open.map((o) => o.name).lastIndexOf(match[1].toLowerCase());
+        if (at !== -1) open.splice(at);
+        continue;
+      }
+      const name = match[2]!.toLowerCase();
+      const attrs = attributes(match[3] ?? '');
+      if (!VOID.has(name) && !match[4]) open.push({ name, cvItem: attrs.get('data-cv-item') });
       const raw = attrs.get('href');
       if (raw === undefined) continue;
       let href = decodeEntities(raw.trim());
-      // The story page's own #… links are links to the story page.
-      if (href.startsWith('#') && page === storyFile) href = `${STORY_PAGE}${href}`;
+      // A fragment page's own #… links are links to that page.
+      const ownPage = fragmentPageOf.get(page);
+      if (href.startsWith('#') && ownPage) href = `${ownPage}${href}`;
       if (!href.startsWith('/') || href.startsWith('//')) continue;
       if (IGNORED.some((pattern) => pattern.test(href))) continue;
       stats.links++;
@@ -105,17 +125,20 @@ export function checkLinks(distDir: string, stats: LinkStats = { pages: 0, links
       const fragment = hashAt >= 0 ? href.slice(hashAt + 1) : '';
       const path = (hashAt >= 0 ? href.slice(0, hashAt) : href).replace(/\?.*$/, '');
       const chapter = attrs.get('data-chapter-link');
+      const cvItem = [...open].reverse().find((o) => o.cvItem)?.cvItem;
       const shown = fragment ? `${path}#${fragment}` : path;
+      const where = chapter ? `chapter "${chapter}" ` : cvItem ? `${cvItem.replace(':', ' "')}" ` : '';
       const report = () =>
         issues.push({
           file: page,
           path: shown,
           ...(chapter ? { chapter } : {}),
-          message: `${chapter ? `chapter "${chapter}" ` : ''}links to ${shown}, which the build didn't make`,
+          ...(cvItem ? { cvItem } : {}),
+          message: `${where}links to ${shown}, which the build didn't make`,
         });
 
       if (!isFile(targetFile(path))) report();
-      else if (path === STORY_PAGE && fragment && !idsOfStory().has(decodePath(fragment))) report();
+      else if (FRAGMENT_PAGES.includes(path) && fragment && !idsOf(path).has(decodePath(fragment))) report();
     }
   }
   return issues;

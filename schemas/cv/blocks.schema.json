@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alexanderwebber.com/schemas/cv/blocks.schema.json",
+  "title": "CvBlocks",
+  "description": "data/cv/blocks.yaml: the CV's text blocks in page order (specs/004-interactive-cv/data-model.md, Text block). Written by scripts/import-cv.ts from approved text only. Exactly one pitch block and unique ids are checked by validate.ts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "blocks"
+  ],
+  "properties": {
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "x-error": "must list at least one block",
+      "items": {
+        "$ref": "#/$defs/block"
+      }
+    }
+  },
+  "$defs": {
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "heading",
+        "kind",
+        "paragraphs",
+        "approved"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "timeline.schema.json#/$defs/id"
+        },
+        "heading": {
+          "description": "The block's heading. Hashed.",
+          "$ref": "timeline.schema.json#/$defs/line"
+        },
+        "kind": {
+          "description": "What the block is. The pitch is placed before the timeline. Hashed.",
+          "enum": [
+            "pitch",
+            "value",
+            "future",
+            "skills",
+            "public",
+            "education",
+            "other"
+          ],
+          "x-error": "is not a block kind (expected pitch, value, future, skills, public, education or other)"
+        },
+        "paragraphs": {
+          "description": "Plain-text paragraphs, each on one line. Hashed.",
+          "type": "array",
+          "minItems": 1,
+          "x-error": "must list at least one paragraph",
+          "items": {
+            "$ref": "timeline.schema.json#/$defs/line"
+          }
+        },
+        "stories": {
+          "description": "Value blocks only: the value stories a change can link to. Hashed.",
+          "type": "array",
+          "minItems": 1,
+          "x-error": "must list at least one story",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "title",
+              "text"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "timeline.schema.json#/$defs/id"
+              },
+              "title": {
+                "$ref": "timeline.schema.json#/$defs/line"
+              },
+              "text": {
+                "$ref": "timeline.schema.json#/$defs/line"
+              }
+            }
+          }
+        },
+        "approved": {
+          "$ref": "timeline.schema.json#/$defs/approval"
+        }
+      },
+      "if": {
+        "required": [
+          "kind"
+        ],
+        "properties": {
+          "kind": {
+            "const": "value"
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "required": [
+            "stories"
+          ]
+        },
+        "x-error": "has stories, which only a value block may have"
+      }
+    }
+  }
+}

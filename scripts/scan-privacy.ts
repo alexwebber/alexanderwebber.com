@@ -5,6 +5,10 @@
 // - provider activity links and ID keys, and name/description keys in published runs;
 // - donor, Gift Aid and JustGiving account keys, and Gift Aid figures on pages;
 // - image metadata in dist/;
+// - phone numbers in the CV's files and built page (data/cv/, dist/cv/: spec 004's FR-003, one
+//   definition with its validation, src/sections/cv/domain/phone.ts). Running's pages hold run
+//   figures the phone rule shouldn't be asked about, so it applies to the CV only. PDFs aren't text
+//   here; their text is read by the CV's validation (slice 5);
 // - with --provider-ids=<file> (R2 state/run-ids.json, fetched by the gate when it has R2
 //   credentials): any known provider activity ID anywhere.
 //
@@ -14,10 +18,12 @@
 // output, so its log must not carry the values it caught. Rules whose match is itself a value
 // (a time, an ID) redact the match too, and so does every finding in story text (the journey's
 // files, the campaign stories and the built story page: specs/003-journey-story/contracts/gate.md
-// §2, FR-035), whatever the rule, because there the match is a word of the story. The rules still
-// apply to those files unchanged (FR-022).
+// §2, FR-035), and every finding in the CV's files and built page (specs/004-interactive-cv/
+// contracts/gate.md *Privacy scan*), whatever the rule, because there the match is a word of the
+// story or the CV. The rules still apply to those files unchanged (FR-022).
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { findPhone } from '../src/sections/cv/domain/phone.ts';
 import { IMAGE, metadataKinds } from './scan-images.ts';
 import { isMain, walk } from './lib/walk.ts';
 
@@ -32,7 +38,8 @@ export interface PrivacyFinding {
 
 interface Rule {
   name: string;
-  pattern: RegExp;
+  /** What the rule finds: a pattern, or a function returning the first match's index and text. */
+  pattern: RegExp | ((text: string) => RegExpMatchArray | null);
   /** Which files the rule applies to (repo-relative paths). */
   applies: (file: string) => boolean;
   /** The match is a value (a time, an ID), not a key name, so it is not echoed. */
@@ -59,6 +66,17 @@ const FUNDRAISING_KEYS =
 const STORY_FILE = /^data\/running\/owner\/stories\//;
 /** Story text: a finding here is redacted, whatever the rule (FR-035). */
 export const STORY_TEXT = /^(?:data\/running\/owner\/journey\/|data\/running\/owner\/stories\/|dist\/running\/story\/)/;
+/** The CV's files and built page (spec 004): a finding here is redacted too, whatever the rule. */
+export const CV_TEXT = /^(?:data\/cv\/|dist\/cv\/)/;
+
+/** The first phone number in `text` as a match, for the rule below. */
+function firstPhone(text: string): RegExpMatchArray | null {
+  const first = findPhone(text)[0];
+  if (!first) return null;
+  const match = [text.slice(first.index, first.index + first.length)] as RegExpMatchArray;
+  match.index = first.index;
+  return match;
+}
 
 export const RULES: Rule[] = [
   {
@@ -122,6 +140,12 @@ export const RULES: Rule[] = [
     applies: inDist,
   },
   {
+    name: 'phone number in the CV',
+    pattern: firstPhone,
+    applies: (f) => CV_TEXT.test(f),
+    redact: true,
+  },
+  {
     name: 'Gift Aid figure on a page',
     pattern: /£\s?\d[\s\S]{0,40}?\bgift aid\b|\bgift aid\b[\s\S]{0,40}?£\s?\d/i,
     applies: inDist,
@@ -133,7 +157,7 @@ function finding(file: string, rule: string, text: string, match: RegExpExecArra
   const before = text.slice(0, match.index);
   const line = before.split('\n').length;
   const column = match.index! - before.lastIndexOf('\n');
-  const excerpt = redact || STORY_TEXT.test(file) ? `[${match[0].length} chars redacted]` : match[0].replace(/\s+/g, ' ').trim();
+  const excerpt = redact || STORY_TEXT.test(file) || CV_TEXT.test(file) ? `[${match[0].length} chars redacted]` : match[0].replace(/\s+/g, ' ').trim();
   return { file, rule, line, column, excerpt };
 }
 
@@ -141,7 +165,7 @@ export function scanText(file: string, text: string, providerIds?: Set<string>):
   const findings: PrivacyFinding[] = [];
   for (const rule of RULES) {
     if (!rule.applies(file)) continue;
-    const match = rule.pattern.exec(text);
+    const match = typeof rule.pattern === 'function' ? rule.pattern(text) : rule.pattern.exec(text);
     if (match) findings.push(finding(file, rule.name, text, match, rule.redact ?? false));
   }
   if (providerIds && providerIds.size > 0) {

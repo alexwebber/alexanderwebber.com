@@ -1,0 +1,28 @@
+# Made up (T009): an unknown block kind
+blocks:
+- id: pitch
+  heading: A made-up pitch
+  kind: summary
+  paragraphs:
+  - Lorem ipsum dolor sit amet, a made-up pitch.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- id: value
+  heading: Made-up value
+  kind: value
+  paragraphs:
+  - Made-up words on the value added.
+  - A second made-up paragraph.
+  stories:
+  - id: story-a
+    title: Story A
+    text: A made-up story of value.
+  - id: story-b
+    title: Story B
+    text: Another made-up story.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

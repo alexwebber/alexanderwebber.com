@@ -27,10 +27,13 @@ II(a)). Playwright page tests have their own skill, `page-tests`.
   `OwnerData` literal out in a test.
 - A fake `RunningStore`: an object of async methods, passed to `setRunningStore` (from
   `src/sections/running/data/load.ts`) before rendering with `experimental_AstroContainer`.
-- `copySite(root)` and `buildSite(root)` (`scratch-site.ts`): a scratch copy of the site to edit and
+- `copySite(root)` and `buildSite(root)` (`scratch-site.ts`; `data/cv/` is copied once it exists): a scratch copy of the site to edit and
   build for a drill.
 - `journey.ts`: made-up approved story trees (`lorem(seed, n)`, `chapter`, `note`, `page`,
   `closing`, `approve`, `writeApproved`, `writeStory`) for anything that reads approved text.
+- `cv.ts` (spec 004): made-up CV exports (`exportItem`, `exportPage`, `smallExport`, `smallPdfs`),
+  `writeExport` for the import, `writeCv` to write `data/cv/` approved but unchecked (to plant one
+  problem), and `minimalPdf` for a small valid PDF with chosen text and metadata.
 - `stripTags` (`html.ts`) to assert on rendered text; `a11y.ts` for axe in Playwright.
 
 ## Rules

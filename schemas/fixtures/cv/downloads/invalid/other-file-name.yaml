@@ -1,0 +1,16 @@
+# Made up (T009): a file name outside the two
+downloads:
+- kind: plain
+  file: cv.pdf
+  title: The plain CV (PDF)
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- kind: visual
+  file: alexander-webber-cv-visual.pdf
+  title: The visual CV (PDF)
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

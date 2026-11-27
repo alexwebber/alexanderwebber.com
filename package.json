@@ -18,6 +18,8 @@
     "check-links": "node scripts/check-links.ts",
     "scan-privacy": "node scripts/scan-privacy.ts",
     "approve-story": "node scripts/approve-story.ts",
+    "import-cv": "node scripts/import-cv.ts",
+    "compare-cv": "node scripts/compare-cv.ts",
     "add-chapter-photo": "node scripts/add-chapter-photo.ts",
     "pretest": "npm run gen-types",
     "test": "vitest run",

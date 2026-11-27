@@ -1,0 +1,11 @@
+# Made up (T009): one pitch block
+blocks:
+- id: pitch
+  heading: A made-up pitch
+  kind: pitch
+  paragraphs:
+  - Lorem ipsum dolor sit amet, a made-up pitch.
+  approved:
+    date: '2026-12-01'
+    source: 0a1b2c3
+    sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
