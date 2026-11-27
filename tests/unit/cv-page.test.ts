@@ -18,6 +18,7 @@ import { CvStore, type CvExport } from '../../src/sections/cv/data/store/index.t
 import { findPhone } from '../../src/sections/cv/domain/phone.ts';
 import { PREVIEW_STATES, previewStore, type PreviewState } from '../fixtures/cv-preview/store.ts';
 import { smallExport, writeCv } from '../helpers/cv.ts';
+import { stripTags } from '../helpers/html.ts';
 import { REPO_ROOT, tempRepo, type TempRepo } from '../helpers/temp-repo.ts';
 
 let container: AstroContainer;
@@ -51,8 +52,8 @@ function small(plant: (exp: CvExport) => void = () => {}): { cv: CvView; exp: Cv
 
 const ids = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]!);
 const count = (html: string, pattern: RegExp) => html.match(new RegExp(pattern.source, 'g'))?.length ?? 0;
-/** The page's text, tags dropped, scripts and styles out. */
-const text = (html: string) => html.replace(/<(script|style)\b[\s\S]*?<\/\1>/g, '').replace(/<[^>]+>/g, ' ');
+/** The page's text, tags dropped, scripts and styles out (the shared scanner: a regex trips CodeQL). */
+const text = (html: string) => stripTags(html);
 
 describe.each(PREVIEW_STATES)('the %s preview', (state) => {
   let html: string;
