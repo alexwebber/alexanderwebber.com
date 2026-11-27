@@ -45,20 +45,20 @@ function richTheme(cv: CvView) {
   return cv.timeline.themes.find((t) => t.changes.length >= 3 && t.changes.some((c) => c.thread) && t.changes.some((c) => c.story))!;
 }
 
-/** The visible boxes matched by `selector` inside `scope` overlap nowhere (within half a pixel). */
-async function noOverlap(scope: Locator, selector: string): Promise<void> {
-  const overlaps = await scope.evaluate((root, sel) => {
+/** The visible boxes matched by `selector` inside `scope` overlap nowhere (within half a pixel), or come no closer than `gap` px. */
+async function noOverlap(scope: Locator, selector: string, gap = 0): Promise<void> {
+  const overlaps = await scope.evaluate((root, [sel, g]) => {
     const boxes = [...root.querySelectorAll(sel)].filter((el) => el.getClientRects().length > 0).map((el) => ({ el, r: el.getBoundingClientRect() }));
     const out: string[] = [];
     for (let i = 0; i < boxes.length; i++) {
       for (let j = i + 1; j < boxes.length; j++) {
         const a = boxes[i]!.r;
         const b = boxes[j]!.r;
-        if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.5 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.5) out.push(`${boxes[i]!.el.textContent?.trim().slice(0, 30)} / ${boxes[j]!.el.textContent?.trim().slice(0, 30)}`);
+        if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0.5 - g && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0.5) out.push(`${boxes[i]!.el.textContent?.trim().slice(0, 30)} / ${boxes[j]!.el.textContent?.trim().slice(0, 30)}`);
       }
     }
     return out;
-  }, selector);
+  }, [selector, gap] as const);
   expect(overlaps, selector).toEqual([]);
 }
 
@@ -209,12 +209,15 @@ for (const width of WIDTHS) {
   });
 }
 
-test('tiles sit in two columns at 768 px and one at 375', async ({ page }) => {
-  for (const [width, columns] of [[768, 2], [375, 1]] as const) {
+test('tiles sit in two columns from 768 to 1023 px and one at 375, the axis labels apart', async ({ page }) => {
+  // 1280: the drill shows at every width until slice 3 brings the landscape form (the axis labels met there).
+  for (const [width, columns] of [[768, 2], [1023, 2], [1280, 2], [375, 1]] as const) {
     await page.setViewportSize({ width, height: 900 });
     await open(page, 'typical');
     const lefts = await level(page).locator('.cv-tiles').first().locator('a.cv-tile').evaluateAll((els) => new Set(els.map((el) => Math.round(el.getBoundingClientRect().left))).size);
     expect(lefts, `${width} px`).toBe(columns);
+    // The axis row over each column keeps its labels apart.
+    await noOverlap(level(page), '.cv-axis-row time', 4);
   }
 });
 
@@ -236,7 +239,7 @@ for (const state of PREVIEW_STATES) {
       await open(page, state, hash);
       expect(await sideways(page), `${state}${hash}`).toBe(0);
       await noOverlap(level(page), 'a.cv-tile, a.cv-row');
-      await noOverlap(level(page), '.cv-axis-row:not([aria-hidden]) time');
+      await noOverlap(level(page), '.cv-axis-row:not([aria-hidden]) time', 4);
       await noOverlap(level(page), '.cv-step, .cv-follow a');
       await noOverlap(level(page), ':scope > :is(p, h3, div, ol, ul)');
       if (hash) await noOverlap(crumbs(page), '.cv-back, .cv-trail li');

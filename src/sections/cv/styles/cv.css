@@ -167,13 +167,10 @@
   scroll-margin-top: var(--cv-crumbs-room);
 }
 
-.theme-cv .cv-timeline h3:focus {
+/* A level's heading takes focus from the script so screen readers start there; it isn't a control
+   and isn't in the Tab order, so it shows no focus ring (the trail says where you are). */
+.theme-cv .cv-timeline :is(h2, h3)[tabindex='-1']:focus {
   outline: none;
-}
-
-.theme-cv .cv-timeline h3:focus-visible {
-  outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: var(--focus-offset);
 }
 
 /* Without scripts every level shows, in reading order, one after another. */
@@ -344,7 +341,7 @@
 }
 
 /* Where the latest year's label would meet the last month's, the last month alone names it. */
-@container (max-width: 30rem) {
+@container (max-width: 40rem) {
   .theme-cv .cv-tick-latest time {
     display: none;
   }
