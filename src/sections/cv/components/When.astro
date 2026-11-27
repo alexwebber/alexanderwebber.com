@@ -1,0 +1,14 @@
+---
+// A `when` in words with each date in a <time> element (contracts/timeline-ui.md; ui-accessibility
+// tips: a period is two <time> elements joined by words). The pieces' texts are exactly whenText's
+// words, written on one line so Astro adds or drops no space between them.
+import type { WhenPart } from '../domain/dates.ts';
+
+interface Props {
+  parts: WhenPart[];
+}
+
+const { parts } = Astro.props;
+---
+
+{parts.map((part) => (part.datetime ? <time datetime={part.datetime}>{part.text}</time> : part.text))}

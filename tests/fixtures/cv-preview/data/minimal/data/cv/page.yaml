@@ -1,0 +1,16 @@
+# Written by scripts/import-cv.ts from the career record's export. Don't edit it by hand: an edit
+# breaks the item's approval, and the build refuses it (specs/004-interactive-cv).
+name: Ada Example
+headline: A made-up headline for a made-up person
+location: Somewhere, Nowhere
+title: "Ada Example: a made-up CV"
+description: A made-up description of a made-up career, for tests and previews.
+email_user: ada
+email_domain: example.com
+as_of: 2026-11
+listed: false
+sharing_rules_confirmed: 2026-11-30
+approved:
+  date: 2026-12-01
+  source: 0a1b2c3d
+  sha256: c6c4c8f3e3bed82bc03988f6eb6c01613ec8a9e36d2a8e94627c6539491760a9

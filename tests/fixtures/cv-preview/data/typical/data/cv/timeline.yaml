@@ -1,0 +1,637 @@
+# Written by scripts/import-cv.ts from the career record's export. Don't edit it by hand: an edit
+# breaks the item's approval, and the build refuses it (specs/004-interactive-cv).
+themes:
+  - id: theme-a
+    name: Change type A
+    line: Aliqua minim dolore elit eiusmod quis dolor quis.
+    colour: lane-1
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 3c321a7aca74cf51194e2bb2aa3f9a405b9e9defe37426db4a1fa6f91856d779
+  - id: theme-b
+    name: Change type B
+    line: Quis aliqua et lorem minim lorem tempor nostrud.
+    colour: lane-2
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 6fee321fc92abcbb6f20fdbf7c71a8bc5355273a6bf8b35df695bd517e90f29f
+  - id: theme-c
+    name: Change type C
+    line: Nisi et labore tempor commodo tempor dolor elit.
+    colour: lane-3
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 0d43d3d36b1ce2f3733e8706f531c41f817c16ea2d1859840278f8af76009c36
+  - id: theme-d
+    name: Change type D
+    line: Consequat incididunt ut veniam laboris veniam tempor sed.
+    colour: lane-4
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 2fc52738a95bfe962d8b538b50f5f795bc6285116abb3fd83d0a033f60569f90
+  - id: theme-e
+    name: Change type E
+    line: Amet laboris nisi consequat amet et ad do.
+    colour: lane-5
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 270f8d926a0271389bc19e0d52f1d5f6199b296dbf531ec11db80990074a29e1
+threads:
+  - id: thread-a
+    name: Thread A
+    line: Consectetur amet et ad minim veniam quis.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 1855d3c50db6280259f302cf99a2e41bc230e3dbe4c8bc4cbe8c84d8d7265b93
+  - id: thread-b
+    name: Thread B
+    line: Eiusmod ipsum ex ut commodo consequat labore.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: de0dfd841cd0a783c825c15bceb19479afed4566569336a37cb0ea9a0a386994
+  - id: thread-c
+    name: Thread C
+    line: Et commodo aliquip nostrud laboris eiusmod quis.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 2d0e81021b81f843c97c95581a4c75379e2fd71ffe959d465ee5ee0980cdcc7b
+  - id: thread-d
+    name: Thread D
+    line: Ad aliquip nisi ipsum amet minim labore.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: f650b9c90652e588a5fa5a79dec9027910996509a1554d1ff1b6aae89a000eb0
+  - id: thread-e
+    name: Thread E
+    line: Exercitation ullamco laboris incididunt et commodo quis.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 62d026d74f3c370ba27c6adac014023baf5481fd0b43a4471b055fcca8b9dea6
+roles:
+  - id: role-a
+    label: A made-up role A
+    when: 2007–2009
+    card: Ea amet ipsum nisi et nostrud et nisi exercitation veniam do ullamco laboris nisi aliquip aliqua enim commodo.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: c867acd28e0e05c14e17116dbba56f66458ef9ba784733467b8f4c7a47ea0958
+  - id: role-b
+    label: A made-up role B
+    when: 2009–2011
+    card: Dolor ipsum lorem consectetur eiusmod ipsum nostrud aliquip ex consequat eiusmod consequat ex elit lorem laboris commodo laboris.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 1dd08ac11cc6abc55de1d4c8766c2b1f3d426252fa1adbb6d51b5b661e355ba9
+  - id: role-c
+    label: A made-up role C
+    when: 2011–2013
+    card: Elit commodo et commodo minim incididunt consequat incididunt ipsum eiusmod tempor adipiscing et amet minim aliqua aliquip amet.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 87c7606bfe3c7304e5dd4ec018048ca026c37a2187fe30db071153090df4ee26
+  - id: role-d
+    label: A made-up role D
+    when: 2013–2015
+    card: Incididunt aliquip labore do commodo consectetur nostrud ut nostrud minim incididunt aliquip aliqua magna ullamco laboris sed consequat.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 78cd7c8497f2d557e00096ae5e604f85e7f23be7bc7a444649096ead40e8f8af
+  - id: role-e
+    label: A made-up role E
+    when: 2015–2017
+    card: Magna eiusmod ut ad laboris dolore consequat labore aliquip dolore ut dolor minim labore ea aliqua minim eiusmod.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 0a822ee59acc0373fde2ed8903b9237bfaa078478d87a70f961655c69f1fa2ae
+  - id: role-f
+    label: A made-up role F
+    when: 2017–2019
+    card: Veniam elit incididunt ea amet laboris sed ea lorem laboris labore do nostrud laboris dolor laboris lorem consectetur.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: db9774d2a84f5f731f18b9222561a25cc3b80274781642e7d14a85f9cdbc5b5a
+  - id: role-g
+    label: A made-up role G
+    when: 2019–2021
+    card: Laboris amet tempor sed et amet consequat commodo consectetur amet ea dolore do nostrud elit aliqua ea dolore.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 808dc432511d6e4ec7420abd6835e55148617605fd1594159fb9fe00df395695
+  - id: role-h
+    label: A made-up role H
+    when: 2023–now
+    card: Commodo ipsum ullamco enim eiusmod et sed et nisi et commodo consectetur incididunt sit incididunt laboris eiusmod tempor.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 933863fc58c302955bf8741de1a080c1db14788a67024429960d2960ca541362
+changes:
+  - id: change-a
+    label: Change A
+    when: "2007"
+    theme: theme-a
+    card: Consectetur amet et ad minim veniam quis aliqua laboris dolor et incididunt sit ad sit ex elit nostrud do dolore.
+    thread: thread-a
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 9f314ef5946e4279eb0a8225310357a9d43b8504ca65f4d28f37584bddaa9625
+  - id: change-b
+    label: Change B
+    when: ~2008
+    theme: theme-a
+    card: Eiusmod ipsum ex ut commodo consequat labore enim commodo ut dolore ipsum adipiscing consequat sed consectetur ad enim incididunt magna.
+    thread: thread-a
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: f04fa5fcb64924ec562ab1d38b49a210408b1a84858c321322f6d8b9aad18aa0
+  - id: change-c
+    label: Change C
+    when: 2009–2011
+    theme: theme-a
+    card: Et commodo aliquip nostrud laboris eiusmod quis ad sit nostrud magna sed exercitation ex ut ex consequat ex et dolor.
+    thread: thread-a
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: ef4713d5cd2e3a006b1437daae543c83dc07532d8b5b5e20aede0b7bb4158341
+  - id: change-d
+    label: Change D
+    when: 2010–now
+    theme: theme-d
+    card: Ad aliquip nisi ipsum amet minim labore sit ullamco ipsum aliqua et nisi do aliqua consectetur ex exercitation aliqua sit.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: ad248b86efbd21a6aed475c793056c5f10e192f532f83b2671313dc510614b18
+  - id: change-e
+    label: Change E
+    when: 2026 May
+    theme: theme-e
+    card: Exercitation ullamco laboris incididunt et commodo quis amet ea incididunt enim veniam ea adipiscing quis ex do dolor sit veniam.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: ac77ae6bcde6efae056352d63adf82e85d29c7d130abd0783039f94d1ba18f47
+  - id: change-f
+    label: Change F
+    when: 2026 Jan–May
+    theme: theme-a
+    card: Ex elit sed quis eiusmod exercitation commodo minim dolor elit ad aliquip lorem enim nisi consectetur veniam ea adipiscing quis.
+    value: story-a
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 96a6d1415209a886695cc7e9c5b3c0093bf34bfa9fbb41a49e0c63b926dce6c7
+  - id: change-g
+    label: Change G
+    when: 2013–2026 Jul
+    theme: theme-b
+    card: Ipsum amet elit lorem minim dolor quis veniam elit aliqua minim aliqua enim dolore consequat ex ipsum sed do sed.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: c916e26e61328d838dbcf55969e06eafae46f289c4fe2f1dd44f20a87501503b
+  - id: change-h
+    label: Change H
+    when: "2014"
+    theme: theme-c
+    card: Adipiscing ipsum adipiscing tempor commodo ut commodo quis ex aliquip veniam exercitation veniam aliquip amet consectetur commodo sit incididunt do.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: fd5cd455da2435d17d3131dbdc4123f693d9db96632ac0d60616aa720ff4f3b5
+  - id: change-i
+    label: Change I
+    when: ~2015
+    theme: theme-d
+    card: Tempor commodo consectetur amet laboris nostrud elit adipiscing ipsum adipiscing consectetur commodo exercitation ullamco exercitation labore tempor labore ea nisi.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 0835d5c9b4119328b185974911656b9e226d2ea62729dbd771805956ee4a6c98
+  - id: change-j
+    label: Change J
+    when: 2016–2018
+    theme: theme-e
+    card: Dolore aliquip amet et amet ipsum commodo elit adipiscing ipsum adipiscing consectetur eiusmod consectetur ex consectetur nostrud do lorem aliquip.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 6eeebf804863e29637aebb44fa1940e105d683581e25b5b1e8c6e50173315d93
+  - id: change-k
+    label: Change K
+    when: 2017–now
+    theme: theme-b
+    card: Minim eiusmod enim ullamco consequat incididunt elit nostrud tempor incididunt elit nisi ut dolor ipsum labore sit ad sit labore.
+    thread: thread-b
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 5e990ac2ea564f2f5cabcf8a91063373ad408943538d39fb28d340ac6f2c20d2
+  - id: change-l
+    label: Change L
+    when: 2026 Jan
+    theme: theme-b
+    card: Ullamco elit aliqua sit eiusmod consectetur dolore exercitation dolore quis sed ipsum dolore et adipiscing consectetur lorem et adipiscing et.
+    thread: thread-b
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 7e27d3377df72ce31e3b1f6d324c48f5cf3793e3faf5926deebba74c8dc97fcd
+  - id: change-m
+    label: Change M
+    when: 2026 Mar–Jul
+    theme: theme-b
+    card: Ea amet magna labore minim dolore elit ullamco consectetur lorem do sed enim incididunt tempor labore ut ullamco exercitation lorem.
+    thread: thread-b
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 77b0b41312db379aa3c8a36efae0d7229384496b9a45b1de6df02d3a2dc90f3c
+  - id: change-n
+    label: Change N
+    when: 2020–2026 Mar
+    theme: theme-d
+    card: Dolor ipsum dolore exercitation dolore laboris dolore do eiusmod tempor eiusmod et amet exercitation dolore consectetur ullamco minim nisi ipsum.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 457cc6abd7e82aa3e87519cfce2423dcd7c24ce55fd3565ff6b675a75e0d22dd
+  - id: change-o
+    label: Change O
+    when: "2021"
+    theme: theme-e
+    card: Elit commodo ea dolor laboris amet elit eiusmod et adipiscing tempor amet elit veniam minim labore consectetur dolore ea ad.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: c756b0c9063dc0a5be6925ee7ef19bd3b492c24604ee66e1801fb13b7b27639d
+  - id: change-p
+    label: Change P
+    when: ~2022
+    theme: theme-a
+    card: Incididunt aliquip ex aliquip amet et dolore laboris ad magna incididunt tempor eiusmod ipsum ullamco consectetur dolor laboris dolore minim.
+    value: story-a
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: c7d26f217826b908f79d913cb060b6c585d895e7e4176afebf1b29ccdbf6f407
+  - id: change-q
+    label: Change Q
+    when: 2023–2025
+    theme: theme-b
+    card: Magna eiusmod aliquip adipiscing consequat ullamco exercitation nisi do nisi ut aliqua ut commodo ea labore et veniam enim adipiscing.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 8fcc9d928e8ee46532cac0dfc08791d02f3e72136da55b79c5f0b2eb50af6793
+  - id: change-r
+    label: Change R
+    when: 2024–now
+    theme: theme-c
+    card: Veniam elit nisi magna eiusmod enim dolore aliquip labore consectetur labore exercitation commodo tempor dolor quis nisi consequat veniam elit.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 954cf770aabed4bdbf44a4ebc2c96a2e4c39a712e238bb3697407a5db1545742
+  - id: change-s
+    label: Change S
+    when: 2026 Aug
+    theme: theme-d
+    card: Laboris amet laboris nisi minim ex exercitation incididunt enim lorem et commodo ipsum sed elit labore elit nisi exercitation ullamco.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 0379f580591433b9a96cab4d6583efc765a12ad23c072fea57223846c9b8ae3b
+  - id: change-t
+    label: Change T
+    when: 2026 May–Sep
+    theme: theme-e
+    card: Commodo ipsum sed consectetur dolore elit lorem ut nostrud tempor dolore minim amet minim incididunt quis amet consectetur eiusmod laboris.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 3e2a57fd30fab6491290583744cc0e44dfb34e14f36080917c34aaeb772eb9af
+  - id: change-u
+    label: Change U
+    when: 2009–2026 Oct
+    theme: theme-c
+    card: Sit commodo elit dolore laboris aliqua exercitation ex ut veniam magna nisi quis aliqua magna labore magna lorem ut incididunt.
+    thread: thread-c
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: df032eb2d89619504774ef2eeba0aabb86859dd35a7b444845e0e551c1365140
+  - id: change-v
+    label: Change V
+    when: "2010"
+    theme: theme-c
+    card: Sed ut adipiscing laboris amet aliquip lorem ea aliqua consequat aliqua ipsum ullamco ea amet quis ex tempor dolore ut.
+    thread: thread-c
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 832e5e0d238ca0663b675f81b6cc5322a5fb23cb14336ec37e2183586cb25b22
+  - id: change-w
+    label: Change W
+    when: ~2011
+    theme: theme-c
+    card: Ut eiusmod consectetur ad consequat veniam do commodo quis eiusmod enim sed aliquip nisi do labore do adipiscing enim commodo.
+    thread: thread-c
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: e33b017a4c0b6214f0e1a4be01185d2b85d7963cb5fde2d9179ce40be2e13fbf
+  - id: change-x
+    label: Change X
+    when: 2012–2014
+    theme: theme-d
+    card: Aliqua elit ad ea eiusmod consequat lorem et nisi consectetur dolor ea commodo elit labore quis adipiscing magna amet consequat.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: f3f34ce9fca9984dbd9a28e640fd63e19d2ace30ca9e9bbcafff4b5e93758328
+  - id: change-y
+    label: Change Y
+    when: 2013–now
+    theme: theme-e
+    card: Quis amet enim sed minim eiusmod do dolore consequat dolore sit amet magna amet enim labore enim incididunt elit aliqua.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 687b3515f93dce558bb881feca6bc2e856c55e530aff4680a6de1d3be7a06fdd
+  - id: change-z
+    label: Change Z
+    when: 2026 Apr
+    theme: theme-a
+    card: Nisi ipsum aliqua enim dolore minim aliqua consequat veniam laboris amet tempor ad magna nostrud quis commodo quis eiusmod enim.
+    value: story-b
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 0a9c9bd77ac419f90dbd8cdb0f6e809d4b760d0b663968fe839051342f6f9805
+  - id: change-aa
+    label: Change AA
+    when: 2026 Feb–Jun
+    theme: theme-b
+    card: Consequat dolore magna ex laboris commodo do lorem laboris amet consectetur aliqua quis labore aliquip commodo tempor aliqua ut amet.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 8c1b4ba5e69a692f8cddc66481c2828b227ead41ff726eda7b31794a7a738337
+  - id: change-ab
+    label: Change AB
+    when: 2016–2026 Jun
+    theme: theme-c
+    card: Amet ut commodo elit amet do aliqua ipsum commodo et adipiscing elit sed laboris lorem quis sed aliquip commodo consectetur.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 0f4d91f745ef2dd75934de89e0886b20962b79ae5ae8a273ec7208b1b8ad99e6
+  - id: change-ac
+    label: Change AC
+    when: "2017"
+    theme: theme-d
+    card: Do eiusmod ea lorem consequat dolor do aliqua sit eiusmod elit labore tempor nostrud consectetur commodo minim nostrud ipsum nostrud.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: d24374560e7f7ac212f2aab5e5d1ec0981afc4325623dc38c39bd9159b4f3b70
+  - id: change-ad
+    label: Change AD
+    when: ~2018
+    theme: theme-e
+    card: Labore elit ex tempor eiusmod ut aliqua enim ullamco minim sed minim labore sit eiusmod quis lorem ipsum amet exercitation.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 4e55aa10b292327b0f145f11c13e4a18b13d3b7824353ceec9ce34e69e70388e
+  - id: change-ae
+    label: Change AE
+    when: 2019–2021
+    theme: theme-d
+    card: Enim amet aliquip veniam minim nostrud laboris dolor ea commodo do nisi magna lorem et commodo ut ex elit eiusmod.
+    thread: thread-d
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 032e64048135c8925deea64666c9d72255a6dffd082e901f1dab23b9505ce110
+  - id: change-af
+    label: Change AF
+    when: 2020–now
+    theme: theme-d
+    card: Nostrud enim nisi consequat dolore ipsum aliqua sit dolor do eiusmod ipsum dolor ut ad quis eiusmod elit ullamco tempor.
+    thread: thread-d
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: d8201a9c6395c1323be25293140b7e6c5dcc807dffe4817698b7598e4eb5bc31
+  - id: change-ag
+    label: Change AG
+    when: 2026 Nov
+    theme: theme-d
+    card: Aliquip dolore do eiusmod laboris incididunt laboris amet elit amet tempor nostrud consectetur eiusmod exercitation commodo quis dolor aliquip ex.
+    thread: thread-d
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 81d0afdcf7c762604e189edc05af63efdeae064fb1150e6c539cc4178c18dc95
+  - id: change-ah
+    label: Change AH
+    when: 2026 Apr–Aug
+    theme: theme-d
+    card: Lorem ut sed minim amet consectetur dolor minim ex et incididunt ea sed quis ex quis dolor ea commodo ea.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 431733a0577694cee54317d8202687f907c9509ccc0cd384a9c61c1aebad9f7d
+  - id: change-ai
+    label: Change AI
+    when: 2023–2026 Feb
+    theme: theme-e
+    card: Consectetur eiusmod elit commodo consequat dolore laboris veniam ipsum ullamco ut amet laboris ad magna commodo et sed ipsum dolore.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 9f2327f3052ce8855278b143ea42715ffc8f33d483155f79b92ce1068e517286
+  - id: change-aj
+    label: Change AJ
+    when: "2024"
+    theme: theme-a
+    card: Eiusmod elit adipiscing exercitation eiusmod laboris dolor consectetur adipiscing sit labore tempor ex consequat veniam quis incididunt sit ad magna.
+    value: story-b
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 452794b9559b18299511c670bfb3dbabb5bd3d42d8d6774865c5c8589f3ba0ff
+  - id: change-ak
+    label: Change AK
+    when: ~2007
+    theme: theme-b
+    card: Et amet minim dolor minim amet tempor adipiscing tempor labore et lorem consequat ex laboris commodo exercitation labore quis dolor.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 5fa0edf1a3234b8c1408d173801b7b3689d86be5f55857c703cdbe7182e5feba
+  - id: change-al
+    label: Change AL
+    when: 2008–2010
+    theme: theme-c
+    card: Ad enim ad ut dolore et dolor elit dolore do dolore elit dolor do commodo elit amet do ullamco sit.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: b8af75edb0994d6d3ed27add1c622289cdc3733d5a8f997d70be5ad180c3cf6b
+  - id: change-am
+    label: Change AM
+    when: 2009–now
+    theme: theme-d
+    card: Exercitation dolore enim nostrud laboris ullamco tempor nostrud consectetur ad consequat labore minim adipiscing sit commodo magna ad aliquip veniam.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 55529ce0b39e6a6d6ff992314ad6087730d51181810211b611768752b844d547
+  - id: change-an
+    label: Change AN
+    when: 2026 Jul
+    theme: theme-e
+    card: Ex ut aliqua ipsum amet enim dolor exercitation eiusmod ea lorem minim nostrud enim sed elit labore et labore quis.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: f8364fa9dc87c1f198a1417e64d8485a8c3b36f38d18ca75ab5faa3a4845af8b
+  - id: change-ao
+    label: Change AO
+    when: 2026 Jan–May
+    theme: theme-e
+    card: Ipsum eiusmod magna incididunt consequat ex tempor sed et sed ipsum eiusmod laboris dolore ut commodo laboris ullamco magna sed.
+    thread: thread-e
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 96e7b2880dcf7ecbd305710a5b74d4701ae87a708022cfa2adc82d74a8db6b27
+  - id: change-ap
+    label: Change AP
+    when: 2012–2026 Sep
+    theme: theme-e
+    card: Adipiscing elit commodo quis eiusmod elit ad do ad sit dolor magna incididunt aliquip aliqua elit adipiscing minim ad do.
+    thread: thread-e
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 7f63ee00992286379b07b5773d29e8b5410016426beec50c8ffea33d6e4bafb1
+  - id: change-aq
+    label: Change AQ
+    when: "2013"
+    theme: theme-e
+    card: Tempor veniam ea dolore minim aliqua tempor eiusmod do labore sit nostrud et ullamco quis commodo enim commodo quis nisi.
+    thread: thread-e
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 8ecf7c6cdf797d16b3a8ac5a1cfed271f6cfed22d64a89ced25e5aeb4173ab22
+  - id: change-ar
+    label: Change AR
+    when: ~2014
+    theme: theme-d
+    card: Dolore enim ex laboris dolore aliquip ad laboris labore exercitation amet ea aliqua consectetur nisi elit dolore laboris sed aliquip.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 0eb71b4c2dbfb543e95244bba7c81abd82353c7ea6c229700bc6e6f58dc033de
+  - id: change-as
+    label: Change AS
+    when: 2015–2017
+    theme: theme-e
+    card: Minim dolore aliquip amet laboris adipiscing aliquip nisi enim dolor consectetur amet minim dolor consequat commodo aliquip amet tempor labore.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 547c7f450f9ffaa8696e55f0f3ebd0e973ba49f1d59f5c77248da00a5ba53cc9
+  - id: change-at
+    label: Change AT
+    when: 2016–now
+    theme: theme-a
+    card: Ullamco ut eiusmod et amet consequat ad tempor nostrud ut adipiscing laboris adipiscing et amet elit sed consequat labore et.
+    value: story-c
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 53685155eecc4cb8160800a56306a37714ca926a76c6441ed84cd5d281b77e95
+  - id: change-au
+    label: Change AU
+    when: 2026 Mar
+    theme: theme-b
+    card: Ea eiusmod do ullamco consequat eiusmod aliquip incididunt ut sed elit lorem do incididunt do dolore minim eiusmod magna lorem.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 327cf39d2c88af2e22fadb5dc15e204a60642899c7b3f2e947c7c4a6a4b3f3f4
+  - id: change-av
+    label: Change AV
+    when: 2026 Mar–Jul
+    theme: theme-c
+    card: Dolor exercitation sed sit eiusmod minim amet ut aliqua enim sed elit incididunt exercitation ex elit aliqua consectetur dolor ipsum.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 6400451a7dfdb52e7c577ef33020e28b7ce375a84c2be7cb2bb216a4700e2745
+  - id: change-aw
+    label: Change AW
+    when: 2019–2026 May
+    theme: theme-d
+    card: Elit veniam elit labore minim commodo aliquip ex quis ex do labore ea veniam ipsum dolore ea dolore consectetur ad.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 2ca425faa82a5c1cf7f1284a9fb873d44ecc87d64c4270cf86fd3570a7dec040
+  - id: change-ax
+    label: Change AX
+    when: "2020"
+    theme: theme-e
+    card: Incididunt enim adipiscing elit dolore do amet ea nisi elit eiusmod sit lorem ipsum adipiscing elit eiusmod tempor sed consectetur.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 97136d78072c364e6941dfa5aac5f7797eb4cc6514cea0390411f7592608cab5
+next:
+  - id: next-a
+    title: A made-up direction A
+    card: Ea amet ipsum nisi et nostrud et nisi exercitation veniam do ullamco laboris nisi aliquip aliqua.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: dd586461185bb2cee9a183fadaa1c5ba07481484beb8dfdb68cfd9041778b076
+  - id: next-b
+    title: A made-up direction B
+    card: Dolor ipsum lorem consectetur eiusmod ipsum nostrud aliquip ex consequat eiusmod consequat ex elit lorem laboris.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 7578bbb9a31f7a0204274c05fb3dc64e6336c568d24c7d7b6b90a5a5547bcac2
+  - id: next-c
+    title: A made-up direction C
+    card: Elit commodo et commodo minim incididunt consequat incididunt ipsum eiusmod tempor adipiscing et amet minim aliqua.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 37fec146943f2d244e570ad170799e7dc1582bbb706e25f4f68d6945363d2d80

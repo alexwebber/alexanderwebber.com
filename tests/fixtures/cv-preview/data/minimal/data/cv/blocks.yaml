@@ -1,0 +1,12 @@
+# Written by scripts/import-cv.ts from the career record's export. Don't edit it by hand: an edit
+# breaks the item's approval, and the build refuses it (specs/004-interactive-cv).
+blocks:
+  - id: pitch
+    heading: A made-up pitch
+    kind: pitch
+    paragraphs:
+      - Aliqua minim dolore elit eiusmod quis dolor quis lorem aliquip ad laboris commodo elit.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 3d8bce4559de445df43a1af8fada987aefde8e57b06ea4f545b834c43b3f5256

@@ -45,12 +45,15 @@ function contrast(a: string, b: string): number {
 
 const shared = modes(read('src/shared/design/tokens.css'));
 const running = modes(read('src/sections/running/styles/theme.css'));
+const cv = modes(read('src/sections/cv/styles/cv.css'));
 
 const themes: [string, Tokens][] = [
   ['shared light', shared.light],
   ['shared dark', { ...shared.light, ...shared.dark }],
   ['running light', { ...shared.light, ...running.light }],
   ['running dark', { ...shared.light, ...shared.dark, ...running.light, ...running.dark }],
+  ['cv light', { ...shared.light, ...cv.light }],
+  ['cv dark', { ...shared.light, ...shared.dark, ...cv.light, ...cv.dark }],
 ];
 
 const BACKGROUNDS = ['--color-page', '--color-surface'];
@@ -81,12 +84,29 @@ describe.each(themes)('%s', (name, tokens) => {
   });
 });
 
+// The CV's lane colours (spec 004 T040; data-model.md Theme.colour) and its roles' marks: 3:1 or more
+// on the page and surface colours, light and dark, so every theme's marks read on every tile.
+const LANES = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `--cv-lane-${n}`);
+describe.each(themes.filter(([name]) => name.startsWith('cv')))('%s lanes', (_, tokens) => {
+  it.each([...LANES, '--cv-role'].flatMap((fg) => BACKGROUNDS.map((bg) => [fg, bg])))('mark %s on %s >= 3:1', (fg, bg) => {
+    expect(contrast(resolve(tokens, fg!), resolve(tokens, bg!))).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe('token files', () => {
   it('a section theme only overrides tokens the shared file defines', () => {
     const own = new Set(['--running-series']);
     for (const name of [...Object.keys(running.light), ...Object.keys(running.dark)]) {
       if (!own.has(name)) expect(shared.light, name).toHaveProperty([name]);
     }
+  });
+
+  it('the CV theme overrides only shared tokens, besides its own --cv- ones, and gives every dark one a light value', () => {
+    for (const name of [...Object.keys(cv.light), ...Object.keys(cv.dark)]) {
+      if (!name.startsWith('--cv-')) expect(shared.light, name).toHaveProperty([name]);
+    }
+    for (const name of Object.keys(cv.dark)) expect(cv.light, name).toHaveProperty([name]);
+    expect(Object.keys(cv.light)).toEqual(expect.arrayContaining(LANES));
   });
 
   it('every dark token also has a light value', () => {

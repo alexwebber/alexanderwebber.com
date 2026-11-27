@@ -129,3 +129,68 @@ export function whenText(when: ParsedWhen): string {
 function monthNumber(name: string): number {
   return MONTHS.indexOf(name as (typeof MONTHS)[number]) + 1;
 }
+
+// --- The display half (T041): durations for the list rows and <time> values -----------------------
+
+/** A piece of a `when` in words: the text shown, and a `datetime` when the piece is a date. */
+export interface WhenPart {
+  text: string;
+  /** `YYYY` or `YYYY-MM`, for a <time> element. */
+  datetime?: string;
+}
+
+const ym = (m: YearMonth): string => `${m.year}-${String(m.month).padStart(2, '0')}`;
+
+/**
+ * whenText's words in pieces, so a page can wrap each date in <time> (a period is two <time>
+ * elements joined by words: <time datetime> has no range form). The pieces' texts joined are
+ * exactly whenText(when).
+ */
+export function whenParts(when: ParsedWhen): WhenPart[] {
+  const { start, end } = when;
+  const year = (y: number): WhenPart => ({ text: `${y}`, datetime: `${y}` });
+  switch (when.form) {
+    case 'year':
+      return [year(start.year)];
+    case 'rough-year':
+      return [{ text: 'About ' }, year(start.year)];
+    case 'years':
+      return [year(start.year), { text: ' to ' }, year(end.year)];
+    case 'ongoing':
+      return [year(start.year), { text: ' to now' }];
+    case 'month':
+      return [{ text: `${monthName(start)} ${start.year}`, datetime: ym(start) }];
+    case 'months':
+      return [{ text: monthName(start), datetime: ym(start) }, { text: ' to ' }, { text: `${monthName(end)} ${end.year}`, datetime: ym(end) }];
+    case 'into-latest-year':
+      return [year(start.year), { text: ' to ' }, { text: `${monthName(end)} ${end.year}`, datetime: ym(end) }];
+  }
+}
+
+/** Months a `when` covers, first and last included: 2013–2016 is 48. */
+export const monthsCovered = (when: ParsedWhen): number => monthIndex(when.end) - monthIndex(when.start) + 1;
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/**
+ * How long a period lasted, in words, for the list rows (contracts/timeline-ui.md level 2):
+ * "4 years", "1 year 3 months", "4 months", and "so far" when it's ongoing. A point (a year or a
+ * month, rough or not) has no duration: undefined.
+ */
+export function durationText(when: ParsedWhen): string | undefined {
+  if (when.kind === 'point') return undefined;
+  const months = monthsCovered(when);
+  const years = Math.floor(months / 12);
+  const rest = months % 12;
+  const words = [years > 0 ? plural(years, 'year') : '', rest > 0 ? plural(rest, 'month') : ''].filter(Boolean).join(' ');
+  return when.ongoing ? `${words} so far` : words;
+}
+
+/** A month in short words, as the axis's last tick shows the page's data date: "Nov 2026". */
+export const shortMonthText = (m: YearMonth): string => `${MONTHS[m.month - 1]} ${m.year}`;
+
+/** A month in words: "November 2026". */
+export const monthText = (m: YearMonth): string => `${monthName(m)} ${m.year}`;
+
+/** `YYYY-MM` of a month, for <time datetime>. */
+export const monthDatetime = ym;

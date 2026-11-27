@@ -1,0 +1,127 @@
+---
+// The drill's third level, a card (contracts/timeline-ui.md level 3; FR-010, owner decision 9): the
+// theme, "Role" or "Where next" as a label; the item's label as the heading (its id is the card's
+// anchor, tabindex -1); the details its kind has (a change its dates in words, lane and thread; a
+// role its dates; a next item none); the axis row and bar (not for a next item); the card text; for a
+// value change a panel linking to its value story; for a change in a thread "Follow this thread";
+// then previous and next within the list, each naming the item, disabled at the ends.
+//
+// Without scripts, "Follow this thread" links to #thread-<id> and each card ends with "Back to
+// themes", so every href in the HTML resolves (contracts/routes.md *Anchors*). The script points
+// links that carry data-to at their -in-<thread> address, and, inside a thread, shows the thread's
+// panel ("Thread · n of N", its strip, "See it in <theme>") and its previous and next instead.
+//
+// The card is each change's, role's and next item's canonical occurrence: it carries data-cv-item,
+// and its label, dates and text carry data-cv-field (contracts/content-files.md *Compared fields*).
+import type { ChangeView, NextView, RoleView, Strip as StripData } from '../data/cv.ts';
+import type { CareerScale } from '../domain/scale.ts';
+import { neighbours } from '../domain/lists.ts';
+import Axis from './Axis.astro';
+import Bar from './Bar.astro';
+import Star from './Star.astro';
+import Strip from './Strip.astro';
+import When from './When.astro';
+import { anchor, laneStyle } from './words.ts';
+
+type Item = ChangeView | RoleView | NextView;
+
+interface Props {
+  item: Item;
+  /** The list the card belongs to (its theme's changes, the roles or the next items). */
+  list: Item[];
+  /** The change's thread, when it has one: its changes in order and its strip. */
+  thread?: { id: string; name: string; changes: ChangeView[]; strip: StripData };
+  scale: CareerScale;
+}
+
+const { item, list, thread, scale } = Astro.props;
+const id = item.kind === 'change' ? anchor.change(item.id) : item.kind === 'role' ? anchor.role(item.id) : anchor.nextItem(item.id);
+const label = item.kind === 'next' ? item.item.title : item.item.label;
+const labelField = item.kind === 'next' ? 'title' : 'label';
+const kindLabel = item.kind === 'change' ? item.theme.name : item.kind === 'role' ? 'Role' : 'Where next';
+const colour = item.kind === 'change' ? item.theme.colour : undefined;
+const when = item.kind === 'next' ? undefined : item.when;
+const nameOf = (i: Item) => (i.kind === 'next' ? i.item.title : i.item.label);
+const hrefOf = (i: Item) => `#${i.kind === 'change' ? anchor.change(i.id) : i.kind === 'role' ? anchor.role(i.id) : anchor.nextItem(i.id)}`;
+const home = neighbours(list, item.id);
+const inThread = thread && item.kind === 'change' ? neighbours(thread.changes, item.id) : undefined;
+const parent = item.kind === 'change' ? anchor.theme(item.theme.id) : item.kind === 'role' ? anchor.roles : anchor.next;
+---
+
+<div class="cv-level cv-card" data-level={id} data-parent={parent} data-thread={thread ? anchor.thread(thread.id) : undefined} data-cv-item={`${item.kind}:${item.id}`} style={colour ? laneStyle(colour) : undefined}>
+  <p class="cv-card-kind">
+    {colour && <span class="cv-lane-mark" aria-hidden="true" />}
+    {kindLabel}
+  </p>
+  <h3 id={id} tabindex="-1" data-cv-field={labelField}>{label}</h3>
+  {
+    when && (
+      <p class="cv-card-when">
+        <span data-cv-field="when">
+          <When parts={when.parts} />
+        </span>
+        {when.duration && <span class="cv-row-duration">{` · ${when.duration}`}</span>}
+      </p>
+    )
+  }
+  {item.kind === 'change' && item.thread && <p class="cv-card-thread">{`Thread: ${item.thread.name}`}</p>}
+  {
+    when && (
+      <div class="cv-card-scale">
+        <Axis scale={scale} />
+        <Bar x0={when.x0} x1={when.x1} point={when.parsed.kind === 'point'} rough={when.parsed.rough} ongoing={when.parsed.ongoing} />
+      </div>
+    )
+  }
+  <p class="cv-card-text" data-cv-field="card">{item.item.card}</p>
+  {
+    item.kind === 'change' && item.story && (
+      <p class="cv-value-panel">
+        <span class="cv-value-tag">
+          <Star />
+          Added value
+        </span>
+        <a href={`#${anchor.value(item.story.id)}`}>{`Read the value story: ${item.story.title}`}</a>
+      </p>
+    )
+  }
+  {
+    thread && inThread && item.kind === 'change' && (
+      <>
+        <p class="cv-follow" data-home-only>
+          <a href={`#${anchor.thread(thread.id)}`} data-to={`#${anchor.changeIn(item.id, thread.id)}`}>
+            Follow this thread
+          </a>
+        </p>
+        <div class="cv-thread-panel" data-thread-only hidden>
+          <p class="cv-thread-place">{`Thread · ${inThread.position} of ${inThread.total}: ${thread.name}`}</p>
+          <Strip strip={thread.strip} label={`Where this change sits in the thread: ${inThread.position} of ${inThread.total}`} current={item.id} />
+          <p>
+            <a href={`#${anchor.change(item.id)}`}>{`See it in ${item.theme.name}`}</a>
+          </p>
+        </div>
+      </>
+    )
+  }
+  <p class="cv-steps" data-home-only>
+    {home.previous ? <a class="cv-step" href={hrefOf(home.previous)} data-step>{`Previous: ${nameOf(home.previous)}`}</a> : <a class="cv-step" role="link" aria-disabled="true">Previous</a>}
+    {home.next ? <a class="cv-step cv-step-next" href={hrefOf(home.next)} data-step>{`Next: ${nameOf(home.next)}`}</a> : <a class="cv-step cv-step-next" role="link" aria-disabled="true">Next</a>}
+  </p>
+  {
+    thread && inThread && (
+      <p class="cv-steps" data-thread-only hidden>
+        {inThread.previous ? (
+          <a class="cv-step" href={`#${anchor.change(inThread.previous.id)}`} data-to={`#${anchor.changeIn(inThread.previous.id, thread.id)}`} data-step>{`Previous: ${inThread.previous.item.label}`}</a>
+        ) : (
+          <a class="cv-step" role="link" aria-disabled="true">Previous</a>
+        )}
+        {inThread.next ? (
+          <a class="cv-step cv-step-next" href={`#${anchor.change(inThread.next.id)}`} data-to={`#${anchor.changeIn(inThread.next.id, thread.id)}`} data-step>{`Next: ${inThread.next.item.label}`}</a>
+        ) : (
+          <a class="cv-step cv-step-next" role="link" aria-disabled="true">Next</a>
+        )}
+      </p>
+    )
+  }
+  <p class="cv-back-link"><a href={`#${anchor.overview}`}>Back to themes</a></p>
+</div>

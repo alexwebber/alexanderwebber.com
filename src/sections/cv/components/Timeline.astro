@@ -1,0 +1,81 @@
+---
+// The timeline (<section id="cv">; contracts/timeline-ui.md): the phone drill's levels in reading
+// order, which is the whole timeline without scripts (the overview, then each list, then each card;
+// *Without scripts*), the crumbs, and the place for the landscape form (slice 3). The script turns
+// the levels into the drill, routed on the hash. Cards come grouped by theme in the themes' order,
+// oldest first, then the roles, then where next.
+import type { TimelineView } from '../data/cv.ts';
+import Crumbs from './Crumbs.astro';
+import ItemCard from './ItemCard.astro';
+import ThemeList from './ThemeList.astro';
+import ThemeOverview from './ThemeOverview.astro';
+import { anchor, count } from './words.ts';
+
+interface Props {
+  timeline: TimelineView;
+}
+
+const { timeline } = Astro.props;
+const { themes, roles, threads, next, scale } = timeline;
+const threadOf = new Map(threads.map((t) => [t.thread.id, t]));
+const cardThread = (threadId?: string) => {
+  const t = threadId ? threadOf.get(threadId) : undefined;
+  return t && { id: t.thread.id, name: t.thread.name, changes: t.changes, strip: t.strip };
+};
+---
+
+<section id={anchor.overview} class="cv-timeline" aria-labelledby="cv-heading" data-cv-timeline>
+  <h2 id="cv-heading" tabindex="-1">Timeline</h2>
+  <Crumbs />
+  {/* Slice 3: the landscape form (Swimlanes.astro) goes here, shown from 1024 px. */}
+  <div class="cv-levels">
+    <ThemeOverview timeline={timeline} />
+    {
+      themes.map(({ theme, changes }) => (
+        <ThemeList
+          id={anchor.theme(theme.id)}
+          heading={theme.name}
+          line={theme.line}
+          countText={count(changes.length, 'change')}
+          colour={theme.colour}
+          cvItem={`theme:${theme.id}`}
+          scale={scale}
+          rows={changes.map((c) => ({ href: `#${anchor.change(c.id)}`, label: c.item.label, when: c.when, value: Boolean(c.story), extra: c.thread && `Thread: ${c.thread.name}`, colour: theme.colour }))}
+        />
+      ))
+    }
+    {roles.length > 0 && <ThemeList id={anchor.roles} heading="Roles" countText={count(roles.length, 'role')} scale={scale} rows={roles.map((r) => ({ href: `#${anchor.role(r.id)}`, label: r.item.label, when: r.when }))} />}
+    {
+      threads.length > 0 && (
+        <ThemeList
+          id={anchor.threads}
+          heading="Threads"
+          line="Changes that led from one to the next"
+          countText={count(threads.length, 'thread')}
+          rows={threads.map((t) => ({ href: `#${anchor.thread(t.thread.id)}`, label: t.thread.name, note: count(t.changes.length, 'change') }))}
+        />
+      )
+    }
+    {
+      threads.map((t) => (
+        <ThemeList
+          id={anchor.thread(t.thread.id)}
+          heading={t.thread.name}
+          line={t.thread.line}
+          countText={count(t.changes.length, 'change')}
+          cvItem={`thread:${t.thread.id}`}
+          scale={scale}
+          rows={t.changes.map((c) => ({ href: `#${anchor.change(c.id)}`, to: `#${anchor.changeIn(c.id, t.thread.id)}`, label: c.item.label, when: c.when, value: Boolean(c.story), extra: c.theme.name, colour: c.theme.colour }))}
+        />
+      ))
+    }
+    {next.length > 0 && <ThemeList id={anchor.next} heading="Where next" countText={count(next.length, 'direction')} rows={next.map((n) => ({ href: `#${anchor.nextItem(n.id)}`, label: n.item.title }))} />}
+    {themes.map(({ changes }) => changes.map((c) => <ItemCard item={c} list={changes} thread={cardThread(c.item.thread)} scale={scale} />))}
+    {roles.map((r) => <ItemCard item={r} list={roles} scale={scale} />)}
+    {next.map((n) => <ItemCard item={n} list={next} scale={scale} />)}
+  </div>
+</section>
+
+<script>
+  import './timeline.client.ts';
+</script>

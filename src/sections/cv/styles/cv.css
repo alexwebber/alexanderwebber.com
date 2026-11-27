@@ -1,0 +1,714 @@
+/*
+ * The CV section's look (spec 004 research.md R5; contracts/timeline-ui.md). A global stylesheet,
+ * every rule under .theme-cv with a .cv- prefix: the timeline repeats its markup for every theme,
+ * change and card, and a scoped <style> would add Astro's attribute to each element (astro tips).
+ *
+ * Tokens: the section overrides the shared ones it needs under .theme-cv (as Running does) and adds
+ * its own: --cv-lane-1 to --cv-lane-8, the lane colours a theme names (data-model.md Theme.colour),
+ * each at 3:1 or more on the page and surface colours, and the fonts. A dark set follows the
+ * visitor's setting. tests/unit/design-tokens.test.ts checks text at 4.5:1 and lanes at 3:1 in both.
+ *
+ * Fonts: Space Grotesk 700 for the name and headings, Inter Tight 400 and 600 for text, dates in
+ * tabular figures (astro.config.mjs; the <Font /> elements in CvPage.astro define the variables,
+ * each with Astro's metric-matched fallback).
+ */
+.theme-cv {
+  --color-page: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-text: #111418;
+  --color-text-secondary: #4a505a;
+  --color-text-muted: #5f6672;
+  --color-border: #dfe2e7;
+  --color-border-strong: #858b95;
+  --color-accent: #1f55b5;
+  --color-accent-strong: #173f87;
+  --color-focus: #1f55b5;
+  --font-sans: var(--font-cv-text, system-ui, sans-serif);
+  --weight-bold: 600;
+
+  --cv-lane-1: #2a6fd6;
+  --cv-lane-2: #d0531c;
+  --cv-lane-3: #158a60;
+  --cv-lane-4: #a87300;
+  --cv-lane-5: #c73e78;
+  --cv-lane-6: #0f7f8c;
+  --cv-lane-7: #6250d6;
+  --cv-lane-8: #d23b3a;
+  --cv-role: #4a505a;
+  --cv-display: var(--font-cv-display, var(--font-sans));
+  /* Room the sticky trail takes, so a heading or row scrolled to stays clear of it. */
+  --cv-crumbs-room: 4.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-cv {
+    --color-page: #0e1013;
+    --color-surface: #181b20;
+    --color-text: #eef0f3;
+    --color-text-secondary: #c2c7cf;
+    --color-text-muted: #a0a6b0;
+    --color-border: #2b2f36;
+    --color-border-strong: #6c727c;
+    --color-accent: #7cb0f5;
+    --color-accent-strong: #a8cbf8;
+    --color-focus: #7cb0f5;
+
+    --cv-lane-1: #5b9bf0;
+    --cv-lane-2: #f07a45;
+    --cv-lane-3: #3cc08e;
+    --cv-lane-4: #e0a42a;
+    --cv-lane-5: #ec6fa5;
+    --cv-lane-6: #3ab8c4;
+    --cv-lane-7: #9a8cf0;
+    --cv-lane-8: #f06b6a;
+    --cv-role: #c2c7cf;
+  }
+}
+
+/* --- Type and the page ------------------------------------------------------------------------ */
+
+.theme-cv [hidden] {
+  display: none !important;
+}
+
+.theme-cv :is(h1, h2, h3) {
+  font-family: var(--cv-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.theme-cv time,
+.theme-cv .cv-axis {
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-cv .cv {
+  overflow-wrap: anywhere;
+}
+
+.theme-cv .cv-header {
+  margin-bottom: var(--space-6);
+}
+
+.theme-cv .cv-name {
+  margin-bottom: var(--space-2);
+}
+
+.theme-cv .cv-headline {
+  max-width: 66ch;
+  margin-bottom: var(--space-1);
+  font-size: var(--step-1);
+  color: var(--color-text-secondary);
+}
+
+.theme-cv .cv-location {
+  color: var(--color-text-muted);
+}
+
+.theme-cv .cv-block {
+  margin-bottom: var(--space-7);
+}
+
+.theme-cv .cv-block p,
+.theme-cv .cv-card-text,
+.theme-cv .cv-list-line {
+  max-width: 66ch;
+}
+
+.theme-cv .cv-stories {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.theme-cv .cv-story {
+  max-width: 66ch;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  scroll-margin-top: var(--space-4);
+}
+
+.theme-cv .cv-story :last-child {
+  margin-bottom: 0;
+}
+
+.theme-cv .cv-contact-list {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.theme-cv .cv-contact-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  align-items: baseline;
+}
+
+.theme-cv .cv-contact-label {
+  min-width: 5rem;
+  color: var(--color-text-muted);
+}
+
+.theme-cv .cv-contact-list a {
+  display: inline-block;
+  padding-block: var(--space-1);
+}
+
+/* --- The timeline: levels, crumbs ----------------------------------------------------------- */
+
+.theme-cv .cv-timeline {
+  margin-bottom: var(--space-7);
+}
+
+.theme-cv .cv-timeline :is(h2, h3) {
+  scroll-margin-top: var(--cv-crumbs-room);
+}
+
+.theme-cv .cv-timeline h3:focus {
+  outline: none;
+}
+
+.theme-cv .cv-timeline h3:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+
+/* Without scripts every level shows, in reading order, one after another. */
+.theme-cv .cv-level + .cv-level {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+/* With scripts (cv-js is set in <head>, cv-ready once timeline.client.ts runs) one level shows. */
+.cv-js:not(.cv-ready) .theme-cv .cv-level:not(.cv-overview),
+.cv-ready .theme-cv .cv-level:not(.is-current),
+.cv-js .theme-cv .cv-back-link {
+  display: none;
+}
+
+.cv-js .theme-cv .cv-level + .cv-level {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.theme-cv .cv-crumbs {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 2;
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin: 0 0 var(--space-4);
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-page);
+}
+
+.theme-cv .cv-back {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.theme-cv .cv-back svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-cv .cv-trail {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--step--1);
+}
+
+.theme-cv .cv-trail li {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.theme-cv .cv-trail li:first-child {
+  flex: none;
+}
+
+.theme-cv .cv-trail li + li::before {
+  content: '›';
+  flex: none;
+  margin-inline: 0.4em;
+  color: var(--color-text-muted);
+}
+
+.theme-cv .cv-trail :is(a, span) {
+  overflow: hidden;
+  line-height: 1.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.theme-cv .cv-trail a:focus-visible {
+  outline-offset: -2px;
+}
+
+.theme-cv .cv-trail [aria-current] {
+  font-weight: var(--weight-bold);
+}
+
+/* --- Axis, strips and bars -------------------------------------------------------------------- */
+
+.theme-cv .cv-axis {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--step--1);
+}
+
+/* Lined up with the strips inside the tiles: the tile's left border and padding, its right ones. */
+.theme-cv .cv-axis-row {
+  position: relative;
+  height: 1.6rem;
+  margin: 0 calc(var(--space-3) + 1px) 0 calc(var(--space-3) + 4px);
+  border-bottom: 1px solid var(--chart-axis);
+  container-type: inline-size;
+}
+
+.theme-cv .cv-axis-row[aria-hidden='true'] {
+  display: none;
+}
+
+.theme-cv .cv-tick {
+  position: absolute;
+  bottom: 0.2rem;
+  left: var(--x);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.theme-cv .cv-tick::after {
+  content: '';
+  position: absolute;
+  bottom: -0.2rem;
+  left: 0;
+  height: 0.35rem;
+  border-left: 1px solid var(--chart-axis);
+}
+
+.theme-cv .cv-tick-middle {
+  transform: translateX(-50%);
+}
+
+.theme-cv .cv-tick-middle::after {
+  left: 50%;
+}
+
+.theme-cv .cv-tick-latest {
+  padding-left: 0.25rem;
+}
+
+.theme-cv .cv-tick-last {
+  right: 0;
+  left: auto;
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-bold);
+}
+
+.theme-cv .cv-tick-last::after {
+  right: 0;
+  left: auto;
+  border-left: 0;
+  border-right: 1px solid var(--chart-axis);
+}
+
+/* Where the latest year's label would meet the last month's, the last month alone names it. */
+@container (max-width: 30rem) {
+  .theme-cv .cv-tick-latest time {
+    display: none;
+  }
+}
+
+.theme-cv .cv-strip {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-2);
+  overflow: visible;
+}
+
+.theme-cv .cv-mark-bar {
+  stroke: var(--cv-lane, var(--cv-role));
+  stroke-width: 6;
+  vector-effect: non-scaling-stroke;
+}
+
+.theme-cv .cv-mark-dot {
+  stroke: var(--cv-lane, var(--cv-role));
+  stroke-width: 7;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.theme-cv .cv-mark-hole {
+  stroke: var(--color-surface);
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.theme-cv .cv-strip .is-current {
+  stroke: var(--color-text);
+}
+
+.theme-cv .cv-bar-track {
+  position: relative;
+  display: block;
+  height: 10px;
+  margin-top: var(--space-2);
+  border-bottom: 1px solid var(--chart-grid);
+}
+
+.theme-cv .cv-bar {
+  position: absolute;
+  top: 1px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--cv-lane, var(--cv-role));
+}
+
+.theme-cv .cv-bar.is-period {
+  left: var(--x0);
+  width: max(6px, calc(var(--x1) - var(--x0)));
+}
+
+.theme-cv .cv-bar.is-point {
+  top: 0;
+  left: calc(var(--x) - 5px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.theme-cv .cv-bar.is-rough {
+  border: 2px dashed var(--cv-lane, var(--cv-role));
+  background: transparent;
+}
+
+.theme-cv .cv-bar.is-ongoing::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -7px;
+  border-block: 5.5px solid transparent;
+  border-left: 7px solid var(--cv-lane, var(--cv-role));
+}
+
+/* --- Level 1: the overview's tiles ------------------------------------------------------------ */
+
+.theme-cv .cv-tiles {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.theme-cv .cv-also {
+  margin-top: var(--space-5);
+  font-size: var(--step-1);
+}
+
+.theme-cv .cv-tile,
+.theme-cv .cv-row {
+  display: grid;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--cv-lane, var(--color-border-strong));
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  scroll-margin-block: var(--cv-crumbs-room);
+}
+
+.theme-cv .cv-tile:hover,
+.theme-cv .cv-row:hover {
+  border-color: var(--color-border-strong);
+  border-left-color: var(--cv-lane, var(--color-border-strong));
+  color: var(--color-text);
+}
+
+.theme-cv .cv-tile-name,
+.theme-cv .cv-row-label {
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+.theme-cv .cv-tile:hover :is(.cv-tile-name),
+.theme-cv .cv-row:hover .cv-row-label {
+  color: var(--color-accent-strong);
+}
+
+.theme-cv .cv-tile-counts,
+.theme-cv .cv-row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--step--1);
+}
+
+.theme-cv .cv-tile-line {
+  color: var(--color-text-secondary);
+  font-size: var(--step--1);
+}
+
+.theme-cv .cv-value-count,
+.theme-cv .cv-value-tag {
+  display: inline-flex;
+  gap: 0.3em;
+  align-items: center;
+}
+
+.theme-cv .cv-star {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
+/* --- Level 2: lists ----------------------------------------------------------------------------- */
+
+.theme-cv .cv-list-head {
+  margin-bottom: var(--space-4);
+}
+
+.theme-cv .cv-list-head h3 {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  margin-bottom: var(--space-2);
+}
+
+.theme-cv .cv-lane-mark {
+  display: inline-block;
+  flex: none;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 2px;
+  background: var(--cv-lane, var(--cv-role));
+}
+
+.theme-cv .cv-list-line {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-secondary);
+}
+
+.theme-cv .cv-list-count {
+  margin-bottom: 0;
+  color: var(--color-text-muted);
+  font-size: var(--step--1);
+}
+
+.theme-cv .cv-rows {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.theme-cv .cv-row-when {
+  color: var(--color-text-secondary);
+  font-size: var(--step--1);
+}
+
+.theme-cv .cv-row-duration {
+  color: var(--color-text-muted);
+}
+
+/* --- Level 3: cards ----------------------------------------------------------------------------- */
+
+.theme-cv .cv-card-kind {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+}
+
+.theme-cv .cv-card-when,
+.theme-cv .cv-card-thread {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+/* Room on the right for an ongoing bar's arrow, which has no box padding to sit in on a card. */
+.theme-cv .cv-card-scale {
+  margin-block: var(--space-4);
+  padding-right: 8px;
+}
+
+.theme-cv .cv-card-scale .cv-axis-row {
+  margin-inline: 0;
+}
+
+.theme-cv .cv-card-text {
+  font-size: var(--step-1);
+  line-height: 1.45;
+}
+
+.theme-cv .cv-value-panel,
+.theme-cv .cv-thread-panel {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 66ch;
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.theme-cv .cv-thread-panel p {
+  margin: 0;
+}
+
+.theme-cv .cv-value-panel a,
+.theme-cv .cv-thread-panel a,
+.theme-cv .cv-back-link a {
+  display: inline-block;
+  padding-block: var(--space-1);
+}
+
+.theme-cv .cv-thread-place {
+  font-weight: var(--weight-bold);
+}
+
+.theme-cv .cv-follow a,
+.theme-cv .cv-step {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  text-decoration: none;
+}
+
+.theme-cv .cv-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.theme-cv .cv-step {
+  max-width: 100%;
+}
+
+.theme-cv .cv-step-next {
+  margin-left: auto;
+  text-align: end;
+}
+
+.theme-cv .cv-step[aria-disabled='true'] {
+  border-style: dashed;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* --- Widths ------------------------------------------------------------------------------------- */
+
+/* Tablets held upright: the overview's tiles in two columns (owner decision 1), the axis row over
+   each column. */
+@media (min-width: 48rem) {
+  .theme-cv .cv-tiles,
+  .theme-cv .cv-overview .cv-axis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .theme-cv .cv-overview .cv-axis-row[aria-hidden='true'] {
+    display: block;
+  }
+
+  .theme-cv .cv-step {
+    max-width: calc(50% - var(--space-1));
+  }
+}
+
+/* --- Forced colours ----------------------------------------------------------------------------- */
+
+/* Lanes are told apart by their names and order, value by the star and its words, threads by the
+   thread panel's text (contracts/timeline-ui.md *Forced colours*). Marks drawn by colour use
+   CanvasText, the current one Highlight; boxes drawn by background keep a border. */
+@media (forced-colors: active) {
+  .theme-cv .cv-mark-bar,
+  .theme-cv .cv-mark-dot {
+    stroke: CanvasText;
+  }
+
+  .theme-cv .cv-mark-hole {
+    stroke: Canvas;
+  }
+
+  .theme-cv .cv-strip .is-current {
+    stroke: Highlight;
+  }
+
+  .theme-cv .cv-bar,
+  .theme-cv .cv-lane-mark {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .theme-cv .cv-bar.is-rough {
+    border-color: CanvasText;
+    background: Canvas;
+  }
+
+  .theme-cv .cv-bar.is-ongoing::after {
+    forced-color-adjust: none;
+    border-left-color: CanvasText;
+  }
+
+  .theme-cv .cv-tick::after,
+  .theme-cv .cv-axis-row {
+    border-color: CanvasText;
+  }
+}
+
+/* With scripts, the trail sticks to the top of the screen while drilled in: keep whatever focus or
+   an anchor scrolls to clear of it (WCAG 2.2 focus not obscured). cv-js is set only on CV pages. */
+html.cv-js {
+  scroll-padding-top: 4.5rem;
+}

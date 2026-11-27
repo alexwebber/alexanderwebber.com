@@ -1,0 +1,68 @@
+# Written by scripts/import-cv.ts from the career record's export. Don't edit it by hand: an edit
+# breaks the item's approval, and the build refuses it (specs/004-interactive-cv).
+blocks:
+  - id: pitch
+    heading: A made-up pitch
+    kind: pitch
+    paragraphs:
+      - Dolor minim adipiscing quis commodo do veniam do ex ipsum sed consectetur incididunt quis nostrud do amet laboris labore quis nostrud consequat adipiscing magna amet minim aliqua ut amet ut.
+      - Quis amet minim dolor laboris sed exercitation amet quis sed sit adipiscing magna dolor sit adipiscing ea adipiscing laboris aliqua consequat ullamco quis adipiscing quis commodo aliquip ullamco aliquip ullamco.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: c1d4da2f7836a10b151a2ff0972a45cbcfe5b63471ebf2500225157e78f0ebb2
+  - id: value
+    heading: Made-up value
+    kind: value
+    paragraphs:
+      - Eiusmod minim ad et amet exercitation incididunt consequat commodo et labore exercitation veniam et dolore minim sed enim veniam ut nostrud ipsum veniam aliquip sed laboris nostrud quis amet quis.
+    stories:
+      - id: story-a
+        title: Story A
+        text: Consectetur aliqua exercitation aliqua et labore exercitation amet laboris lorem magna veniam minim veniam aliquip labore enim nostrud consequat dolor exercitation eiusmod ea eiusmod.
+      - id: story-b
+        title: Story B
+        text: Ullamco ipsum nostrud ea eiusmod ut nisi consequat dolor elit nisi elit ullamco ipsum sed aliquip ex sit incididunt ea lorem sit labore consequat.
+      - id: story-c
+        title: Story C
+        text: Ut lorem consectetur eiusmod minim incididunt et nisi aliquip labore quis sed ea labore minim ullamco quis dolore exercitation eiusmod exercitation incididunt ut veniam.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: ac7a4c71e5bc3b8f8948320a0561b0e0ee40b3937a000b15d45a604567a3f67d
+  - id: future
+    heading: Made-up future
+    kind: future
+    paragraphs:
+      - Minim ad exercitation ad et dolor sit dolore ea incididunt laboris lorem quis amet sit ad consequat sed do ex ea dolore magna ad minim adipiscing enim ex laboris labore.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 3bc97ac7edd207f4e2768873c9da7d8fa33ac2ff23e7b136834c57f5ea6ebc50
+  - id: skills
+    heading: Made-up skills
+    kind: skills
+    paragraphs:
+      - Sed sit adipiscing consequat eiusmod enim adipiscing tempor adipiscing enim veniam ipsum nisi magna dolore ipsum eiusmod minim veniam exercitation veniam do lorem exercitation adipiscing magna ex do aliqua tempor.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: e2a260fb43e86342fa0de5c2ba973ab74de62d3c8ff28739c06bff69d17cfa3a
+  - id: public
+    heading: Made-up public
+    kind: public
+    paragraphs:
+      - Aliquip ad minim incididunt minim aliqua laboris adipiscing consequat ullamco consequat ad consequat ex aliquip commodo minim lorem ipsum ad ea aliqua consequat labore exercitation incididunt elit adipiscing do nostrud.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: ccf4f2c8aa5c0633f62556cfede2a8da114eda02f74e255090eb4066ae0d9ecd
+  - id: education
+    heading: Made-up education
+    kind: education
+    paragraphs:
+      - Dolore sit ad exercitation commodo magna labore ipsum sed consequat nisi minim amet do sed ut commodo ut ex et veniam tempor commodo sit eiusmod quis dolor enim aliqua sit.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: c114c59ee69f760686235faa7f810339291fa163183e3774fe0f6ae7ee1c1447

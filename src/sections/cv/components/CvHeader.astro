@@ -1,0 +1,19 @@
+---
+// The CV's header (FR-002): the name as the page's only <h1>, the headline and where the owner is
+// based. Its fields carry data-cv-field for scripts/compare-cv.ts; the page item (data-cv-item=
+// "page:page") is the wrapper in CvBlocks.astro, which also holds the contact block's email and
+// LinkedIn fields.
+import type { CvPage } from '../data/store/index.ts';
+
+interface Props {
+  page: CvPage;
+}
+
+const { page } = Astro.props;
+---
+
+<header class="cv-header">
+  <h1 class="cv-name" data-cv-field="name">{page.name}</h1>
+  <p class="cv-headline" data-cv-field="headline">{page.headline}</p>
+  <p class="cv-location" data-cv-field="location">{page.location}</p>
+</header>

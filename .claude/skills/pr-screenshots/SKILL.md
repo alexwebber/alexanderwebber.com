@@ -30,6 +30,10 @@ triggers no workflow.
    and `,open` opens every `<details>` on the page before the shot (a list or table shown open),
    so one run can shoot the same page several ways under different names:
    `'/running/=landing,first-screen' '/running/=menu-320,width=320,first-screen' '/running/story/'`.
+   `,nojs` shoots the page with JavaScript off (what a reader without scripts sees). A path may end
+   in a `#hash` for a level a page's script shows (the CV's drill: `'/cv-preview/typical/#theme-theme-a=typical-theme'`):
+   the shot waits until the element with that id is visible, so it shows the level, not the page
+   before the script ran; quote it in Git Bash. Name hash shots: the default name joins the hash on.
    Files land in `spikes/screens/out/` (gitignored).
 3. **Look at every image** (Read them) before publishing: tests have passed with a broken layout
    that only a screenshot showed (a card overflowing its grid cell). Fix, rebuild, reshoot.

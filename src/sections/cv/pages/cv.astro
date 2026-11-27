@@ -1,0 +1,12 @@
+---
+// /cv/ (contracts/routes.md): the whole CV, from the approved files in data/cv/. Injected by
+// integration.ts only when data/cv/page.yaml exists, so loadCv always finds a CV here.
+import CvPage from '../components/CvPage.astro';
+import { loadCv } from '../data/cv.ts';
+import { CvStore } from '../data/store/index.ts';
+
+const cv = loadCv(new CvStore());
+if (!cv) throw new Error('/cv/ is built only when data/cv/page.yaml exists');
+---
+
+<CvPage cv={cv} />

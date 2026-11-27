@@ -1,0 +1,21 @@
+---
+// /cv-preview/<state>/ (SHELL_PREVIEW=1 only): each made-up CV through the real loader and the real
+// CvPage, for tests/e2e/cv-phone.spec.ts, tests/e2e/cv-noscript.spec.ts, tests/a11y/cv.spec.ts and the
+// PR's screenshots. The page's title and description are the made-up export's.
+import type { GetStaticPaths } from 'astro';
+import CvPage from '../../../src/sections/cv/components/CvPage.astro';
+import { loadCv } from '../../../src/sections/cv/data/cv.ts';
+import { PREVIEW_STATES, previewStore, type PreviewState } from './store.ts';
+
+export const getStaticPaths = (() => PREVIEW_STATES.map((state) => ({ params: { state }, props: { state } }))) satisfies GetStaticPaths;
+
+interface Props {
+  state: PreviewState;
+}
+
+const { state } = Astro.props;
+const cv = loadCv(previewStore(state));
+if (!cv) throw new Error(`cv preview ${state}: no CV`);
+---
+
+<CvPage cv={cv} />

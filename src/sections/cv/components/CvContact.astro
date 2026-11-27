@@ -1,0 +1,34 @@
+---
+// The contact block (research.md R11; contracts/routes.md *Contact block*; owner decision 4,
+// provisional until the owner confirms it in slice 2's PR): the email address in words ("<user> at
+// <domain>"), its parts in data-user and data-domain; timeline.client.ts makes it a mailto: link.
+// The joined address is never in the HTML. LinkedIn as a link when Page.linkedin is set, nothing when
+// it isn't. Never a phone number.
+import type { CvPage } from '../data/store/index.ts';
+
+interface Props {
+  page: CvPage;
+}
+
+const { page } = Astro.props;
+---
+
+<section class="cv-block cv-contact" aria-labelledby="cv-contact-heading">
+  <h2 id="cv-contact-heading">Contact</h2>
+  <ul class="cv-contact-list" role="list">
+    <li>
+      <span class="cv-contact-label">Email</span>
+      <span class="cv-email" data-cv-field="email" data-user={page.email_user} data-domain={page.email_domain}>{`${page.email_user} at ${page.email_domain}`}</span>
+    </li>
+    {
+      page.linkedin && (
+        <li>
+          <span class="cv-contact-label">LinkedIn</span>
+          <a href={page.linkedin} data-cv-field="linkedin">
+            LinkedIn profile
+          </a>
+        </li>
+      )
+    }
+  </ul>
+</section>

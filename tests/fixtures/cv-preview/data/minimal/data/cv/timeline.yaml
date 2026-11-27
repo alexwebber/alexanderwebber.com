@@ -1,0 +1,24 @@
+# Written by scripts/import-cv.ts from the career record's export. Don't edit it by hand: an edit
+# breaks the item's approval, and the build refuses it (specs/004-interactive-cv).
+themes:
+  - id: theme-a
+    name: Change type A
+    line: Aliqua minim dolore elit eiusmod quis dolor quis.
+    colour: lane-1
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: 3c321a7aca74cf51194e2bb2aa3f9a405b9e9defe37426db4a1fa6f91856d779
+threads: []
+roles: []
+changes:
+  - id: change-a
+    label: Change A
+    when: "2014"
+    theme: theme-a
+    card: Consectetur amet et ad minim veniam quis aliqua laboris dolor et incididunt sit ad sit ex elit nostrud do dolore.
+    approved:
+      date: 2026-12-01
+      source: 0a1b2c3d
+      sha256: cdfbe8bd9d5a34fcecdfe0d301a9cb39df4d2c6f6c534f757b9a5180ff409f31
+next: []
